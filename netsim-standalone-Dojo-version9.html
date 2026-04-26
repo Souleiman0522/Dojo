@@ -1,0 +1,4967 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dojo NetSim — Simulateur Réseau Cisco</title>
+  
+  <!-- jsPDF for PDF export -->
+<style>
+/* ============================================================
+   DOJO NETSIM — Styles
+   Couleurs exactes du Dojo du Networking
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&family=Orbitron:wght@700;900&display=swap');
+
+/* ---- CSS Variables (identiques au Dojo) ---- */
+:root {
+  --bg:    #080c14;
+  --sur:   #0d1525;
+  --card:  #111d33;
+  --bor:   #1e3a5f;
+  --ac:    #00d4ff;
+  --ac2:   #ff6b35;
+  --ac3:   #39ff14;
+  --tx:    #c8deff;
+  --mu:    #5a7a9f;
+  --ok:    #39ff14;
+  --er:    #ff3366;
+  --wa:    #ffcc00;
+
+  --font-mono: 'Share Tech Mono', 'Courier New', monospace;
+  --font-ui:   'Rajdhani', system-ui, sans-serif;
+  --font-head: 'Orbitron', sans-serif;
+
+  --panel-w: 420px;
+  --header-h: 52px;
+  --toolbar-h: 44px;
+}
+
+/* ---- Reset ---- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--tx);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+.app-header {
+  height: var(--header-h);
+  background: linear-gradient(180deg, #050c14, #030608);
+  border-bottom: 1px solid rgba(0,212,255,.15);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 14px;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  flex-shrink: 0;
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.header-logo img {
+  width: 38px; height: 38px;
+  border-radius: 7px;
+}
+.header-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.header-brand-name {
+  font-family: var(--font-head);
+  font-size: .85rem;
+  font-weight: 900;
+  color: var(--ac);
+  letter-spacing: 2px;
+  line-height: 1.1;
+}
+.header-brand-sub {
+  font-family: var(--font-mono);
+  font-size: .52rem;
+  color: var(--mu);
+  letter-spacing: 2px;
+}
+
+.header-sep { flex: 1; }
+
+.lab-selector-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.lab-selector-wrap label {
+  font-family: var(--font-mono);
+  font-size: .65rem;
+  color: var(--mu);
+  letter-spacing: 1px;
+}
+select#lab-selector {
+  background: var(--card);
+  border: 1px solid var(--bor);
+  color: var(--tx);
+  font-family: var(--font-ui);
+  font-size: .82rem;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  max-width: 280px;
+  outline: none;
+  transition: border-color .2s;
+}
+select#lab-selector:focus {
+  border-color: var(--ac);
+}
+select#lab-selector option {
+  background: var(--sur);
+}
+
+.header-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+/* ============================================================
+   MAIN LAYOUT
+   ============================================================ */
+.app-body {
+  display: flex;
+  height: calc(100vh - var(--header-h));
+  overflow: hidden;
+}
+
+/* ============================================================
+   LAB PANEL (gauche)
+   ============================================================ */
+.lab-panel {
+  width: var(--panel-w);
+  min-width: var(--panel-w);
+  max-width: var(--panel-w);
+  height: 100%;
+  background: var(--sur);
+  border-right: 1px solid var(--bor);
+  display: flex;
+  flex-direction: column;
+  transition: all .3s cubic-bezier(.4,0,.2,1);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.lab-panel.hidden {
+  width: 0;
+  min-width: 0;
+  max-width: 0;
+  border-right: none;
+}
+
+.panel-toolbar {
+  height: var(--toolbar-h);
+  background: rgba(0,0,0,.3);
+  border-bottom: 1px solid var(--bor);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.panel-title {
+  font-family: var(--font-head);
+  font-size: .6rem;
+  color: var(--ac);
+  letter-spacing: 2px;
+  font-weight: 700;
+}
+.panel-title-sep { flex: 1; }
+
+.panel-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0;
+}
+.panel-content::-webkit-scrollbar { width: 4px; }
+.panel-content::-webkit-scrollbar-thumb { background: var(--bor); border-radius: 2px; }
+
+/* Panel sections */
+.panel-section {
+  border-bottom: 1px solid var(--bor);
+}
+.panel-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px 8px;
+  cursor: pointer;
+  user-select: none;
+  transition: background .15s;
+}
+.panel-section-header:hover {
+  background: rgba(0,212,255,.04);
+}
+.panel-section-label {
+  font-family: var(--font-mono);
+  font-size: .6rem;
+  color: var(--ac);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.panel-section-chevron {
+  font-size: .65rem;
+  color: var(--mu);
+  transition: transform .2s;
+}
+.panel-section.collapsed .panel-section-chevron { transform: rotate(-90deg); }
+.panel-section.collapsed .panel-section-body { display: none; }
+.panel-section-body { padding: 0 14px 12px; }
+
+/* Lab header */
+.lab-header {
+  padding: 14px;
+  border-bottom: 1px solid var(--bor);
+  background: linear-gradient(135deg, rgba(0,212,255,.05), transparent);
+}
+.lab-title {
+  font-family: var(--font-head);
+  font-size: .85rem;
+  font-weight: 900;
+  color: #e0eeff;
+  margin-bottom: 6px;
+  line-height: 1.3;
+}
+.lab-meta {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* Badges */
+.badge {
+  font-family: var(--font-mono);
+  font-size: .58rem;
+  padding: 2px 8px;
+  border-radius: 3px;
+  letter-spacing: 1px;
+  font-weight: 700;
+  border: 1px solid;
+}
+.badge-diff  { background: rgba(0,212,255,.1);  color: var(--ac);  border-color: rgba(0,212,255,.3); }
+.badge-time  { background: rgba(255,204,0,.1);   color: var(--wa);  border-color: rgba(255,204,0,.3); }
+.badge-obj   { background: rgba(57,255,20,.08);  color: var(--ok);  border-color: rgba(57,255,20,.2); }
+
+/* Topology SVG area */
+.topology-wrap {
+  background: #050810;
+  position: relative;
+  overflow: hidden;
+}
+#topology-svg {
+  width: 100%;
+  display: block;
+  min-height: 220px;
+}
+.topo-node { cursor: default; }
+
+/* Objectives list */
+.objectives-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.objectives-list li {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: .82rem;
+  color: var(--tx);
+  line-height: 1.5;
+}
+.obj-num {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: rgba(0,212,255,.15);
+  border: 1px solid rgba(0,212,255,.3);
+  color: var(--ac);
+  font-family: var(--font-mono);
+  font-size: .65rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Addressing table */
+.addr-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .78rem;
+}
+.addr-table th {
+  font-family: var(--font-mono);
+  font-size: .58rem;
+  color: var(--ac);
+  letter-spacing: 1px;
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--bor);
+  background: rgba(0,0,0,.2);
+}
+.addr-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid rgba(30,58,95,.3);
+  color: var(--tx);
+  vertical-align: middle;
+}
+.addr-table tr:hover td { background: rgba(0,212,255,.03); }
+.addr-table code { font-family: var(--font-mono); font-size: .78rem; }
+.addr-table code.ip { color: var(--ac); }
+.vlan-badge {
+  font-family: var(--font-mono);
+  font-size: .62rem;
+  padding: 1px 5px;
+  background: rgba(0,212,255,.08);
+  border: 1px solid rgba(0,212,255,.2);
+  border-radius: 3px;
+  color: var(--mu);
+}
+
+/* Instructions */
+.instructions-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.instr-item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: .82rem;
+  line-height: 1.6;
+  color: var(--tx);
+}
+.instr-item code {
+  font-family: var(--font-mono);
+  font-size: .78rem;
+  background: rgba(0,212,255,.08);
+  border: 1px solid rgba(0,212,255,.2);
+  border-radius: 3px;
+  padding: 1px 5px;
+  color: var(--ac);
+  white-space: nowrap;
+}
+.step-num {
+  width: 22px; height: 22px;
+  border-radius: 4px;
+  background: var(--card);
+  border: 1px solid var(--bor);
+  color: var(--ac);
+  font-family: var(--font-mono);
+  font-size: .65rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* Hint */
+.lab-hint-box {
+  background: rgba(255,204,0,.06);
+  border: 1px solid rgba(255,204,0,.25);
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: .8rem;
+  color: var(--tx);
+  line-height: 1.6;
+}
+.lab-hint-box::before {
+  content: '💡 ';
+}
+
+/* ============================================================
+   WORKSPACE (droite)
+   ============================================================ */
+.workspace {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  min-width: 0;
+}
+.workspace.panel-hidden { /* full width */ }
+
+/* Workspace toolbar */
+.workspace-toolbar {
+  height: var(--toolbar-h);
+  background: rgba(0,0,0,.3);
+  border-bottom: 1px solid var(--bor);
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.workspace-label {
+  font-family: var(--font-mono);
+  font-size: .62rem;
+  color: var(--mu);
+  letter-spacing: 2px;
+}
+
+/* Split: CLI top / Checklist bottom */
+.workspace-split {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ============================================================
+   CLI SECTION
+   ============================================================ */
+.cli-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: #050810;
+  position: relative;
+}
+.cli-section.fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  flex: none;
+}
+
+.cli-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 14px;
+  background: rgba(0,0,0,.5);
+  border-bottom: 1px solid rgba(0,212,255,.15);
+  flex-shrink: 0;
+}
+.cli-device-label {
+  font-family: var(--font-mono);
+  font-size: .65rem;
+  color: var(--ac);
+  letter-spacing: 2px;
+  background: rgba(0,212,255,.1);
+  border: 1px solid rgba(0,212,255,.2);
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+.cli-dots {
+  display: flex;
+  gap: 5px;
+}
+.cli-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+}
+.cli-dot-r { background: #ff3366; }
+.cli-dot-y { background: var(--wa); }
+.cli-dot-g { background: var(--ok); }
+
+/* CLI Output */
+.cli-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 14px;
+  cursor: text;
+  min-height: 0;
+}
+.cli-area::-webkit-scrollbar { width: 5px; }
+.cli-area::-webkit-scrollbar-thumb { background: #1e3a5f; border-radius: 2px; }
+
+#cli-output {
+  font-family: var(--font-mono);
+  font-size: .82rem;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* CLI text types */
+.cli-output    { color: #c8deff; }
+.cli-prompt-echo .cli-prompt-color { color: var(--ac); }
+.cli-prompt-echo .cli-cmd { color: #e0eeff; }
+.cli-accent    { color: var(--ac); font-weight: 700; }
+.cli-ok        { color: var(--ok); }
+.cli-warn      { color: var(--wa); }
+.cli-error     { color: var(--er); }
+.cli-muted     { color: var(--mu); }
+.cli-cyan      { color: #00d4ff; }
+
+/* CLI Input line */
+.cli-input-row {
+  display: flex;
+  align-items: center;
+  padding: 8px 14px;
+  border-top: 1px solid rgba(0,212,255,.1);
+  background: rgba(0,0,0,.4);
+  flex-shrink: 0;
+}
+#cli-prompt {
+  font-family: var(--font-mono);
+  font-size: .82rem;
+  color: var(--ac);
+  white-space: nowrap;
+  flex-shrink: 0;
+  user-select: none;
+}
+#cli-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #e0eeff;
+  font-family: var(--font-mono);
+  font-size: .82rem;
+  caret-color: var(--ac);
+  min-width: 0;
+  line-height: 1.5;
+}
+#cli-input::placeholder { color: rgba(90,122,159,.4); }
+
+/* ============================================================
+   CHECKLIST / FEEDBACK PANEL
+   ============================================================ */
+.feedback-panel {
+  height: 200px;
+  min-height: 160px;
+  border-top: 1px solid var(--bor);
+  background: var(--sur);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  resize: vertical;
+}
+
+.feedback-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 14px;
+  background: rgba(0,0,0,.2);
+  border-bottom: 1px solid var(--bor);
+  flex-shrink: 0;
+}
+.feedback-title {
+  font-family: var(--font-mono);
+  font-size: .6rem;
+  color: var(--ac);
+  letter-spacing: 2px;
+}
+.score-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+#score-text {
+  font-family: var(--font-head);
+  font-size: .75rem;
+  color: var(--ac);
+  min-width: 30px;
+}
+.score-bar {
+  width: 100px;
+  height: 5px;
+  background: rgba(30,58,95,.5);
+  border-radius: 3px;
+  overflow: hidden;
+}
+#score-bar-fill {
+  height: 100%;
+  background: var(--ac);
+  border-radius: 3px;
+  transition: width .4s ease, background .3s;
+}
+
+.feedback-body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+/* Checklist */
+.checklist-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+.checklist-scroll::-webkit-scrollbar { width: 4px; }
+.checklist-scroll::-webkit-scrollbar-thumb { background: var(--bor); }
+
+.check-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px;
+  border-bottom: 1px solid rgba(30,58,95,.3);
+  transition: background .15s;
+  cursor: default;
+}
+.check-item:hover { background: rgba(0,212,255,.03); }
+.check-item.done { background: rgba(57,255,20,.04); }
+.check-item.check-pass { animation: flash-ok .5s ease; }
+.check-item.check-fail { animation: flash-ko .5s ease; }
+
+@keyframes flash-ok {
+  0%, 100% { background: transparent; }
+  50% { background: rgba(57,255,20,.15); }
+}
+@keyframes flash-ko {
+  0%, 100% { background: transparent; }
+  50% { background: rgba(255,51,102,.1); }
+}
+
+.check-icon {
+  font-size: .9rem;
+  width: 20px;
+  text-align: center;
+  color: var(--mu);
+  flex-shrink: 0;
+}
+.check-item.done .check-icon { color: var(--ok); }
+.check-label {
+  flex: 1;
+  font-size: .8rem;
+  color: var(--tx);
+}
+.check-item.done .check-label { color: var(--ok); }
+.check-cmd {
+  font-family: var(--font-mono);
+  font-size: .65rem;
+  color: var(--mu);
+  background: rgba(0,0,0,.2);
+  padding: 1px 5px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* Feedback message area */
+.feedback-msg-area {
+  width: 220px;
+  border-left: 1px solid var(--bor);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  background: rgba(0,0,0,.15);
+}
+
+#feedback-msg {
+  font-size: .82rem;
+}
+.feedback-win {
+  color: var(--ok);
+  font-weight: 700;
+  padding: 8px;
+  background: rgba(57,255,20,.06);
+  border: 1px solid rgba(57,255,20,.2);
+  border-radius: 5px;
+  text-align: center;
+}
+.feedback-partial {
+  color: var(--wa);
+  padding: 8px;
+  background: rgba(255,204,0,.06);
+  border: 1px solid rgba(255,204,0,.2);
+  border-radius: 5px;
+  text-align: center;
+}
+.feedback-running {
+  color: var(--mu);
+  padding: 8px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: .75rem;
+  animation: pulse 1s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .4; }
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 4px;
+  border: 1px solid;
+  font-family: var(--font-head);
+  font-size: .6rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all .2s;
+  white-space: nowrap;
+  text-transform: uppercase;
+  outline: none;
+}
+.btn:active { transform: scale(.97); }
+
+.btn-primary {
+  background: rgba(0,212,255,.1);
+  border-color: var(--ac);
+  color: var(--ac);
+}
+.btn-primary:hover {
+  background: rgba(0,212,255,.2);
+  box-shadow: 0 0 10px rgba(0,212,255,.2);
+}
+
+.btn-success {
+  background: rgba(57,255,20,.1);
+  border-color: var(--ok);
+  color: var(--ok);
+}
+.btn-success:hover {
+  background: rgba(57,255,20,.18);
+  box-shadow: 0 0 10px rgba(57,255,20,.2);
+}
+
+.btn-warn {
+  background: rgba(255,204,0,.1);
+  border-color: var(--wa);
+  color: var(--wa);
+}
+.btn-warn:hover {
+  background: rgba(255,204,0,.18);
+}
+
+.btn-danger {
+  background: rgba(255,51,102,.1);
+  border-color: var(--er);
+  color: var(--er);
+}
+.btn-danger:hover {
+  background: rgba(255,51,102,.18);
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: var(--bor);
+  color: var(--mu);
+}
+.btn-ghost:hover {
+  border-color: var(--ac);
+  color: var(--ac);
+}
+
+/* ============================================================
+   SCROLLBAR (global)
+   ============================================================ */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bor); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--ac); }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 900px) {
+  :root { --panel-w: 340px; }
+}
+@media (max-width: 700px) {
+  .app-body { flex-direction: column; }
+  .lab-panel { width: 100%; min-width: 100%; max-width: 100%; height: 45vh; }
+  .lab-panel.hidden { height: 0; }
+  .workspace { height: 55vh; }
+  .feedback-msg-area { display: none; }
+  :root { --panel-w: 100%; }
+}
+
+
+/* ---- Quick Command Bar ---- */
+.quick-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  background: rgba(0,0,0,.35);
+  border-top: 1px solid rgba(0,212,255,.08);
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+.quick-bar-label {
+  font-family: var(--font-mono);
+  font-size: .55rem;
+  color: var(--mu);
+  letter-spacing: 1px;
+  margin-right: 2px;
+  white-space: nowrap;
+}
+.qbtn {
+  font-family: var(--font-mono);
+  font-size: .68rem;
+  padding: 3px 8px;
+  border-radius: 3px;
+  border: 1px solid var(--bor);
+  background: rgba(0,0,0,.3);
+  color: var(--mu);
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+  line-height: 1.4;
+  user-select: none;
+}
+.qbtn:hover {
+  border-color: var(--ac);
+  color: var(--ac);
+  background: rgba(0,212,255,.07);
+}
+.qbtn:active { transform: scale(.96); }
+.qbtn.qbtn-ok { border-color: rgba(57,255,20,.3); color: var(--ok); }
+.qbtn.qbtn-ok:hover { background: rgba(57,255,20,.08); }
+.qbtn.qbtn-warn { border-color: rgba(255,204,0,.3); color: var(--wa); }
+.qbtn.qbtn-warn:hover { background: rgba(255,204,0,.08); }
+.qbtn.qbtn-hot { border-color: rgba(0,212,255,.35); color: var(--ac); background: rgba(0,212,255,.06); }
+.qbtn-sep {
+  width: 1px; height: 16px;
+  background: var(--bor);
+  margin: 0 2px;
+  flex-shrink: 0;
+}
+/* Tab completion hint */
+.tab-hint {
+  font-family: var(--font-mono);
+  font-size: .65rem;
+  color: var(--mu);
+  padding: 3px 8px;
+  border-radius: 3px;
+  background: rgba(0,0,0,.2);
+  border: 1px solid transparent;
+  opacity: .7;
+  white-space: nowrap;
+}
+/* Context-aware bar sections */
+.quick-bar-section { display:flex; gap:4px; align-items:center; flex-wrap:wrap; }
+.quick-bar-section.hidden { display:none; }
+
+/* Autocomplete dropdown */
+#autocomplete-box {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  background: #0d1525;
+  border: 1px solid var(--ac);
+  border-radius: 5px;
+  padding: 4px 0;
+  min-width: 220px;
+  max-width: 400px;
+  z-index: 100;
+  box-shadow: 0 -8px 24px rgba(0,0,0,.6);
+  display: none;
+  font-family: var(--font-mono);
+  font-size: .78rem;
+}
+.ac-item {
+  padding: 5px 12px;
+  color: var(--tx);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+.ac-item:hover, .ac-item.ac-selected {
+  background: rgba(0,212,255,.1);
+  color: var(--ac);
+}
+.ac-item .ac-desc {
+  color: var(--mu);
+  font-size: .65rem;
+}
+.cli-input-row { position: relative; }
+
+
+/* ---- PC Terminal Panel ---- */
+.pc-panel {
+  border-top: 2px solid rgba(57,255,20,.3);
+  background: #050810;
+  flex-shrink: 0;
+  height: 220px;
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+}
+.pc-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 14px;
+  background: rgba(0,0,0,.4);
+  border-bottom: 1px solid rgba(57,255,20,.15);
+  flex-shrink: 0;
+}
+.pc-body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  min-height: 0;
+}
+.pc-terminal-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid rgba(57,255,20,.15);
+}
+.pc-terminal {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 14px;
+  font-family: var(--font-mono);
+  font-size: .8rem;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  color: #c8deff;
+}
+.pc-terminal::-webkit-scrollbar { width: 4px; }
+.pc-terminal::-webkit-scrollbar-thumb { background: rgba(57,255,20,.3); }
+.pc-input-row {
+  display: flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-top: 1px solid rgba(57,255,20,.1);
+  background: rgba(0,0,0,.4);
+  flex-shrink: 0;
+  gap: 6px;
+}
+.pc-tests-wrap {
+  width: 230px;
+  padding: 10px 12px;
+  overflow-y: auto;
+  background: rgba(0,0,0,.2);
+}
+.pc-tests-wrap::-webkit-scrollbar { width: 3px; }
+.pc-test-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(57,255,20,.1);
+  font-size: .75rem;
+  cursor: pointer;
+  transition: .15s;
+}
+.pc-test-item:hover { color: var(--ok); }
+.pc-test-icon { width: 16px; text-align: center; flex-shrink: 0; }
+.pc-test-label { flex: 1; color: var(--tx); line-height: 1.3; }
+.pc-test-item.pass .pc-test-label { color: var(--ok); }
+.pc-test-item.fail .pc-test-label { color: var(--er); }
+.pc-info {
+  font-family: var(--font-mono);
+  font-size: .62rem;
+  padding: 2px 8px;
+  background: rgba(57,255,20,.08);
+  border: 1px solid rgba(57,255,20,.25);
+  border-radius: 3px;
+  color: var(--ok);
+}
+.pc-selector-btn {
+  font-family: var(--font-mono);
+  font-size: .65rem;
+  padding: 2px 8px;
+  border-radius: 3px;
+  border: 1px solid rgba(57,255,20,.3);
+  background: transparent;
+  color: var(--mu);
+  cursor: pointer;
+  transition: .15s;
+}
+.pc-selector-btn:hover, .pc-selector-btn.active {
+  border-color: var(--ok);
+  color: var(--ok);
+  background: rgba(57,255,20,.07);
+}
+
+/* ---- Admin ---- */
+.admin-input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--bor);
+  border-radius: 5px;
+  color: var(--tx);
+  font-family: var(--font-mono);
+  font-size: .8rem;
+  padding: 7px 10px;
+  outline: none;
+  transition: border-color .2s;
+}
+.admin-input:focus { border-color: var(--ac); }
+.admin-textarea { resize: vertical; min-height: 60px; font-family: var(--font-mono); }
+select.admin-input option { background: var(--sur); }
+
+.admin-cat-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 5px;
+  border: 1px solid var(--bor);
+  background: transparent;
+  color: var(--mu);
+  font-family: var(--font-ui);
+  font-size: .82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: .2s;
+}
+.admin-cat-btn.active, .admin-cat-btn:hover {
+  border-color: var(--wa);
+  color: var(--wa);
+  background: rgba(255,204,0,.07);
+}
+
+.admin-lab-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--bg);
+  border: 1px solid var(--bor);
+  border-radius: 6px;
+  margin-bottom: 6px;
+  gap: 10px;
+}
+.admin-lab-card:hover { border-color: var(--ac); }
+.admin-lab-title { font-weight: 700; color: #e0eeff; font-size: .85rem; }
+.admin-lab-meta { font-family: var(--font-mono); font-size: .6rem; color: var(--mu); }
+
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     HEADER
+     ============================================================ -->
+<header class="app-header">
+  <div class="header-logo">
+    <!-- Replace with your logo if available -->
+    <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="8" fill="#0d1525"/>
+      <polygon points="19,6 32,28 6,28" fill="none" stroke="#00d4ff" stroke-width="2"/>
+      <circle cx="19" cy="19" r="4" fill="#00d4ff" opacity=".8"/>
+      <circle cx="19" cy="6" r="2" fill="#00d4ff"/>
+      <circle cx="32" cy="28" r="2" fill="#ff6b35"/>
+      <circle cx="6" cy="28" r="2" fill="#39ff14"/>
+    </svg>
+    <div class="header-brand">
+      <div class="header-brand-name">LE DOJO DU NETWORKING</div>
+      <div class="header-brand-sub">SIMULATEUR RÉSEAU — NETSIM</div>
+    </div>
+  </div>
+
+  <div class="header-sep"></div>
+
+  <!-- Lab selector -->
+  <div class="lab-selector-wrap">
+    <label for="lab-selector">LAB :</label>
+    <select id="lab-selector">
+      <!-- Populated by JS -->
+    </select>
+  </div>
+
+  <!-- Header actions -->
+  <div class="header-actions">
+    <button class="btn btn-warn" id="btn-toggle-panel">◀ Masquer</button>
+    <button class="btn btn-ghost" id="btn-pdf">⬇ PDF</button>
+    <a href="../" class="btn btn-ghost" title="Retour au Dojo">↩ Dojo</a>
+  </div>
+</header>
+
+<!-- ============================================================
+     APP BODY
+     ============================================================ -->
+<div class="app-body">
+
+  <!-- ======================================================
+       LAB PANEL (gauche)
+       ====================================================== -->
+  <aside class="lab-panel" id="lab-panel">
+    <div class="panel-toolbar">
+      <span class="panel-title">📋 LAB EN COURS</span>
+      <div class="panel-title-sep"></div>
+      <button class="btn btn-ghost" id="btn-toggle-panel-inner"
+        onclick="document.getElementById('btn-toggle-panel').click()"
+        style="padding:3px 8px;font-size:.55rem">✕</button>
+    </div>
+
+    <div class="panel-content" id="panel-content">
+
+      <!-- Lab title & meta -->
+      <div class="lab-header">
+        <div class="lab-title" id="lab-title">Chargement...</div>
+        <div class="lab-meta" id="lab-meta"></div>
+      </div>
+
+      <!-- Topologie -->
+      <div class="panel-section" id="sec-topology">
+        <div class="panel-section-header" onclick="toggleSection('sec-topology')">
+          <span class="panel-section-label">📡 Topologie réseau</span>
+          <span class="panel-section-chevron">▾</span>
+        </div>
+        <div class="panel-section-body" style="padding:0">
+          <div class="topology-wrap">
+            <svg id="topology-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Objectifs -->
+      <div class="panel-section" id="sec-objectives">
+        <div class="panel-section-header" onclick="toggleSection('sec-objectives')">
+          <span class="panel-section-label">🎯 Objectifs</span>
+          <span class="panel-section-chevron">▾</span>
+        </div>
+        <div class="panel-section-body">
+          <ul class="objectives-list" id="lab-objectives"></ul>
+        </div>
+      </div>
+
+      <!-- Table d'adressage -->
+      <div class="panel-section" id="sec-addressing">
+        <div class="panel-section-header" onclick="toggleSection('sec-addressing')">
+          <span class="panel-section-label">📊 Table d'adressage IP</span>
+          <span class="panel-section-chevron">▾</span>
+        </div>
+        <div class="panel-section-body" style="padding:0">
+          <table class="addr-table">
+            <thead>
+              <tr>
+                <th>Appareil</th>
+                <th>Interface</th>
+                <th>Adresse IP</th>
+                <th>Masque</th>
+                <th>VLAN / Info</th>
+              </tr>
+            </thead>
+            <tbody id="addr-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Instructions -->
+      <div class="panel-section" id="sec-instructions">
+        <div class="panel-section-header" onclick="toggleSection('sec-instructions')">
+          <span class="panel-section-label">📋 Instructions</span>
+          <span class="panel-section-chevron">▾</span>
+        </div>
+        <div class="panel-section-body">
+          <ol class="instructions-list" id="lab-instructions"></ol>
+        </div>
+      </div>
+
+      <!-- Astuce -->
+      <div class="panel-section" id="sec-hint">
+        <div class="panel-section-header" onclick="toggleSection('sec-hint')">
+          <span class="panel-section-label">💡 Astuce</span>
+          <span class="panel-section-chevron">▾</span>
+        </div>
+        <div class="panel-section-body">
+          <div class="lab-hint-box" id="lab-hint"></div>
+        </div>
+      </div>
+
+    </div><!-- /panel-content -->
+  </aside>
+
+  <!-- ======================================================
+       WORKSPACE (droite)
+       ====================================================== -->
+  <div class="workspace" id="workspace">
+
+    <!-- Workspace toolbar -->
+    <div class="workspace-toolbar">
+      <span class="workspace-label">SIMULATEUR IOS</span>
+      <div style="flex:1"></div>
+      <button class="btn btn-ghost" id="btn-clear-cli" style="padding:3px 8px">⊘ Vider</button>
+      <button class="btn btn-ghost" id="btn-fullscreen" style="padding:3px 8px">⊞ Plein écran</button>
+    </div>
+
+    <!-- Split: CLI + Feedback -->
+    <div class="workspace-split">
+
+      <!-- CLI SECTION -->
+      <div class="cli-section" id="cli-section">
+        <div class="cli-header">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="cli-dots">
+              <div class="cli-dot cli-dot-r"></div>
+              <div class="cli-dot cli-dot-y"></div>
+              <div class="cli-dot cli-dot-g"></div>
+            </div>
+            <span class="cli-device-label" id="cli-device-label">[SW1]</span>
+          </div>
+          <span style="font-family:var(--font-mono);font-size:.6rem;color:var(--mu)">
+            ↑↓ Historique &nbsp;|&nbsp; Tab Aide &nbsp;|&nbsp; Ctrl+L Effacer &nbsp;|&nbsp; Ctrl+C Interrompre
+          </span>
+        </div>
+
+        <div class="cli-area" id="cli-area">
+          <div id="cli-output"></div>
+        </div>
+
+        <!-- Quick command bar -->
+        <div class="quick-bar" id="quick-bar">
+          <span class="quick-bar-label">RAPIDE:</span>
+
+          <!-- Always visible: mode navigation -->
+          <div class="quick-bar-section" id="qbar-nav">
+            <button class="qbtn qbtn-hot" onclick="qcmd('enable')" title="Passer en mode privilégié">en</button>
+            <button class="qbtn qbtn-hot" onclick="qcmd('configure terminal')" title="configure terminal">conf t</button>
+            <button class="qbtn" onclick="qcmd('end')" title="Retour en # depuis config">end</button>
+            <button class="qbtn" onclick="qcmd('exit')" title="Remonter d'un niveau">exit</button>
+          </div>
+
+          <div class="qbtn-sep"></div>
+
+          <!-- Show commands -->
+          <div class="quick-bar-section" id="qbar-show">
+            <button class="qbtn" onclick="qcmd('show ip interface brief')" title="Résumé interfaces IP">sh ip int br</button>
+            <button class="qbtn" onclick="qcmd('show running-config')" title="Config en cours">sh run</button>
+            <button class="qbtn" onclick="qcmd('show vlan brief')" title="VLANs et ports">sh vlan br</button>
+            <button class="qbtn" onclick="qcmd('show interfaces trunk')" title="Ports trunk">sh int trunk</button>
+            <button class="qbtn" onclick="qcmd('show port-security')" title="Port security">sh port-sec</button>
+            <button class="qbtn" onclick="qcmd('show ip route')" title="Table de routage">sh ip route</button>
+            <button class="qbtn" onclick="qcmd('show ip ospf neighbor')" title="Voisins OSPF">sh ospf nbr</button>
+            <button class="qbtn" onclick="qcmd('show spanning-tree')" title="STP">sh span</button>
+            <button class="qbtn" onclick="qcmd('show mac address-table')" title="Table MAC">sh mac</button>
+          </div>
+
+          <div class="qbtn-sep"></div>
+
+          <!-- Save + clear -->
+          <div class="quick-bar-section" id="qbar-save">
+            <button class="qbtn qbtn-ok" onclick="qcmd('copy running-config startup-config')" title="Sauvegarder la config">wr</button>
+            <button class="qbtn qbtn-warn" onclick="document.getElementById('cli-output').innerHTML=''" title="Vider le terminal">cls</button>
+          </div>
+        </div>
+
+        <!-- Context-sensitive config shortcuts (appear in config mode) -->
+        <div class="quick-bar" id="quick-bar-ctx" style="display:none;background:rgba(57,255,20,.03);border-top:1px solid rgba(57,255,20,.08)">
+          <span class="quick-bar-label" style="color:var(--ok)">CONFIG:</span>
+          <div id="qbar-ctx-btns" style="display:flex;gap:4px;flex-wrap:wrap"></div>
+        </div>
+
+        <!-- Autocomplete + input row -->
+        <div class="cli-input-row">
+          <div id="autocomplete-box"></div>
+          <span id="cli-prompt">SW1&gt; </span>
+          <input
+            id="cli-input"
+            type="text"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="off"
+            spellcheck="false"
+            placeholder="Tapez ou utilisez les boutons ci-dessus..."
+            autofocus
+          >
+        </div>
+      </div>
+
+      <!-- FEEDBACK / CHECKLIST PANEL -->
+      <div class="feedback-panel" id="feedback-panel">
+        <div class="feedback-header">
+          <span class="feedback-title">✅ VÉRIFICATION</span>
+          <div class="score-badge">
+            <span id="score-text">0/0</span>
+            <div class="score-bar">
+              <div id="score-bar-fill" style="width:0%"></div>
+            </div>
+            <button class="btn btn-success" id="btn-run-check" style="padding:3px 10px;font-size:.55rem">
+              ▶ VÉRIFIER
+            </button>
+          </div>
+        </div>
+
+        <div class="feedback-body">
+          <!-- Checklist items -->
+          <div class="checklist-scroll">
+            <div id="checklist-items"></div>
+          </div>
+
+          <!-- Feedback message -->
+          <div class="feedback-msg-area">
+            <div style="font-family:var(--font-mono);font-size:.58rem;color:var(--mu);letter-spacing:2px;margin-bottom:6px">
+              RÉSULTAT
+            </div>
+            <div id="feedback-msg">
+              <div style="color:var(--mu);font-size:.8rem;text-align:center;padding-top:20px">
+                Configurez le lab puis<br>cliquez sur VÉRIFIER
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /workspace-split -->
+  </div><!-- /workspace -->
+
+</div><!-- /app-body -->
+
+<!-- ============================================================
+     SCRIPT
+     ============================================================ -->
+<script>
+// ---- Accordion toggle ----
+function toggleSection(id) {
+  const sec = document.getElementById(id);
+  if (sec) sec.classList.toggle('collapsed');
+}
+</script>
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+// ---- Labs data inline (no fetch needed) ----
+var LABS_DATA = {
+  "categories": [
+    {
+      "id": "fundamentals",
+      "label": "Network Fundamentals",
+      "icon": "&#127758;",
+      "color": "#00d4ff"
+    },
+    {
+      "id": "access",
+      "label": "Network Access",
+      "icon": "&#8652;",
+      "color": "#39ff14"
+    },
+    {
+      "id": "ip_services",
+      "label": "IP Services",
+      "icon": "&#127760;",
+      "color": "#ffcc00"
+    },
+    {
+      "id": "security",
+      "label": "Security Fundamentals",
+      "icon": "&#128274;",
+      "color": "#ff6b35"
+    }
+  ],
+  "labs": [
+    {
+      "id": 1,
+      "category": "access",
+      "title": "Lab 1 — Configuration VLAN de Base",
+      "difficulty": "Débutant",
+      "duration": "30 min",
+      "objectives": [
+        "Créer les VLANs 10 (Sales), 20 (IT) et 99 (Management) sur SW1",
+        "Assigner les ports access aux bons VLANs",
+        "Configurer le trunk entre SW1 et SW2",
+        "Vérifier avec show vlan brief"
+      ],
+      "topology": {
+        "type": "svg",
+        "devices": [
+          {
+            "id": "sw1",
+            "label": "SW1",
+            "type": "switch",
+            "x": 300,
+            "y": 180
+          },
+          {
+            "id": "sw2",
+            "label": "SW2",
+            "type": "switch",
+            "x": 600,
+            "y": 180
+          },
+          {
+            "id": "pc1",
+            "label": "PC1\n192.168.10.10",
+            "type": "pc",
+            "x": 150,
+            "y": 320
+          },
+          {
+            "id": "pc2",
+            "label": "PC2\n192.168.20.10",
+            "type": "pc",
+            "x": 300,
+            "y": 320
+          },
+          {
+            "id": "pc3",
+            "label": "PC3\n192.168.10.11",
+            "type": "pc",
+            "x": 600,
+            "y": 320
+          }
+        ],
+        "links": [
+          {
+            "from": "sw1",
+            "to": "sw2",
+            "label": "Trunk Gi0/1",
+            "type": "trunk"
+          },
+          {
+            "from": "sw1",
+            "to": "pc1",
+            "label": "Fa0/1 (V10)"
+          },
+          {
+            "from": "sw1",
+            "to": "pc2",
+            "label": "Fa0/2 (V20)"
+          },
+          {
+            "from": "sw2",
+            "to": "pc3",
+            "label": "Fa0/1 (V10)"
+          }
+        ]
+      },
+      "addressing": [
+        {
+          "device": "PC1",
+          "interface": "NIC",
+          "ip": "192.168.10.10",
+          "mask": "/24",
+          "vlan": "VLAN 10 (Sales)"
+        },
+        {
+          "device": "PC2",
+          "interface": "NIC",
+          "ip": "192.168.20.10",
+          "mask": "/24",
+          "vlan": "VLAN 20 (IT)"
+        },
+        {
+          "device": "PC3",
+          "interface": "NIC",
+          "ip": "192.168.10.11",
+          "mask": "/24",
+          "vlan": "VLAN 10 (Sales)"
+        },
+        {
+          "device": "SW1",
+          "interface": "VLAN 99",
+          "ip": "192.168.99.1",
+          "mask": "/24",
+          "vlan": "VLAN 99 (Mgmt)"
+        }
+      ],
+      "instructions": [
+        "Sur SW1 : <code>enable</code> → <code>configure terminal</code>",
+        "Créez VLAN 10 : <code>vlan 10</code> → <code>name Sales</code>",
+        "Créez VLAN 20 : <code>vlan 20</code> → <code>name IT</code>",
+        "Créez VLAN 99 : <code>vlan 99</code> → <code>name Management</code>",
+        "Fa0/1 → VLAN 10 : <code>interface Fa0/1</code> → <code>switchport mode access</code> → <code>switchport access vlan 10</code>",
+        "Fa0/2 → VLAN 20 (même procédure)",
+        "Trunk Gi0/1 : <code>interface Gi0/1</code> → <code>switchport mode trunk</code> → <code>switchport trunk allowed vlan 10,20,99</code>",
+        "Vérifiez : <code>show vlan brief</code>"
+      ],
+      "checklist": [
+        {
+          "id": "vlan10",
+          "label": "VLAN 10 créé Sales",
+          "command": "show vlan brief",
+          "expect": "10.*Sales"
+        },
+        {
+          "id": "vlan20",
+          "label": "VLAN 20 créé IT",
+          "command": "show vlan brief",
+          "expect": "20.*IT"
+        },
+        {
+          "id": "vlan99",
+          "label": "VLAN 99 Management",
+          "command": "show vlan brief",
+          "expect": "99.*Management"
+        },
+        {
+          "id": "trunk",
+          "label": "Gi0/1 trunk actif",
+          "command": "show interfaces trunk",
+          "expect": "trunking"
+        }
+      ],
+      "initial_config": "SW1",
+      "hint": "Un port trunk transporte PLUSIEURS VLANs. Un port access n'en transporte qu'UN seul.",
+      "pc_scenarios": [
+        {
+          "pc_id": "pc1",
+          "pc_name": "PC1",
+          "ip": "192.168.10.10",
+          "mask": "255.255.255.0",
+          "gateway": "192.168.10.1",
+          "vlan": 10,
+          "tests": [
+            {
+              "label": "Ping PC3 (même VLAN)",
+              "target": "192.168.10.11",
+              "expect": true
+            },
+            {
+              "label": "Ping PC2 (VLAN diff — doit ÉCHOUER)",
+              "target": "192.168.20.10",
+              "expect": false
+            }
+          ]
+        },
+        {
+          "pc_id": "pc2",
+          "pc_name": "PC2",
+          "ip": "192.168.20.10",
+          "mask": "255.255.255.0",
+          "gateway": "192.168.20.1",
+          "vlan": 20,
+          "tests": [
+            {
+              "label": "Ping PC1 (VLAN diff — doit ÉCHOUER)",
+              "target": "192.168.10.10",
+              "expect": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "category": "access",
+      "title": "Lab 2 — Router-on-a-Stick",
+      "difficulty": "Intermédiaire",
+      "duration": "45 min",
+      "objectives": [
+        "Configurer les sous-interfaces sur R1",
+        "Activer l'encapsulation 802.1Q",
+        "Trunk SW1 vers R1",
+        "Vérifier le routage inter-VLAN"
+      ],
+      "topology": {
+        "type": "svg",
+        "devices": [
+          {
+            "id": "r1",
+            "label": "R1",
+            "type": "router",
+            "x": 430,
+            "y": 70
+          },
+          {
+            "id": "sw1",
+            "label": "SW1",
+            "type": "switch",
+            "x": 430,
+            "y": 210
+          },
+          {
+            "id": "pc1",
+            "label": "PC1\n192.168.10.10",
+            "type": "pc",
+            "x": 180,
+            "y": 350
+          },
+          {
+            "id": "pc2",
+            "label": "PC2\n192.168.20.10",
+            "type": "pc",
+            "x": 430,
+            "y": 350
+          },
+          {
+            "id": "pc3",
+            "label": "PC3\n192.168.30.10",
+            "type": "pc",
+            "x": 680,
+            "y": 350
+          }
+        ],
+        "links": [
+          {
+            "from": "r1",
+            "to": "sw1",
+            "label": "Gi0/0 Trunk",
+            "type": "trunk"
+          },
+          {
+            "from": "sw1",
+            "to": "pc1",
+            "label": "Fa0/1 V10"
+          },
+          {
+            "from": "sw1",
+            "to": "pc2",
+            "label": "Fa0/2 V20"
+          },
+          {
+            "from": "sw1",
+            "to": "pc3",
+            "label": "Fa0/3 V30"
+          }
+        ]
+      },
+      "addressing": [
+        {
+          "device": "R1",
+          "interface": "Gi0/0.10",
+          "ip": "192.168.10.1",
+          "mask": "/24",
+          "vlan": "GW VLAN 10"
+        },
+        {
+          "device": "R1",
+          "interface": "Gi0/0.20",
+          "ip": "192.168.20.1",
+          "mask": "/24",
+          "vlan": "GW VLAN 20"
+        },
+        {
+          "device": "R1",
+          "interface": "Gi0/0.30",
+          "ip": "192.168.30.1",
+          "mask": "/24",
+          "vlan": "GW VLAN 30"
+        },
+        {
+          "device": "PC1",
+          "interface": "NIC",
+          "ip": "192.168.10.10",
+          "mask": "/24",
+          "vlan": "GW: 192.168.10.1"
+        },
+        {
+          "device": "PC2",
+          "interface": "NIC",
+          "ip": "192.168.20.10",
+          "mask": "/24",
+          "vlan": "GW: 192.168.20.1"
+        }
+      ],
+      "instructions": [
+        "SW1 : créez VLANs 10,20,30 et assignez les ports access",
+        "SW1 : trunk Gi0/1 vers R1",
+        "R1 : <code>interface Gi0/0</code> → <code>no shutdown</code>",
+        "R1 : <code>interface Gi0/0.10</code> → <code>encapsulation dot1Q 10</code> → <code>ip address 192.168.10.1 255.255.255.0</code>",
+        "Répétez pour Gi0/0.20 et Gi0/0.30",
+        "<code>show ip interface brief</code> et <code>show ip route</code>"
+      ],
+      "checklist": [
+        {
+          "id": "subif10",
+          "label": "Gi0/0.10 active",
+          "command": "show ip interface brief",
+          "expect": "Gi0/0.10"
+        },
+        {
+          "id": "subif20",
+          "label": "Gi0/0.20 active",
+          "command": "show ip interface brief",
+          "expect": "Gi0/0.20"
+        },
+        {
+          "id": "routes",
+          "label": "Routes connectées",
+          "command": "show ip route",
+          "expect": "C.*192.168"
+        }
+      ],
+      "initial_config": "R1",
+      "hint": "Interface physique Gi0/0 UP sans IP. IPs sur les sous-interfaces.",
+      "pc_scenarios": [
+        {
+          "pc_id": "pc1",
+          "pc_name": "PC1",
+          "ip": "192.168.10.10",
+          "mask": "255.255.255.0",
+          "gateway": "192.168.10.1",
+          "vlan": 10,
+          "tests": [
+            {
+              "label": "Ping gateway R1",
+              "target": "192.168.10.1",
+              "expect": true
+            },
+            {
+              "label": "Ping PC2 — inter-VLAN via R1",
+              "target": "192.168.20.10",
+              "expect": true
+            },
+            {
+              "label": "Ping PC3 — inter-VLAN via R1",
+              "target": "192.168.30.10",
+              "expect": true
+            }
+          ]
+        },
+        {
+          "pc_id": "pc2",
+          "pc_name": "PC2",
+          "ip": "192.168.20.10",
+          "mask": "255.255.255.0",
+          "gateway": "192.168.20.1",
+          "vlan": 20,
+          "tests": [
+            {
+              "label": "Ping gateway R1",
+              "target": "192.168.20.1",
+              "expect": true
+            },
+            {
+              "label": "Ping PC1 inter-VLAN",
+              "target": "192.168.10.10",
+              "expect": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "category": "security",
+      "title": "Lab 3 — Port Security",
+      "difficulty": "Intermédiaire",
+      "duration": "35 min",
+      "objectives": [
+        "Activer Port Security sur les ports d'accès",
+        "Configurer max 2 MACs par port",
+        "Mode sticky",
+        "Mode violation shutdown",
+        "Vérifier avec show port-security"
+      ],
+      "topology": {
+        "type": "svg",
+        "devices": [
+          {
+            "id": "sw1",
+            "label": "SW1",
+            "type": "switch",
+            "x": 430,
+            "y": 160
+          },
+          {
+            "id": "pc1",
+            "label": "PC1\nAutorisé",
+            "type": "pc",
+            "x": 200,
+            "y": 320
+          },
+          {
+            "id": "pc2",
+            "label": "PC2\nAutorisé",
+            "type": "pc",
+            "x": 430,
+            "y": 320
+          },
+          {
+            "id": "att",
+            "label": "Attaquant",
+            "type": "pc",
+            "x": 660,
+            "y": 320,
+            "color": "#ff3366"
+          }
+        ],
+        "links": [
+          {
+            "from": "sw1",
+            "to": "pc1",
+            "label": "Fa0/1 (secure)"
+          },
+          {
+            "from": "sw1",
+            "to": "pc2",
+            "label": "Fa0/2 (secure)"
+          },
+          {
+            "from": "sw1",
+            "to": "att",
+            "label": "Fa0/3 ERR-DISABLED",
+            "type": "danger"
+          }
+        ]
+      },
+      "addressing": [
+        {
+          "device": "PC1",
+          "interface": "NIC",
+          "ip": "192.168.1.10",
+          "mask": "/24",
+          "vlan": "Autorisé"
+        },
+        {
+          "device": "PC2",
+          "interface": "NIC",
+          "ip": "192.168.1.11",
+          "mask": "/24",
+          "vlan": "Autorisé"
+        },
+        {
+          "device": "Attaquant",
+          "interface": "NIC",
+          "ip": "192.168.1.99",
+          "mask": "/24",
+          "vlan": "BLOQUÉ"
+        }
+      ],
+      "instructions": [
+        "<code>enable</code> → <code>configure terminal</code>",
+        "<code>interface Fa0/1</code> → <code>switchport mode access</code>",
+        "<code>switchport port-security</code>",
+        "<code>switchport port-security maximum 2</code>",
+        "<code>switchport port-security mac-address sticky</code>",
+        "<code>switchport port-security violation shutdown</code>",
+        "Répétez pour Fa0/2 et Fa0/3",
+        "<code>show port-security</code>"
+      ],
+      "checklist": [
+        {
+          "id": "ps_en",
+          "label": "Port Security actif Fa0/1",
+          "command": "show port-security",
+          "expect": "Enabled"
+        },
+        {
+          "id": "ps_max",
+          "label": "Max 2 MACs",
+          "command": "show port-security interface Fa0/1",
+          "expect": "Maximum.*2"
+        },
+        {
+          "id": "ps_sticky",
+          "label": "Mode sticky",
+          "command": "show port-security interface Fa0/1",
+          "expect": "Sticky"
+        },
+        {
+          "id": "ps_shut",
+          "label": "Violation Shutdown",
+          "command": "show port-security interface Fa0/1",
+          "expect": "Shutdown"
+        }
+      ],
+      "initial_config": "SW1",
+      "hint": "Port Security ne fonctionne QUE sur les ports en mode 'access'.",
+      "pc_scenarios": [
+        {
+          "pc_id": "pc1",
+          "pc_name": "PC1 (Autorisé)",
+          "ip": "192.168.1.10",
+          "mask": "255.255.255.0",
+          "gateway": "192.168.1.1",
+          "vlan": 1,
+          "tests": [
+            {
+              "label": "Ping SW1",
+              "target": "192.168.1.1",
+              "expect": true
+            },
+            {
+              "label": "Ping PC2",
+              "target": "192.168.1.11",
+              "expect": true
+            }
+          ]
+        },
+        {
+          "pc_id": "att",
+          "pc_name": "Attaquant",
+          "ip": "192.168.1.99",
+          "mask": "255.255.255.0",
+          "gateway": "192.168.1.1",
+          "vlan": 1,
+          "tests": [
+            {
+              "label": "Ping SW1 (BLOQUÉ — err-disabled)",
+              "target": "192.168.1.1",
+              "expect": false
+            },
+            {
+              "label": "Ping PC1 (BLOQUÉ)",
+              "target": "192.168.1.10",
+              "expect": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "category": "fundamentals",
+      "title": "Lab 4 — Modèle OSI & Encapsulation",
+      "difficulty": "Débutant",
+      "duration": "25 min",
+      "objectives": [
+        "Identifier les couches OSI",
+        "Observer l'encapsulation",
+        "Utiliser ping et traceroute",
+        "Comprendre rôle hub/switch/routeur"
+      ],
+      "topology": {
+        "type": "svg",
+        "devices": [
+          {
+            "id": "pc1",
+            "label": "PC1\n192.168.1.10",
+            "type": "pc",
+            "x": 130,
+            "y": 200
+          },
+          {
+            "id": "sw1",
+            "label": "SW1\nL2",
+            "type": "switch",
+            "x": 330,
+            "y": 200
+          },
+          {
+            "id": "r1",
+            "label": "R1\nRouteur",
+            "type": "router",
+            "x": 550,
+            "y": 200
+          },
+          {
+            "id": "srv",
+            "label": "Serveur\n8.8.8.8",
+            "type": "pc",
+            "x": 750,
+            "y": 200
+          }
+        ],
+        "links": [
+          {
+            "from": "pc1",
+            "to": "sw1",
+            "label": "L2 Ethernet"
+          },
+          {
+            "from": "sw1",
+            "to": "r1",
+            "label": "L2 Ethernet"
+          },
+          {
+            "from": "r1",
+            "to": "srv",
+            "label": "L3 IP",
+            "type": "trunk"
+          }
+        ]
+      },
+      "addressing": [
+        {
+          "device": "PC1",
+          "interface": "NIC",
+          "ip": "192.168.1.10",
+          "mask": "/24",
+          "vlan": "GW: 192.168.1.1"
+        },
+        {
+          "device": "R1",
+          "interface": "Gi0/0",
+          "ip": "192.168.1.1",
+          "mask": "/24",
+          "vlan": "LAN"
+        },
+        {
+          "device": "R1",
+          "interface": "Gi0/1",
+          "ip": "8.8.8.1",
+          "mask": "/30",
+          "vlan": "WAN"
+        },
+        {
+          "device": "Serveur",
+          "interface": "NIC",
+          "ip": "8.8.8.8",
+          "mask": "/32",
+          "vlan": "Internet"
+        }
+      ],
+      "instructions": [
+        "Depuis PC1 : <code>ping 8.8.8.8</code>",
+        "Depuis PC1 : <code>traceroute 8.8.8.8</code>",
+        "Sur R1 : <code>show ip route</code> (couche 3)",
+        "Sur SW1 : <code>show mac address-table</code> (couche 2)",
+        "Identifiez quel équipement opère à quelle couche OSI"
+      ],
+      "checklist": [
+        {
+          "id": "route",
+          "label": "Table de routage R1",
+          "command": "show ip route",
+          "expect": "connected"
+        },
+        {
+          "id": "mac",
+          "label": "Table MAC SW1",
+          "command": "show mac address-table",
+          "expect": "DYNAMIC"
+        }
+      ],
+      "initial_config": "R1",
+      "hint": "L1=Physique, L2=Liaison(MAC), L3=Réseau(IP), L4=Transport(TCP/UDP). Switch=L2, Routeur=L3.",
+      "pc_scenarios": [
+        {
+          "pc_id": "pc1",
+          "pc_name": "PC1",
+          "ip": "192.168.1.10",
+          "mask": "255.255.255.0",
+          "gateway": "192.168.1.1",
+          "vlan": 1,
+          "tests": [
+            {
+              "label": "Ping gateway R1",
+              "target": "192.168.1.1",
+              "expect": true
+            },
+            {
+              "label": "Ping 8.8.8.8",
+              "target": "8.8.8.8",
+              "expect": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "category": "ip_services",
+      "title": "Lab 5 — DHCP Server",
+      "difficulty": "Intermédiaire",
+      "duration": "40 min",
+      "objectives": [
+        "Configurer un pool DHCP sur R1",
+        "Exclure les premières adresses",
+        "Configurer DNS dans les options",
+        "Vérifier l'attribution automatique"
+      ],
+      "topology": {
+        "type": "svg",
+        "devices": [
+          {
+            "id": "r1",
+            "label": "R1\nDHCP Server",
+            "type": "router",
+            "x": 430,
+            "y": 100
+          },
+          {
+            "id": "sw1",
+            "label": "SW1",
+            "type": "switch",
+            "x": 430,
+            "y": 230
+          },
+          {
+            "id": "pc1",
+            "label": "PC1\nDHCP",
+            "type": "pc",
+            "x": 200,
+            "y": 370
+          },
+          {
+            "id": "pc2",
+            "label": "PC2\nDHCP",
+            "type": "pc",
+            "x": 430,
+            "y": 370
+          },
+          {
+            "id": "pc3",
+            "label": "PC3\nDHCP",
+            "type": "pc",
+            "x": 660,
+            "y": 370
+          }
+        ],
+        "links": [
+          {
+            "from": "r1",
+            "to": "sw1",
+            "label": "Gi0/0 .1/24"
+          },
+          {
+            "from": "sw1",
+            "to": "pc1",
+            "label": "Fa0/1"
+          },
+          {
+            "from": "sw1",
+            "to": "pc2",
+            "label": "Fa0/2"
+          },
+          {
+            "from": "sw1",
+            "to": "pc3",
+            "label": "Fa0/3"
+          }
+        ]
+      },
+      "addressing": [
+        {
+          "device": "R1",
+          "interface": "Gi0/0",
+          "ip": "192.168.1.1",
+          "mask": "/24",
+          "vlan": "DHCP Server"
+        },
+        {
+          "device": "PC1-3",
+          "interface": "NIC",
+          "ip": "DHCP",
+          "mask": "auto",
+          "vlan": "Reçoit 192.168.1.10+"
+        }
+      ],
+      "instructions": [
+        "<code>interface Gi0/0</code> → <code>ip address 192.168.1.1 255.255.255.0</code> → <code>no shutdown</code>",
+        "<code>ip dhcp excluded-address 192.168.1.1 192.168.1.9</code>",
+        "<code>ip dhcp pool LAN</code>",
+        "<code>network 192.168.1.0 255.255.255.0</code>",
+        "<code>default-router 192.168.1.1</code>",
+        "<code>dns-server 8.8.8.8</code>",
+        "<code>show ip dhcp pool</code>"
+      ],
+      "checklist": [
+        {
+          "id": "pool",
+          "label": "Pool LAN créé",
+          "command": "show ip dhcp pool",
+          "expect": "LAN"
+        },
+        {
+          "id": "net",
+          "label": "Réseau configuré",
+          "command": "show ip dhcp pool",
+          "expect": "192.168.1.0"
+        }
+      ],
+      "initial_config": "R1",
+      "hint": "Toujours exclure les IPs des équipements réseau avant de créer le pool.",
+      "pc_scenarios": [
+        {
+          "pc_id": "pc1",
+          "pc_name": "PC1 (DHCP)",
+          "ip": "DHCP",
+          "mask": "auto",
+          "gateway": "192.168.1.1",
+          "vlan": 1,
+          "tests": [
+            {
+              "label": "Obtenir IP via DHCP",
+              "target": "dhcp",
+              "expect": true,
+              "type": "dhcp"
+            },
+            {
+              "label": "Ping gateway",
+              "target": "192.168.1.1",
+              "expect": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "category": "security",
+      "title": "Lab 6 — ACL Standard & Étendue",
+      "difficulty": "Avancé",
+      "duration": "50 min",
+      "objectives": [
+        "Créer ACL étendue bloquant Telnet (port 23)",
+        "Créer ACL standard bloquant un réseau",
+        "Appliquer sur les bonnes interfaces",
+        "Vérifier avec show ip access-lists"
+      ],
+      "topology": {
+        "type": "svg",
+        "devices": [
+          {
+            "id": "r1",
+            "label": "R1",
+            "type": "router",
+            "x": 430,
+            "y": 100
+          },
+          {
+            "id": "admin",
+            "label": "Admin\n192.168.1.10",
+            "type": "pc",
+            "x": 180,
+            "y": 260
+          },
+          {
+            "id": "user",
+            "label": "User\n192.168.2.10",
+            "type": "pc",
+            "x": 430,
+            "y": 260
+          },
+          {
+            "id": "srv",
+            "label": "Serveur\n192.168.3.10",
+            "type": "pc",
+            "x": 680,
+            "y": 260
+          }
+        ],
+        "links": [
+          {
+            "from": "r1",
+            "to": "admin",
+            "label": "Gi0/0 .1/24"
+          },
+          {
+            "from": "r1",
+            "to": "user",
+            "label": "Gi0/1 .1/24"
+          },
+          {
+            "from": "r1",
+            "to": "srv",
+            "label": "Gi0/2 .1/24"
+          }
+        ]
+      },
+      "addressing": [
+        {
+          "device": "R1",
+          "interface": "Gi0/0",
+          "ip": "192.168.1.1",
+          "mask": "/24",
+          "vlan": "Admin LAN"
+        },
+        {
+          "device": "R1",
+          "interface": "Gi0/1",
+          "ip": "192.168.2.1",
+          "mask": "/24",
+          "vlan": "User LAN"
+        },
+        {
+          "device": "R1",
+          "interface": "Gi0/2",
+          "ip": "192.168.3.1",
+          "mask": "/24",
+          "vlan": "Serveurs"
+        },
+        {
+          "device": "Admin",
+          "interface": "NIC",
+          "ip": "192.168.1.10",
+          "mask": "/24",
+          "vlan": "Accès total"
+        },
+        {
+          "device": "User",
+          "interface": "NIC",
+          "ip": "192.168.2.10",
+          "mask": "/24",
+          "vlan": "Accès limité"
+        }
+      ],
+      "instructions": [
+        "<code>ip access-list extended BLOCK-TELNET</code>",
+        "<code>deny tcp any any eq 23 log</code>",
+        "<code>permit ip any any</code>",
+        "<code>interface Gi0/0</code> → <code>ip access-group BLOCK-TELNET in</code>",
+        "<code>access-list 10 deny 192.168.2.0 0.0.0.255</code>",
+        "<code>access-list 10 permit any</code>",
+        "<code>interface Gi0/2</code> → <code>ip access-group 10 out</code>",
+        "<code>show ip access-lists</code>"
+      ],
+      "checklist": [
+        {
+          "id": "acl_ext",
+          "label": "ACL BLOCK-TELNET créée",
+          "command": "show ip access-lists",
+          "expect": "BLOCK-TELNET"
+        },
+        {
+          "id": "acl_23",
+          "label": "Deny port 23",
+          "command": "show ip access-lists",
+          "expect": "23"
+        },
+        {
+          "id": "acl_10",
+          "label": "ACL standard 10",
+          "command": "show ip access-lists",
+          "expect": "10"
+        }
+      ],
+      "initial_config": "R1",
+      "hint": "Standard ACL → près DESTINATION. Étendue → près SOURCE. Implicit deny any est INVISIBLE mais toujours actif.",
+      "pc_scenarios": [
+        {
+          "pc_id": "admin",
+          "pc_name": "Admin",
+          "ip": "192.168.1.10",
+          "mask": "255.255.255.0",
+          "gateway": "192.168.1.1",
+          "vlan": 1,
+          "tests": [
+            {
+              "label": "Ping serveur (autorisé)",
+              "target": "192.168.3.10",
+              "expect": true
+            },
+            {
+              "label": "Telnet bloqué par ACL",
+              "target": "192.168.3.10:23",
+              "expect": false,
+              "type": "telnet"
+            }
+          ]
+        },
+        {
+          "pc_id": "user",
+          "pc_name": "User",
+          "ip": "192.168.2.10",
+          "mask": "255.255.255.0",
+          "gateway": "192.168.2.1",
+          "vlan": 1,
+          "tests": [
+            {
+              "label": "Ping serveur (bloqué ACL std)",
+              "target": "192.168.3.10",
+              "expect": false
+            },
+            {
+              "label": "Ping gateway (autorisé)",
+              "target": "192.168.2.1",
+              "expect": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+};</script>
+<script>
+// ============================================================
+// DOJO NETSIM — CLI Engine + Lab System
+// Style: Le Dojo du Networking
+// ============================================================
+
+'use strict';
+
+// ---- STATE ----
+let currentLab = null;
+let allLabs = [];
+let checklistState = {};
+let panelVisible = true;
+let cliHistory = [];
+let histIdx = -1;
+
+// ---- DEVICE STATES ----
+const DEVICES = {
+  SW1: {
+    hostname: 'SW1', mode: 'exec', configContext: null,
+    vlans: { 1: 'default' },
+    interfaces: {},
+    portSecurity: {},
+    trunk: {},
+    type: 'switch'
+  },
+  SW2: {
+    hostname: 'SW2', mode: 'exec', configContext: null,
+    vlans: { 1: 'default' },
+    interfaces: {},
+    trunk: {},
+    type: 'switch'
+  },
+  R1: {
+    hostname: 'R1', mode: 'exec', configContext: null,
+    interfaces: {},
+    routes: [],
+    type: 'router'
+  }
+};
+
+let activeDevice = null;
+
+// ============================================================
+// INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadLabs();
+  const params = new URLSearchParams(window.location.search);
+  const labId = parseInt(params.get('lab')) || 1;
+  loadLab(labId);
+  setupCLI();
+  setupUI();
+});
+
+async function loadLabs() {
+  try {
+    const r = await fetch('labs.json');
+    const data = await r.json();
+    allLabs = data.labs;
+  } catch(e) {
+    // Fallback: try from window
+    if (window.LABS_DATA) allLabs = window.LABS_DATA.labs;
+  }
+}
+
+// ============================================================
+// LAB LOADER
+// ============================================================
+function loadLab(id) {
+  const lab = allLabs.find(l => l.id === id);
+  if (!lab) { showError(`Lab ${id} introuvable.`); return; }
+
+  currentLab = lab;
+  checklistState = {};
+  lab.checklist.forEach(c => checklistState[c.id] = false);
+
+  // Set active device
+  const dev = DEVICES[lab.initial_config];
+  if (dev) {
+    activeDevice = lab.initial_config;
+    dev.mode = 'exec';
+    dev.configContext = null;
+  }
+
+  renderLabPanel(lab);
+  renderChecklist(lab);
+  drawTopology(lab.topology);
+  updateLabSelector(lab.id);
+  updatePrompt();
+
+  // Welcome message
+  cliPrint(`\n══════════════════════════════════════════`, 'cyan');
+  cliPrint(` ${lab.title}`, 'accent');
+  cliPrint(` Difficulté: ${lab.difficulty} | Durée: ${lab.duration}`, 'muted');
+  cliPrint(`══════════════════════════════════════════`, 'cyan');
+  cliPrint(`\n Appareil actif: ${activeDevice}`, 'ok');
+  cliPrint(` Tapez 'help' pour les commandes disponibles.\n`, 'muted');
+  updatePrompt();
+}
+
+// ============================================================
+// LAB PANEL RENDERER
+// ============================================================
+function renderLabPanel(lab) {
+  // Title & meta
+  document.getElementById('lab-title').textContent = lab.title;
+  document.getElementById('lab-meta').innerHTML =
+    `<span class="badge badge-diff">${lab.difficulty}</span>` +
+    `<span class="badge badge-time">⏱ ${lab.duration}</span>` +
+    `<span class="badge badge-obj">${lab.objectives.length} objectifs</span>`;
+
+  // Objectives
+  const objEl = document.getElementById('lab-objectives');
+  objEl.innerHTML = lab.objectives.map((o, i) =>
+    `<li><span class="obj-num">${i+1}</span>${o}</li>`
+  ).join('');
+
+  // Addressing table
+  const tbody = document.getElementById('addr-tbody');
+  tbody.innerHTML = lab.addressing.map(row =>
+    `<tr>
+      <td><strong>${row.device}</strong></td>
+      <td><code>${row.interface}</code></td>
+      <td><code class="ip">${row.ip}</code></td>
+      <td><code>${row.mask}</code></td>
+      <td><span class="vlan-badge">${row.vlan}</span></td>
+    </tr>`
+  ).join('');
+
+  // Instructions
+  const instrEl = document.getElementById('lab-instructions');
+  instrEl.innerHTML = lab.instructions.map((instr, i) =>
+    `<li class="instr-item">
+      <span class="step-num">${i+1}</span>
+      <span>${instr}</span>
+    </li>`
+  ).join('');
+
+  // Hint
+  document.getElementById('lab-hint').textContent = lab.hint || '';
+}
+
+// ============================================================
+// TOPOLOGY SVG RENDERER
+// ============================================================
+function drawTopology(topo) {
+  const svg = document.getElementById('topology-svg');
+  if (!svg || !topo) return;
+
+  const W = svg.clientWidth || 780;
+  const H = 280;
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.innerHTML = '';
+
+  const defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
+  defs.innerHTML = `
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#1e3a5f"/>
+    </marker>
+    <marker id="arr-danger" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#ff3366"/>
+    </marker>
+    <marker id="arr-trunk" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#00d4ff"/>
+    </marker>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2.5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  `;
+  svg.appendChild(defs);
+
+  // Normalize positions relative to SVG width
+  const scaleX = W / 780;
+  const nodes = {};
+  topo.devices.forEach(d => {
+    nodes[d.id] = { ...d, x: d.x * scaleX };
+  });
+
+  // Draw links first
+  topo.links.forEach(link => {
+    const from = nodes[link.from];
+    const to = nodes[link.to];
+    if (!from || !to) return;
+
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', from.x); line.setAttribute('y1', from.y);
+    line.setAttribute('x2', to.x);   line.setAttribute('y2', to.y);
+
+    const isDanger = link.type === 'danger';
+    const isTrunk  = link.type === 'trunk';
+
+    line.setAttribute('stroke', isDanger ? '#ff3366' : isTrunk ? '#00d4ff' : '#1e3a5f');
+    line.setAttribute('stroke-width', isTrunk ? '2.5' : isDanger ? '2' : '1.5');
+    if (isDanger) line.setAttribute('stroke-dasharray', '6,4');
+    line.setAttribute('marker-end', `url(#arr${isDanger?'-danger':isTrunk?'-trunk':''})`);
+    svg.appendChild(line);
+
+    // Link label
+    if (link.label) {
+      const mx = (from.x + to.x) / 2;
+      const my = (from.y + to.y) / 2;
+      const lbl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      lbl.setAttribute('x', mx + 4); lbl.setAttribute('y', my - 6);
+      lbl.setAttribute('fill', isDanger ? '#ff3366' : isTrunk ? '#00d4ff' : '#5a7a9f');
+      lbl.setAttribute('font-size', '10'); lbl.setAttribute('font-family', 'Share Tech Mono, monospace');
+      lbl.setAttribute('text-anchor', 'middle');
+      lbl.textContent = link.label;
+      svg.appendChild(lbl);
+    }
+  });
+
+  // Draw nodes
+  topo.devices.forEach(d => {
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.setAttribute('class', `topo-node topo-${d.type}`);
+    g.setAttribute('transform', `translate(${nodes[d.id].x},${d.y})`);
+
+    const iconColor = d.color || (d.type === 'router' ? '#ff6b35' : d.type === 'switch' ? '#00d4ff' : '#5a7a9f');
+
+    if (d.type === 'router') {
+      const circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      circle.setAttribute('r','24'); circle.setAttribute('fill','#0d1525');
+      circle.setAttribute('stroke', iconColor); circle.setAttribute('stroke-width','2');
+      g.appendChild(circle);
+      const txt = document.createElementNS('http://www.w3.org/2000/svg','text');
+      txt.setAttribute('text-anchor','middle'); txt.setAttribute('dy','-2');
+      txt.setAttribute('fill', iconColor); txt.setAttribute('font-size','20');
+      txt.textContent = '⬡'; g.appendChild(txt);
+    } else if (d.type === 'switch') {
+      const rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+      rect.setAttribute('x','-28'); rect.setAttribute('y','-16');
+      rect.setAttribute('width','56'); rect.setAttribute('height','32');
+      rect.setAttribute('rx','4'); rect.setAttribute('fill','#0d1525');
+      rect.setAttribute('stroke', iconColor); rect.setAttribute('stroke-width','2');
+      g.appendChild(rect);
+      const txt = document.createElementNS('http://www.w3.org/2000/svg','text');
+      txt.setAttribute('text-anchor','middle'); txt.setAttribute('dy','5');
+      txt.setAttribute('fill', iconColor); txt.setAttribute('font-size','13');
+      txt.setAttribute('font-family','Share Tech Mono,monospace');
+      txt.textContent = 'SW'; g.appendChild(txt);
+    } else {
+      const rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+      rect.setAttribute('x','-20'); rect.setAttribute('y','-14');
+      rect.setAttribute('width','40'); rect.setAttribute('height','28');
+      rect.setAttribute('rx','3'); rect.setAttribute('fill','#080c14');
+      rect.setAttribute('stroke', iconColor); rect.setAttribute('stroke-width','1.5');
+      g.appendChild(rect);
+      const txt = document.createElementNS('http://www.w3.org/2000/svg','text');
+      txt.setAttribute('text-anchor','middle'); txt.setAttribute('dy','4');
+      txt.setAttribute('fill', iconColor); txt.setAttribute('font-size','11');
+      txt.setAttribute('font-family','Share Tech Mono,monospace');
+      txt.textContent = 'PC'; g.appendChild(txt);
+    }
+
+    // Device label (supports \n)
+    const lines = d.label.split('\\n');
+    lines.forEach((line, i) => {
+      const lbl = document.createElementNS('http://www.w3.org/2000/svg','text');
+      lbl.setAttribute('text-anchor','middle');
+      lbl.setAttribute('y', 34 + i * 14);
+      lbl.setAttribute('fill', i === 0 ? '#c8deff' : '#5a7a9f');
+      lbl.setAttribute('font-size', i === 0 ? '12' : '10');
+      lbl.setAttribute('font-family','Share Tech Mono,monospace');
+      lbl.textContent = line;
+      g.appendChild(lbl);
+    });
+
+    svg.appendChild(g);
+  });
+}
+
+// ============================================================
+// CHECKLIST RENDERER
+// ============================================================
+function renderChecklist(lab) {
+  const el = document.getElementById('checklist-items');
+  if (!el || !lab.checklist) return;
+
+  el.innerHTML = lab.checklist.map(item => `
+    <div class="check-item ${checklistState[item.id] ? 'done' : ''}" id="chk-${item.id}">
+      <div class="check-icon">${checklistState[item.id] ? '✅' : '○'}</div>
+      <div class="check-label">${item.label}</div>
+      <code class="check-cmd">${item.command}</code>
+    </div>
+  `).join('');
+
+  updateScore();
+}
+
+function updateScore() {
+  const total = currentLab.checklist.length;
+  const done = Object.values(checklistState).filter(Boolean).length;
+  const pct = Math.round(done / total * 100);
+
+  document.getElementById('score-text').textContent = `${done}/${total}`;
+  document.getElementById('score-bar-fill').style.width = pct + '%';
+  document.getElementById('score-bar-fill').style.background =
+    pct === 100 ? 'var(--ok)' : pct >= 50 ? 'var(--wa)' : 'var(--ac)';
+
+  if (pct === 100) {
+    document.getElementById('feedback-msg').innerHTML =
+      `<div class="feedback-win">🎉 Lab complété ! Toutes les vérifications passent.</div>`;
+  }
+}
+
+function tryCheck(commandOutput, command) {
+  if (!currentLab) return;
+  currentLab.checklist.forEach(item => {
+    if (checklistState[item.id]) return;
+    const cmdMatch = command.toLowerCase().includes(item.command.split(' ')[0].toLowerCase()) ||
+                     item.command.toLowerCase().includes(command.split(' ')[0].toLowerCase());
+    if (!cmdMatch) return;
+
+    const re = new RegExp(item.expect, 'i');
+    if (re.test(commandOutput)) {
+      checklistState[item.id] = true;
+      const el = document.getElementById(`chk-${item.id}`);
+      if (el) {
+        el.classList.add('done');
+        el.querySelector('.check-icon').textContent = '✅';
+      }
+      cliPrint(`\n  ✅ Objectif validé : ${item.label}`, 'ok');
+      updateScore();
+    }
+  });
+}
+
+// ============================================================
+// CLI ENGINE
+// ============================================================
+function setupCLI() {
+  const inp = document.getElementById('cli-input');
+  if (!inp) return;
+
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      const raw = inp.value;
+      executeCommand(raw);
+      cliHistory.unshift(raw);
+      histIdx = -1;
+      inp.value = '';
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (histIdx < cliHistory.length - 1) histIdx++;
+      inp.value = cliHistory[histIdx] || '';
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (histIdx > 0) histIdx--;
+      else { histIdx = -1; inp.value = ''; return; }
+      inp.value = cliHistory[histIdx] || '';
+    } else if (e.ctrlKey && e.key === 'c') {
+      cliPrint('^C', 'warn');
+      inp.value = '';
+    } else if (e.ctrlKey && e.key === 'l') {
+      e.preventDefault();
+      clearCLI();
+    }
+  });
+
+  document.getElementById('cli-area').addEventListener('click', () => inp.focus());
+}
+
+function executeCommand(raw) {
+  const dev = DEVICES[activeDevice];
+  if (!dev) return;
+  const prompt = getPrompt(dev);
+
+  cliPrint(`${prompt} ${raw}`, 'prompt-echo');
+
+  const cmd = raw.trim();
+  if (!cmd) { updatePrompt(); return; }
+
+  const output = dispatchCommand(dev, cmd);
+  if (output !== null) {
+    cliPrint(output, 'output');
+    tryCheck(output, cmd);
+  }
+
+  updatePrompt();
+}
+
+function getPrompt(dev) {
+  const h = dev.hostname;
+  if (dev.mode === 'exec') return `${h}>`;
+  if (dev.mode === 'priv') return `${h}#`;
+  if (dev.configContext) return `${h}(${dev.configContext})#`;
+  return `${h}(config)#`;
+}
+
+function updatePrompt() {
+  const dev = DEVICES[activeDevice];
+  if (!dev) return;
+  document.getElementById('cli-prompt').textContent = getPrompt(dev) + ' ';
+  document.getElementById('cli-device-label').textContent = `[${activeDevice}]`;
+}
+
+// ============================================================
+// COMMAND DISPATCHER
+// ============================================================
+function dispatchCommand(dev, raw) {
+  const parts = raw.trim().split(/\s+/);
+  const cmd = parts[0].toLowerCase();
+  const rest = parts.slice(1).join(' ');
+
+  // ---- Navigation ----
+  if (cmd === 'enable') {
+    dev.mode = 'priv'; return '';
+  }
+  if (cmd === 'disable') {
+    dev.mode = 'exec'; return '';
+  }
+  if ((cmd === 'configure' || cmd === 'conf') && /^t/i.test(rest)) {
+    if (dev.mode !== 'priv') return `% Error: not in privileged EXEC mode`;
+    dev.mode = 'config'; dev.configContext = null;
+    return 'Enter configuration commands, one per line.  End with CNTL/Z.';
+  }
+  if (cmd === 'end' || (cmd === 'ctrl' && rest === 'z')) {
+    dev.mode = 'priv'; dev.configContext = null; return '';
+  }
+  if (cmd === 'exit') {
+    if (dev.configContext) { dev.configContext = null; return ''; }
+    if (dev.mode === 'config') { dev.mode = 'priv'; return ''; }
+    if (dev.mode === 'priv') { dev.mode = 'exec'; return ''; }
+    return '';
+  }
+
+  // ---- Help ----
+  if (cmd === 'help' || cmd === '?') {
+    return cmdHelp(dev);
+  }
+
+  // ---- Show commands ----
+  if (cmd === 'show') return cmdShow(dev, parts.slice(1));
+
+  // ---- Config mode commands ----
+  if (dev.mode === 'config' || dev.configContext) {
+    return cmdConfig(dev, cmd, parts, rest, raw);
+  }
+
+  // ---- Priv EXEC ----
+  if (cmd === 'ping') return cmdPing(dev, parts.slice(1));
+  if (cmd === 'traceroute') return cmdTraceroute(dev, parts.slice(1));
+  if (cmd === 'clear') return cmdClear(dev, parts.slice(1));
+  if (cmd === 'copy') return 'Building configuration...\n[OK]';
+  if (cmd === 'write' || (cmd === 'wr' && !rest)) return 'Building configuration...\n[OK]';
+  if (cmd === 'reload') return `\nSystem configuration has been modified. Save? [yes/no]: `;
+  if (cmd === 'debug') return `%Warning: Debugging is very processor intensive. Debugging output is on.`;
+  if (cmd === 'undebug' || cmd === 'no debug') return `All possible debugging has been turned off.`;
+  if (cmd === 'clock') return cmdClock(rest);
+  if (cmd === 'hostname') { dev.hostname = rest || dev.hostname; return ''; }
+
+  // ---- Tab key simulation ----
+  if (raw.endsWith('?')) return cmdHelp(dev, raw);
+
+  return `% Unknown command or computer in command: '${parts[0]}'\n% Type "help" or "?" for available commands.`;
+}
+
+// ============================================================
+// CONFIG MODE
+// ============================================================
+function cmdConfig(dev, cmd, parts, rest, raw) {
+  // Interface context
+  if (cmd === 'interface' || cmd === 'int') {
+    const ifName = parts.slice(1).join('').replace(/\s+/g, '');
+    if (!ifName) return '% Incomplete command.';
+    dev.configContext = `config-if:${ifName}`;
+    if (!dev.interfaces[ifName]) dev.interfaces[ifName] = {};
+    return '';
+  }
+
+  // VLAN context (switches only)
+  if (cmd === 'vlan' && dev.type === 'switch') {
+    const vid = parseInt(parts[1]);
+    if (isNaN(vid)) return '% Incomplete command.';
+    dev.configContext = `config-vlan:${vid}`;
+    if (!dev.vlans[vid]) dev.vlans[vid] = '';
+    return '';
+  }
+
+  // Router OSPF
+  if (cmd === 'router') {
+    if (/ospf/i.test(rest)) {
+      dev.configContext = 'config-router';
+      return '';
+    }
+    if (/eigrp/i.test(rest)) { dev.configContext = 'config-router'; return ''; }
+    if (/bgp/i.test(rest)) { dev.configContext = 'config-router'; return ''; }
+    if (/rip/i.test(rest)) { dev.configContext = 'config-router'; return ''; }
+  }
+
+  // Line context
+  if (cmd === 'line') {
+    dev.configContext = 'config-line';
+    return '';
+  }
+
+  // ---- VLAN name (in vlan context) ----
+  if (cmd === 'name' && dev.configContext && dev.configContext.startsWith('config-vlan:')) {
+    const vid = parseInt(dev.configContext.split(':')[1]);
+    dev.vlans[vid] = rest;
+    return '';
+  }
+
+  // ---- Interface commands ----
+  if (dev.configContext && dev.configContext.startsWith('config-if:')) {
+    const ifName = dev.configContext.split(':')[1];
+    if (!dev.interfaces[ifName]) dev.interfaces[ifName] = {};
+    const iface = dev.interfaces[ifName];
+
+    // IP address
+    if (cmd === 'ip' && /^address/i.test(rest)) {
+      const m = rest.match(/address\s+(\S+)\s+(\S+)/i);
+      if (m) { iface.ip = m[1]; iface.mask = m[2]; iface.status = 'up'; return ''; }
+    }
+    // IPv6
+    if (cmd === 'ipv6' && /^address/i.test(rest)) {
+      iface.ipv6 = rest.replace(/^address\s+/i,''); return '';
+    }
+    // No shutdown
+    if (cmd === 'no' && /^shutdown/i.test(rest)) {
+      iface.status = 'up';
+      return `%LINK-5-CHANGED: Interface ${ifName}, changed state to up\n%LINEPROTO-5-UPDOWN: Line protocol on Interface ${ifName}, changed state to up`;
+    }
+    if (cmd === 'shutdown') {
+      iface.status = 'down';
+      return `%LINK-5-CHANGED: Interface ${ifName}, changed state to administratively down`;
+    }
+    // Description
+    if (cmd === 'description') { iface.description = rest; return ''; }
+    // Duplex / speed
+    if (cmd === 'duplex') { iface.duplex = rest; return ''; }
+    if (cmd === 'speed') { iface.speed = rest; return ''; }
+
+    // ---- SWITCH commands ----
+    if (dev.type === 'switch') {
+      if (cmd === 'switchport') {
+        if (/^mode\s+access/i.test(rest)) { iface.swMode = 'access'; return ''; }
+        if (/^mode\s+trunk/i.test(rest)) {
+          iface.swMode = 'trunk'; iface.status='up';
+          dev.trunk[ifName] = { native: 1, allowed: 'all' };
+          return '';
+        }
+        if (/^mode\s+dynamic\s+desirable/i.test(rest)) { iface.swMode = 'dynamic desirable'; return ''; }
+        if (/^mode\s+dynamic\s+auto/i.test(rest)) { iface.swMode = 'dynamic auto'; return ''; }
+        if (/^access\s+vlan\s+(\d+)/i.test(rest)) {
+          const m = rest.match(/vlan\s+(\d+)/i);
+          if (m) { iface.accessVlan = parseInt(m[1]); return ''; }
+        }
+        if (/^trunk\s+native\s+vlan\s+(\d+)/i.test(rest)) {
+          const m = rest.match(/vlan\s+(\d+)/i);
+          if (m && dev.trunk[ifName]) { dev.trunk[ifName].native = parseInt(m[1]); return ''; }
+        }
+        if (/^trunk\s+allowed\s+vlan\s+([\d,]+)/i.test(rest)) {
+          const m = rest.match(/vlan\s+([\d,]+)/i);
+          if (m && dev.trunk[ifName]) { dev.trunk[ifName].allowed = m[1]; return ''; }
+        }
+        if (/^nonegotiate/i.test(rest)) { return ''; }
+        if (/^port-security$/i.test(rest)) {
+          if (!iface.portSecurity) iface.portSecurity = { enabled: true, max: 1, mode: 'shutdown', sticky: false, current: 0 };
+          iface.portSecurity.enabled = true;
+          return '';
+        }
+        if (/^port-security\s+maximum\s+(\d+)/i.test(rest)) {
+          const m = rest.match(/maximum\s+(\d+)/i);
+          if (m) {
+            if (!iface.portSecurity) iface.portSecurity = { enabled: true, max: 1, mode: 'shutdown', sticky: false, current: 0 };
+            iface.portSecurity.max = parseInt(m[1]);
+          }
+          return '';
+        }
+        if (/^port-security\s+violation\s+(\w+)/i.test(rest)) {
+          const m = rest.match(/violation\s+(\w+)/i);
+          if (m) {
+            if (!iface.portSecurity) iface.portSecurity = { enabled: true, max: 1, mode: 'shutdown', sticky: false, current: 0 };
+            iface.portSecurity.mode = m[1].toLowerCase();
+          }
+          return '';
+        }
+        if (/^port-security\s+mac-address\s+sticky/i.test(rest)) {
+          if (!iface.portSecurity) iface.portSecurity = { enabled: true, max: 1, mode: 'shutdown', sticky: false, current: 0 };
+          iface.portSecurity.sticky = true;
+          return '';
+        }
+        if (/^port-security\s+mac-address\s+([\w.]+)/i.test(rest)) {
+          const m = rest.match(/mac-address\s+([\w.]+)/i);
+          if (m && iface.portSecurity) iface.portSecurity.staticMac = m[1];
+          return '';
+        }
+      }
+      // spanning-tree
+      if (cmd === 'spanning-tree') {
+        if (/portfast/i.test(rest)) { iface.portfast = true; return '%Warning: portfast should only be enabled on ports connected to a single host.'; }
+        if (/bpduguard\s+enable/i.test(rest)) { iface.bpduguard = true; return ''; }
+        return '';
+      }
+    }
+
+    // ---- ROUTER sub-interface ----
+    if (dev.type === 'router') {
+      if (cmd === 'encapsulation' && /^dot1q?\s+(\d+)/i.test(rest)) {
+        const m = rest.match(/\d+/);
+        if (m) { iface.dot1q = parseInt(m[0]); iface.status='up'; return ''; }
+      }
+      if (cmd === 'ip' && /^nat/i.test(rest)) {
+        iface.nat = /inside/i.test(rest) ? 'inside' : 'outside'; return '';
+      }
+    }
+
+    return `% Invalid input detected at '^' marker in config-if mode`;
+  }
+
+  // ---- Global config commands ----
+  if (cmd === 'hostname') { dev.hostname = rest; return ''; }
+  if (cmd === 'enable' && /^secret/i.test(rest)) { return ''; }
+  if (cmd === 'enable' && /^password/i.test(rest)) { return ''; }
+  if (cmd === 'service' && /^password-encryption/i.test(rest)) { return ''; }
+  if (cmd === 'no' && /^ip\s+domain.lookup/i.test(rest)) { return ''; }
+  if (cmd === 'ip' && /^routing/i.test(rest)) { dev.routing = true; return ''; }
+  if (cmd === 'ip' && /^domain.name/i.test(rest)) { return ''; }
+  if (cmd === 'crypto') { return 'Generating 2048 bit RSA keys, keys will be non-exportable...\n[OK] (elapsed time was 1 seconds)'; }
+  if (cmd === 'ip' && /^ssh/i.test(rest)) { return ''; }
+  if (cmd === 'banner') { return ''; }
+  if (cmd === 'logging') { return ''; }
+  if (cmd === 'ntp') { return ''; }
+  if (cmd === 'snmp') { return ''; }
+  if (cmd === 'access-list') {
+    const m = raw.match(/access-list\s+(\d+)\s+(\w+)\s+(\S+)/i);
+    if (m) { if (!dev.acls) dev.acls = {}; dev.acls[m[1]] = (dev.acls[m[1]]||[]).concat([{action:m[2],src:m[3]}]); return ''; }
+    return '';
+  }
+  if (cmd === 'ip' && /^access-list/i.test(rest)) { return ''; }
+  // NAT
+  if (cmd === 'ip' && /^nat\s+inside\s+source/i.test(rest)) { return ''; }
+  if (cmd === 'ip' && /^nat/i.test(rest)) { return ''; }
+  // VTP
+  if (cmd === 'vtp') { return ''; }
+  // spanning-tree global
+  if (cmd === 'spanning-tree') {
+    if (/portfast\s+default/i.test(rest)) { dev.portfastDefault = true; return ''; }
+    if (/mode\s+rapid-pvst/i.test(rest)) { dev.stpMode = 'rapid-pvst'; return ''; }
+    if (/mode\s+pvst/i.test(rest)) { dev.stpMode = 'pvst'; return ''; }
+    return '';
+  }
+  if (cmd === 'errdisable') { return ''; }
+
+  // OSPF / routing config-router
+  if (dev.configContext === 'config-router') {
+    if (cmd === 'network') { if (!dev.routes) dev.routes=[]; dev.routes.push(rest); return ''; }
+    if (cmd === 'router-id') { dev.routerId = rest; return ''; }
+    if (cmd === 'passive-interface') { return ''; }
+    if (cmd === 'auto-cost') { return ''; }
+    if (cmd === 'neighbor') { return ''; }
+    return '';
+  }
+
+  // Line config
+  if (dev.configContext === 'config-line') {
+    if (cmd === 'transport') { return ''; }
+    if (cmd === 'login') { return ''; }
+    if (cmd === 'password') { return ''; }
+    if (cmd === 'exec-timeout') { return ''; }
+    return '';
+  }
+
+  if (cmd === 'no') {
+    // Handle 'no interface ...' or other no commands
+    return '';
+  }
+
+  if (cmd === 'interface' || cmd === 'int') { return '% interface command missing subcommand'; }
+
+  return `% Invalid input detected: '${parts[0]}'`;
+}
+
+// ============================================================
+// SHOW COMMANDS
+// ============================================================
+function cmdShow(dev, args) {
+  const sub = (args[0] || '').toLowerCase();
+  const sub2 = (args[1] || '').toLowerCase();
+  const sub3 = (args[2] || '').toLowerCase();
+
+  // show version
+  if (sub === 'version') {
+    return `Cisco IOS Software, Version 15.2(4)M6, RELEASE SOFTWARE (fc1)
+Technical Support: http://www.cisco.com/techsupport
+ROM: System Bootstrap, Version 15.1(4)M10
+${dev.hostname} uptime is 2 days, 14 hours, 22 minutes
+System returned to ROM by reload
+Cisco 2900 Series Router (revision 1.0)
+System image file is "flash0:c2900-universalk9-mz.SPA.152-4.M6.bin"
+IOS: 15.2(4)M6   Platform: Cisco 2951`;
+  }
+
+  // show running-config
+  if (sub === 'running-config' || (sub === 'run' && !sub2)) {
+    return buildRunningConfig(dev);
+  }
+
+  // show startup-config
+  if (sub === 'startup-config') {
+    return 'startup-config is not present\n(Use "copy running-config startup-config" to save)';
+  }
+
+  // show ip interface brief
+  if (sub === 'ip' && sub2 === 'interface' && sub3.startsWith('b')) {
+    return buildIpIntBrief(dev);
+  }
+
+  // show interfaces
+  if (sub === 'interfaces') {
+    if (args[1]) return buildInterfaceDetail(dev, args.slice(1).join(''));
+    return buildAllInterfaces(dev);
+  }
+  if (sub === 'interface') {
+    return buildInterfaceDetail(dev, args.slice(1).join(''));
+  }
+
+  // show interfaces trunk
+  if (sub === 'interfaces' && sub2 === 'trunk') {
+    return buildTrunk(dev);
+  }
+
+  // show ip route
+  if (sub === 'ip' && sub2 === 'route') {
+    return buildRoutes(dev);
+  }
+
+  // show ip ospf neighbor
+  if (sub === 'ip' && sub2 === 'ospf' && sub3 === 'neighbor') {
+    return buildOspfNeighbor(dev);
+  }
+  if (sub === 'ip' && sub2 === 'ospf') {
+    return `Routing Process "ospf 1" with ID ${dev.routerId||'1.1.1.1'}\n Start time: 00:00:05.240, Time elapsed: 02:14:33.240\n Supports only single TOS(TOS0) routes\n Number of areas in this router is 1. 1 normal 0 stub 0 nssa`;
+  }
+
+  // show vlan / vlan brief
+  if (sub === 'vlan') {
+    return buildVlanBrief(dev);
+  }
+
+  // show mac address-table
+  if (sub === 'mac' || (sub === 'mac' && sub2 === 'address-table')) {
+    return buildMacTable(dev);
+  }
+
+  // show port-security
+  if (sub === 'port-security') {
+    if (args[1] && args[1].toLowerCase() === 'interface') {
+      return buildPortSecurityInterface(dev, args[2] || '');
+    }
+    return buildPortSecurity(dev);
+  }
+
+  // show interfaces trunk
+  if (sub === 'interfaces' && sub2 === 'trunk') {
+    return buildTrunk(dev);
+  }
+  if (sub === 'interface' && args.length > 1 && !/^b/i.test(sub2)) {
+    return buildInterfaceDetail(dev, args.slice(1).join(' '));
+  }
+
+  // show spanning-tree
+  if (sub === 'spanning-tree') {
+    return buildStp(dev, args.slice(1));
+  }
+
+  // show cdp neighbors
+  if (sub === 'cdp') {
+    return `Capability Codes: R - Router, T - Trans Bridge, B - Source Route Bridge\n                  S - Switch, H - Host, I - IGMP, r - Repeater\nDevice ID        Local Intrfce     Holdtme    Capability  Platform  Port ID\nSW2              Gi 0/1            177            S       WS-C2960  Gi 0/1`;
+  }
+
+  // show ssh
+  if (sub === 'ssh') {
+    return `SSH Enabled - version 2.0\nAuthentication methods:publickey,keyboard-interactive,password\nEncryption Algorithms:aes128-ctr,aes192-ctr,aes256-ctr\nAuthentication timeout: 120 secs; Authentication retries: 3`;
+  }
+
+  // show clock
+  if (sub === 'clock') {
+    return `*${new Date().toTimeString().split(' ')[0]} UTC ${new Date().toDateString()}`;
+  }
+
+  // show users
+  if (sub === 'users') {
+    return `    Line       User       Host(s)              Idle       Location\n*  0 con 0                idle                 00:00:00`;
+  }
+
+  // show history
+  if (sub === 'history') {
+    return cliHistory.slice(0, 20).map((h,i) => `  ${i+1}  ${h}`).join('\n');
+  }
+
+  // show ip nat translations
+  if (sub === 'ip' && sub2 === 'nat') {
+    return `Pro Inside global      Inside local       Outside local      Outside global\n--- ---               ---                ---                ---`;
+  }
+
+  // show access-lists
+  if (sub === 'access-lists' || (sub === 'ip' && sub2 === 'access-lists')) {
+    if (!dev.acls || Object.keys(dev.acls).length === 0) return `% There are no access lists`;
+    return Object.entries(dev.acls).map(([num, rules]) =>
+      `Standard IP access list ${num}\n` + rules.map((r,i) => `    ${10*(i+1)} ${r.action} ${r.src}`).join('\n')
+    ).join('\n');
+  }
+
+  return `% Unknown show sub-command: 'show ${args.join(' ')}'`;
+}
+
+// ============================================================
+// SHOW BUILDERS
+// ============================================================
+function buildRunningConfig(dev) {
+  let cfg = `!\nversion 15.2\nservice timestamps debug datetime msec\nservice timestamps log datetime msec\nno service password-encryption\n!\nhostname ${dev.hostname}\n!\n`;
+
+  if (dev.type === 'switch') {
+    Object.entries(dev.vlans).filter(([id]) => id > 1).forEach(([id, name]) => {
+      cfg += `vlan ${id}\n name ${name}\n!\n`;
+    });
+  }
+
+  Object.entries(dev.interfaces).forEach(([name, iface]) => {
+    cfg += `interface ${name}\n`;
+    if (iface.description) cfg += ` description ${iface.description}\n`;
+    if (iface.ip) cfg += ` ip address ${iface.ip} ${iface.mask}\n`;
+    if (iface.ipv6) cfg += ` ipv6 address ${iface.ipv6}\n`;
+    if (iface.dot1q) cfg += ` encapsulation dot1Q ${iface.dot1q}\n`;
+    if (iface.swMode === 'access') {
+      cfg += ` switchport mode access\n`;
+      if (iface.accessVlan) cfg += ` switchport access vlan ${iface.accessVlan}\n`;
+    }
+    if (iface.swMode === 'trunk') {
+      cfg += ` switchport mode trunk\n`;
+    }
+    if (iface.portSecurity?.enabled) {
+      cfg += ` switchport port-security\n`;
+      if (iface.portSecurity.max > 1) cfg += ` switchport port-security maximum ${iface.portSecurity.max}\n`;
+      if (iface.portSecurity.sticky) cfg += ` switchport port-security mac-address sticky\n`;
+      if (iface.portSecurity.mode !== 'shutdown') cfg += ` switchport port-security violation ${iface.portSecurity.mode}\n`;
+    }
+    if (iface.status === 'down') cfg += ` shutdown\n`;
+    cfg += `!\n`;
+  });
+
+  cfg += `!\nend`;
+  return cfg;
+}
+
+function buildIpIntBrief(dev) {
+  const header = 'Interface                  IP-Address      OK? Method Status                Protocol';
+  const lines = [header];
+  const commonIfaces = dev.type === 'router'
+    ? ['GigabitEthernet0/0','GigabitEthernet0/1','GigabitEthernet0/2']
+    : ['GigabitEthernet0/1','GigabitEthernet0/2','FastEthernet0/1','FastEthernet0/2'];
+
+  const allIfaces = [...new Set([...commonIfaces, ...Object.keys(dev.interfaces)])];
+
+  allIfaces.forEach(name => {
+    const iface = dev.interfaces[name] || {};
+    const ip = iface.ip || 'unassigned';
+    const ok = iface.ip ? 'YES' : 'YES';
+    const method = iface.ip ? 'manual' : 'unset';
+    const status = iface.status === 'down' ? 'administratively down' : (iface.ip || iface.status === 'up') ? 'up' : 'down';
+    const proto = status === 'up' ? 'up' : 'down';
+    lines.push(`${name.padEnd(27)}${ip.padEnd(16)}${ok}  ${method.padEnd(7)}${status.padEnd(22)}${proto}`);
+  });
+
+  return lines.join('\n');
+}
+
+function buildInterfaceDetail(dev, ifName) {
+  ifName = ifName.replace(/\s/g,'');
+  const iface = dev.interfaces[ifName] || {};
+  const status = iface.status === 'down' ? 'administratively down' : 'up';
+  const lineProto = status === 'up' ? 'up' : 'down';
+  return `${ifName} is ${status}, line protocol is ${lineProto}
+  Hardware is Gigabit Ethernet, address is aabb.cc${Math.floor(Math.random()*9000+1000).toString(16)}.${Math.floor(Math.random()*9000+1000).toString(16)}
+  ${iface.ip ? `Internet address is ${iface.ip}/${iface.mask ? maskToPrefix(iface.mask) : '24'}` : 'Internet address is not set'}
+  MTU 1500 bytes, BW 1000000 Kbit/sec, DLY 10 usec,
+  reliability 255/255, txload 1/255, rxload 1/255
+  Encapsulation ${iface.dot1q ? `802.1Q Virtual LAN, Vlan ID  ${iface.dot1q}.` : 'ARPA'}, loopback not set
+  ${iface.duplex || 'Full'}-duplex, ${iface.speed || '100'}Mb/s, media type is T
+  Last input 00:00:04, output 00:00:01, output hang never
+  5 minute input rate 0 bits/sec, 0 packets/sec
+  5 minute output rate 0 bits/sec, 0 packets/sec`;
+}
+
+function buildAllInterfaces(dev) {
+  if (Object.keys(dev.interfaces).length === 0) {
+    return buildInterfaceDetail(dev, dev.type === 'router' ? 'GigabitEthernet0/0' : 'GigabitEthernet0/1');
+  }
+  return Object.keys(dev.interfaces).map(n => buildInterfaceDetail(dev, n)).join('\n\n');
+}
+
+function buildVlanBrief(dev) {
+  if (dev.type !== 'switch') return `% Invalid command for this device type`;
+  let out = `VLAN Name                             Status    Ports\n---- -------------------------------- --------- -------`;
+  out += `\n1    default                          active    `;
+
+  // Add unassigned ports
+  const assignedPorts = new Set();
+  Object.entries(dev.interfaces).forEach(([name, iface]) => {
+    if (iface.accessVlan) assignedPorts.add(name);
+  });
+
+  const defaultPorts = ['Fa0/3','Fa0/4','Fa0/5','Gi0/2'].filter(p => !assignedPorts.has(p));
+  out += defaultPorts.join(', ');
+
+  Object.entries(dev.vlans).filter(([id]) => parseInt(id) > 1).forEach(([id, name]) => {
+    const ports = Object.entries(dev.interfaces)
+      .filter(([,iface]) => iface.accessVlan === parseInt(id))
+      .map(([n]) => n.replace('FastEthernet','Fa').replace('GigabitEthernet','Gi'));
+    out += `\n${id.padEnd(5)}${(name||`VLAN${id}`).padEnd(33)}active    ${ports.join(', ')}`;
+  });
+
+  out += `\n1002 fddi-default                     act/unsup\n1003 token-ring-default               act/unsup\n1004 fddinet-default                  act/unsup\n1005 trnet-default                    act/unsup`;
+  return out;
+}
+
+function buildTrunk(dev) {
+  const trunkIfaces = Object.entries(dev.interfaces).filter(([,i]) => i.swMode === 'trunk');
+  if (trunkIfaces.length === 0) {
+    return `% No trunk interfaces configured`;
+  }
+  let out = `Port      Mode         Encaps  Status        Native vlan\n`;
+  trunkIfaces.forEach(([name, iface]) => {
+    const t = dev.trunk[name] || { native: 1, allowed: '1-4094' };
+    const shortName = name.replace('FastEthernet','Fa').replace('GigabitEthernet','Gi');
+    out += `${shortName.padEnd(10)}on           802.1q  trunking      ${t.native}\n`;
+  });
+  out += `\nPort      Vlans allowed on trunk\n`;
+  trunkIfaces.forEach(([name]) => {
+    const t = dev.trunk[name] || { native: 1, allowed: '1,10,20,99' };
+    const shortName = name.replace('FastEthernet','Fa').replace('GigabitEthernet','Gi');
+    out += `${shortName.padEnd(10)}${t.allowed}\n`;
+  });
+  return out;
+}
+
+function buildPortSecurity(dev) {
+  const psIfaces = Object.entries(dev.interfaces).filter(([,i]) => i.portSecurity?.enabled);
+  if (psIfaces.length === 0) return `% Port security is not configured on any interfaces`;
+
+  let out = `Secure Port  MaxSecureAddr  CurrentAddr  SecurityViolation  Security Action\n              (Count)       (Count)          (Count)\n--------------------------------------------------------------------\n`;
+  psIfaces.forEach(([name, iface]) => {
+    const ps = iface.portSecurity;
+    const shortName = name.replace('FastEthernet','Fa').replace('GigabitEthernet','Gi');
+    out += `     ${shortName.padEnd(9)}  ${ps.max.toString().padEnd(15)}${(ps.current||0).toString().padEnd(13)}${(ps.violations||0).toString().padEnd(20)}${ps.mode.charAt(0).toUpperCase()+ps.mode.slice(1)}\n`;
+  });
+  out += `\nTotal Addresses in System (excluding one mac per port)     : 0\nMax Addresses limit in System (excluding one mac per port) : 4096`;
+  return out;
+}
+
+function buildPortSecurityInterface(dev, ifName) {
+  const iface = dev.interfaces[ifName] || {};
+  const ps = iface.portSecurity;
+  if (!ps?.enabled) return `% Port security is not configured on interface ${ifName}`;
+  return `Port Security              : Enabled
+Port Status                : Secure-up
+Violation Mode             : ${ps.mode.charAt(0).toUpperCase()+ps.mode.slice(1)}
+Aging Time                 : 0 mins
+Aging Type                 : Absolute
+SecureStatic Address Aging : Disabled
+Maximum MAC Addresses      : ${ps.max}
+Total MAC Addresses        : ${ps.current||0}
+Configured MAC Addresses   : ${ps.staticMac ? 1 : 0}
+Sticky MAC Addresses       : ${ps.sticky ? ps.current||0 : 0}
+Last Source Address:Vlan   : 0000.0000.0000:0
+Security Violation Count   : ${ps.violations||0}`;
+}
+
+function buildMacTable(dev) {
+  let out = `          Mac Address Table\n-------------------------------------------\nVlan    Mac Address       Type        Ports\n----    -----------       --------    -----\n`;
+  Object.entries(dev.interfaces).forEach(([name, iface]) => {
+    if (iface.accessVlan || iface.swMode === 'access') {
+      const mac = `${randomHex(4)}.${randomHex(4)}.${randomHex(4)}`;
+      const vlan = iface.accessVlan || 1;
+      const shortName = name.replace('FastEthernet','Fa').replace('GigabitEthernet','Gi');
+      out += `   ${vlan.toString().padEnd(5)}  ${mac.padEnd(18)}DYNAMIC     ${shortName}\n`;
+    }
+  });
+  out += `Total Mac Addresses for this criterion: ${Object.keys(dev.interfaces).length}`;
+  return out;
+}
+
+function buildRoutes(dev) {
+  let out = `Codes: C - connected, S - static, R - RIP, M - mobile, B - BGP\n       D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area\n       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2\n       E1 - OSPF external type 1, E2 - OSPF external type 2\n       i - IS-IS, su - IS-IS summary, L1 - IS-IS level-1, L2 - IS-IS level-2\n       ia - IS-IS inter area, * - candidate default\n\nGateway of last resort is not set\n\n`;
+
+  Object.entries(dev.interfaces).forEach(([name, iface]) => {
+    if (iface.ip && iface.status !== 'down') {
+      const prefix = ipToNetwork(iface.ip, iface.mask);
+      const shortName = name.replace('FastEthernet','Fa').replace('GigabitEthernet','Gi');
+      out += `C     ${prefix} is directly connected, ${shortName}\n`;
+      out += `L     ${iface.ip}/32 is directly connected, ${shortName}\n`;
+    }
+  });
+
+  if (!out.includes('is directly connected')) out += `% No routes found`;
+  return out;
+}
+
+function buildOspfNeighbor(dev) {
+  return `Neighbor ID     Pri   State           Dead Time   Address         Interface\n2.2.2.2           1   FULL/DR         00:00:34    10.0.12.2       GigabitEthernet0/0`;
+}
+
+function buildStp(dev, args) {
+  const vlan = args.find(a => /^\d+$/.test(a)) || '1';
+  return `VLAN${vlan.padStart(4,'0')}\n  Spanning tree enabled protocol ${dev.stpMode||'ieee'}\n  Root ID    Priority    32769\n             Address     aabb.cc00.0100\n             This bridge is the root\n\n  Bridge ID  Priority    32769  (priority 32768 sys-id-ext 1)\n             Address     aabb.cc00.0100\n             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec\n\nInterface           Role Sts Cost      Prio.Nbr Type\n------------------- ---- --- --------- -------- --------------------------------\nGi0/1               Desg FWD 4         128.1    P2p\nFa0/1               Desg FWD 19        128.2    P2p Peer(STP)`;
+}
+
+// ---- Misc commands ----
+function cmdPing(dev, args) {
+  const target = args[0];
+  if (!target) return `Type escape sequence to abort.\nSending 5, 100-byte ICMP Echos to , timeout is 2 seconds:\n\nSuccess rate is 0 percent (0/5)`;
+  const success = Math.random() > 0.1;
+  const dots = success ? '!!!!!' : '.....';
+  const rate = success ? `100 percent (5/5), round-trip min/avg/max = 1/2/4 ms` : `0 percent (0/5)`;
+  return `Type escape sequence to abort.\nSending 5, 100-byte ICMP Echos to ${target}, timeout is 2 seconds:\n${dots}\nSuccess rate is ${rate}`;
+}
+
+function cmdTraceroute(dev, args) {
+  const target = args[0] || '8.8.8.8';
+  return `Type escape sequence to abort.\nTracing the route to ${target}\nVRF info: (vrf in name/id, vrf out name/id)\n  1 192.168.1.1 4 msec 4 msec 4 msec\n  2 10.0.0.1 8 msec 8 msec 8 msec\n  3 ${target} 12 msec 12 msec 12 msec`;
+}
+
+function cmdClear(dev, args) {
+  if (args[0] === 'mac' || args[1] === 'address-table') {
+    Object.values(dev.interfaces).forEach(i => { delete i.learnedMacs; });
+    return '';
+  }
+  if (args[0] === 'port-security') {
+    Object.values(dev.interfaces).forEach(i => { if(i.portSecurity) i.portSecurity.current=0; });
+    return '';
+  }
+  return '';
+}
+
+function cmdClock(rest) {
+  return `Clock set to ${new Date().toTimeString().split(' ')[0]} UTC\n*${new Date().toDateString()}`;
+}
+
+function cmdHelp(dev, context) {
+  return `Available commands:
+  enable                   Enter privileged EXEC mode
+  disable                  Exit privileged EXEC mode
+  configure terminal       Enter global configuration mode
+  show version             Display system information
+  show running-config      Display running configuration
+  show ip interface brief  Display IP interface summary
+  show interfaces          Display interface details
+  show vlan brief          Display VLAN assignments (switch)
+  show interfaces trunk    Display trunk interfaces (switch)
+  show port-security       Display port security status (switch)
+  show mac address-table   Display MAC address table (switch)
+  show ip route            Display routing table (router)
+  show ip ospf neighbor    Display OSPF neighbors (router)
+  show spanning-tree       Display STP status
+  show cdp neighbors       Display CDP neighbors
+  ping <ip>                Test connectivity
+  traceroute <ip>          Trace route to destination
+  copy running-config startup-config  Save configuration
+  write memory (wr)        Save configuration
+  clear port-security      Reset port security counters
+  clear mac address-table  Clear MAC address table
+  Ctrl+C / end             Exit to privileged EXEC
+  Ctrl+L                   Clear screen`;
+}
+
+// ============================================================
+// CLI OUTPUT
+// ============================================================
+function cliPrint(text, type = 'output') {
+  const out = document.getElementById('cli-output');
+  if (!out) return;
+
+  const span = document.createElement('span');
+  span.className = `cli-${type}`;
+
+  if (type === 'prompt-echo') {
+    span.innerHTML = `<span class="cli-prompt-color">${escapeHtml(text.split(' ')[0])}</span> <span class="cli-cmd">${escapeHtml(text.slice(text.indexOf(' ')+1))}</span>`;
+  } else {
+    span.textContent = text;
+  }
+
+  out.appendChild(span);
+  out.appendChild(document.createTextNode('\n'));
+  out.scrollTop = out.scrollHeight;
+}
+
+function clearCLI() {
+  document.getElementById('cli-output').innerHTML = '';
+}
+
+// ============================================================
+// UI SETUP
+// ============================================================
+function setupUI() {
+  // Lab selector dropdown
+  const sel = document.getElementById('lab-selector');
+  if (sel) {
+    allLabs.forEach(lab => {
+      const opt = document.createElement('option');
+      opt.value = lab.id;
+      opt.textContent = `Lab ${lab.id}: ${lab.title}`;
+      sel.appendChild(opt);
+    });
+    sel.addEventListener('change', () => {
+      const id = parseInt(sel.value);
+      window.history.pushState({}, '', `?lab=${id}`);
+      resetDevices();
+      loadLab(id);
+    });
+  }
+
+  // Toggle panel
+  document.getElementById('btn-toggle-panel')?.addEventListener('click', togglePanel);
+
+  // PDF export
+  document.getElementById('btn-pdf')?.addEventListener('click', exportPDF);
+
+  // Clear CLI button
+  document.getElementById('btn-clear-cli')?.addEventListener('click', clearCLI);
+
+  // Run checklist
+  document.getElementById('btn-run-check')?.addEventListener('click', runAutoCheck);
+
+  // Fullscreen CLI
+  document.getElementById('btn-fullscreen')?.addEventListener('click', toggleFullscreen);
+
+  // Input focus on click anywhere in terminal area
+  document.getElementById('cli-area')?.addEventListener('click', () => {
+    document.getElementById('cli-input').focus();
+  });
+}
+
+function updateLabSelector(id) {
+  const sel = document.getElementById('lab-selector');
+  if (sel) sel.value = id;
+}
+
+function togglePanel() {
+  panelVisible = !panelVisible;
+  const panel = document.getElementById('lab-panel');
+  const btn = document.getElementById('btn-toggle-panel');
+  const workspace = document.getElementById('workspace');
+
+  if (panelVisible) {
+    panel.classList.remove('hidden');
+    workspace.classList.remove('panel-hidden');
+    btn.textContent = '◀ Masquer';
+  } else {
+    panel.classList.add('hidden');
+    workspace.classList.add('panel-hidden');
+    btn.textContent = '▶ Afficher';
+  }
+}
+
+function toggleFullscreen() {
+  const cliSection = document.getElementById('cli-section');
+  cliSection.classList.toggle('fullscreen');
+  const btn = document.getElementById('btn-fullscreen');
+  btn.textContent = cliSection.classList.contains('fullscreen') ? '⊡ Normal' : '⊞ Plein écran';
+}
+
+// ============================================================
+// PDF EXPORT
+// ============================================================
+async function exportPDF() {
+  const btn = document.getElementById('btn-pdf');
+  btn.textContent = '⏳ Génération...';
+  btn.disabled = true;
+
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+    const lab = currentLab;
+    let y = 15;
+
+    // Header
+    doc.setFillColor(8, 12, 20);
+    doc.rect(0, 0, 210, 25, 'F');
+    doc.setTextColor(0, 212, 255);
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('LE DOJO DU NETWORKING', 15, 12);
+    doc.setFontSize(9);
+    doc.setTextColor(90, 122, 159);
+    doc.text('Plateforme d\'entraînement réseau', 15, 19);
+    doc.setTextColor(200, 222, 255);
+    doc.text(new Date().toLocaleDateString('fr-FR'), 170, 12);
+
+    y = 35;
+
+    // Lab title
+    doc.setFillColor(13, 21, 37);
+    doc.roundedRect(10, y-5, 190, 18, 2, 2, 'F');
+    doc.setTextColor(0, 212, 255);
+    doc.setFontSize(13);
+    doc.setFont('helvetica', 'bold');
+    doc.text(lab.title, 15, y+7);
+    y += 22;
+
+    // Meta
+    doc.setFontSize(9);
+    doc.setTextColor(90, 122, 159);
+    doc.text(`Difficulté: ${lab.difficulty}   Durée estimée: ${lab.duration}`, 15, y);
+    y += 10;
+
+    // Objectives
+    doc.setFillColor(13, 21, 37);
+    doc.rect(10, y, 190, 7, 'F');
+    doc.setTextColor(0, 212, 255);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('OBJECTIFS', 15, y+5);
+    y += 12;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(200, 222, 255);
+    doc.setFontSize(9);
+    lab.objectives.forEach((obj, i) => {
+      const lines = doc.splitTextToSize(`${i+1}. ${obj}`, 175);
+      doc.text(lines, 15, y);
+      y += lines.length * 5 + 2;
+    });
+    y += 5;
+
+    // Addressing table
+    if (y > 240) { doc.addPage(); y = 20; }
+    doc.setFillColor(13, 21, 37);
+    doc.rect(10, y, 190, 7, 'F');
+    doc.setTextColor(0, 212, 255);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('TABLE D\'ADRESSAGE', 15, y+5);
+    y += 10;
+
+    // Table header
+    doc.setFillColor(17, 29, 51);
+    doc.rect(10, y, 190, 6, 'F');
+    doc.setTextColor(0, 212, 255);
+    doc.setFontSize(8);
+    ['Appareil','Interface','Adresse IP','Masque','VLAN / Info'].forEach((h, i) => {
+      doc.text(h, 12 + i*38, y+4);
+    });
+    y += 7;
+
+    doc.setFont('helvetica', 'normal');
+    lab.addressing.forEach((row, i) => {
+      if (i % 2 === 0) { doc.setFillColor(8, 12, 20); doc.rect(10, y-1, 190, 6, 'F'); }
+      doc.setTextColor(200, 222, 255);
+      [row.device, row.interface, row.ip, row.mask, row.vlan].forEach((cell, ci) => {
+        doc.text(String(cell||'').substring(0,18), 12+ci*38, y+3.5);
+      });
+      y += 6;
+    });
+    y += 8;
+
+    // Instructions
+    if (y > 220) { doc.addPage(); y = 20; }
+    doc.setFillColor(13, 21, 37);
+    doc.rect(10, y, 190, 7, 'F');
+    doc.setTextColor(0, 212, 255);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('INSTRUCTIONS', 15, y+5);
+    y += 12;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(200, 222, 255);
+    doc.setFontSize(8.5);
+    lab.instructions.forEach((instr, i) => {
+      if (y > 265) { doc.addPage(); y = 20; }
+      const clean = instr.replace(/<code>/g,'`').replace(/<\/code>/g,'`').replace(/<[^>]+>/g,'');
+      const lines = doc.splitTextToSize(`${i+1}. ${clean}`, 173);
+      doc.text(lines, 15, y);
+      y += lines.length * 4.5 + 2;
+    });
+    y += 5;
+
+    // Hint
+    if (lab.hint) {
+      if (y > 250) { doc.addPage(); y = 20; }
+      doc.setFillColor(17, 29, 51);
+      doc.roundedRect(10, y, 190, 14, 2, 2, 'F');
+      doc.setTextColor(255, 204, 0);
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'bold');
+      doc.text('💡 Astuce :', 13, y+5);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(200, 222, 255);
+      const hintLines = doc.splitTextToSize(lab.hint, 165);
+      doc.text(hintLines, 13, y+10);
+      y += 20;
+    }
+
+    // Checklist
+    if (y > 230) { doc.addPage(); y = 20; }
+    doc.setFillColor(13, 21, 37);
+    doc.rect(10, y, 190, 7, 'F');
+    doc.setTextColor(0, 212, 255);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('LISTE DE VÉRIFICATION', 15, y+5);
+    y += 12;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    lab.checklist.forEach(item => {
+      const done = checklistState[item.id];
+      doc.setTextColor(done ? 57 : 90, done ? 255 : 122, done ? 20 : 159);
+      doc.text(done ? '✓' : '○', 13, y);
+      doc.setTextColor(200, 222, 255);
+      doc.text(item.label, 18, y);
+      doc.setTextColor(0, 212, 255);
+      doc.setFontSize(7);
+      doc.text(`[${item.command}]`, 140, y);
+      doc.setFontSize(8.5);
+      y += 7;
+    });
+
+    // Footer
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFillColor(8, 12, 20);
+      doc.rect(0, 285, 210, 12, 'F');
+      doc.setFontSize(7);
+      doc.setTextColor(90, 122, 159);
+      doc.text('Le Dojo du Networking — Plateforme d\'entraînement réseau', 15, 291);
+      doc.text(`Page ${i}/${pageCount}`, 185, 291);
+    }
+
+    doc.save(`dojo-lab-${lab.id}-${lab.title.replace(/[^a-z0-9]/gi,'-').toLowerCase()}.pdf`);
+  } catch(e) {
+    console.error('PDF error:', e);
+    alert('Erreur PDF. Assurez-vous que jsPDF est chargé.');
+  }
+
+  btn.textContent = '⬇ PDF';
+  btn.disabled = false;
+}
+
+// ============================================================
+// AUTO CHECKLIST RUNNER
+// ============================================================
+function runAutoCheck() {
+  if (!currentLab) return;
+  const fb = document.getElementById('feedback-msg');
+  fb.innerHTML = '<div class="feedback-running">⏳ Vérification en cours...</div>';
+
+  let delay = 0;
+  currentLab.checklist.forEach(item => {
+    setTimeout(() => {
+      const dev = DEVICES[currentLab.initial_config];
+      const fakeOutput = simulateShowOutput(dev, item.command);
+      const re = new RegExp(item.expect, 'i');
+      const pass = re.test(fakeOutput);
+
+      if (pass && !checklistState[item.id]) {
+        checklistState[item.id] = true;
+        const el = document.getElementById(`chk-${item.id}`);
+        if (el) { el.classList.add('done'); el.querySelector('.check-icon').textContent = '✅'; }
+        updateScore();
+      }
+
+      const el2 = document.getElementById(`chk-${item.id}`);
+      if (el2) el2.classList.add(pass ? 'check-pass' : 'check-fail');
+    }, delay);
+    delay += 300;
+  });
+
+  setTimeout(() => {
+    const done = Object.values(checklistState).filter(Boolean).length;
+    const total = currentLab.checklist.length;
+    fb.innerHTML = done === total
+      ? `<div class="feedback-win">🎉 ${done}/${total} — Lab complété avec succès !</div>`
+      : `<div class="feedback-partial">📊 ${done}/${total} objectifs validés. Continuez !</div>`;
+  }, delay + 200);
+}
+
+function simulateShowOutput(dev, command) {
+  const parts = command.split(' ');
+  return cmdShow(dev, parts.slice(1));
+}
+
+// ============================================================
+// DEVICE RESET
+// ============================================================
+function resetDevices() {
+  Object.keys(DEVICES).forEach(key => {
+    DEVICES[key] = {
+      ...DEVICES[key],
+      mode: 'exec',
+      configContext: null,
+      vlans: { 1: 'default' },
+      interfaces: {},
+      trunk: {},
+      portSecurity: {},
+      routes: [],
+      routing: false,
+    };
+  });
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function maskToPrefix(mask) {
+  if (!mask) return 24;
+  return mask.split('.').reduce((acc, o) => {
+    let n = parseInt(o), c = 0;
+    while (n > 0) { c += n & 1; n >>= 1; }
+    return acc + c;
+  }, 0);
+}
+
+function ipToNetwork(ip, mask) {
+  if (!ip) return '0.0.0.0/0';
+  const prefix = maskToPrefix(mask);
+  const parts = ip.split('.').map(Number);
+  const maskParts = mask ? mask.split('.').map(Number) : [255,255,255,0];
+  const net = parts.map((p, i) => p & maskParts[i]);
+  return `${net.join('.')}/${prefix}`;
+}
+
+function randomHex(n) {
+  return Math.floor(Math.random() * Math.pow(16, n)).toString(16).padStart(n, '0');
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function showError(msg) {
+  document.getElementById('lab-title').textContent = '⚠ ' + msg;
+}
+
+// ============================================================
+// WINDOW RESIZE → redraw topology
+// ============================================================
+window.addEventListener('resize', () => {
+  if (currentLab) drawTopology(currentLab.topology);
+});
+
+
+// ============================================================
+// QUICK COMMANDS + TAB COMPLETION + CONTEXT BAR
+// ============================================================
+
+// All IOS abbreviations — real Cisco behavior
+const CMD_ABBREVS = {
+  // Navigation
+  'en':        'enable',
+  'ena':       'enable',
+  'dis':       'disable',
+  'conf t':    'configure terminal',
+  'conf ter':  'configure terminal',
+  'configure t':'configure terminal',
+  'config t':  'configure terminal',
+
+  // Show aliases
+  'sh':        'show',
+  'sho':       'show',
+  'sh run':    'show running-config',
+  'sh ver':    'show version',
+  'sh ip int br': 'show ip interface brief',
+  'sh ip int brief': 'show ip interface brief',
+  'sh int':    'show interfaces',
+  'sh int br': 'show ip interface brief',
+  'sh vlan':   'show vlan brief',
+  'sh vlan br':'show vlan brief',
+  'sh vlan brief': 'show vlan brief',
+  'sh int trunk': 'show interfaces trunk',
+  'sh interfaces trunk': 'show interfaces trunk',
+  'sh trunk':  'show interfaces trunk',
+  'sh port-sec':'show port-security',
+  'sh port-security': 'show port-security',
+  'sh ps':     'show port-security',
+  'sh ip route':'show ip route',
+  'sh ip ro':  'show ip route',
+  'sh route':  'show ip route',
+  'sh ospf':   'show ip ospf neighbor',
+  'sh ospf nbr': 'show ip ospf neighbor',
+  'sh ip ospf nbr': 'show ip ospf neighbor',
+  'sh span':   'show spanning-tree',
+  'sh spanning':'show spanning-tree',
+  'sh mac':    'show mac address-table',
+  'sh mac addr':'show mac address-table',
+  'sh cdp':    'show cdp neighbors',
+  'sh users':  'show users',
+  'sh clock':  'show clock',
+  'sh version':'show version',
+  'sh ssh':    'show ip ssh',
+  'sh access': 'show access-lists',
+
+  // Interface shortcuts
+  'int':       'interface',
+  'int gi0':   'interface GigabitEthernet0/0',
+  'int gi0/0': 'interface GigabitEthernet0/0',
+  'int gi0/1': 'interface GigabitEthernet0/1',
+  'int gi0/2': 'interface GigabitEthernet0/2',
+  'int fa0/1': 'interface FastEthernet0/1',
+  'int fa0/2': 'interface FastEthernet0/2',
+  'int fa0/3': 'interface FastEthernet0/3',
+  'int fa0/4': 'interface FastEthernet0/4',
+  'int vlan':  'interface vlan',
+
+  // Config shortcuts
+  'no shut':   'no shutdown',
+  'no sh':     'no shutdown',
+  'shut':      'shutdown',
+  'no ip dom': 'no ip domain-lookup',
+
+  // Save
+  'wr':        'copy running-config startup-config',
+  'wr mem':    'copy running-config startup-config',
+  'write':     'copy running-config startup-config',
+
+  // Ping / trace
+  'tra':       'traceroute',
+  'trace':     'traceroute',
+};
+
+// Tab completion database — [command, description]
+const COMPLETION_DB = {
+  exec: [
+    ['enable',                  'Passer en mode privilégié'],
+    ['ping',                    'Tester la connectivité'],
+    ['traceroute',              'Tracer le chemin'],
+    ['show version',            'Infos système'],
+    ['show running-config',     'Config active'],
+    ['show ip interface brief', 'Résumé interfaces'],
+    ['show vlan brief',         'VLANs (switch)'],
+    ['show interfaces trunk',   'Ports trunk'],
+    ['show port-security',      'Port security'],
+    ['show ip route',           'Table de routage'],
+    ['show ip ospf neighbor',   'Voisins OSPF'],
+    ['show mac address-table',  'Table MAC'],
+    ['show spanning-tree',      'STP'],
+    ['show cdp neighbors',      'Voisins CDP'],
+  ],
+  priv: [
+    ['configure terminal',      'Entrer en config globale'],
+    ['show running-config',     'Config active'],
+    ['show ip interface brief', 'Résumé interfaces'],
+    ['show vlan brief',         'VLANs'],
+    ['show interfaces trunk',   'Trunks'],
+    ['show port-security',      'Port security'],
+    ['show ip route',           'Routes'],
+    ['show ip ospf neighbor',   'Voisins OSPF'],
+    ['show mac address-table',  'Table MAC'],
+    ['show spanning-tree',      'STP'],
+    ['copy running-config startup-config', 'Sauvegarder'],
+    ['ping',                    'Tester la connectivité'],
+    ['clear mac address-table', 'Vider table MAC'],
+    ['clear port-security',     'Reset port-security'],
+    ['debug ip ospf',           'Debug OSPF'],
+    ['undebug all',             'Stopper debug'],
+  ],
+  config: [
+    ['hostname',                'Changer le nom'],
+    ['interface GigabitEthernet0/0', 'Interface Gi0/0'],
+    ['interface GigabitEthernet0/1', 'Interface Gi0/1'],
+    ['interface FastEthernet0/1',    'Interface Fa0/1'],
+    ['interface FastEthernet0/2',    'Interface Fa0/2'],
+    ['interface vlan 1',        'Interface VLAN 1'],
+    ['vlan 10',                 'Créer VLAN 10'],
+    ['vlan 20',                 'Créer VLAN 20'],
+    ['vlan 99',                 'Créer VLAN 99 (mgmt)'],
+    ['ip routing',              'Activer routage (L3 switch)'],
+    ['ip route',                'Route statique'],
+    ['router ospf 1',           'Configurer OSPF'],
+    ['spanning-tree mode rapid-pvst', 'Activer Rapid PVST+'],
+    ['no ip domain-lookup',     'Désactiver résolution DNS'],
+    ['enable secret',           'Mot de passe enable'],
+    ['service password-encryption', 'Chiffrer MdP'],
+    ['username admin privilege 15 secret', 'Compte local'],
+    ['ip domain-name',          'Nom de domaine (SSH)'],
+    ['crypto key generate rsa modulus 2048', 'Générer clé SSH'],
+    ['ip ssh version 2',        'SSH version 2'],
+    ['line vty 0 4',            'Config lignes VTY'],
+    ['banner motd',             'Bannière de connexion'],
+    ['end',                     'Revenir en mode #'],
+  ],
+  'config-if': [
+    ['ip address',              'Assigner adresse IP'],
+    ['no shutdown',             'Activer l\'interface'],
+    ['shutdown',                'Désactiver l\'interface'],
+    ['description',             'Description'],
+    ['encapsulation dot1Q',     'Encapsulation 802.1Q (sous-if)'],
+    ['switchport mode access',  'Port accès (switch)'],
+    ['switchport mode trunk',   'Port trunk (switch)'],
+    ['switchport access vlan',  'VLAN d\'accès'],
+    ['switchport trunk native vlan', 'VLAN natif trunk'],
+    ['switchport trunk allowed vlan', 'VLANs autorisés trunk'],
+    ['switchport nonegotiate',  'Désactiver DTP'],
+    ['switchport port-security', 'Activer port security'],
+    ['switchport port-security maximum', 'Max MACs'],
+    ['switchport port-security violation shutdown', 'Violation → shutdown'],
+    ['switchport port-security mac-address sticky', 'Sticky MAC'],
+    ['spanning-tree portfast',  'PortFast (port hôte)'],
+    ['spanning-tree bpduguard enable', 'BPDU Guard'],
+    ['ip nat inside',           'NAT inside'],
+    ['ip nat outside',          'NAT outside'],
+    ['ip helper-address',       'DHCP relay'],
+    ['duplex full',             'Full duplex'],
+    ['speed 100',               'Vitesse 100Mbps'],
+    ['exit',                    'Revenir en config globale'],
+    ['end',                     'Revenir en mode #'],
+  ],
+  'config-vlan': [
+    ['name',                    'Nommer le VLAN'],
+    ['state active',            'Activer le VLAN'],
+    ['exit',                    'Revenir en config globale'],
+  ],
+  'config-router': [
+    ['network',                 'Annoncer un réseau'],
+    ['router-id',               'Définir router-id'],
+    ['passive-interface',       'Interface passive'],
+    ['auto-cost reference-bandwidth', 'Ajuster coût (Gbps)'],
+    ['default-information originate', 'Annoncer route par défaut'],
+    ['exit',                    'Revenir en config globale'],
+  ],
+};
+
+// Context-sensitive quick buttons per mode
+const CTX_BUTTONS = {
+  priv: [
+    {label:'conf t', cmd:'configure terminal', tip:'Entrer en configuration'},
+    {label:'sh run', cmd:'show running-config', tip:'Voir la config'},
+    {label:'sh ip int br', cmd:'show ip interface brief', tip:'Résumé interfaces'},
+    {label:'wr', cmd:'copy running-config startup-config', tip:'Sauvegarder', cls:'qbtn-ok'},
+  ],
+  config: [
+    {label:'int Gi0/0', cmd:'interface GigabitEthernet0/0', tip:'Interface Gi0/0'},
+    {label:'int Gi0/1', cmd:'interface GigabitEthernet0/1', tip:'Interface Gi0/1'},
+    {label:'int Fa0/1', cmd:'interface FastEthernet0/1', tip:'Interface Fa0/1'},
+    {label:'int Fa0/2', cmd:'interface FastEthernet0/2', tip:'Interface Fa0/2'},
+    {label:'vlan 10', cmd:'vlan 10', tip:'Créer VLAN 10'},
+    {label:'vlan 20', cmd:'vlan 20', tip:'Créer VLAN 20'},
+    {label:'vlan 99', cmd:'vlan 99', tip:'Créer VLAN 99'},
+    {label:'end', cmd:'end', tip:'Retour en #', cls:'qbtn-warn'},
+  ],
+  'config-if': [
+    {label:'ip addr', cmd:'ip address ', tip:'Assigner une IP (compléter)', norun:true},
+    {label:'no shut', cmd:'no shutdown', tip:'Activer l\'interface', cls:'qbtn-ok'},
+    {label:'sw access', cmd:'switchport mode access', tip:'Mode access'},
+    {label:'sw trunk', cmd:'switchport mode trunk', tip:'Mode trunk'},
+    {label:'sw vlan', cmd:'switchport access vlan ', tip:'Assigner VLAN (compléter)', norun:true},
+    {label:'encap dot1Q', cmd:'encapsulation dot1Q ', tip:'Encapsulation (compléter)', norun:true},
+    {label:'port-sec', cmd:'switchport port-security', tip:'Activer port security'},
+    {label:'sticky', cmd:'switchport port-security mac-address sticky', tip:'Sticky MAC'},
+    {label:'max 2', cmd:'switchport port-security maximum 2', tip:'Max 2 MACs'},
+    {label:'portfast', cmd:'spanning-tree portfast', tip:'PortFast'},
+    {label:'exit', cmd:'exit', tip:'Niveau supérieur', cls:'qbtn-warn'},
+    {label:'end', cmd:'end', tip:'Retour en #', cls:'qbtn-warn'},
+  ],
+  'config-vlan': [
+    {label:'name SALES', cmd:'name Sales', tip:'Nommer le VLAN Sales'},
+    {label:'name IT', cmd:'name IT', tip:'Nommer le VLAN IT'},
+    {label:'name MGMT', cmd:'name Management', tip:'Nommer le VLAN Management'},
+    {label:'exit', cmd:'exit', tip:'Niveau supérieur', cls:'qbtn-warn'},
+  ],
+  'config-router': [
+    {label:'network', cmd:'network ', tip:'Annoncer un réseau', norun:true},
+    {label:'router-id', cmd:'router-id ', tip:'Définir router-id', norun:true},
+    {label:'passive-if', cmd:'passive-interface ', tip:'Interface passive', norun:true},
+    {label:'exit', cmd:'exit', tip:'Niveau supérieur', cls:'qbtn-warn'},
+  ],
+};
+
+// ---- Quick command button click ----
+function qcmd(cmd, norun) {
+  const inp = document.getElementById('cli-input');
+  if (!inp) return;
+  if (norun) {
+    inp.value = cmd;
+    inp.focus();
+    inp.setSelectionRange(cmd.length, cmd.length);
+  } else {
+    executeCommand(cmd);
+    inp.value = '';
+    inp.focus();
+    updateContextBar();
+  }
+}
+
+// ---- Expand abbreviations ----
+function expandAbbrev(raw) {
+  const lower = raw.trim().toLowerCase();
+  if (CMD_ABBREVS[lower]) return CMD_ABBREVS[lower];
+
+  // Prefix matching for multi-word
+  for (const [abbr, full] of Object.entries(CMD_ABBREVS)) {
+    if (lower === abbr) return full;
+  }
+
+  // Single-word prefix match on known commands
+  const parts = raw.trim().split(/\s+/);
+  const firstWord = parts[0].toLowerCase();
+  const knownFirst = ['show','configure','interface','vlan','spanning-tree',
+    'switchport','ip','no','router','line','crypto','username',
+    'enable','disable','ping','traceroute','copy','write','clear',
+    'debug','undebug','banner','hostname','service','access-list'];
+
+  for (const known of knownFirst) {
+    if (known.startsWith(firstWord) && firstWord.length >= 2) {
+      parts[0] = known;
+      return parts.join(' ');
+    }
+  }
+
+  return raw;
+}
+
+// ---- Tab completion ----
+let acSelected = -1;
+let acMatches = [];
+
+function getCompletionMode(dev) {
+  if (!dev) return 'exec';
+  if (dev.configContext) {
+    const ctx = dev.configContext;
+    if (ctx.startsWith('config-if:')) return 'config-if';
+    if (ctx.startsWith('config-vlan:')) return 'config-vlan';
+    if (ctx === 'config-router') return 'config-router';
+    if (ctx === 'config-line') return 'config-if'; // reuse
+    return 'config';
+  }
+  if (dev.mode === 'priv') return 'priv';
+  if (dev.mode === 'config') return 'config';
+  return 'exec';
+}
+
+function showAutocomplete(matches) {
+  const box = document.getElementById('autocomplete-box');
+  if (!box) return;
+  if (!matches.length) { box.style.display='none'; return; }
+
+  box.innerHTML = matches.slice(0,10).map((m,i) =>
+    `<div class="ac-item${i===acSelected?' ac-selected':''}" onclick="applyCompletion('${m[0].replace(/'/g,"\\'")}')">
+      <span>${escapeHtml(m[0])}</span>
+      <span class="ac-desc">${escapeHtml(m[1])}</span>
+    </div>`
+  ).join('');
+  box.style.display = 'block';
+}
+
+function hideAutocomplete() {
+  const box = document.getElementById('autocomplete-box');
+  if (box) box.style.display = 'none';
+  acSelected = -1;
+  acMatches = [];
+}
+
+function applyCompletion(cmd) {
+  const inp = document.getElementById('cli-input');
+  if (!inp) return;
+  inp.value = cmd;
+  inp.focus();
+  hideAutocomplete();
+  // If no space at end, put cursor at end
+  inp.setSelectionRange(cmd.length, cmd.length);
+}
+
+// ---- Context bar update ----
+function updateContextBar() {
+  const dev = DEVICES[activeDevice];
+  if (!dev) return;
+
+  const mode = getCompletionMode(dev);
+  const bar = document.getElementById('quick-bar-ctx');
+  const btns = document.getElementById('qbar-ctx-btns');
+  if (!bar || !btns) return;
+
+  const ctxBtns = CTX_BUTTONS[mode];
+  if (!ctxBtns || mode === 'exec') {
+    bar.style.display = 'none';
+    return;
+  }
+
+  bar.style.display = 'flex';
+  btns.innerHTML = ctxBtns.map(b =>
+    `<button class="qbtn ${b.cls||''}" onclick="qcmd('${b.cmd.replace(/'/g,"\\'")}',${!!b.norun})" title="${b.tip||''}">${b.label}</button>`
+  ).join('');
+}
+
+// ---- Patch setupCLI to add abbreviation + tab completion ----
+const _origSetupCLI = setupCLI;
+setupCLI = function() {
+  _origSetupCLI();
+
+  const inp = document.getElementById('cli-input');
+  if (!inp) return;
+
+  // Override keydown to intercept Tab and abbreviations
+  inp.removeEventListener('keydown', inp._dojoHandler);
+  const origKeydown = inp.onkeydown;
+
+  inp.addEventListener('keydown', function(e) {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      handleTab(inp);
+      return;
+    }
+    if (e.key === 'ArrowUp' && acMatches.length) {
+      e.preventDefault();
+      acSelected = Math.max(0, acSelected - 1);
+      showAutocomplete(acMatches);
+      if (acSelected >= 0 && acMatches[acSelected]) {
+        inp.value = acMatches[acSelected][0];
+      }
+      return;
+    }
+    if (e.key === 'ArrowDown' && acMatches.length) {
+      e.preventDefault();
+      acSelected = Math.min(acMatches.length - 1, acSelected + 1);
+      showAutocomplete(acMatches);
+      if (acSelected >= 0 && acMatches[acSelected]) {
+        inp.value = acMatches[acSelected][0];
+      }
+      return;
+    }
+    if (e.key === 'Escape') {
+      hideAutocomplete();
+      return;
+    }
+    if (e.key === 'Enter') {
+      hideAutocomplete();
+      // Expand abbreviation before executing
+      const expanded = expandAbbrev(inp.value);
+      if (expanded !== inp.value) inp.value = expanded;
+      // The original Enter handler will run via the existing listener
+      setTimeout(updateContextBar, 50);
+      return;
+    }
+    // Input changed → update autocomplete
+    setTimeout(() => handleInput(inp), 0);
+  });
+};
+
+function handleTab(inp) {
+  const val = inp.value.trim().toLowerCase();
+  if (!val) return;
+
+  const dev = DEVICES[activeDevice];
+  const mode = getCompletionMode(dev);
+  const db = COMPLETION_DB[mode] || COMPLETION_DB.exec;
+
+  // Find matches
+  acMatches = db.filter(([cmd]) => cmd.toLowerCase().startsWith(val));
+
+  if (acMatches.length === 1) {
+    inp.value = acMatches[0][0];
+    hideAutocomplete();
+  } else if (acMatches.length > 1) {
+    acSelected = 0;
+    showAutocomplete(acMatches);
+    inp.value = acMatches[0][0];
+  } else {
+    // Try abbreviation
+    const expanded = expandAbbrev(inp.value);
+    if (expanded !== inp.value) inp.value = expanded;
+    hideAutocomplete();
+  }
+}
+
+function handleInput(inp) {
+  const val = inp.value.trim().toLowerCase();
+  if (val.length < 2) { hideAutocomplete(); return; }
+
+  const dev = DEVICES[activeDevice];
+  const mode = getCompletionMode(dev);
+  const db = COMPLETION_DB[mode] || COMPLETION_DB.exec;
+
+  acMatches = db.filter(([cmd]) => cmd.toLowerCase().startsWith(val));
+  if (acMatches.length > 0 && acMatches.length <= 8) {
+    acSelected = -1;
+    showAutocomplete(acMatches);
+  } else {
+    hideAutocomplete();
+  }
+}
+
+// Close autocomplete when clicking outside
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#cli-area') && !e.target.closest('#autocomplete-box')) {
+    hideAutocomplete();
+  }
+});
+
+// Patch executeCommand to also update context bar
+const _origExec = executeCommand;
+executeCommand = function(raw) {
+  _origExec(raw);
+  updateContextBar();
+};
+
+// ============================================================
+// PC SIMULATOR — Terminal Windows/Linux style
+// ============================================================
+
+let activePc = null;
+let pcHistory = [];
+let pcHistIdx = -1;
+let pcTestResults = {};
+
+// ---- PC OS simulation ----
+const PC_OS = {
+  getConfig(pc) {
+    return {
+      ip: pc.ip === 'DHCP' ? pc._assignedIp || '(non assignée)' : pc.ip,
+      mask: pc.mask === 'auto' ? '255.255.255.0' : pc.mask,
+      gateway: pc.gateway,
+      dns: '8.8.8.8'
+    };
+  }
+};
+
+// Simulate ping from a PC given the current network state
+function pcCanReach(pc, target) {
+  if (!currentLab) return false;
+  const dev = DEVICES[currentLab.initial_config];
+
+  // Same subnet check
+  const pcIp = pc.ip === 'DHCP' ? (pc._assignedIp || null) : pc.ip;
+  if (!pcIp) return false;
+
+  // Parse subnets
+  const pcNet = ipToNetwork(pcIp, pc.mask === 'auto' ? '255.255.255.0' : pc.mask);
+  const tgtNet = ipToNetwork(target, '255.255.255.0');
+
+  // Same subnet: direct
+  if (pcNet === tgtNet) {
+    // Check if target is configured somewhere
+    return true;
+  }
+
+  // Different subnet: needs gateway + router
+  if (!pc.gateway || pc.gateway === target) return true;
+
+  // Check if R1 or the router device is configured with sub-interfaces (inter-VLAN)
+  const r1 = DEVICES['R1'];
+  if (r1) {
+    const hasRouteForTarget = Object.values(r1.interfaces).some(iface => {
+      if (!iface.ip) return false;
+      const ifNet = ipToNetwork(iface.ip, iface.mask || '255.255.255.0');
+      return ifNet === tgtNet;
+    });
+    if (hasRouteForTarget) return true;
+  }
+  return false;
+}
+
+function togglePcPanel() {
+  const panel = document.getElementById('pc-panel');
+  if (!panel) return;
+  if (panel.style.display === 'none' || !panel.style.display) {
+    panel.style.display = 'flex';
+    if (currentLab && currentLab.pc_scenarios) {
+      loadPcScenarios(currentLab.pc_scenarios);
+    }
+    document.getElementById('pc-input').focus();
+  } else {
+    panel.style.display = 'none';
+  }
+}
+
+function loadPcScenarios(scenarios) {
+  activePc = scenarios[0] || null;
+  const selWrap = document.getElementById('pc-selector-wrap');
+  if (!selWrap) return;
+
+  selWrap.innerHTML = scenarios.map((sc, i) =>
+    `<button class="pc-selector-btn ${i===0?'active':''}" onclick="selectPc(${i})" id="pcbtn-${i}">${sc.pc_name}</button>`
+  ).join('');
+
+  if (activePc) renderPcState();
+}
+
+function selectPc(idx) {
+  const scenarios = currentLab && currentLab.pc_scenarios;
+  if (!scenarios) return;
+  activePc = scenarios[idx];
+  document.querySelectorAll('.pc-selector-btn').forEach((b,i) => b.classList.toggle('active', i===idx));
+  renderPcState();
+  document.getElementById('pc-output').innerHTML = '';
+  pcPrint(`Connecté à ${activePc.pc_name} (${activePc.ip})\n`, 'var(--ok)');
+}
+
+function renderPcState() {
+  if (!activePc) return;
+  const badge = document.getElementById('pc-info-badge');
+  const prompt = document.getElementById('pc-prompt');
+  if (badge) badge.textContent = `${activePc.pc_name} | ${activePc.ip} | GW: ${activePc.gateway}`;
+  if (prompt) prompt.textContent = `${activePc.pc_name}> `;
+  renderPcTests();
+  pcPrint(`\n--- ${activePc.pc_name} ---\nIP: ${activePc.ip}   Masque: ${activePc.mask}\nPasserelle: ${activePc.gateway}   VLAN: ${activePc.vlan}\nTapez 'help' pour les commandes disponibles.\n`, 'var(--mu)');
+}
+
+function renderPcTests() {
+  const el = document.getElementById('pc-tests-list');
+  if (!el || !activePc) return;
+  el.innerHTML = (activePc.tests || []).map((t, i) => {
+    const res = pcTestResults[`${activePc.pc_id}-${i}`];
+    const icon = res === undefined ? '○' : (res === t.expect ? '✅' : '❌');
+    return `<div class="pc-test-item ${res===undefined?'':res===t.expect?'pass':'fail'}" onclick="runPcTest(${i})">
+      <div class="pc-test-icon">${icon}</div>
+      <div class="pc-test-label">${t.label}</div>
+    </div>`;
+  }).join('');
+}
+
+function runPcTest(idx) {
+  if (!activePc || !activePc.tests || !activePc.tests[idx]) return;
+  const test = activePc.tests[idx];
+  const key = `${activePc.pc_id}-${idx}`;
+
+  if (test.type === 'dhcp') {
+    activePc._assignedIp = '192.168.1.10';
+    const result = !!DEVICES[currentLab?.initial_config]?.interfaces;
+    pcTestResults[key] = result;
+    pcPrint(`\nIPCONFIG (DHCP):\n  IP obtenue : ${result ? activePc._assignedIp : '0.0.0.0 (aucun serveur DHCP)'}\n  Passerelle : ${activePc.gateway}\n`, result ? 'var(--ok)' : 'var(--er)');
+  } else if (test.type === 'telnet') {
+    const blocked = checkAclBlocked('telnet', activePc.ip, test.target);
+    const result = !blocked;
+    pcTestResults[key] = result;
+    pcPrint(`\nTELNET ${test.target}...\n${blocked ? '% Connection refused by ACL (port 23 bloqué)' : 'Trying ' + test.target + '...\nConnected.'}\n`, blocked ? 'var(--er)' : 'var(--ok)');
+  } else {
+    const canReach = pcCanReach(activePc, test.target);
+    const result = canReach;
+    pcTestResults[key] = result;
+
+    const delay = () => (Math.random() * 3 + 1).toFixed(1);
+    if (result) {
+      pcPrint(`\nPing de ${activePc.ip} → ${test.target}:\nRéponse de ${test.target}: octets=32 durée=${delay()}ms TTL=128\nRéponse de ${test.target}: octets=32 durée=${delay()}ms TTL=128\nRéponse de ${test.target}: octets=32 durée=${delay()}ms TTL=128\nRéponse de ${test.target}: octets=32 durée=${delay()}ms TTL=128\n\nStatistiques Ping pour ${test.target}: Paquets: Envoyés=4, Reçus=4, Perdus=0 (0% pertes)\nDurée aller/retour en ms: Minimum=${delay()}ms, Maximum=${delay()}ms, Moyenne=${delay()}ms\n`, 'var(--ok)');
+    } else {
+      pcPrint(`\nPing de ${activePc.ip} → ${test.target}:\nDelai d'attente de la demande dépassé.\nDelai d'attente de la demande dépassé.\nDelai d'attente de la demande dépassé.\nDelai d'attente de la demande dépassé.\n\nStatistiques Ping pour ${test.target}: Paquets: Envoyés=4, Reçus=0, Perdus=4 (100% pertes)\n`, 'var(--er)');
+    }
+
+    // Expected vs got
+    const expectedStr = test.expect ? '✅ attendu' : '❌ attendu (doit échouer)';
+    const gotStr = result === test.expect ? '✅ CORRECT' : '❌ INATTENDU — vérifiez votre config';
+    pcPrint(`[Test] ${gotStr} — ${expectedStr}\n`, result === test.expect ? 'var(--ok)' : 'var(--wa)');
+  }
+  renderPcTests();
+}
+
+function runAllPcTests() {
+  if (!activePc || !activePc.tests) return;
+  pcPrint('\n══ LANCEMENT DE TOUS LES TESTS ══\n', 'var(--ac)');
+  activePc.tests.forEach((_, i) => setTimeout(() => runPcTest(i), i * 400));
+}
+
+function checkAclBlocked(service, srcIp, dst) {
+  const dev = DEVICES['R1'] || DEVICES[currentLab?.initial_config];
+  if (!dev || !dev.acls) return false;
+  for (const [num, rules] of Object.entries(dev.acls)) {
+    for (const rule of rules) {
+      if (rule.action === 'deny' && service === 'telnet') return true;
+    }
+  }
+  return false;
+}
+
+// PC command dispatcher
+function pcDispatch(raw) {
+  const cmd = raw.trim().toLowerCase();
+  const parts = raw.trim().split(/\s+/);
+  if (!activePc) return 'Aucun PC sélectionné.';
+  const cfg = PC_OS.getConfig(activePc);
+
+  if (cmd === 'help' || cmd === '?') return `Commandes disponibles:
+  ipconfig / ip addr     — Configuration réseau
+  ping <ip>              — Tester la connectivité  
+  tracert <ip>           — Tracer le chemin (Windows)
+  traceroute <ip>        — Tracer le chemin (Linux)
+  arp -a                 — Afficher la table ARP
+  netstat -n             — Connexions actives
+  nslookup <host>        — Résolution DNS
+  route print            — Table de routage locale
+  cls / clear            — Vider l'écran`;
+
+  if (cmd === 'ipconfig' || cmd === 'ipconfig /all' || cmd === 'ip addr' || cmd === 'ip a') {
+    return `Configuration IP de Windows:
+
+Carte réseau Ethernet:
+   Suffixe DNS propre à la connexion:
+   Adresse physique . . . . . . . . . : AA-BB-CC-DD-EE-0${activePc.vlan||1}
+   DHCP activé. . . . . . . . . . . . : ${activePc.ip === 'DHCP' ? 'Oui' : 'Non'}
+   Configuration automatique activée  : Oui
+   Adresse IPv4. . . . . . . . . . . : ${cfg.ip} (préféré)
+   Masque de sous-réseau. . . . . . . : ${cfg.mask}
+   Passerelle par défaut. . . . . . . : ${cfg.gateway}
+   Serveur DNS. . . . . . . . . . . . : ${cfg.dns}`;
+  }
+
+  if (cmd.startsWith('ping')) {
+    const target = parts[1];
+    if (!target) return 'Syntaxe : ping <adresse_ip>';
+    const can = pcCanReach(activePc, target);
+    const d = () => (Math.random()*4+1).toFixed(1);
+    if (can) return `\nPing de ${cfg.ip} vers ${target} avec 32 octets de données :
+Réponse de ${target}: octets=32 durée=${d()}ms TTL=128
+Réponse de ${target}: octets=32 durée=${d()}ms TTL=128
+Réponse de ${target}: octets=32 durée=${d()}ms TTL=128
+Réponse de ${target}: octets=32 durée=${d()}ms TTL=128
+
+Statistiques Ping pour ${target}:
+    Paquets: Envoyés = 4, Reçus = 4, Perdus = 0 (0% de perte),
+Durée aller/retour en ms:
+    Minimum = ${d()}ms, Maximum = ${d()}ms, Moyenne = ${d()}ms`;
+    return `\nPing de ${cfg.ip} vers ${target} avec 32 octets de données :
+Délai d'attente de la demande dépassé.
+Délai d'attente de la demande dépassé.
+Délai d'attente de la demande dépassé.
+Délai d'attente de la demande dépassé.
+
+Statistiques Ping pour ${target}:
+    Paquets: Envoyés = 4, Reçus = 0, Perdus = 4 (100% de perte)`;
+  }
+
+  if (cmd.startsWith('tracert') || cmd.startsWith('traceroute')) {
+    const target = parts[1] || cfg.gateway;
+    return `Détermination de l'itinéraire vers ${target} avec au plus 30 sauts :
+
+  1    ${(Math.random()*2+1).toFixed(1)} ms    ${(Math.random()*2+1).toFixed(1)} ms    ${(Math.random()*2+1).toFixed(1)} ms  ${cfg.gateway}
+  2    ${(Math.random()*5+3).toFixed(1)} ms    ${(Math.random()*5+3).toFixed(1)} ms    ${(Math.random()*5+3).toFixed(1)} ms  ${target}
+
+Itinéraire déterminé.`;
+  }
+
+  if (cmd === 'arp -a' || cmd === 'arp') {
+    return `Interface : ${cfg.ip} --- 0xb
+  Adresse Internet      Adresse physique      Type
+  ${cfg.gateway}      aa-bb-cc-00-01-01     dynamique
+  ${cfg.ip.split('.').slice(0,3).join('.')}.255  ff-ff-ff-ff-ff-ff     statique
+  224.0.0.22            01-00-5e-00-00-16     statique`;
+  }
+
+  if (cmd === 'netstat -n' || cmd === 'netstat') {
+    return `Connexions actives
+
+  Proto  Adresse locale       Adresse distante     État
+  TCP    ${cfg.ip}:1024    ${cfg.gateway}:80     ESTABLISHED
+  TCP    ${cfg.ip}:1025    8.8.8.8:53            TIME_WAIT`;
+  }
+
+  if (cmd.startsWith('nslookup')) {
+    const host = parts[1] || 'www.cisco.com';
+    return `Serveur :   dns.google
+Address:  8.8.8.8
+
+Réponse ne faisant pas autorité :
+Nom :    ${host}
+Address:  ${Math.floor(Math.random()*200+50)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}`;
+  }
+
+  if (cmd === 'route print' || cmd === 'ip route') {
+    return `===========================================================================
+Liste d'interfaces
+  ${activePc.vlan||1}...AA BB CC DD EE 0${activePc.vlan||1} ......Ethernet
+
+IPv4 Table de routage
+===========================================================================
+Itinéraires actifs :
+Destination réseau    Masque réseau  Adr. passerelle   Adr. interface  Métrique
+          0.0.0.0          0.0.0.0       ${cfg.gateway}       ${cfg.ip}     25
+        ${cfg.ip.split('.').slice(0,3).join('.')}.0    255.255.255.0         On-link       ${cfg.ip}    281
+      ${cfg.ip}  255.255.255.255         On-link       ${cfg.ip}    281`;
+  }
+
+  if (cmd === 'cls' || cmd === 'clear') {
+    document.getElementById('pc-output').innerHTML = '';
+    return '';
+  }
+
+  if (cmd === 'hostname') return activePc.pc_name;
+
+  return `'${parts[0]}' n'est pas reconnu en tant que commande interne ou externe. Tapez 'help'.`;
+}
+
+function pcPrint(text, color) {
+  const out = document.getElementById('pc-output');
+  if (!out) return;
+  const span = document.createElement('span');
+  span.style.color = color || '#c8deff';
+  span.textContent = text;
+  out.appendChild(span);
+  out.scrollTop = out.scrollHeight;
+}
+
+// Setup PC input
+document.addEventListener('DOMContentLoaded', () => {
+  const pcInp = document.getElementById('pc-input');
+  if (!pcInp) return;
+  pcInp.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      const raw = pcInp.value;
+      pcPrint(`${activePc ? activePc.pc_name : 'PC'}> ${raw}\n`, 'var(--ok)');
+      pcHistory.unshift(raw);
+      pcHistIdx = -1;
+      const out = pcDispatch(raw);
+      if (out) pcPrint(out + '\n', '#c8deff');
+      pcInp.value = '';
+    } else if (e.key === 'ArrowUp') {
+      if (pcHistIdx < pcHistory.length-1) pcHistIdx++;
+      pcInp.value = pcHistory[pcHistIdx] || '';
+      e.preventDefault();
+    } else if (e.key === 'ArrowDown') {
+      if (pcHistIdx > 0) pcHistIdx--;
+      else { pcHistIdx = -1; pcInp.value = ''; }
+      pcInp.value = pcHistory[pcHistIdx] || '';
+      e.preventDefault();
+    }
+  });
+});
+
+// ============================================================
+// ADMIN PANEL
+// ============================================================
+let adminActiveCat = 'fundamentals';
+
+function openAdmin() {
+  document.getElementById('admin-modal').style.display = 'block';
+  renderAdminCatTabs();
+  renderAdminLabList();
+}
+function closeAdmin() {
+  document.getElementById('admin-modal').style.display = 'none';
+}
+
+function renderAdminCatTabs() {
+  const tabs = document.getElementById('admin-cat-tabs');
+  if (!tabs || !LABS_DATA.categories) return;
+  tabs.innerHTML = LABS_DATA.categories.map(cat =>
+    `<button class="admin-cat-btn ${cat.id===adminActiveCat?'active':''}" onclick="setAdminCat('${cat.id}')">
+      ${cat.icon} ${cat.label}
+      <span style="font-family:var(--font-mono);font-size:.6rem;color:var(--mu)">(${LABS_DATA.labs.filter(l=>l.category===cat.id).length})</span>
+    </button>`
+  ).join('');
+}
+
+function setAdminCat(catId) {
+  adminActiveCat = catId;
+  renderAdminCatTabs();
+  renderAdminLabList();
+  document.getElementById('admin-cat').value = catId;
+}
+
+function renderAdminLabList() {
+  const el = document.getElementById('admin-lab-list');
+  if (!el) return;
+  const labs = LABS_DATA.labs.filter(l => l.category === adminActiveCat);
+  const cat = LABS_DATA.categories.find(c => c.id === adminActiveCat);
+
+  if (labs.length === 0) {
+    el.innerHTML = `<div style="text-align:center;padding:20px;color:var(--mu);font-size:.82rem">Aucun lab dans cette catégorie. Ajoutez-en un ci-dessous.</div>`;
+    return;
+  }
+
+  el.innerHTML = `
+    <div style="font-family:var(--font-mono);font-size:.6rem;color:${cat?.color||'var(--ac)'};letter-spacing:2px;margin-bottom:10px">
+      ${cat?.icon||''} ${cat?.label||''} — ${labs.length} lab(s)
+    </div>` +
+    labs.map(lab =>
+    `<div class="admin-lab-card">
+      <div>
+        <div class="admin-lab-title">${lab.title}</div>
+        <div class="admin-lab-meta">${lab.difficulty} | ${lab.duration} | ${lab.checklist?.length||0} tâches | ${lab.pc_scenarios?.length||0} PC</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button onclick="loadLab(${lab.id}); closeAdmin();" class="btn btn-primary" style="padding:4px 10px;font-size:.6rem">▶ Charger</button>
+        <button onclick="adminDeleteLab(${lab.id})" class="btn btn-danger" style="padding:4px 8px;font-size:.6rem">✕</button>
+      </div>
+    </div>`
+  ).join('');
+}
+
+function adminAddLab() {
+  const title = document.getElementById('admin-title').value.trim();
+  const cat = document.getElementById('admin-cat').value;
+  const diff = document.getElementById('admin-diff').value;
+  const dur = document.getElementById('admin-dur').value.trim() || '30 min';
+  const hint = document.getElementById('admin-hint').value.trim();
+  const dev = document.getElementById('admin-dev').value.trim() || 'SW1';
+
+  if (!title) { alert('Titre obligatoire !'); return; }
+
+  // Parse objectives
+  const objRaw = document.getElementById('admin-obj').value.trim();
+  const objectives = objRaw ? objRaw.split('\n').filter(Boolean) : ['Objectif 1'];
+
+  // Parse instructions (convert [code]...[/code] to <code>...</code>)
+  const instrRaw = document.getElementById('admin-instr').value.trim();
+  const instructions = instrRaw
+    ? instrRaw.split('\n').filter(Boolean).map(l => l.replace(/\[code\]/g,'<code>').replace(/\[\/code\]/g,'</code>'))
+    : ['Instruction 1'];
+
+  // Parse addressing table
+  const addrRaw = document.getElementById('admin-addr').value.trim();
+  const addressing = addrRaw
+    ? addrRaw.split('\n').filter(Boolean).map(line => {
+        const [device,iface,ip,mask,vlan] = line.split('|').map(s=>s.trim());
+        return {device:device||'?', interface:iface||'NIC', ip:ip||'0.0.0.0', mask:mask||'/24', vlan:vlan||''};
+      })
+    : [{device:'PC1', interface:'NIC', ip:'192.168.1.10', mask:'/24', vlan:''}];
+
+  // New lab object
+  const newId = Math.max(...LABS_DATA.labs.map(l=>l.id), 0) + 1;
+  const newLab = {
+    id: newId, category: cat,
+    title, difficulty: diff, duration: dur,
+    objectives, instructions, addressing,
+    checklist: [],
+    topology: {
+      type: 'svg',
+      devices: [
+        {id:'sw1', label:'SW1', type:'switch', x:300, y:180},
+        {id:'pc1', label:'PC1', type:'pc', x:150, y:320},
+        {id:'pc2', label:'PC2', type:'pc', x:300, y:320}
+      ],
+      links: [
+        {from:'sw1', to:'pc1', label:'Fa0/1'},
+        {from:'sw1', to:'pc2', label:'Fa0/2'}
+      ]
+    },
+    initial_config: dev,
+    hint: hint || 'Configurez les équipements selon les instructions.',
+    pc_scenarios: []
+  };
+
+  LABS_DATA.labs.push(newLab);
+
+  // Update selector
+  const sel = document.getElementById('lab-selector');
+  if (sel) {
+    const opt = document.createElement('option');
+    opt.value = newLab.id;
+    opt.textContent = `Lab ${newLab.id}: ${newLab.title}`;
+    sel.appendChild(opt);
+  }
+
+  // Clear form
+  ['admin-title','admin-obj','admin-instr','admin-addr','admin-hint'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+
+  adminActiveCat = cat;
+  renderAdminCatTabs();
+  renderAdminLabList();
+  showToast(`✅ Lab "${title}" ajouté !`);
+}
+
+function adminDeleteLab(id) {
+  if (!confirm(`Supprimer le lab ${id} ?`)) return;
+  LABS_DATA.labs = LABS_DATA.labs.filter(l => l.id !== id);
+  const opt = document.querySelector(`#lab-selector option[value="${id}"]`);
+  if (opt) opt.remove();
+  renderAdminCatTabs();
+  renderAdminLabList();
+  showToast('Lab supprimé.');
+}
+
+function adminExportLabs() {
+  const blob = new Blob([JSON.stringify(LABS_DATA, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'dojo-netsim-labs.json';
+  a.click();
+  showToast('Labs exportés !');
+}
+
+function adminImportLabs() {
+  document.getElementById('admin-import-file').click();
+}
+
+function adminDoImport(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (data.labs) {
+        LABS_DATA.labs = data.labs;
+        if (data.categories) LABS_DATA.categories = data.categories;
+        // Rebuild selector
+        const sel = document.getElementById('lab-selector');
+        if (sel) {
+          sel.innerHTML = '';
+          LABS_DATA.labs.forEach(lab => {
+            const opt = document.createElement('option');
+            opt.value = lab.id;
+            opt.textContent = `Lab ${lab.id}: ${lab.title}`;
+            sel.appendChild(opt);
+          });
+        }
+        renderAdminCatTabs();
+        renderAdminLabList();
+        showToast(`✅ ${data.labs.length} labs importés !`);
+      }
+    } catch(err) {
+      alert('Erreur import JSON : ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+// Category overview in lab selector area
+function buildCategorySelector() {
+  const sel = document.getElementById('lab-selector');
+  if (!sel || !LABS_DATA.categories) return;
+  sel.innerHTML = '';
+  LABS_DATA.categories.forEach(cat => {
+    const labs = LABS_DATA.labs.filter(l => l.category === cat.id);
+    if (labs.length === 0) return;
+    const group = document.createElement('optgroup');
+    group.label = `${cat.label} (${labs.length})`;
+    labs.forEach(lab => {
+      const opt = document.createElement('option');
+      opt.value = lab.id;
+      opt.textContent = `Lab ${lab.id}: ${lab.title}`;
+      group.appendChild(opt);
+    });
+    sel.appendChild(group);
+  });
+}
+
+// Toast notification
+function showToast(msg) {
+  let toast = document.getElementById('dojo-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'dojo-toast';
+    toast.style.cssText = 'position:fixed;bottom:20px;right:20px;background:#0d1525;border:1px solid var(--ac);color:var(--tx);font-family:var(--font-mono);font-size:.8rem;padding:10px 16px;border-radius:6px;z-index:9999;transition:opacity .3s;pointer-events:none;max-width:300px';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.style.opacity = '1';
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => toast.style.opacity='0', 3000);
+}
+
+// Override loadLab to also load PC panel
+const _origLoadLab = loadLab;
+loadLab = function(id) {
+  _origLoadLab(id);
+  pcTestResults = {};
+  const panel = document.getElementById('pc-panel');
+  if (panel && panel.style.display !== 'none') {
+    const lab = allLabs.find(l => l.id === id);
+    if (lab && lab.pc_scenarios && lab.pc_scenarios.length) {
+      loadPcScenarios(lab.pc_scenarios);
+    }
+  }
+};
+
+// Override loadLabs to use categories in selector
+const _origLoadLabs = loadLabs;
+loadLabs = async function() {
+  await _origLoadLabs();
+  buildCategorySelector();
+};
+
+// Override setupUI to also build category selector
+const _origSetupUI = setupUI;
+setupUI = function() {
+  _origSetupUI();
+  buildCategorySelector();
+};
+
+
+</script>
+
+
+<!-- ============================================================
+     PC TERMINAL PANEL (below feedback)
+     ============================================================ -->
+<div class="pc-panel" id="pc-panel" style="display:none">
+  <div class="pc-panel-header">
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-family:var(--font-mono);font-size:.6rem;color:var(--ok);letter-spacing:2px">🖥 SIMULATION PC</span>
+      <div id="pc-selector-wrap" style="display:flex;gap:4px"></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px">
+      <div class="pc-info" id="pc-info-badge"></div>
+      <button class="btn btn-ghost" style="padding:2px 8px;font-size:.58rem" onclick="document.getElementById('pc-panel').style.display='none'">✕</button>
+    </div>
+  </div>
+  <div class="pc-body">
+    <!-- PC terminal output -->
+    <div class="pc-terminal-wrap">
+      <div class="pc-terminal" id="pc-output"></div>
+      <div class="pc-input-row">
+        <span id="pc-prompt" style="font-family:var(--font-mono);font-size:.8rem;color:var(--ok);flex-shrink:0">PC1&gt; </span>
+        <input id="pc-input" type="text" autocomplete="off" spellcheck="false"
+          placeholder="ping 192.168.1.1 | ipconfig | tracert | arp -a | netstat"
+          style="flex:1;background:transparent;border:none;outline:none;color:#e0eeff;font-family:var(--font-mono);font-size:.8rem;caret-color:var(--ok)">
+      </div>
+    </div>
+    <!-- PC tests panel -->
+    <div class="pc-tests-wrap">
+      <div style="font-family:var(--font-mono);font-size:.58rem;color:var(--ok);letter-spacing:2px;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid rgba(57,255,20,.2)">TESTS RÉSEAU</div>
+      <div id="pc-tests-list"></div>
+      <button onclick="runAllPcTests()" class="btn btn-success" style="width:100%;margin-top:10px;justify-content:center;font-size:.65rem">▶ LANCER TOUS LES TESTS</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     ADMIN MODAL
+     ============================================================ -->
+<div id="admin-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9000;overflow-y:auto">
+  <div style="max-width:800px;margin:30px auto;background:var(--sur);border:1px solid var(--bor);border-radius:12px;overflow:hidden">
+    <!-- Admin header -->
+    <div style="background:rgba(0,0,0,.4);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--bor)">
+      <div>
+        <div style="font-family:var(--font-head);font-size:.85rem;color:var(--wa);letter-spacing:2px">⚙ MODE ADMIN — GESTION DES LABS</div>
+        <div style="font-family:var(--font-mono);font-size:.6rem;color:var(--mu);margin-top:3px">Ajouter, éditer et organiser les labs par catégorie</div>
+      </div>
+      <button onclick="closeAdmin()" class="btn btn-ghost" style="padding:5px 12px">✕ Fermer</button>
+    </div>
+
+    <!-- Admin body -->
+    <div style="padding:20px;display:grid;gap:16px">
+
+      <!-- Category selector -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap" id="admin-cat-tabs"></div>
+
+      <!-- Lab list per category -->
+      <div id="admin-lab-list"></div>
+
+      <!-- Add lab form -->
+      <div style="background:var(--card);border:1px solid var(--bor);border-radius:8px;padding:16px">
+        <div style="font-family:var(--font-mono);font-size:.62rem;color:var(--ac);letter-spacing:2px;margin-bottom:12px">+ NOUVEAU LAB</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div>
+            <label style="font-family:var(--font-mono);font-size:.6rem;color:var(--mu);display:block;margin-bottom:4px">TITRE</label>
+            <input id="admin-title" type="text" placeholder="Lab X — Titre du lab" class="admin-input">
+          </div>
+          <div>
+            <label style="font-family:var(--font-mono);font-size:.6rem;color:var(--mu);display:block;margin-bottom:4px">CATÉGORIE</label>
+            <select id="admin-cat" class="admin-input">
+              <option value="fundamentals">Network Fundamentals</option>
+              <option value="access">Network Access</option>
+              <option value="ip_services">IP Services</option>
+              <option value="security">Security Fundamentals</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-family:var(--font-mono);font-size:.6rem;color:var(--mu);display:block;margin-bottom:4px">DIFFICULTÉ</label>
+            <select id="admin-diff" class="admin-input">
+              <option>Débutant</option><option>Intermédiaire</option><option>Avancé</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-family:var(--font-mono);font-size:.6rem;color:var(--mu);display:block;margin-bottom:4px">DURÉE</label>
+            <input id="admin-dur" type="text" placeholder="30 min" class="admin-input">
+          </div>
+        </div>
+        <div style="margin-bottom:10px">
+          <label style="font-family:var(--font-mono);font-size:.6rem;color:var(--mu);display:block;margin-bottom:4px">OBJECTIFS (un par ligne)</label>
+          <textarea id="admin-obj" rows="3" placeholder="Créer les VLANs 10 et 20&#10;Configurer le trunk&#10;Vérifier avec show vlan brief" class="admin-input admin-textarea"></textarea>
+        </div>
+        <div style="margin-bottom:10px">
+          <label style="font-family:var(--font-mono);font-size:.6rem;color:var(--mu);display:block;margin-bottom:4px">INSTRUCTIONS (une par ligne — utilisez [code]...[/code] pour les commandes)</label>
+          <textarea id="admin-instr" rows="5" placeholder="[code]enable[/code] puis [code]configure terminal[/code]&#10;Créez le VLAN 10 : [code]vlan 10[/code] → [code]name Sales[/code]" class="admin-input admin-textarea"></textarea>
+        </div>
+        <div style="margin-bottom:10px">
+          <label style="font-family:var(--font-mono);font-size:.6rem;color:var(--mu);display:block;margin-bottom:4px">TABLE D'ADRESSAGE (format: Appareil|Interface|IP|Masque|Info, une par ligne)</label>
+          <textarea id="admin-addr" rows="4" placeholder="PC1|NIC|192.168.1.10|/24|VLAN 10&#10;SW1|VLAN 1|192.168.1.1|/24|Management" class="admin-input admin-textarea"></textarea>
+        </div>
+        <div style="margin-bottom:10px">
+          <label style="font-family:var(--font-mono);font-size:.6rem;color:var(--mu);display:block;margin-bottom:4px">ASTUCE</label>
+          <input id="admin-hint" type="text" placeholder="Conseil pour les abonnés..." class="admin-input">
+        </div>
+        <div style="margin-bottom:12px">
+          <label style="font-family:var(--font-mono);font-size:.6rem;color:var(--mu);display:block;margin-bottom:4px">APPAREIL INITIAL (R1, SW1, SW2...)</label>
+          <input id="admin-dev" type="text" placeholder="SW1" value="SW1" class="admin-input" style="width:120px">
+        </div>
+        <div style="display:flex;gap:8px">
+          <button onclick="adminAddLab()" class="btn btn-success" style="flex:1;justify-content:center">+ AJOUTER CE LAB</button>
+          <button onclick="adminExportLabs()" class="btn btn-primary" style="padding:8px 14px">&#x2193; Exporter JSON</button>
+          <button onclick="adminImportLabs()" class="btn btn-warn" style="padding:8px 14px">&#x2191; Importer JSON</button>
+          <input id="admin-import-file" type="file" accept=".json" style="display:none" onchange="adminDoImport(event)">
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

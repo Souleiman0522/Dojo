@@ -1,0 +1,2680 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dojo NetSim — Simulateur Réseau Cisco</title>
+  
+  <!-- jsPDF for PDF export -->
+<style>
+/* ============================================================
+   DOJO NETSIM — Styles
+   Couleurs exactes du Dojo du Networking
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&family=Orbitron:wght@700;900&display=swap');
+
+/* ---- CSS Variables (identiques au Dojo) ---- */
+:root {
+  --bg:    #080c14;
+  --sur:   #0d1525;
+  --card:  #111d33;
+  --bor:   #1e3a5f;
+  --ac:    #00d4ff;
+  --ac2:   #ff6b35;
+  --ac3:   #39ff14;
+  --tx:    #c8deff;
+  --mu:    #5a7a9f;
+  --ok:    #39ff14;
+  --er:    #ff3366;
+  --wa:    #ffcc00;
+
+  --font-mono: 'Share Tech Mono', 'Courier New', monospace;
+  --font-ui:   'Rajdhani', system-ui, sans-serif;
+  --font-head: 'Orbitron', sans-serif;
+
+  --panel-w: 420px;
+  --header-h: 52px;
+  --toolbar-h: 44px;
+}
+
+/* ---- Reset ---- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--tx);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+.app-header {
+  height: var(--header-h);
+  background: linear-gradient(180deg, #050c14, #030608);
+  border-bottom: 1px solid rgba(0,212,255,.15);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 14px;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  flex-shrink: 0;
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.header-logo img {
+  width: 38px; height: 38px;
+  border-radius: 7px;
+}
+.header-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.header-brand-name {
+  font-family: var(--font-head);
+  font-size: .85rem;
+  font-weight: 900;
+  color: var(--ac);
+  letter-spacing: 2px;
+  line-height: 1.1;
+}
+.header-brand-sub {
+  font-family: var(--font-mono);
+  font-size: .52rem;
+  color: var(--mu);
+  letter-spacing: 2px;
+}
+
+.header-sep { flex: 1; }
+
+.lab-selector-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.lab-selector-wrap label {
+  font-family: var(--font-mono);
+  font-size: .65rem;
+  color: var(--mu);
+  letter-spacing: 1px;
+}
+select#lab-selector {
+  background: var(--card);
+  border: 1px solid var(--bor);
+  color: var(--tx);
+  font-family: var(--font-ui);
+  font-size: .82rem;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  max-width: 280px;
+  outline: none;
+  transition: border-color .2s;
+}
+select#lab-selector:focus {
+  border-color: var(--ac);
+}
+select#lab-selector option {
+  background: var(--sur);
+}
+
+.header-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+/* ============================================================
+   MAIN LAYOUT
+   ============================================================ */
+.app-body {
+  display: flex;
+  height: calc(100vh - var(--header-h));
+  overflow: hidden;
+}
+
+/* ============================================================
+   LAB PANEL (gauche)
+   ============================================================ */
+.lab-panel {
+  width: var(--panel-w);
+  min-width: var(--panel-w);
+  max-width: var(--panel-w);
+  height: 100%;
+  background: var(--sur);
+  border-right: 1px solid var(--bor);
+  display: flex;
+  flex-direction: column;
+  transition: all .3s cubic-bezier(.4,0,.2,1);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.lab-panel.hidden {
+  width: 0;
+  min-width: 0;
+  max-width: 0;
+  border-right: none;
+}
+
+.panel-toolbar {
+  height: var(--toolbar-h);
+  background: rgba(0,0,0,.3);
+  border-bottom: 1px solid var(--bor);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.panel-title {
+  font-family: var(--font-head);
+  font-size: .6rem;
+  color: var(--ac);
+  letter-spacing: 2px;
+  font-weight: 700;
+}
+.panel-title-sep { flex: 1; }
+
+.panel-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0;
+}
+.panel-content::-webkit-scrollbar { width: 4px; }
+.panel-content::-webkit-scrollbar-thumb { background: var(--bor); border-radius: 2px; }
+
+/* Panel sections */
+.panel-section {
+  border-bottom: 1px solid var(--bor);
+}
+.panel-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px 8px;
+  cursor: pointer;
+  user-select: none;
+  transition: background .15s;
+}
+.panel-section-header:hover {
+  background: rgba(0,212,255,.04);
+}
+.panel-section-label {
+  font-family: var(--font-mono);
+  font-size: .6rem;
+  color: var(--ac);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.panel-section-chevron {
+  font-size: .65rem;
+  color: var(--mu);
+  transition: transform .2s;
+}
+.panel-section.collapsed .panel-section-chevron { transform: rotate(-90deg); }
+.panel-section.collapsed .panel-section-body { display: none; }
+.panel-section-body { padding: 0 14px 12px; }
+
+/* Lab header */
+.lab-header {
+  padding: 14px;
+  border-bottom: 1px solid var(--bor);
+  background: linear-gradient(135deg, rgba(0,212,255,.05), transparent);
+}
+.lab-title {
+  font-family: var(--font-head);
+  font-size: .85rem;
+  font-weight: 900;
+  color: #e0eeff;
+  margin-bottom: 6px;
+  line-height: 1.3;
+}
+.lab-meta {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* Badges */
+.badge {
+  font-family: var(--font-mono);
+  font-size: .58rem;
+  padding: 2px 8px;
+  border-radius: 3px;
+  letter-spacing: 1px;
+  font-weight: 700;
+  border: 1px solid;
+}
+.badge-diff  { background: rgba(0,212,255,.1);  color: var(--ac);  border-color: rgba(0,212,255,.3); }
+.badge-time  { background: rgba(255,204,0,.1);   color: var(--wa);  border-color: rgba(255,204,0,.3); }
+.badge-obj   { background: rgba(57,255,20,.08);  color: var(--ok);  border-color: rgba(57,255,20,.2); }
+
+/* Topology SVG area */
+.topology-wrap {
+  background: #050810;
+  position: relative;
+  overflow: hidden;
+}
+#topology-svg {
+  width: 100%;
+  display: block;
+  min-height: 220px;
+}
+.topo-node { cursor: default; }
+
+/* Objectives list */
+.objectives-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.objectives-list li {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: .82rem;
+  color: var(--tx);
+  line-height: 1.5;
+}
+.obj-num {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: rgba(0,212,255,.15);
+  border: 1px solid rgba(0,212,255,.3);
+  color: var(--ac);
+  font-family: var(--font-mono);
+  font-size: .65rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Addressing table */
+.addr-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .78rem;
+}
+.addr-table th {
+  font-family: var(--font-mono);
+  font-size: .58rem;
+  color: var(--ac);
+  letter-spacing: 1px;
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--bor);
+  background: rgba(0,0,0,.2);
+}
+.addr-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid rgba(30,58,95,.3);
+  color: var(--tx);
+  vertical-align: middle;
+}
+.addr-table tr:hover td { background: rgba(0,212,255,.03); }
+.addr-table code { font-family: var(--font-mono); font-size: .78rem; }
+.addr-table code.ip { color: var(--ac); }
+.vlan-badge {
+  font-family: var(--font-mono);
+  font-size: .62rem;
+  padding: 1px 5px;
+  background: rgba(0,212,255,.08);
+  border: 1px solid rgba(0,212,255,.2);
+  border-radius: 3px;
+  color: var(--mu);
+}
+
+/* Instructions */
+.instructions-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.instr-item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: .82rem;
+  line-height: 1.6;
+  color: var(--tx);
+}
+.instr-item code {
+  font-family: var(--font-mono);
+  font-size: .78rem;
+  background: rgba(0,212,255,.08);
+  border: 1px solid rgba(0,212,255,.2);
+  border-radius: 3px;
+  padding: 1px 5px;
+  color: var(--ac);
+  white-space: nowrap;
+}
+.step-num {
+  width: 22px; height: 22px;
+  border-radius: 4px;
+  background: var(--card);
+  border: 1px solid var(--bor);
+  color: var(--ac);
+  font-family: var(--font-mono);
+  font-size: .65rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* Hint */
+.lab-hint-box {
+  background: rgba(255,204,0,.06);
+  border: 1px solid rgba(255,204,0,.25);
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: .8rem;
+  color: var(--tx);
+  line-height: 1.6;
+}
+.lab-hint-box::before {
+  content: '💡 ';
+}
+
+/* ============================================================
+   WORKSPACE (droite)
+   ============================================================ */
+.workspace {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  min-width: 0;
+}
+.workspace.panel-hidden { /* full width */ }
+
+/* Workspace toolbar */
+.workspace-toolbar {
+  height: var(--toolbar-h);
+  background: rgba(0,0,0,.3);
+  border-bottom: 1px solid var(--bor);
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.workspace-label {
+  font-family: var(--font-mono);
+  font-size: .62rem;
+  color: var(--mu);
+  letter-spacing: 2px;
+}
+
+/* Split: CLI top / Checklist bottom */
+.workspace-split {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ============================================================
+   CLI SECTION
+   ============================================================ */
+.cli-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: #050810;
+  position: relative;
+}
+.cli-section.fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  flex: none;
+}
+
+.cli-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 14px;
+  background: rgba(0,0,0,.5);
+  border-bottom: 1px solid rgba(0,212,255,.15);
+  flex-shrink: 0;
+}
+.cli-device-label {
+  font-family: var(--font-mono);
+  font-size: .65rem;
+  color: var(--ac);
+  letter-spacing: 2px;
+  background: rgba(0,212,255,.1);
+  border: 1px solid rgba(0,212,255,.2);
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+.cli-dots {
+  display: flex;
+  gap: 5px;
+}
+.cli-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+}
+.cli-dot-r { background: #ff3366; }
+.cli-dot-y { background: var(--wa); }
+.cli-dot-g { background: var(--ok); }
+
+/* CLI Output */
+.cli-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 14px;
+  cursor: text;
+  min-height: 0;
+}
+.cli-area::-webkit-scrollbar { width: 5px; }
+.cli-area::-webkit-scrollbar-thumb { background: #1e3a5f; border-radius: 2px; }
+
+#cli-output {
+  font-family: var(--font-mono);
+  font-size: .82rem;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* CLI text types */
+.cli-output    { color: #c8deff; }
+.cli-prompt-echo .cli-prompt-color { color: var(--ac); }
+.cli-prompt-echo .cli-cmd { color: #e0eeff; }
+.cli-accent    { color: var(--ac); font-weight: 700; }
+.cli-ok        { color: var(--ok); }
+.cli-warn      { color: var(--wa); }
+.cli-error     { color: var(--er); }
+.cli-muted     { color: var(--mu); }
+.cli-cyan      { color: #00d4ff; }
+
+/* CLI Input line */
+.cli-input-row {
+  display: flex;
+  align-items: center;
+  padding: 8px 14px;
+  border-top: 1px solid rgba(0,212,255,.1);
+  background: rgba(0,0,0,.4);
+  flex-shrink: 0;
+}
+#cli-prompt {
+  font-family: var(--font-mono);
+  font-size: .82rem;
+  color: var(--ac);
+  white-space: nowrap;
+  flex-shrink: 0;
+  user-select: none;
+}
+#cli-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #e0eeff;
+  font-family: var(--font-mono);
+  font-size: .82rem;
+  caret-color: var(--ac);
+  min-width: 0;
+  line-height: 1.5;
+}
+#cli-input::placeholder { color: rgba(90,122,159,.4); }
+
+/* ============================================================
+   CHECKLIST / FEEDBACK PANEL
+   ============================================================ */
+.feedback-panel {
+  height: 200px;
+  min-height: 160px;
+  border-top: 1px solid var(--bor);
+  background: var(--sur);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  resize: vertical;
+}
+
+.feedback-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 14px;
+  background: rgba(0,0,0,.2);
+  border-bottom: 1px solid var(--bor);
+  flex-shrink: 0;
+}
+.feedback-title {
+  font-family: var(--font-mono);
+  font-size: .6rem;
+  color: var(--ac);
+  letter-spacing: 2px;
+}
+.score-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+#score-text {
+  font-family: var(--font-head);
+  font-size: .75rem;
+  color: var(--ac);
+  min-width: 30px;
+}
+.score-bar {
+  width: 100px;
+  height: 5px;
+  background: rgba(30,58,95,.5);
+  border-radius: 3px;
+  overflow: hidden;
+}
+#score-bar-fill {
+  height: 100%;
+  background: var(--ac);
+  border-radius: 3px;
+  transition: width .4s ease, background .3s;
+}
+
+.feedback-body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+/* Checklist */
+.checklist-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+.checklist-scroll::-webkit-scrollbar { width: 4px; }
+.checklist-scroll::-webkit-scrollbar-thumb { background: var(--bor); }
+
+.check-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px;
+  border-bottom: 1px solid rgba(30,58,95,.3);
+  transition: background .15s;
+  cursor: default;
+}
+.check-item:hover { background: rgba(0,212,255,.03); }
+.check-item.done { background: rgba(57,255,20,.04); }
+.check-item.check-pass { animation: flash-ok .5s ease; }
+.check-item.check-fail { animation: flash-ko .5s ease; }
+
+@keyframes flash-ok {
+  0%, 100% { background: transparent; }
+  50% { background: rgba(57,255,20,.15); }
+}
+@keyframes flash-ko {
+  0%, 100% { background: transparent; }
+  50% { background: rgba(255,51,102,.1); }
+}
+
+.check-icon {
+  font-size: .9rem;
+  width: 20px;
+  text-align: center;
+  color: var(--mu);
+  flex-shrink: 0;
+}
+.check-item.done .check-icon { color: var(--ok); }
+.check-label {
+  flex: 1;
+  font-size: .8rem;
+  color: var(--tx);
+}
+.check-item.done .check-label { color: var(--ok); }
+.check-cmd {
+  font-family: var(--font-mono);
+  font-size: .65rem;
+  color: var(--mu);
+  background: rgba(0,0,0,.2);
+  padding: 1px 5px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* Feedback message area */
+.feedback-msg-area {
+  width: 220px;
+  border-left: 1px solid var(--bor);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  background: rgba(0,0,0,.15);
+}
+
+#feedback-msg {
+  font-size: .82rem;
+}
+.feedback-win {
+  color: var(--ok);
+  font-weight: 700;
+  padding: 8px;
+  background: rgba(57,255,20,.06);
+  border: 1px solid rgba(57,255,20,.2);
+  border-radius: 5px;
+  text-align: center;
+}
+.feedback-partial {
+  color: var(--wa);
+  padding: 8px;
+  background: rgba(255,204,0,.06);
+  border: 1px solid rgba(255,204,0,.2);
+  border-radius: 5px;
+  text-align: center;
+}
+.feedback-running {
+  color: var(--mu);
+  padding: 8px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: .75rem;
+  animation: pulse 1s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .4; }
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 4px;
+  border: 1px solid;
+  font-family: var(--font-head);
+  font-size: .6rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all .2s;
+  white-space: nowrap;
+  text-transform: uppercase;
+  outline: none;
+}
+.btn:active { transform: scale(.97); }
+
+.btn-primary {
+  background: rgba(0,212,255,.1);
+  border-color: var(--ac);
+  color: var(--ac);
+}
+.btn-primary:hover {
+  background: rgba(0,212,255,.2);
+  box-shadow: 0 0 10px rgba(0,212,255,.2);
+}
+
+.btn-success {
+  background: rgba(57,255,20,.1);
+  border-color: var(--ok);
+  color: var(--ok);
+}
+.btn-success:hover {
+  background: rgba(57,255,20,.18);
+  box-shadow: 0 0 10px rgba(57,255,20,.2);
+}
+
+.btn-warn {
+  background: rgba(255,204,0,.1);
+  border-color: var(--wa);
+  color: var(--wa);
+}
+.btn-warn:hover {
+  background: rgba(255,204,0,.18);
+}
+
+.btn-danger {
+  background: rgba(255,51,102,.1);
+  border-color: var(--er);
+  color: var(--er);
+}
+.btn-danger:hover {
+  background: rgba(255,51,102,.18);
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: var(--bor);
+  color: var(--mu);
+}
+.btn-ghost:hover {
+  border-color: var(--ac);
+  color: var(--ac);
+}
+
+/* ============================================================
+   SCROLLBAR (global)
+   ============================================================ */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bor); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--ac); }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 900px) {
+  :root { --panel-w: 340px; }
+}
+@media (max-width: 700px) {
+  .app-body { flex-direction: column; }
+  .lab-panel { width: 100%; min-width: 100%; max-width: 100%; height: 45vh; }
+  .lab-panel.hidden { height: 0; }
+  .workspace { height: 55vh; }
+  .feedback-msg-area { display: none; }
+  :root { --panel-w: 100%; }
+}
+
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     HEADER
+     ============================================================ -->
+<header class="app-header">
+  <div class="header-logo">
+    <!-- Replace with your logo if available -->
+    <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="8" fill="#0d1525"/>
+      <polygon points="19,6 32,28 6,28" fill="none" stroke="#00d4ff" stroke-width="2"/>
+      <circle cx="19" cy="19" r="4" fill="#00d4ff" opacity=".8"/>
+      <circle cx="19" cy="6" r="2" fill="#00d4ff"/>
+      <circle cx="32" cy="28" r="2" fill="#ff6b35"/>
+      <circle cx="6" cy="28" r="2" fill="#39ff14"/>
+    </svg>
+    <div class="header-brand">
+      <div class="header-brand-name">LE DOJO DU NETWORKING</div>
+      <div class="header-brand-sub">SIMULATEUR RÉSEAU — NETSIM</div>
+    </div>
+  </div>
+
+  <div class="header-sep"></div>
+
+  <!-- Lab selector -->
+  <div class="lab-selector-wrap">
+    <label for="lab-selector">LAB :</label>
+    <select id="lab-selector">
+      <!-- Populated by JS -->
+    </select>
+  </div>
+
+  <!-- Header actions -->
+  <div class="header-actions">
+    <button class="btn btn-warn" id="btn-toggle-panel">◀ Masquer</button>
+    <button class="btn btn-ghost" id="btn-pdf">⬇ PDF</button>
+    <a href="../" class="btn btn-ghost" title="Retour au Dojo">↩ Dojo</a>
+  </div>
+</header>
+
+<!-- ============================================================
+     APP BODY
+     ============================================================ -->
+<div class="app-body">
+
+  <!-- ======================================================
+       LAB PANEL (gauche)
+       ====================================================== -->
+  <aside class="lab-panel" id="lab-panel">
+    <div class="panel-toolbar">
+      <span class="panel-title">📋 LAB EN COURS</span>
+      <div class="panel-title-sep"></div>
+      <button class="btn btn-ghost" id="btn-toggle-panel-inner"
+        onclick="document.getElementById('btn-toggle-panel').click()"
+        style="padding:3px 8px;font-size:.55rem">✕</button>
+    </div>
+
+    <div class="panel-content" id="panel-content">
+
+      <!-- Lab title & meta -->
+      <div class="lab-header">
+        <div class="lab-title" id="lab-title">Chargement...</div>
+        <div class="lab-meta" id="lab-meta"></div>
+      </div>
+
+      <!-- Topologie -->
+      <div class="panel-section" id="sec-topology">
+        <div class="panel-section-header" onclick="toggleSection('sec-topology')">
+          <span class="panel-section-label">📡 Topologie réseau</span>
+          <span class="panel-section-chevron">▾</span>
+        </div>
+        <div class="panel-section-body" style="padding:0">
+          <div class="topology-wrap">
+            <svg id="topology-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Objectifs -->
+      <div class="panel-section" id="sec-objectives">
+        <div class="panel-section-header" onclick="toggleSection('sec-objectives')">
+          <span class="panel-section-label">🎯 Objectifs</span>
+          <span class="panel-section-chevron">▾</span>
+        </div>
+        <div class="panel-section-body">
+          <ul class="objectives-list" id="lab-objectives"></ul>
+        </div>
+      </div>
+
+      <!-- Table d'adressage -->
+      <div class="panel-section" id="sec-addressing">
+        <div class="panel-section-header" onclick="toggleSection('sec-addressing')">
+          <span class="panel-section-label">📊 Table d'adressage IP</span>
+          <span class="panel-section-chevron">▾</span>
+        </div>
+        <div class="panel-section-body" style="padding:0">
+          <table class="addr-table">
+            <thead>
+              <tr>
+                <th>Appareil</th>
+                <th>Interface</th>
+                <th>Adresse IP</th>
+                <th>Masque</th>
+                <th>VLAN / Info</th>
+              </tr>
+            </thead>
+            <tbody id="addr-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Instructions -->
+      <div class="panel-section" id="sec-instructions">
+        <div class="panel-section-header" onclick="toggleSection('sec-instructions')">
+          <span class="panel-section-label">📋 Instructions</span>
+          <span class="panel-section-chevron">▾</span>
+        </div>
+        <div class="panel-section-body">
+          <ol class="instructions-list" id="lab-instructions"></ol>
+        </div>
+      </div>
+
+      <!-- Astuce -->
+      <div class="panel-section" id="sec-hint">
+        <div class="panel-section-header" onclick="toggleSection('sec-hint')">
+          <span class="panel-section-label">💡 Astuce</span>
+          <span class="panel-section-chevron">▾</span>
+        </div>
+        <div class="panel-section-body">
+          <div class="lab-hint-box" id="lab-hint"></div>
+        </div>
+      </div>
+
+    </div><!-- /panel-content -->
+  </aside>
+
+  <!-- ======================================================
+       WORKSPACE (droite)
+       ====================================================== -->
+  <div class="workspace" id="workspace">
+
+    <!-- Workspace toolbar -->
+    <div class="workspace-toolbar">
+      <span class="workspace-label">SIMULATEUR IOS</span>
+      <div style="flex:1"></div>
+      <button class="btn btn-ghost" id="btn-clear-cli" style="padding:3px 8px">⊘ Vider</button>
+      <button class="btn btn-ghost" id="btn-fullscreen" style="padding:3px 8px">⊞ Plein écran</button>
+    </div>
+
+    <!-- Split: CLI + Feedback -->
+    <div class="workspace-split">
+
+      <!-- CLI SECTION -->
+      <div class="cli-section" id="cli-section">
+        <div class="cli-header">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="cli-dots">
+              <div class="cli-dot cli-dot-r"></div>
+              <div class="cli-dot cli-dot-y"></div>
+              <div class="cli-dot cli-dot-g"></div>
+            </div>
+            <span class="cli-device-label" id="cli-device-label">[SW1]</span>
+          </div>
+          <span style="font-family:var(--font-mono);font-size:.6rem;color:var(--mu)">
+            ↑↓ Historique &nbsp;|&nbsp; Tab Aide &nbsp;|&nbsp; Ctrl+L Effacer &nbsp;|&nbsp; Ctrl+C Interrompre
+          </span>
+        </div>
+
+        <div class="cli-area" id="cli-area">
+          <div id="cli-output"></div>
+        </div>
+
+        <div class="cli-input-row">
+          <span id="cli-prompt">SW1&gt; </span>
+          <input
+            id="cli-input"
+            type="text"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="off"
+            spellcheck="false"
+            placeholder="Tapez une commande Cisco IOS..."
+            autofocus
+          >
+        </div>
+      </div>
+
+      <!-- FEEDBACK / CHECKLIST PANEL -->
+      <div class="feedback-panel" id="feedback-panel">
+        <div class="feedback-header">
+          <span class="feedback-title">✅ VÉRIFICATION</span>
+          <div class="score-badge">
+            <span id="score-text">0/0</span>
+            <div class="score-bar">
+              <div id="score-bar-fill" style="width:0%"></div>
+            </div>
+            <button class="btn btn-success" id="btn-run-check" style="padding:3px 10px;font-size:.55rem">
+              ▶ VÉRIFIER
+            </button>
+          </div>
+        </div>
+
+        <div class="feedback-body">
+          <!-- Checklist items -->
+          <div class="checklist-scroll">
+            <div id="checklist-items"></div>
+          </div>
+
+          <!-- Feedback message -->
+          <div class="feedback-msg-area">
+            <div style="font-family:var(--font-mono);font-size:.58rem;color:var(--mu);letter-spacing:2px;margin-bottom:6px">
+              RÉSULTAT
+            </div>
+            <div id="feedback-msg">
+              <div style="color:var(--mu);font-size:.8rem;text-align:center;padding-top:20px">
+                Configurez le lab puis<br>cliquez sur VÉRIFIER
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /workspace-split -->
+  </div><!-- /workspace -->
+
+</div><!-- /app-body -->
+
+<!-- ============================================================
+     SCRIPT
+     ============================================================ -->
+<script>
+// ---- Accordion toggle ----
+function toggleSection(id) {
+  const sec = document.getElementById(id);
+  if (sec) sec.classList.toggle('collapsed');
+}
+</script>
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+// ---- Labs data inline (no fetch needed) ----
+var LABS_DATA = {
+  "labs": [
+    {
+      "id": 1,
+      "title": "Lab 1 — Configuration VLAN de Base",
+      "difficulty": "Débutant",
+      "duration": "30 min",
+      "objectives": [
+        "Créer les VLANs 10 (Sales), 20 (IT) et 99 (Management) sur SW1",
+        "Assigner les ports access aux bons VLANs",
+        "Configurer le trunk entre SW1 et SW2",
+        "Vérifier la configuration avec show vlan brief"
+      ],
+      "topology": {
+        "type": "svg",
+        "description": "SW1 (access) — trunk — SW2 (distribution). PC1 et PC2 sur SW1.",
+        "devices": [
+          {"id": "sw1", "label": "SW1", "type": "switch", "x": 300, "y": 200},
+          {"id": "sw2", "label": "SW2", "type": "switch", "x": 600, "y": 200},
+          {"id": "pc1", "label": "PC1\\nVLAN 10", "type": "pc", "x": 150, "y": 340},
+          {"id": "pc2", "label": "PC2\\nVLAN 20", "type": "pc", "x": 300, "y": 340},
+          {"id": "pc3", "label": "PC3\\nVLAN 10", "type": "pc", "x": 600, "y": 340}
+        ],
+        "links": [
+          {"from": "sw1", "to": "sw2", "label": "Trunk Gi0/1", "type": "trunk"},
+          {"from": "sw1", "to": "pc1", "label": "Fa0/1 (VLAN 10)"},
+          {"from": "sw1", "to": "pc2", "label": "Fa0/2 (VLAN 20)"},
+          {"from": "sw2", "to": "pc3", "label": "Fa0/1 (VLAN 10)"}
+        ]
+      },
+      "addressing": [
+        {"device": "PC1", "interface": "NIC", "ip": "192.168.10.10", "mask": "/24", "vlan": "10 (Sales)"},
+        {"device": "PC2", "interface": "NIC", "ip": "192.168.20.10", "mask": "/24", "vlan": "20 (IT)"},
+        {"device": "PC3", "interface": "NIC", "ip": "192.168.10.11", "mask": "/24", "vlan": "10 (Sales)"},
+        {"device": "SW1", "interface": "VLAN 99", "ip": "192.168.99.1", "mask": "/24", "vlan": "99 (Mgmt)"},
+        {"device": "SW2", "interface": "VLAN 99", "ip": "192.168.99.2", "mask": "/24", "vlan": "99 (Mgmt)"}
+      ],
+      "instructions": [
+        "Connectez-vous à SW1 : tapez <code>enable</code> puis <code>configure terminal</code>",
+        "Créez le VLAN 10 : <code>vlan 10</code> → <code>name Sales</code>",
+        "Créez le VLAN 20 : <code>vlan 20</code> → <code>name IT</code>",
+        "Créez le VLAN 99 : <code>vlan 99</code> → <code>name Management</code>",
+        "Assignez Fa0/1 au VLAN 10 : <code>interface Fa0/1</code> → <code>switchport mode access</code> → <code>switchport access vlan 10</code>",
+        "Assignez Fa0/2 au VLAN 20 (même procédure pour Fa0/2 + vlan 20)",
+        "Configurez le trunk sur Gi0/1 : <code>interface Gi0/1</code> → <code>switchport mode trunk</code> → <code>switchport trunk native vlan 99</code> → <code>switchport trunk allowed vlan 10,20,99</code>",
+        "Vérifiez : <code>show vlan brief</code> et <code>show interfaces trunk</code>"
+      ],
+      "checklist": [
+        {"id": "vlan10", "label": "VLAN 10 créé et nommé Sales", "command": "show vlan brief", "expect": "10.*Sales"},
+        {"id": "vlan20", "label": "VLAN 20 créé et nommé IT", "command": "show vlan brief", "expect": "20.*IT"},
+        {"id": "vlan99", "label": "VLAN 99 créé et nommé Management", "command": "show vlan brief", "expect": "99.*Management"},
+        {"id": "access10", "label": "Fa0/1 en mode access VLAN 10", "command": "show vlan brief", "expect": "Fa0/1.*10"},
+        {"id": "access20", "label": "Fa0/2 en mode access VLAN 20", "command": "show vlan brief", "expect": "Fa0/2.*20"},
+        {"id": "trunk", "label": "Gi0/1 configuré en trunk", "command": "show interfaces trunk", "expect": "Gi0/1.*trunking"}
+      ],
+      "initial_config": "SW1",
+      "hint": "N'oubliez pas : un port trunk transporte PLUSIEURS VLANs. Un port access n'en transporte qu'UN SEUL."
+    },
+    {
+      "id": 2,
+      "title": "Lab 2 — Router-on-a-Stick (Inter-VLAN)",
+      "difficulty": "Intermédiaire",
+      "duration": "45 min",
+      "objectives": [
+        "Configurer les sous-interfaces sur R1 pour chaque VLAN",
+        "Activer l'encapsulation 802.1Q sur les sous-interfaces",
+        "Configurer SW1 avec le trunk vers R1",
+        "Vérifier le routage inter-VLAN par ping entre VLANs"
+      ],
+      "topology": {
+        "type": "svg",
+        "description": "R1 router-on-a-stick. Une seule interface physique trunk vers SW1.",
+        "devices": [
+          {"id": "r1", "label": "R1", "type": "router", "x": 430, "y": 80},
+          {"id": "sw1", "label": "SW1", "type": "switch", "x": 430, "y": 230},
+          {"id": "pc1", "label": "PC1\\n192.168.10.10", "type": "pc", "x": 200, "y": 380},
+          {"id": "pc2", "label": "PC2\\n192.168.20.10", "type": "pc", "x": 430, "y": 380},
+          {"id": "pc3", "label": "PC3\\n192.168.30.10", "type": "pc", "x": 660, "y": 380}
+        ],
+        "links": [
+          {"from": "r1", "to": "sw1", "label": "Gi0/0 Trunk", "type": "trunk"},
+          {"from": "sw1", "to": "pc1", "label": "Fa0/1 V10"},
+          {"from": "sw1", "to": "pc2", "label": "Fa0/2 V20"},
+          {"from": "sw1", "to": "pc3", "label": "Fa0/3 V30"}
+        ]
+      },
+      "addressing": [
+        {"device": "R1", "interface": "Gi0/0.10", "ip": "192.168.10.1", "mask": "/24", "vlan": "10 (Sales) — Gateway"},
+        {"device": "R1", "interface": "Gi0/0.20", "ip": "192.168.20.1", "mask": "/24", "vlan": "20 (IT) — Gateway"},
+        {"device": "R1", "interface": "Gi0/0.30", "ip": "192.168.30.1", "mask": "/24", "vlan": "30 (RH) — Gateway"},
+        {"device": "PC1", "interface": "NIC", "ip": "192.168.10.10", "mask": "/24", "vlan": "GW: 192.168.10.1"},
+        {"device": "PC2", "interface": "NIC", "ip": "192.168.20.10", "mask": "/24", "vlan": "GW: 192.168.20.1"},
+        {"device": "PC3", "interface": "NIC", "ip": "192.168.30.10", "mask": "/24", "vlan": "GW: 192.168.30.1"}
+      ],
+      "instructions": [
+        "Sur SW1 : créez les VLANs 10, 20, 30 et configurez les ports access (Fa0/1→V10, Fa0/2→V20, Fa0/3→V30)",
+        "Sur SW1 : configurez Gi0/1 en trunk vers R1 avec <code>switchport mode trunk</code>",
+        "Sur R1 : activez l'interface physique sans IP : <code>interface Gi0/0</code> → <code>no shutdown</code>",
+        "Sur R1 : créez la sous-interface pour VLAN 10 : <code>interface Gi0/0.10</code> → <code>encapsulation dot1Q 10</code> → <code>ip address 192.168.10.1 255.255.255.0</code>",
+        "Répétez pour VLAN 20 (Gi0/0.20 — 192.168.20.1) et VLAN 30 (Gi0/0.30 — 192.168.30.1)",
+        "Vérifiez avec : <code>show ip interface brief</code> et <code>show ip route</code>",
+        "Testez le routage : <code>ping 192.168.20.10</code> depuis PC1 (doit passer par R1)"
+      ],
+      "checklist": [
+        {"id": "subif10", "label": "Sous-interface Gi0/0.10 active", "command": "show ip interface brief", "expect": "Gi0/0.10.*192.168.10"},
+        {"id": "subif20", "label": "Sous-interface Gi0/0.20 active", "command": "show ip interface brief", "expect": "Gi0/0.20.*192.168.20"},
+        {"id": "subif30", "label": "Sous-interface Gi0/0.30 active", "command": "show ip interface brief", "expect": "Gi0/0.30.*192.168.30"},
+        {"id": "dot1q10", "label": "Encapsulation dot1Q VLAN 10", "command": "show interfaces Gi0/0.10", "expect": "802.1Q.*10"},
+        {"id": "routes", "label": "Routes connectées dans la table", "command": "show ip route", "expect": "C.*192.168"}
+      ],
+      "initial_config": "R1",
+      "hint": "L'interface physique Gi0/0 doit être UP (no shutdown) SANS adresse IP. Les IPs sont sur les sous-interfaces."
+    },
+    {
+      "id": 3,
+      "title": "Lab 3 — Port Security",
+      "difficulty": "Intermédiaire",
+      "duration": "35 min",
+      "objectives": [
+        "Activer Port Security sur les ports d'accès de SW1",
+        "Configurer le maximum de 2 adresses MAC par port",
+        "Utiliser le mode sticky pour l'apprentissage automatique",
+        "Configurer le mode violation en shutdown",
+        "Vérifier avec show port-security"
+      ],
+      "topology": {
+        "type": "svg",
+        "description": "SW1 avec Port Security sur les ports hôtes. Attaquant tente un MAC flood.",
+        "devices": [
+          {"id": "sw1", "label": "SW1", "type": "switch", "x": 430, "y": 160},
+          {"id": "pc1", "label": "PC1\\nAutorisé", "type": "pc", "x": 200, "y": 320},
+          {"id": "pc2", "label": "PC2\\nAutorisé", "type": "pc", "x": 430, "y": 320},
+          {"id": "att", "label": "Attaquant\\nMAC Flood", "type": "pc", "x": 660, "y": 320, "color": "#ff3366"}
+        ],
+        "links": [
+          {"from": "sw1", "to": "pc1", "label": "Fa0/1 (secure)"},
+          {"from": "sw1", "to": "pc2", "label": "Fa0/2 (secure)"},
+          {"from": "sw1", "to": "att", "label": "Fa0/3 → ERR-DISABLED", "type": "danger"}
+        ]
+      },
+      "addressing": [
+        {"device": "PC1", "interface": "NIC", "ip": "192.168.1.10", "mask": "/24", "vlan": "MAC: AA:BB:CC:DD:EE:01"},
+        {"device": "PC2", "interface": "NIC", "ip": "192.168.1.11", "mask": "/24", "vlan": "MAC: AA:BB:CC:DD:EE:02"},
+        {"device": "SW1", "interface": "VLAN 1", "ip": "192.168.1.1", "mask": "/24", "vlan": "Management"},
+        {"device": "Attaquant", "interface": "NIC", "ip": "192.168.1.99", "mask": "/24", "vlan": "Port bloqué"}
+      ],
+      "instructions": [
+        "Entrez sur SW1 : <code>enable</code> → <code>configure terminal</code>",
+        "Accédez à Fa0/1 : <code>interface Fa0/1</code>",
+        "Assurez-vous que le port est en mode access : <code>switchport mode access</code>",
+        "Activez Port Security : <code>switchport port-security</code>",
+        "Limitez à 2 MACs max : <code>switchport port-security maximum 2</code>",
+        "Activez le mode sticky : <code>switchport port-security mac-address sticky</code>",
+        "Configurez la violation en shutdown : <code>switchport port-security violation shutdown</code>",
+        "Répétez pour Fa0/2 et Fa0/3",
+        "Vérifiez : <code>show port-security</code> et <code>show port-security interface Fa0/1</code>",
+        "Pour récupérer un port err-disabled : <code>shutdown</code> puis <code>no shutdown</code>"
+      ],
+      "checklist": [
+        {"id": "ps_enabled", "label": "Port Security activé sur Fa0/1", "command": "show port-security", "expect": "Fa0/1.*Enabled"},
+        {"id": "ps_max", "label": "Maximum 2 adresses MAC", "command": "show port-security interface Fa0/1", "expect": "Maximum MAC.*2"},
+        {"id": "ps_sticky", "label": "Mode sticky configuré", "command": "show port-security interface Fa0/1", "expect": "Sticky"},
+        {"id": "ps_violation", "label": "Mode violation : Shutdown", "command": "show port-security interface Fa0/1", "expect": "Violation Mode.*Shutdown"},
+        {"id": "ps_secure", "label": "Port en état Secure-up", "command": "show port-security", "expect": "SecureUp"}
+      ],
+      "initial_config": "SW1",
+      "hint": "Port Security fonctionne SEULEMENT sur les ports en mode 'access'. Configurez toujours switchport mode access AVANT d'activer port-security."
+    }
+  ]
+}
+;
+
+// Override fetch for labs.json
+const _origFetch = window.fetch;
+window.fetch = function(url, opts) {
+  if (url === 'labs.json' || url.endsWith('/labs.json')) {
+    return Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve(LABS_DATA)
+    });
+  }
+  return _origFetch.apply(this, arguments);
+};
+</script>
+<script>
+// ============================================================
+// DOJO NETSIM — CLI Engine + Lab System
+// Style: Le Dojo du Networking
+// ============================================================
+
+'use strict';
+
+// ---- STATE ----
+let currentLab = null;
+let allLabs = [];
+let checklistState = {};
+let panelVisible = true;
+let cliHistory = [];
+let histIdx = -1;
+
+// ---- DEVICE STATES ----
+const DEVICES = {
+  SW1: {
+    hostname: 'SW1', mode: 'exec', configContext: null,
+    vlans: { 1: 'default' },
+    interfaces: {},
+    portSecurity: {},
+    trunk: {},
+    type: 'switch'
+  },
+  SW2: {
+    hostname: 'SW2', mode: 'exec', configContext: null,
+    vlans: { 1: 'default' },
+    interfaces: {},
+    trunk: {},
+    type: 'switch'
+  },
+  R1: {
+    hostname: 'R1', mode: 'exec', configContext: null,
+    interfaces: {},
+    routes: [],
+    type: 'router'
+  }
+};
+
+let activeDevice = null;
+
+// ============================================================
+// INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadLabs();
+  const params = new URLSearchParams(window.location.search);
+  const labId = parseInt(params.get('lab')) || 1;
+  loadLab(labId);
+  setupCLI();
+  setupUI();
+});
+
+async function loadLabs() {
+  try {
+    const r = await fetch('labs.json');
+    const data = await r.json();
+    allLabs = data.labs;
+  } catch(e) {
+    // Fallback: try from window
+    if (window.LABS_DATA) allLabs = window.LABS_DATA.labs;
+  }
+}
+
+// ============================================================
+// LAB LOADER
+// ============================================================
+function loadLab(id) {
+  const lab = allLabs.find(l => l.id === id);
+  if (!lab) { showError(`Lab ${id} introuvable.`); return; }
+
+  currentLab = lab;
+  checklistState = {};
+  lab.checklist.forEach(c => checklistState[c.id] = false);
+
+  // Set active device
+  const dev = DEVICES[lab.initial_config];
+  if (dev) {
+    activeDevice = lab.initial_config;
+    dev.mode = 'exec';
+    dev.configContext = null;
+  }
+
+  renderLabPanel(lab);
+  renderChecklist(lab);
+  drawTopology(lab.topology);
+  updateLabSelector(lab.id);
+  updatePrompt();
+
+  // Welcome message
+  cliPrint(`\n══════════════════════════════════════════`, 'cyan');
+  cliPrint(` ${lab.title}`, 'accent');
+  cliPrint(` Difficulté: ${lab.difficulty} | Durée: ${lab.duration}`, 'muted');
+  cliPrint(`══════════════════════════════════════════`, 'cyan');
+  cliPrint(`\n Appareil actif: ${activeDevice}`, 'ok');
+  cliPrint(` Tapez 'help' pour les commandes disponibles.\n`, 'muted');
+  updatePrompt();
+}
+
+// ============================================================
+// LAB PANEL RENDERER
+// ============================================================
+function renderLabPanel(lab) {
+  // Title & meta
+  document.getElementById('lab-title').textContent = lab.title;
+  document.getElementById('lab-meta').innerHTML =
+    `<span class="badge badge-diff">${lab.difficulty}</span>` +
+    `<span class="badge badge-time">⏱ ${lab.duration}</span>` +
+    `<span class="badge badge-obj">${lab.objectives.length} objectifs</span>`;
+
+  // Objectives
+  const objEl = document.getElementById('lab-objectives');
+  objEl.innerHTML = lab.objectives.map((o, i) =>
+    `<li><span class="obj-num">${i+1}</span>${o}</li>`
+  ).join('');
+
+  // Addressing table
+  const tbody = document.getElementById('addr-tbody');
+  tbody.innerHTML = lab.addressing.map(row =>
+    `<tr>
+      <td><strong>${row.device}</strong></td>
+      <td><code>${row.interface}</code></td>
+      <td><code class="ip">${row.ip}</code></td>
+      <td><code>${row.mask}</code></td>
+      <td><span class="vlan-badge">${row.vlan}</span></td>
+    </tr>`
+  ).join('');
+
+  // Instructions
+  const instrEl = document.getElementById('lab-instructions');
+  instrEl.innerHTML = lab.instructions.map((instr, i) =>
+    `<li class="instr-item">
+      <span class="step-num">${i+1}</span>
+      <span>${instr}</span>
+    </li>`
+  ).join('');
+
+  // Hint
+  document.getElementById('lab-hint').textContent = lab.hint || '';
+}
+
+// ============================================================
+// TOPOLOGY SVG RENDERER
+// ============================================================
+function drawTopology(topo) {
+  const svg = document.getElementById('topology-svg');
+  if (!svg || !topo) return;
+
+  const W = svg.clientWidth || 780;
+  const H = 280;
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.innerHTML = '';
+
+  const defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
+  defs.innerHTML = `
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#1e3a5f"/>
+    </marker>
+    <marker id="arr-danger" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#ff3366"/>
+    </marker>
+    <marker id="arr-trunk" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#00d4ff"/>
+    </marker>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2.5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  `;
+  svg.appendChild(defs);
+
+  // Normalize positions relative to SVG width
+  const scaleX = W / 780;
+  const nodes = {};
+  topo.devices.forEach(d => {
+    nodes[d.id] = { ...d, x: d.x * scaleX };
+  });
+
+  // Draw links first
+  topo.links.forEach(link => {
+    const from = nodes[link.from];
+    const to = nodes[link.to];
+    if (!from || !to) return;
+
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', from.x); line.setAttribute('y1', from.y);
+    line.setAttribute('x2', to.x);   line.setAttribute('y2', to.y);
+
+    const isDanger = link.type === 'danger';
+    const isTrunk  = link.type === 'trunk';
+
+    line.setAttribute('stroke', isDanger ? '#ff3366' : isTrunk ? '#00d4ff' : '#1e3a5f');
+    line.setAttribute('stroke-width', isTrunk ? '2.5' : isDanger ? '2' : '1.5');
+    if (isDanger) line.setAttribute('stroke-dasharray', '6,4');
+    line.setAttribute('marker-end', `url(#arr${isDanger?'-danger':isTrunk?'-trunk':''})`);
+    svg.appendChild(line);
+
+    // Link label
+    if (link.label) {
+      const mx = (from.x + to.x) / 2;
+      const my = (from.y + to.y) / 2;
+      const lbl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      lbl.setAttribute('x', mx + 4); lbl.setAttribute('y', my - 6);
+      lbl.setAttribute('fill', isDanger ? '#ff3366' : isTrunk ? '#00d4ff' : '#5a7a9f');
+      lbl.setAttribute('font-size', '10'); lbl.setAttribute('font-family', 'Share Tech Mono, monospace');
+      lbl.setAttribute('text-anchor', 'middle');
+      lbl.textContent = link.label;
+      svg.appendChild(lbl);
+    }
+  });
+
+  // Draw nodes
+  topo.devices.forEach(d => {
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.setAttribute('class', `topo-node topo-${d.type}`);
+    g.setAttribute('transform', `translate(${nodes[d.id].x},${d.y})`);
+
+    const iconColor = d.color || (d.type === 'router' ? '#ff6b35' : d.type === 'switch' ? '#00d4ff' : '#5a7a9f');
+
+    if (d.type === 'router') {
+      const circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      circle.setAttribute('r','24'); circle.setAttribute('fill','#0d1525');
+      circle.setAttribute('stroke', iconColor); circle.setAttribute('stroke-width','2');
+      g.appendChild(circle);
+      const txt = document.createElementNS('http://www.w3.org/2000/svg','text');
+      txt.setAttribute('text-anchor','middle'); txt.setAttribute('dy','-2');
+      txt.setAttribute('fill', iconColor); txt.setAttribute('font-size','20');
+      txt.textContent = '⬡'; g.appendChild(txt);
+    } else if (d.type === 'switch') {
+      const rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+      rect.setAttribute('x','-28'); rect.setAttribute('y','-16');
+      rect.setAttribute('width','56'); rect.setAttribute('height','32');
+      rect.setAttribute('rx','4'); rect.setAttribute('fill','#0d1525');
+      rect.setAttribute('stroke', iconColor); rect.setAttribute('stroke-width','2');
+      g.appendChild(rect);
+      const txt = document.createElementNS('http://www.w3.org/2000/svg','text');
+      txt.setAttribute('text-anchor','middle'); txt.setAttribute('dy','5');
+      txt.setAttribute('fill', iconColor); txt.setAttribute('font-size','13');
+      txt.setAttribute('font-family','Share Tech Mono,monospace');
+      txt.textContent = 'SW'; g.appendChild(txt);
+    } else {
+      const rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+      rect.setAttribute('x','-20'); rect.setAttribute('y','-14');
+      rect.setAttribute('width','40'); rect.setAttribute('height','28');
+      rect.setAttribute('rx','3'); rect.setAttribute('fill','#080c14');
+      rect.setAttribute('stroke', iconColor); rect.setAttribute('stroke-width','1.5');
+      g.appendChild(rect);
+      const txt = document.createElementNS('http://www.w3.org/2000/svg','text');
+      txt.setAttribute('text-anchor','middle'); txt.setAttribute('dy','4');
+      txt.setAttribute('fill', iconColor); txt.setAttribute('font-size','11');
+      txt.setAttribute('font-family','Share Tech Mono,monospace');
+      txt.textContent = 'PC'; g.appendChild(txt);
+    }
+
+    // Device label (supports \n)
+    const lines = d.label.split('\\n');
+    lines.forEach((line, i) => {
+      const lbl = document.createElementNS('http://www.w3.org/2000/svg','text');
+      lbl.setAttribute('text-anchor','middle');
+      lbl.setAttribute('y', 34 + i * 14);
+      lbl.setAttribute('fill', i === 0 ? '#c8deff' : '#5a7a9f');
+      lbl.setAttribute('font-size', i === 0 ? '12' : '10');
+      lbl.setAttribute('font-family','Share Tech Mono,monospace');
+      lbl.textContent = line;
+      g.appendChild(lbl);
+    });
+
+    svg.appendChild(g);
+  });
+}
+
+// ============================================================
+// CHECKLIST RENDERER
+// ============================================================
+function renderChecklist(lab) {
+  const el = document.getElementById('checklist-items');
+  if (!el || !lab.checklist) return;
+
+  el.innerHTML = lab.checklist.map(item => `
+    <div class="check-item ${checklistState[item.id] ? 'done' : ''}" id="chk-${item.id}">
+      <div class="check-icon">${checklistState[item.id] ? '✅' : '○'}</div>
+      <div class="check-label">${item.label}</div>
+      <code class="check-cmd">${item.command}</code>
+    </div>
+  `).join('');
+
+  updateScore();
+}
+
+function updateScore() {
+  const total = currentLab.checklist.length;
+  const done = Object.values(checklistState).filter(Boolean).length;
+  const pct = Math.round(done / total * 100);
+
+  document.getElementById('score-text').textContent = `${done}/${total}`;
+  document.getElementById('score-bar-fill').style.width = pct + '%';
+  document.getElementById('score-bar-fill').style.background =
+    pct === 100 ? 'var(--ok)' : pct >= 50 ? 'var(--wa)' : 'var(--ac)';
+
+  if (pct === 100) {
+    document.getElementById('feedback-msg').innerHTML =
+      `<div class="feedback-win">🎉 Lab complété ! Toutes les vérifications passent.</div>`;
+  }
+}
+
+function tryCheck(commandOutput, command) {
+  if (!currentLab) return;
+  currentLab.checklist.forEach(item => {
+    if (checklistState[item.id]) return;
+    const cmdMatch = command.toLowerCase().includes(item.command.split(' ')[0].toLowerCase()) ||
+                     item.command.toLowerCase().includes(command.split(' ')[0].toLowerCase());
+    if (!cmdMatch) return;
+
+    const re = new RegExp(item.expect, 'i');
+    if (re.test(commandOutput)) {
+      checklistState[item.id] = true;
+      const el = document.getElementById(`chk-${item.id}`);
+      if (el) {
+        el.classList.add('done');
+        el.querySelector('.check-icon').textContent = '✅';
+      }
+      cliPrint(`\n  ✅ Objectif validé : ${item.label}`, 'ok');
+      updateScore();
+    }
+  });
+}
+
+// ============================================================
+// CLI ENGINE
+// ============================================================
+function setupCLI() {
+  const inp = document.getElementById('cli-input');
+  if (!inp) return;
+
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      const raw = inp.value;
+      executeCommand(raw);
+      cliHistory.unshift(raw);
+      histIdx = -1;
+      inp.value = '';
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (histIdx < cliHistory.length - 1) histIdx++;
+      inp.value = cliHistory[histIdx] || '';
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (histIdx > 0) histIdx--;
+      else { histIdx = -1; inp.value = ''; return; }
+      inp.value = cliHistory[histIdx] || '';
+    } else if (e.ctrlKey && e.key === 'c') {
+      cliPrint('^C', 'warn');
+      inp.value = '';
+    } else if (e.ctrlKey && e.key === 'l') {
+      e.preventDefault();
+      clearCLI();
+    }
+  });
+
+  document.getElementById('cli-area').addEventListener('click', () => inp.focus());
+}
+
+function executeCommand(raw) {
+  const dev = DEVICES[activeDevice];
+  if (!dev) return;
+  const prompt = getPrompt(dev);
+
+  cliPrint(`${prompt} ${raw}`, 'prompt-echo');
+
+  const cmd = raw.trim();
+  if (!cmd) { updatePrompt(); return; }
+
+  const output = dispatchCommand(dev, cmd);
+  if (output !== null) {
+    cliPrint(output, 'output');
+    tryCheck(output, cmd);
+  }
+
+  updatePrompt();
+}
+
+function getPrompt(dev) {
+  const h = dev.hostname;
+  if (dev.mode === 'exec') return `${h}>`;
+  if (dev.mode === 'priv') return `${h}#`;
+  if (dev.configContext) return `${h}(${dev.configContext})#`;
+  return `${h}(config)#`;
+}
+
+function updatePrompt() {
+  const dev = DEVICES[activeDevice];
+  if (!dev) return;
+  document.getElementById('cli-prompt').textContent = getPrompt(dev) + ' ';
+  document.getElementById('cli-device-label').textContent = `[${activeDevice}]`;
+}
+
+// ============================================================
+// COMMAND DISPATCHER
+// ============================================================
+function dispatchCommand(dev, raw) {
+  const parts = raw.trim().split(/\s+/);
+  const cmd = parts[0].toLowerCase();
+  const rest = parts.slice(1).join(' ');
+
+  // ---- Navigation ----
+  if (cmd === 'enable') {
+    dev.mode = 'priv'; return '';
+  }
+  if (cmd === 'disable') {
+    dev.mode = 'exec'; return '';
+  }
+  if ((cmd === 'configure' || cmd === 'conf') && /^t/i.test(rest)) {
+    if (dev.mode !== 'priv') return `% Error: not in privileged EXEC mode`;
+    dev.mode = 'config'; dev.configContext = null;
+    return 'Enter configuration commands, one per line.  End with CNTL/Z.';
+  }
+  if (cmd === 'end' || (cmd === 'ctrl' && rest === 'z')) {
+    dev.mode = 'priv'; dev.configContext = null; return '';
+  }
+  if (cmd === 'exit') {
+    if (dev.configContext) { dev.configContext = null; return ''; }
+    if (dev.mode === 'config') { dev.mode = 'priv'; return ''; }
+    if (dev.mode === 'priv') { dev.mode = 'exec'; return ''; }
+    return '';
+  }
+
+  // ---- Help ----
+  if (cmd === 'help' || cmd === '?') {
+    return cmdHelp(dev);
+  }
+
+  // ---- Show commands ----
+  if (cmd === 'show') return cmdShow(dev, parts.slice(1));
+
+  // ---- Config mode commands ----
+  if (dev.mode === 'config' || dev.configContext) {
+    return cmdConfig(dev, cmd, parts, rest, raw);
+  }
+
+  // ---- Priv EXEC ----
+  if (cmd === 'ping') return cmdPing(dev, parts.slice(1));
+  if (cmd === 'traceroute') return cmdTraceroute(dev, parts.slice(1));
+  if (cmd === 'clear') return cmdClear(dev, parts.slice(1));
+  if (cmd === 'copy') return 'Building configuration...\n[OK]';
+  if (cmd === 'write' || (cmd === 'wr' && !rest)) return 'Building configuration...\n[OK]';
+  if (cmd === 'reload') return `\nSystem configuration has been modified. Save? [yes/no]: `;
+  if (cmd === 'debug') return `%Warning: Debugging is very processor intensive. Debugging output is on.`;
+  if (cmd === 'undebug' || cmd === 'no debug') return `All possible debugging has been turned off.`;
+  if (cmd === 'clock') return cmdClock(rest);
+  if (cmd === 'hostname') { dev.hostname = rest || dev.hostname; return ''; }
+
+  // ---- Tab key simulation ----
+  if (raw.endsWith('?')) return cmdHelp(dev, raw);
+
+  return `% Unknown command or computer in command: '${parts[0]}'\n% Type "help" or "?" for available commands.`;
+}
+
+// ============================================================
+// CONFIG MODE
+// ============================================================
+function cmdConfig(dev, cmd, parts, rest, raw) {
+  // Interface context
+  if (cmd === 'interface' || cmd === 'int') {
+    const ifName = parts.slice(1).join('').replace(/\s+/g, '');
+    if (!ifName) return '% Incomplete command.';
+    dev.configContext = `config-if:${ifName}`;
+    if (!dev.interfaces[ifName]) dev.interfaces[ifName] = {};
+    return '';
+  }
+
+  // VLAN context (switches only)
+  if (cmd === 'vlan' && dev.type === 'switch') {
+    const vid = parseInt(parts[1]);
+    if (isNaN(vid)) return '% Incomplete command.';
+    dev.configContext = `config-vlan:${vid}`;
+    if (!dev.vlans[vid]) dev.vlans[vid] = '';
+    return '';
+  }
+
+  // Router OSPF
+  if (cmd === 'router') {
+    if (/ospf/i.test(rest)) {
+      dev.configContext = 'config-router';
+      return '';
+    }
+    if (/eigrp/i.test(rest)) { dev.configContext = 'config-router'; return ''; }
+    if (/bgp/i.test(rest)) { dev.configContext = 'config-router'; return ''; }
+    if (/rip/i.test(rest)) { dev.configContext = 'config-router'; return ''; }
+  }
+
+  // Line context
+  if (cmd === 'line') {
+    dev.configContext = 'config-line';
+    return '';
+  }
+
+  // ---- VLAN name (in vlan context) ----
+  if (cmd === 'name' && dev.configContext && dev.configContext.startsWith('config-vlan:')) {
+    const vid = parseInt(dev.configContext.split(':')[1]);
+    dev.vlans[vid] = rest;
+    return '';
+  }
+
+  // ---- Interface commands ----
+  if (dev.configContext && dev.configContext.startsWith('config-if:')) {
+    const ifName = dev.configContext.split(':')[1];
+    if (!dev.interfaces[ifName]) dev.interfaces[ifName] = {};
+    const iface = dev.interfaces[ifName];
+
+    // IP address
+    if (cmd === 'ip' && /^address/i.test(rest)) {
+      const m = rest.match(/address\s+(\S+)\s+(\S+)/i);
+      if (m) { iface.ip = m[1]; iface.mask = m[2]; iface.status = 'up'; return ''; }
+    }
+    // IPv6
+    if (cmd === 'ipv6' && /^address/i.test(rest)) {
+      iface.ipv6 = rest.replace(/^address\s+/i,''); return '';
+    }
+    // No shutdown
+    if (cmd === 'no' && /^shutdown/i.test(rest)) {
+      iface.status = 'up';
+      return `%LINK-5-CHANGED: Interface ${ifName}, changed state to up\n%LINEPROTO-5-UPDOWN: Line protocol on Interface ${ifName}, changed state to up`;
+    }
+    if (cmd === 'shutdown') {
+      iface.status = 'down';
+      return `%LINK-5-CHANGED: Interface ${ifName}, changed state to administratively down`;
+    }
+    // Description
+    if (cmd === 'description') { iface.description = rest; return ''; }
+    // Duplex / speed
+    if (cmd === 'duplex') { iface.duplex = rest; return ''; }
+    if (cmd === 'speed') { iface.speed = rest; return ''; }
+
+    // ---- SWITCH commands ----
+    if (dev.type === 'switch') {
+      if (cmd === 'switchport') {
+        if (/^mode\s+access/i.test(rest)) { iface.swMode = 'access'; return ''; }
+        if (/^mode\s+trunk/i.test(rest)) {
+          iface.swMode = 'trunk'; iface.status='up';
+          dev.trunk[ifName] = { native: 1, allowed: 'all' };
+          return '';
+        }
+        if (/^mode\s+dynamic\s+desirable/i.test(rest)) { iface.swMode = 'dynamic desirable'; return ''; }
+        if (/^mode\s+dynamic\s+auto/i.test(rest)) { iface.swMode = 'dynamic auto'; return ''; }
+        if (/^access\s+vlan\s+(\d+)/i.test(rest)) {
+          const m = rest.match(/vlan\s+(\d+)/i);
+          if (m) { iface.accessVlan = parseInt(m[1]); return ''; }
+        }
+        if (/^trunk\s+native\s+vlan\s+(\d+)/i.test(rest)) {
+          const m = rest.match(/vlan\s+(\d+)/i);
+          if (m && dev.trunk[ifName]) { dev.trunk[ifName].native = parseInt(m[1]); return ''; }
+        }
+        if (/^trunk\s+allowed\s+vlan\s+([\d,]+)/i.test(rest)) {
+          const m = rest.match(/vlan\s+([\d,]+)/i);
+          if (m && dev.trunk[ifName]) { dev.trunk[ifName].allowed = m[1]; return ''; }
+        }
+        if (/^nonegotiate/i.test(rest)) { return ''; }
+        if (/^port-security$/i.test(rest)) {
+          if (!iface.portSecurity) iface.portSecurity = { enabled: true, max: 1, mode: 'shutdown', sticky: false, current: 0 };
+          iface.portSecurity.enabled = true;
+          return '';
+        }
+        if (/^port-security\s+maximum\s+(\d+)/i.test(rest)) {
+          const m = rest.match(/maximum\s+(\d+)/i);
+          if (m) {
+            if (!iface.portSecurity) iface.portSecurity = { enabled: true, max: 1, mode: 'shutdown', sticky: false, current: 0 };
+            iface.portSecurity.max = parseInt(m[1]);
+          }
+          return '';
+        }
+        if (/^port-security\s+violation\s+(\w+)/i.test(rest)) {
+          const m = rest.match(/violation\s+(\w+)/i);
+          if (m) {
+            if (!iface.portSecurity) iface.portSecurity = { enabled: true, max: 1, mode: 'shutdown', sticky: false, current: 0 };
+            iface.portSecurity.mode = m[1].toLowerCase();
+          }
+          return '';
+        }
+        if (/^port-security\s+mac-address\s+sticky/i.test(rest)) {
+          if (!iface.portSecurity) iface.portSecurity = { enabled: true, max: 1, mode: 'shutdown', sticky: false, current: 0 };
+          iface.portSecurity.sticky = true;
+          return '';
+        }
+        if (/^port-security\s+mac-address\s+([\w.]+)/i.test(rest)) {
+          const m = rest.match(/mac-address\s+([\w.]+)/i);
+          if (m && iface.portSecurity) iface.portSecurity.staticMac = m[1];
+          return '';
+        }
+      }
+      // spanning-tree
+      if (cmd === 'spanning-tree') {
+        if (/portfast/i.test(rest)) { iface.portfast = true; return '%Warning: portfast should only be enabled on ports connected to a single host.'; }
+        if (/bpduguard\s+enable/i.test(rest)) { iface.bpduguard = true; return ''; }
+        return '';
+      }
+    }
+
+    // ---- ROUTER sub-interface ----
+    if (dev.type === 'router') {
+      if (cmd === 'encapsulation' && /^dot1q?\s+(\d+)/i.test(rest)) {
+        const m = rest.match(/\d+/);
+        if (m) { iface.dot1q = parseInt(m[0]); iface.status='up'; return ''; }
+      }
+      if (cmd === 'ip' && /^nat/i.test(rest)) {
+        iface.nat = /inside/i.test(rest) ? 'inside' : 'outside'; return '';
+      }
+    }
+
+    return `% Invalid input detected at '^' marker in config-if mode`;
+  }
+
+  // ---- Global config commands ----
+  if (cmd === 'hostname') { dev.hostname = rest; return ''; }
+  if (cmd === 'enable' && /^secret/i.test(rest)) { return ''; }
+  if (cmd === 'enable' && /^password/i.test(rest)) { return ''; }
+  if (cmd === 'service' && /^password-encryption/i.test(rest)) { return ''; }
+  if (cmd === 'no' && /^ip\s+domain.lookup/i.test(rest)) { return ''; }
+  if (cmd === 'ip' && /^routing/i.test(rest)) { dev.routing = true; return ''; }
+  if (cmd === 'ip' && /^domain.name/i.test(rest)) { return ''; }
+  if (cmd === 'crypto') { return 'Generating 2048 bit RSA keys, keys will be non-exportable...\n[OK] (elapsed time was 1 seconds)'; }
+  if (cmd === 'ip' && /^ssh/i.test(rest)) { return ''; }
+  if (cmd === 'banner') { return ''; }
+  if (cmd === 'logging') { return ''; }
+  if (cmd === 'ntp') { return ''; }
+  if (cmd === 'snmp') { return ''; }
+  if (cmd === 'access-list') {
+    const m = raw.match(/access-list\s+(\d+)\s+(\w+)\s+(\S+)/i);
+    if (m) { if (!dev.acls) dev.acls = {}; dev.acls[m[1]] = (dev.acls[m[1]]||[]).concat([{action:m[2],src:m[3]}]); return ''; }
+    return '';
+  }
+  if (cmd === 'ip' && /^access-list/i.test(rest)) { return ''; }
+  // NAT
+  if (cmd === 'ip' && /^nat\s+inside\s+source/i.test(rest)) { return ''; }
+  if (cmd === 'ip' && /^nat/i.test(rest)) { return ''; }
+  // VTP
+  if (cmd === 'vtp') { return ''; }
+  // spanning-tree global
+  if (cmd === 'spanning-tree') {
+    if (/portfast\s+default/i.test(rest)) { dev.portfastDefault = true; return ''; }
+    if (/mode\s+rapid-pvst/i.test(rest)) { dev.stpMode = 'rapid-pvst'; return ''; }
+    if (/mode\s+pvst/i.test(rest)) { dev.stpMode = 'pvst'; return ''; }
+    return '';
+  }
+  if (cmd === 'errdisable') { return ''; }
+
+  // OSPF / routing config-router
+  if (dev.configContext === 'config-router') {
+    if (cmd === 'network') { if (!dev.routes) dev.routes=[]; dev.routes.push(rest); return ''; }
+    if (cmd === 'router-id') { dev.routerId = rest; return ''; }
+    if (cmd === 'passive-interface') { return ''; }
+    if (cmd === 'auto-cost') { return ''; }
+    if (cmd === 'neighbor') { return ''; }
+    return '';
+  }
+
+  // Line config
+  if (dev.configContext === 'config-line') {
+    if (cmd === 'transport') { return ''; }
+    if (cmd === 'login') { return ''; }
+    if (cmd === 'password') { return ''; }
+    if (cmd === 'exec-timeout') { return ''; }
+    return '';
+  }
+
+  if (cmd === 'no') {
+    // Handle 'no interface ...' or other no commands
+    return '';
+  }
+
+  if (cmd === 'interface' || cmd === 'int') { return '% interface command missing subcommand'; }
+
+  return `% Invalid input detected: '${parts[0]}'`;
+}
+
+// ============================================================
+// SHOW COMMANDS
+// ============================================================
+function cmdShow(dev, args) {
+  const sub = (args[0] || '').toLowerCase();
+  const sub2 = (args[1] || '').toLowerCase();
+  const sub3 = (args[2] || '').toLowerCase();
+
+  // show version
+  if (sub === 'version') {
+    return `Cisco IOS Software, Version 15.2(4)M6, RELEASE SOFTWARE (fc1)
+Technical Support: http://www.cisco.com/techsupport
+ROM: System Bootstrap, Version 15.1(4)M10
+${dev.hostname} uptime is 2 days, 14 hours, 22 minutes
+System returned to ROM by reload
+Cisco 2900 Series Router (revision 1.0)
+System image file is "flash0:c2900-universalk9-mz.SPA.152-4.M6.bin"
+IOS: 15.2(4)M6   Platform: Cisco 2951`;
+  }
+
+  // show running-config
+  if (sub === 'running-config' || (sub === 'run' && !sub2)) {
+    return buildRunningConfig(dev);
+  }
+
+  // show startup-config
+  if (sub === 'startup-config') {
+    return 'startup-config is not present\n(Use "copy running-config startup-config" to save)';
+  }
+
+  // show ip interface brief
+  if (sub === 'ip' && sub2 === 'interface' && sub3.startsWith('b')) {
+    return buildIpIntBrief(dev);
+  }
+
+  // show interfaces
+  if (sub === 'interfaces') {
+    if (args[1]) return buildInterfaceDetail(dev, args.slice(1).join(''));
+    return buildAllInterfaces(dev);
+  }
+  if (sub === 'interface') {
+    return buildInterfaceDetail(dev, args.slice(1).join(''));
+  }
+
+  // show interfaces trunk
+  if (sub === 'interfaces' && sub2 === 'trunk') {
+    return buildTrunk(dev);
+  }
+
+  // show ip route
+  if (sub === 'ip' && sub2 === 'route') {
+    return buildRoutes(dev);
+  }
+
+  // show ip ospf neighbor
+  if (sub === 'ip' && sub2 === 'ospf' && sub3 === 'neighbor') {
+    return buildOspfNeighbor(dev);
+  }
+  if (sub === 'ip' && sub2 === 'ospf') {
+    return `Routing Process "ospf 1" with ID ${dev.routerId||'1.1.1.1'}\n Start time: 00:00:05.240, Time elapsed: 02:14:33.240\n Supports only single TOS(TOS0) routes\n Number of areas in this router is 1. 1 normal 0 stub 0 nssa`;
+  }
+
+  // show vlan / vlan brief
+  if (sub === 'vlan') {
+    return buildVlanBrief(dev);
+  }
+
+  // show mac address-table
+  if (sub === 'mac' || (sub === 'mac' && sub2 === 'address-table')) {
+    return buildMacTable(dev);
+  }
+
+  // show port-security
+  if (sub === 'port-security') {
+    if (args[1] && args[1].toLowerCase() === 'interface') {
+      return buildPortSecurityInterface(dev, args[2] || '');
+    }
+    return buildPortSecurity(dev);
+  }
+
+  // show interfaces trunk
+  if (sub === 'interfaces' && sub2 === 'trunk') {
+    return buildTrunk(dev);
+  }
+  if (sub === 'interface' && args.length > 1 && !/^b/i.test(sub2)) {
+    return buildInterfaceDetail(dev, args.slice(1).join(' '));
+  }
+
+  // show spanning-tree
+  if (sub === 'spanning-tree') {
+    return buildStp(dev, args.slice(1));
+  }
+
+  // show cdp neighbors
+  if (sub === 'cdp') {
+    return `Capability Codes: R - Router, T - Trans Bridge, B - Source Route Bridge\n                  S - Switch, H - Host, I - IGMP, r - Repeater\nDevice ID        Local Intrfce     Holdtme    Capability  Platform  Port ID\nSW2              Gi 0/1            177            S       WS-C2960  Gi 0/1`;
+  }
+
+  // show ssh
+  if (sub === 'ssh') {
+    return `SSH Enabled - version 2.0\nAuthentication methods:publickey,keyboard-interactive,password\nEncryption Algorithms:aes128-ctr,aes192-ctr,aes256-ctr\nAuthentication timeout: 120 secs; Authentication retries: 3`;
+  }
+
+  // show clock
+  if (sub === 'clock') {
+    return `*${new Date().toTimeString().split(' ')[0]} UTC ${new Date().toDateString()}`;
+  }
+
+  // show users
+  if (sub === 'users') {
+    return `    Line       User       Host(s)              Idle       Location\n*  0 con 0                idle                 00:00:00`;
+  }
+
+  // show history
+  if (sub === 'history') {
+    return cliHistory.slice(0, 20).map((h,i) => `  ${i+1}  ${h}`).join('\n');
+  }
+
+  // show ip nat translations
+  if (sub === 'ip' && sub2 === 'nat') {
+    return `Pro Inside global      Inside local       Outside local      Outside global\n--- ---               ---                ---                ---`;
+  }
+
+  // show access-lists
+  if (sub === 'access-lists' || (sub === 'ip' && sub2 === 'access-lists')) {
+    if (!dev.acls || Object.keys(dev.acls).length === 0) return `% There are no access lists`;
+    return Object.entries(dev.acls).map(([num, rules]) =>
+      `Standard IP access list ${num}\n` + rules.map((r,i) => `    ${10*(i+1)} ${r.action} ${r.src}`).join('\n')
+    ).join('\n');
+  }
+
+  return `% Unknown show sub-command: 'show ${args.join(' ')}'`;
+}
+
+// ============================================================
+// SHOW BUILDERS
+// ============================================================
+function buildRunningConfig(dev) {
+  let cfg = `!\nversion 15.2\nservice timestamps debug datetime msec\nservice timestamps log datetime msec\nno service password-encryption\n!\nhostname ${dev.hostname}\n!\n`;
+
+  if (dev.type === 'switch') {
+    Object.entries(dev.vlans).filter(([id]) => id > 1).forEach(([id, name]) => {
+      cfg += `vlan ${id}\n name ${name}\n!\n`;
+    });
+  }
+
+  Object.entries(dev.interfaces).forEach(([name, iface]) => {
+    cfg += `interface ${name}\n`;
+    if (iface.description) cfg += ` description ${iface.description}\n`;
+    if (iface.ip) cfg += ` ip address ${iface.ip} ${iface.mask}\n`;
+    if (iface.ipv6) cfg += ` ipv6 address ${iface.ipv6}\n`;
+    if (iface.dot1q) cfg += ` encapsulation dot1Q ${iface.dot1q}\n`;
+    if (iface.swMode === 'access') {
+      cfg += ` switchport mode access\n`;
+      if (iface.accessVlan) cfg += ` switchport access vlan ${iface.accessVlan}\n`;
+    }
+    if (iface.swMode === 'trunk') {
+      cfg += ` switchport mode trunk\n`;
+    }
+    if (iface.portSecurity?.enabled) {
+      cfg += ` switchport port-security\n`;
+      if (iface.portSecurity.max > 1) cfg += ` switchport port-security maximum ${iface.portSecurity.max}\n`;
+      if (iface.portSecurity.sticky) cfg += ` switchport port-security mac-address sticky\n`;
+      if (iface.portSecurity.mode !== 'shutdown') cfg += ` switchport port-security violation ${iface.portSecurity.mode}\n`;
+    }
+    if (iface.status === 'down') cfg += ` shutdown\n`;
+    cfg += `!\n`;
+  });
+
+  cfg += `!\nend`;
+  return cfg;
+}
+
+function buildIpIntBrief(dev) {
+  const header = 'Interface                  IP-Address      OK? Method Status                Protocol';
+  const lines = [header];
+  const commonIfaces = dev.type === 'router'
+    ? ['GigabitEthernet0/0','GigabitEthernet0/1','GigabitEthernet0/2']
+    : ['GigabitEthernet0/1','GigabitEthernet0/2','FastEthernet0/1','FastEthernet0/2'];
+
+  const allIfaces = [...new Set([...commonIfaces, ...Object.keys(dev.interfaces)])];
+
+  allIfaces.forEach(name => {
+    const iface = dev.interfaces[name] || {};
+    const ip = iface.ip || 'unassigned';
+    const ok = iface.ip ? 'YES' : 'YES';
+    const method = iface.ip ? 'manual' : 'unset';
+    const status = iface.status === 'down' ? 'administratively down' : (iface.ip || iface.status === 'up') ? 'up' : 'down';
+    const proto = status === 'up' ? 'up' : 'down';
+    lines.push(`${name.padEnd(27)}${ip.padEnd(16)}${ok}  ${method.padEnd(7)}${status.padEnd(22)}${proto}`);
+  });
+
+  return lines.join('\n');
+}
+
+function buildInterfaceDetail(dev, ifName) {
+  ifName = ifName.replace(/\s/g,'');
+  const iface = dev.interfaces[ifName] || {};
+  const status = iface.status === 'down' ? 'administratively down' : 'up';
+  const lineProto = status === 'up' ? 'up' : 'down';
+  return `${ifName} is ${status}, line protocol is ${lineProto}
+  Hardware is Gigabit Ethernet, address is aabb.cc${Math.floor(Math.random()*9000+1000).toString(16)}.${Math.floor(Math.random()*9000+1000).toString(16)}
+  ${iface.ip ? `Internet address is ${iface.ip}/${iface.mask ? maskToPrefix(iface.mask) : '24'}` : 'Internet address is not set'}
+  MTU 1500 bytes, BW 1000000 Kbit/sec, DLY 10 usec,
+  reliability 255/255, txload 1/255, rxload 1/255
+  Encapsulation ${iface.dot1q ? `802.1Q Virtual LAN, Vlan ID  ${iface.dot1q}.` : 'ARPA'}, loopback not set
+  ${iface.duplex || 'Full'}-duplex, ${iface.speed || '100'}Mb/s, media type is T
+  Last input 00:00:04, output 00:00:01, output hang never
+  5 minute input rate 0 bits/sec, 0 packets/sec
+  5 minute output rate 0 bits/sec, 0 packets/sec`;
+}
+
+function buildAllInterfaces(dev) {
+  if (Object.keys(dev.interfaces).length === 0) {
+    return buildInterfaceDetail(dev, dev.type === 'router' ? 'GigabitEthernet0/0' : 'GigabitEthernet0/1');
+  }
+  return Object.keys(dev.interfaces).map(n => buildInterfaceDetail(dev, n)).join('\n\n');
+}
+
+function buildVlanBrief(dev) {
+  if (dev.type !== 'switch') return `% Invalid command for this device type`;
+  let out = `VLAN Name                             Status    Ports\n---- -------------------------------- --------- -------`;
+  out += `\n1    default                          active    `;
+
+  // Add unassigned ports
+  const assignedPorts = new Set();
+  Object.entries(dev.interfaces).forEach(([name, iface]) => {
+    if (iface.accessVlan) assignedPorts.add(name);
+  });
+
+  const defaultPorts = ['Fa0/3','Fa0/4','Fa0/5','Gi0/2'].filter(p => !assignedPorts.has(p));
+  out += defaultPorts.join(', ');
+
+  Object.entries(dev.vlans).filter(([id]) => parseInt(id) > 1).forEach(([id, name]) => {
+    const ports = Object.entries(dev.interfaces)
+      .filter(([,iface]) => iface.accessVlan === parseInt(id))
+      .map(([n]) => n.replace('FastEthernet','Fa').replace('GigabitEthernet','Gi'));
+    out += `\n${id.padEnd(5)}${(name||`VLAN${id}`).padEnd(33)}active    ${ports.join(', ')}`;
+  });
+
+  out += `\n1002 fddi-default                     act/unsup\n1003 token-ring-default               act/unsup\n1004 fddinet-default                  act/unsup\n1005 trnet-default                    act/unsup`;
+  return out;
+}
+
+function buildTrunk(dev) {
+  const trunkIfaces = Object.entries(dev.interfaces).filter(([,i]) => i.swMode === 'trunk');
+  if (trunkIfaces.length === 0) {
+    return `% No trunk interfaces configured`;
+  }
+  let out = `Port      Mode         Encaps  Status        Native vlan\n`;
+  trunkIfaces.forEach(([name, iface]) => {
+    const t = dev.trunk[name] || { native: 1, allowed: '1-4094' };
+    const shortName = name.replace('FastEthernet','Fa').replace('GigabitEthernet','Gi');
+    out += `${shortName.padEnd(10)}on           802.1q  trunking      ${t.native}\n`;
+  });
+  out += `\nPort      Vlans allowed on trunk\n`;
+  trunkIfaces.forEach(([name]) => {
+    const t = dev.trunk[name] || { native: 1, allowed: '1,10,20,99' };
+    const shortName = name.replace('FastEthernet','Fa').replace('GigabitEthernet','Gi');
+    out += `${shortName.padEnd(10)}${t.allowed}\n`;
+  });
+  return out;
+}
+
+function buildPortSecurity(dev) {
+  const psIfaces = Object.entries(dev.interfaces).filter(([,i]) => i.portSecurity?.enabled);
+  if (psIfaces.length === 0) return `% Port security is not configured on any interfaces`;
+
+  let out = `Secure Port  MaxSecureAddr  CurrentAddr  SecurityViolation  Security Action\n              (Count)       (Count)          (Count)\n--------------------------------------------------------------------\n`;
+  psIfaces.forEach(([name, iface]) => {
+    const ps = iface.portSecurity;
+    const shortName = name.replace('FastEthernet','Fa').replace('GigabitEthernet','Gi');
+    out += `     ${shortName.padEnd(9)}  ${ps.max.toString().padEnd(15)}${(ps.current||0).toString().padEnd(13)}${(ps.violations||0).toString().padEnd(20)}${ps.mode.charAt(0).toUpperCase()+ps.mode.slice(1)}\n`;
+  });
+  out += `\nTotal Addresses in System (excluding one mac per port)     : 0\nMax Addresses limit in System (excluding one mac per port) : 4096`;
+  return out;
+}
+
+function buildPortSecurityInterface(dev, ifName) {
+  const iface = dev.interfaces[ifName] || {};
+  const ps = iface.portSecurity;
+  if (!ps?.enabled) return `% Port security is not configured on interface ${ifName}`;
+  return `Port Security              : Enabled
+Port Status                : Secure-up
+Violation Mode             : ${ps.mode.charAt(0).toUpperCase()+ps.mode.slice(1)}
+Aging Time                 : 0 mins
+Aging Type                 : Absolute
+SecureStatic Address Aging : Disabled
+Maximum MAC Addresses      : ${ps.max}
+Total MAC Addresses        : ${ps.current||0}
+Configured MAC Addresses   : ${ps.staticMac ? 1 : 0}
+Sticky MAC Addresses       : ${ps.sticky ? ps.current||0 : 0}
+Last Source Address:Vlan   : 0000.0000.0000:0
+Security Violation Count   : ${ps.violations||0}`;
+}
+
+function buildMacTable(dev) {
+  let out = `          Mac Address Table\n-------------------------------------------\nVlan    Mac Address       Type        Ports\n----    -----------       --------    -----\n`;
+  Object.entries(dev.interfaces).forEach(([name, iface]) => {
+    if (iface.accessVlan || iface.swMode === 'access') {
+      const mac = `${randomHex(4)}.${randomHex(4)}.${randomHex(4)}`;
+      const vlan = iface.accessVlan || 1;
+      const shortName = name.replace('FastEthernet','Fa').replace('GigabitEthernet','Gi');
+      out += `   ${vlan.toString().padEnd(5)}  ${mac.padEnd(18)}DYNAMIC     ${shortName}\n`;
+    }
+  });
+  out += `Total Mac Addresses for this criterion: ${Object.keys(dev.interfaces).length}`;
+  return out;
+}
+
+function buildRoutes(dev) {
+  let out = `Codes: C - connected, S - static, R - RIP, M - mobile, B - BGP\n       D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area\n       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2\n       E1 - OSPF external type 1, E2 - OSPF external type 2\n       i - IS-IS, su - IS-IS summary, L1 - IS-IS level-1, L2 - IS-IS level-2\n       ia - IS-IS inter area, * - candidate default\n\nGateway of last resort is not set\n\n`;
+
+  Object.entries(dev.interfaces).forEach(([name, iface]) => {
+    if (iface.ip && iface.status !== 'down') {
+      const prefix = ipToNetwork(iface.ip, iface.mask);
+      const shortName = name.replace('FastEthernet','Fa').replace('GigabitEthernet','Gi');
+      out += `C     ${prefix} is directly connected, ${shortName}\n`;
+      out += `L     ${iface.ip}/32 is directly connected, ${shortName}\n`;
+    }
+  });
+
+  if (!out.includes('is directly connected')) out += `% No routes found`;
+  return out;
+}
+
+function buildOspfNeighbor(dev) {
+  return `Neighbor ID     Pri   State           Dead Time   Address         Interface\n2.2.2.2           1   FULL/DR         00:00:34    10.0.12.2       GigabitEthernet0/0`;
+}
+
+function buildStp(dev, args) {
+  const vlan = args.find(a => /^\d+$/.test(a)) || '1';
+  return `VLAN${vlan.padStart(4,'0')}\n  Spanning tree enabled protocol ${dev.stpMode||'ieee'}\n  Root ID    Priority    32769\n             Address     aabb.cc00.0100\n             This bridge is the root\n\n  Bridge ID  Priority    32769  (priority 32768 sys-id-ext 1)\n             Address     aabb.cc00.0100\n             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec\n\nInterface           Role Sts Cost      Prio.Nbr Type\n------------------- ---- --- --------- -------- --------------------------------\nGi0/1               Desg FWD 4         128.1    P2p\nFa0/1               Desg FWD 19        128.2    P2p Peer(STP)`;
+}
+
+// ---- Misc commands ----
+function cmdPing(dev, args) {
+  const target = args[0];
+  if (!target) return `Type escape sequence to abort.\nSending 5, 100-byte ICMP Echos to , timeout is 2 seconds:\n\nSuccess rate is 0 percent (0/5)`;
+  const success = Math.random() > 0.1;
+  const dots = success ? '!!!!!' : '.....';
+  const rate = success ? `100 percent (5/5), round-trip min/avg/max = 1/2/4 ms` : `0 percent (0/5)`;
+  return `Type escape sequence to abort.\nSending 5, 100-byte ICMP Echos to ${target}, timeout is 2 seconds:\n${dots}\nSuccess rate is ${rate}`;
+}
+
+function cmdTraceroute(dev, args) {
+  const target = args[0] || '8.8.8.8';
+  return `Type escape sequence to abort.\nTracing the route to ${target}\nVRF info: (vrf in name/id, vrf out name/id)\n  1 192.168.1.1 4 msec 4 msec 4 msec\n  2 10.0.0.1 8 msec 8 msec 8 msec\n  3 ${target} 12 msec 12 msec 12 msec`;
+}
+
+function cmdClear(dev, args) {
+  if (args[0] === 'mac' || args[1] === 'address-table') {
+    Object.values(dev.interfaces).forEach(i => { delete i.learnedMacs; });
+    return '';
+  }
+  if (args[0] === 'port-security') {
+    Object.values(dev.interfaces).forEach(i => { if(i.portSecurity) i.portSecurity.current=0; });
+    return '';
+  }
+  return '';
+}
+
+function cmdClock(rest) {
+  return `Clock set to ${new Date().toTimeString().split(' ')[0]} UTC\n*${new Date().toDateString()}`;
+}
+
+function cmdHelp(dev, context) {
+  return `Available commands:
+  enable                   Enter privileged EXEC mode
+  disable                  Exit privileged EXEC mode
+  configure terminal       Enter global configuration mode
+  show version             Display system information
+  show running-config      Display running configuration
+  show ip interface brief  Display IP interface summary
+  show interfaces          Display interface details
+  show vlan brief          Display VLAN assignments (switch)
+  show interfaces trunk    Display trunk interfaces (switch)
+  show port-security       Display port security status (switch)
+  show mac address-table   Display MAC address table (switch)
+  show ip route            Display routing table (router)
+  show ip ospf neighbor    Display OSPF neighbors (router)
+  show spanning-tree       Display STP status
+  show cdp neighbors       Display CDP neighbors
+  ping <ip>                Test connectivity
+  traceroute <ip>          Trace route to destination
+  copy running-config startup-config  Save configuration
+  write memory (wr)        Save configuration
+  clear port-security      Reset port security counters
+  clear mac address-table  Clear MAC address table
+  Ctrl+C / end             Exit to privileged EXEC
+  Ctrl+L                   Clear screen`;
+}
+
+// ============================================================
+// CLI OUTPUT
+// ============================================================
+function cliPrint(text, type = 'output') {
+  const out = document.getElementById('cli-output');
+  if (!out) return;
+
+  const span = document.createElement('span');
+  span.className = `cli-${type}`;
+
+  if (type === 'prompt-echo') {
+    span.innerHTML = `<span class="cli-prompt-color">${escapeHtml(text.split(' ')[0])}</span> <span class="cli-cmd">${escapeHtml(text.slice(text.indexOf(' ')+1))}</span>`;
+  } else {
+    span.textContent = text;
+  }
+
+  out.appendChild(span);
+  out.appendChild(document.createTextNode('\n'));
+  out.scrollTop = out.scrollHeight;
+}
+
+function clearCLI() {
+  document.getElementById('cli-output').innerHTML = '';
+}
+
+// ============================================================
+// UI SETUP
+// ============================================================
+function setupUI() {
+  // Lab selector dropdown
+  const sel = document.getElementById('lab-selector');
+  if (sel) {
+    allLabs.forEach(lab => {
+      const opt = document.createElement('option');
+      opt.value = lab.id;
+      opt.textContent = `Lab ${lab.id}: ${lab.title}`;
+      sel.appendChild(opt);
+    });
+    sel.addEventListener('change', () => {
+      const id = parseInt(sel.value);
+      window.history.pushState({}, '', `?lab=${id}`);
+      resetDevices();
+      loadLab(id);
+    });
+  }
+
+  // Toggle panel
+  document.getElementById('btn-toggle-panel')?.addEventListener('click', togglePanel);
+
+  // PDF export
+  document.getElementById('btn-pdf')?.addEventListener('click', exportPDF);
+
+  // Clear CLI button
+  document.getElementById('btn-clear-cli')?.addEventListener('click', clearCLI);
+
+  // Run checklist
+  document.getElementById('btn-run-check')?.addEventListener('click', runAutoCheck);
+
+  // Fullscreen CLI
+  document.getElementById('btn-fullscreen')?.addEventListener('click', toggleFullscreen);
+
+  // Input focus on click anywhere in terminal area
+  document.getElementById('cli-area')?.addEventListener('click', () => {
+    document.getElementById('cli-input').focus();
+  });
+}
+
+function updateLabSelector(id) {
+  const sel = document.getElementById('lab-selector');
+  if (sel) sel.value = id;
+}
+
+function togglePanel() {
+  panelVisible = !panelVisible;
+  const panel = document.getElementById('lab-panel');
+  const btn = document.getElementById('btn-toggle-panel');
+  const workspace = document.getElementById('workspace');
+
+  if (panelVisible) {
+    panel.classList.remove('hidden');
+    workspace.classList.remove('panel-hidden');
+    btn.textContent = '◀ Masquer';
+  } else {
+    panel.classList.add('hidden');
+    workspace.classList.add('panel-hidden');
+    btn.textContent = '▶ Afficher';
+  }
+}
+
+function toggleFullscreen() {
+  const cliSection = document.getElementById('cli-section');
+  cliSection.classList.toggle('fullscreen');
+  const btn = document.getElementById('btn-fullscreen');
+  btn.textContent = cliSection.classList.contains('fullscreen') ? '⊡ Normal' : '⊞ Plein écran';
+}
+
+// ============================================================
+// PDF EXPORT
+// ============================================================
+async function exportPDF() {
+  const btn = document.getElementById('btn-pdf');
+  btn.textContent = '⏳ Génération...';
+  btn.disabled = true;
+
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+    const lab = currentLab;
+    let y = 15;
+
+    // Header
+    doc.setFillColor(8, 12, 20);
+    doc.rect(0, 0, 210, 25, 'F');
+    doc.setTextColor(0, 212, 255);
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('LE DOJO DU NETWORKING', 15, 12);
+    doc.setFontSize(9);
+    doc.setTextColor(90, 122, 159);
+    doc.text('Plateforme d\'entraînement réseau', 15, 19);
+    doc.setTextColor(200, 222, 255);
+    doc.text(new Date().toLocaleDateString('fr-FR'), 170, 12);
+
+    y = 35;
+
+    // Lab title
+    doc.setFillColor(13, 21, 37);
+    doc.roundedRect(10, y-5, 190, 18, 2, 2, 'F');
+    doc.setTextColor(0, 212, 255);
+    doc.setFontSize(13);
+    doc.setFont('helvetica', 'bold');
+    doc.text(lab.title, 15, y+7);
+    y += 22;
+
+    // Meta
+    doc.setFontSize(9);
+    doc.setTextColor(90, 122, 159);
+    doc.text(`Difficulté: ${lab.difficulty}   Durée estimée: ${lab.duration}`, 15, y);
+    y += 10;
+
+    // Objectives
+    doc.setFillColor(13, 21, 37);
+    doc.rect(10, y, 190, 7, 'F');
+    doc.setTextColor(0, 212, 255);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('OBJECTIFS', 15, y+5);
+    y += 12;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(200, 222, 255);
+    doc.setFontSize(9);
+    lab.objectives.forEach((obj, i) => {
+      const lines = doc.splitTextToSize(`${i+1}. ${obj}`, 175);
+      doc.text(lines, 15, y);
+      y += lines.length * 5 + 2;
+    });
+    y += 5;
+
+    // Addressing table
+    if (y > 240) { doc.addPage(); y = 20; }
+    doc.setFillColor(13, 21, 37);
+    doc.rect(10, y, 190, 7, 'F');
+    doc.setTextColor(0, 212, 255);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('TABLE D\'ADRESSAGE', 15, y+5);
+    y += 10;
+
+    // Table header
+    doc.setFillColor(17, 29, 51);
+    doc.rect(10, y, 190, 6, 'F');
+    doc.setTextColor(0, 212, 255);
+    doc.setFontSize(8);
+    ['Appareil','Interface','Adresse IP','Masque','VLAN / Info'].forEach((h, i) => {
+      doc.text(h, 12 + i*38, y+4);
+    });
+    y += 7;
+
+    doc.setFont('helvetica', 'normal');
+    lab.addressing.forEach((row, i) => {
+      if (i % 2 === 0) { doc.setFillColor(8, 12, 20); doc.rect(10, y-1, 190, 6, 'F'); }
+      doc.setTextColor(200, 222, 255);
+      [row.device, row.interface, row.ip, row.mask, row.vlan].forEach((cell, ci) => {
+        doc.text(String(cell||'').substring(0,18), 12+ci*38, y+3.5);
+      });
+      y += 6;
+    });
+    y += 8;
+
+    // Instructions
+    if (y > 220) { doc.addPage(); y = 20; }
+    doc.setFillColor(13, 21, 37);
+    doc.rect(10, y, 190, 7, 'F');
+    doc.setTextColor(0, 212, 255);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('INSTRUCTIONS', 15, y+5);
+    y += 12;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(200, 222, 255);
+    doc.setFontSize(8.5);
+    lab.instructions.forEach((instr, i) => {
+      if (y > 265) { doc.addPage(); y = 20; }
+      const clean = instr.replace(/<code>/g,'`').replace(/<\/code>/g,'`').replace(/<[^>]+>/g,'');
+      const lines = doc.splitTextToSize(`${i+1}. ${clean}`, 173);
+      doc.text(lines, 15, y);
+      y += lines.length * 4.5 + 2;
+    });
+    y += 5;
+
+    // Hint
+    if (lab.hint) {
+      if (y > 250) { doc.addPage(); y = 20; }
+      doc.setFillColor(17, 29, 51);
+      doc.roundedRect(10, y, 190, 14, 2, 2, 'F');
+      doc.setTextColor(255, 204, 0);
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'bold');
+      doc.text('💡 Astuce :', 13, y+5);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(200, 222, 255);
+      const hintLines = doc.splitTextToSize(lab.hint, 165);
+      doc.text(hintLines, 13, y+10);
+      y += 20;
+    }
+
+    // Checklist
+    if (y > 230) { doc.addPage(); y = 20; }
+    doc.setFillColor(13, 21, 37);
+    doc.rect(10, y, 190, 7, 'F');
+    doc.setTextColor(0, 212, 255);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('LISTE DE VÉRIFICATION', 15, y+5);
+    y += 12;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    lab.checklist.forEach(item => {
+      const done = checklistState[item.id];
+      doc.setTextColor(done ? 57 : 90, done ? 255 : 122, done ? 20 : 159);
+      doc.text(done ? '✓' : '○', 13, y);
+      doc.setTextColor(200, 222, 255);
+      doc.text(item.label, 18, y);
+      doc.setTextColor(0, 212, 255);
+      doc.setFontSize(7);
+      doc.text(`[${item.command}]`, 140, y);
+      doc.setFontSize(8.5);
+      y += 7;
+    });
+
+    // Footer
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFillColor(8, 12, 20);
+      doc.rect(0, 285, 210, 12, 'F');
+      doc.setFontSize(7);
+      doc.setTextColor(90, 122, 159);
+      doc.text('Le Dojo du Networking — Plateforme d\'entraînement réseau', 15, 291);
+      doc.text(`Page ${i}/${pageCount}`, 185, 291);
+    }
+
+    doc.save(`dojo-lab-${lab.id}-${lab.title.replace(/[^a-z0-9]/gi,'-').toLowerCase()}.pdf`);
+  } catch(e) {
+    console.error('PDF error:', e);
+    alert('Erreur PDF. Assurez-vous que jsPDF est chargé.');
+  }
+
+  btn.textContent = '⬇ PDF';
+  btn.disabled = false;
+}
+
+// ============================================================
+// AUTO CHECKLIST RUNNER
+// ============================================================
+function runAutoCheck() {
+  if (!currentLab) return;
+  const fb = document.getElementById('feedback-msg');
+  fb.innerHTML = '<div class="feedback-running">⏳ Vérification en cours...</div>';
+
+  let delay = 0;
+  currentLab.checklist.forEach(item => {
+    setTimeout(() => {
+      const dev = DEVICES[currentLab.initial_config];
+      const fakeOutput = simulateShowOutput(dev, item.command);
+      const re = new RegExp(item.expect, 'i');
+      const pass = re.test(fakeOutput);
+
+      if (pass && !checklistState[item.id]) {
+        checklistState[item.id] = true;
+        const el = document.getElementById(`chk-${item.id}`);
+        if (el) { el.classList.add('done'); el.querySelector('.check-icon').textContent = '✅'; }
+        updateScore();
+      }
+
+      const el2 = document.getElementById(`chk-${item.id}`);
+      if (el2) el2.classList.add(pass ? 'check-pass' : 'check-fail');
+    }, delay);
+    delay += 300;
+  });
+
+  setTimeout(() => {
+    const done = Object.values(checklistState).filter(Boolean).length;
+    const total = currentLab.checklist.length;
+    fb.innerHTML = done === total
+      ? `<div class="feedback-win">🎉 ${done}/${total} — Lab complété avec succès !</div>`
+      : `<div class="feedback-partial">📊 ${done}/${total} objectifs validés. Continuez !</div>`;
+  }, delay + 200);
+}
+
+function simulateShowOutput(dev, command) {
+  const parts = command.split(' ');
+  return cmdShow(dev, parts.slice(1));
+}
+
+// ============================================================
+// DEVICE RESET
+// ============================================================
+function resetDevices() {
+  Object.keys(DEVICES).forEach(key => {
+    DEVICES[key] = {
+      ...DEVICES[key],
+      mode: 'exec',
+      configContext: null,
+      vlans: { 1: 'default' },
+      interfaces: {},
+      trunk: {},
+      portSecurity: {},
+      routes: [],
+      routing: false,
+    };
+  });
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function maskToPrefix(mask) {
+  if (!mask) return 24;
+  return mask.split('.').reduce((acc, o) => {
+    let n = parseInt(o), c = 0;
+    while (n > 0) { c += n & 1; n >>= 1; }
+    return acc + c;
+  }, 0);
+}
+
+function ipToNetwork(ip, mask) {
+  if (!ip) return '0.0.0.0/0';
+  const prefix = maskToPrefix(mask);
+  const parts = ip.split('.').map(Number);
+  const maskParts = mask ? mask.split('.').map(Number) : [255,255,255,0];
+  const net = parts.map((p, i) => p & maskParts[i]);
+  return `${net.join('.')}/${prefix}`;
+}
+
+function randomHex(n) {
+  return Math.floor(Math.random() * Math.pow(16, n)).toString(16).padStart(n, '0');
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function showError(msg) {
+  document.getElementById('lab-title').textContent = '⚠ ' + msg;
+}
+
+// ============================================================
+// WINDOW RESIZE → redraw topology
+// ============================================================
+window.addEventListener('resize', () => {
+  if (currentLab) drawTopology(currentLab.topology);
+});
+
+</script>
+
+</body>
+</html>
