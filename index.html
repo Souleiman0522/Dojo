@@ -349,6 +349,28 @@ body {
   margin-bottom: 10px;
   padding-left: 36px;
 }
+/* Bouton flottant toujours visible pour quitter le mode défi */
+.challenge-exit-floating {
+  position: fixed;
+  top: 14px;
+  right: 18px;
+  z-index: 9999;
+  background: var(--vermilion, #c0392b) !important;
+  color: #fff !important;
+  border: 1px solid var(--gold, #d4a017) !important;
+  font-family: var(--font-mono, monospace) !important;
+  font-size: 0.78rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.05em !important;
+  padding: 8px 14px !important;
+  border-radius: 4px !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4) !important;
+  cursor: pointer;
+}
+.challenge-exit-floating:hover {
+  background: #a02818 !important;
+  transform: translateY(-1px);
+}
 .challenge-mode-back-wrap .btn {
   background: rgba(255,255,255,0.08) !important;
   color: var(--gold-light) !important;
@@ -12825,6 +12847,9 @@ function openChallenge() {
     : '';
 
   challengeSlot.innerHTML = `
+    <!-- Bouton flottant toujours accessible pour quitter le défi -->
+    <button class="challenge-exit-floating" onclick="closeChallenge()" title="Quitter le défi (Échap)">✕ Quitter le défi</button>
+
     <!-- Bandeau "Mode défi" -->
     <div class="challenge-mode-header">
       <div class="challenge-mode-back-wrap">
@@ -13138,10 +13163,15 @@ function verifyChallenge() {
 
 // Close challenge on Escape
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') {
-    const m = document.getElementById('challenge-modal');
-    if (m && m.classList.contains('active')) closeChallenge();
+  if (e.key !== 'Escape') return;
+  // Nouveau flux : le défi est injecté dans .lab-flow via challenge-mode-slot
+  if (_challengeActive || window.inChallengeMode === true) {
+    closeChallenge();
+    return;
   }
+  // Ancien flux : modal flottante (rétro-compat)
+  const m = document.getElementById('challenge-modal');
+  if (m && m.classList.contains('active')) closeChallenge();
 });
 
 function nextLab() {
