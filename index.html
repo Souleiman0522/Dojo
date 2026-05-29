@@ -5370,7 +5370,8 @@ const DEFAULT_LABS = [
       "Activer l'interface physique de R8 SANS lui donner d'IP (c'est un trunk pur)",
       "Créer une sous-interface par VLAN avec [code]encapsulation dot1q[/code] + l'IP de gateway",
       "Adresser CHAQUE PC : IP + masque + passerelle (la passerelle = la sous-interface R8 de son VLAN)",
-      "Vérifier la communication inter-VLAN par ping (VPC3 → VPC4)",
+      "Vérifier d'abord la connectivité DANS le même VLAN (L2, sans routeur) + show mac address-table",
+      "Constater que l'inter-VLAN échoue AVANT le routage, puis marche APRÈS (VPC3 → VPC4)",
       "Comprendre la limite du RoaS (un seul câble = goulot) vs un switch L3"
     ],
     instructions: [
@@ -5393,26 +5394,28 @@ const DEFAULT_LABS = [
       { type: 'step', content: "⚠ PIÈGE allowed vlan : [code]switchport trunk allowed vlan 30[/code] ÉCRASE la liste (10,20 disparaissent !). Pour ajouter sans casser : [code]switchport trunk allowed vlan add 30[/code]." },
       { type: 'step', content: "Vérifie avec [code]show interfaces trunk[/code] : tu dois voir les ports en mode trunk, l'encapsulation 802.1q, le native VLAN et les VLANs 10,20 (et 99) autorisés." },
 
-      { type: 'task', icon: '📡', label: 'TASK 4', title: "Activer l'interface physique de R8 (SANS IP !)", requires: ['physUp'] },
+      { type: 'task', icon: '💻', label: 'TASK 4', title: 'Adresser les PC, puis tester DANS le même VLAN', requires: ['vpcAddressed'] },
+      { type: 'step', content: "Les 4 VPC démarrent SANS adresse IP — à toi de les configurer. Sur un PC, tout se fait en une ligne : [code]ip <adresse> <masque> <passerelle>[/code]." },
+      { type: 'step', content: "⚠ Le <strong>masque</strong> 255.255.255.0 dit au PC qui est « chez lui » (même VLAN) ; la <strong>passerelle</strong> = l'IP de la sous-interface R8 de SON VLAN (la PORTE de sortie vers les autres VLANs)." },
+      { type: 'step', content: "Configure chaque PC :<br>• <strong>VPC3</strong> (VLAN 10) : [code]ip 192.168.10.10 255.255.255.0 192.168.10.1[/code]<br>• <strong>VPC4</strong> (VLAN 20) : [code]ip 192.168.20.10 255.255.255.0 192.168.20.1[/code]<br>• <strong>VPC5</strong> (VLAN 20) : [code]ip 192.168.20.11 255.255.255.0 192.168.20.1[/code]<br>• <strong>VPC6</strong> (VLAN 10) : [code]ip 192.168.10.11 255.255.255.0 192.168.10.1[/code]" },
+      { type: 'step', content: "🏠 <strong>Analogie</strong> : deux PC du MÊME VLAN, c'est comme deux personnes dans la <strong>même chambre</strong> — vous vous parlez directement, sans sortir, sans routeur. Le switch suffit (couche 2)." },
+      { type: 'step', content: "🧪 Test MÊME VLAN (doit marcher SANS routeur) :<br>• depuis <strong>VPC3</strong> : [code]ping 192.168.10.11[/code] (VPC6, même VLAN 10) → ✅<br>• depuis <strong>VPC4</strong> : [code]ping 192.168.20.11[/code] (VPC5, même VLAN 20) → ✅" },
+      { type: 'step', content: "🔍 Sur <strong>SW1</strong>, regarde la table que le switch a construite en écoutant le trafic : [code]show mac address-table[/code] → tu vois les MAC des PC avec leur port et leur VLAN. (Et [code]show interfaces trunk[/code] pour les VLANs qui transitent.)" },
+      { type: 'step', content: "🚪 Maintenant essaie de SORTIR de ta chambre — depuis <strong>VPC3</strong> (VLAN 10) : [code]ping 192.168.20.10[/code] (VPC4, VLAN 20) → ❌ ÉCHOUE pour l'instant. C'est NORMAL : pour aller dans une AUTRE chambre, il faut passer par la PORTE = la passerelle/le routeur. Or R8 n'est pas encore configuré. On construit cette porte maintenant." },
+
+      { type: 'task', icon: '📡', label: 'TASK 5', title: "Activer l'interface physique de R8 (SANS IP !)", requires: ['physUp'] },
       { type: 'step', content: "Clique sur <strong>R8</strong>. Passe en config et active l\'interface physique reliée au switch : [code]interface e0/0[/code] → [code]no shutdown[/code]." },
       { type: 'step', content: "⚠ Ne mets AUCUNE adresse IP sur e0/0. C\'est un trunk : les IPs vivront sur les sous-interfaces. Oublier ce [code]no shutdown[/code] = toutes les sous-interfaces restent DOWN." },
 
-      { type: 'task', icon: '🏗️', label: 'TASK 5', title: 'Créer une sous-interface par VLAN (encapsulation dot1Q)', requires: ['subif'] },
+      { type: 'task', icon: '🏗️', label: 'TASK 6', title: 'Créer une sous-interface par VLAN (encapsulation dot1Q)', requires: ['subif'] },
       { type: 'step', content: "Sous-interface VLAN 10 : [code]interface e0/0.10[/code] → [code]encapsulation dot1q 10[/code]. Le numéro dot1q DOIT matcher l\'ID du VLAN." },
       { type: 'step', content: "Sous-interface VLAN 20 : [code]interface e0/0.20[/code] → [code]encapsulation dot1q 20[/code]." },
 
-      { type: 'task', icon: '🌐', label: 'TASK 6', title: 'Donner à chaque sous-interface son IP de gateway', requires: ['subifIp'] },
+      { type: 'task', icon: '🌐', label: 'TASK 7', title: 'Donner à chaque sous-interface son IP de gateway', requires: ['subifIp'] },
       { type: 'step', content: "Sur e0/0.10 : [code]ip address 192.168.10.1 255.255.255.0[/code] (c\'est la passerelle du VLAN 10)." },
       { type: 'step', content: "Sur e0/0.20 : [code]ip address 192.168.20.1 255.255.255.0[/code] (passerelle du VLAN 20)." },
       { type: 'step', content: "Vérifie : [code]show ip interface brief[/code] → e0/0.10 et e0/0.20 doivent être up/up. Puis [code]show ip route[/code] → 2 réseaux 'C' (Connected)." },
-
-      { type: 'task', icon: '💻', label: 'TASK 7', title: 'Adresser CHAQUE VPC : IP + masque + passerelle', requires: ['vpcAddressed'] },
-      { type: 'step', content: "Les 4 VPC démarrent SANS adresse IP — c'est à toi de les configurer. Sur un PC, tout se fait en une ligne : [code]ip <adresse> <masque> <passerelle>[/code]." },
-      { type: 'step', content: "⚠ La <strong>passerelle</strong> de chaque PC = l'IP de la sous-interface R8 de SON VLAN (la porte de sortie vers les autres VLANs). Sans elle, le PC ne sort JAMAIS de son réseau. Le <strong>masque</strong> 255.255.255.0 dit au PC qui est « chez lui » et qui nécessite la passerelle." },
-      { type: 'step', content: "Clique sur chaque onglet PC et configure :<br>• <strong>VPC3</strong> (VLAN 10) : [code]ip 192.168.10.10 255.255.255.0 192.168.10.1[/code]<br>• <strong>VPC4</strong> (VLAN 20) : [code]ip 192.168.20.10 255.255.255.0 192.168.20.1[/code]<br>• <strong>VPC5</strong> (VLAN 20) : [code]ip 192.168.20.11 255.255.255.0 192.168.20.1[/code]<br>• <strong>VPC6</strong> (VLAN 10) : [code]ip 192.168.10.11 255.255.255.0 192.168.10.1[/code]" },
-      { type: 'step', content: "Vérifie sur chaque PC avec [code]ipconfig[/code] : tu dois voir l'IP, le masque 255.255.255.0 ET la passerelle. Une passerelle vide = pas de communication inter-VLAN." },
-      { type: 'step', content: "🧪 TEST FINAL : depuis VPC3 (VLAN 10), [code]ping 192.168.20.10[/code] (VPC4, VLAN 20) → DOIT marcher, le trafic passe par R8. Le pont est ouvert !" },
-      { type: 'step', content: "Sur SW1, regarde aussi [code]show mac address-table[/code] : tu verras les MAC apprises avec leur port et leur VLAN. Et [code]show interfaces trunk[/code] pour confirmer les VLANs qui montent vers R8." },
+      { type: 'step', content: "🚪✅ La porte est ouverte ! Refais le test inter-VLAN — depuis <strong>VPC3</strong> (VLAN 10) : [code]ping 192.168.20.10[/code] (VPC4, VLAN 20) → marche maintenant, le trafic SORT par R8. Le pont entre les mondes est établi !" },
 
       { type: 'reflection', content: "Pourquoi AUCUNE IP sur l\'interface physique e0/0 de R8 ?<br>👉 Parce qu\'elle transporte plusieurs VLANs taggés (trunk). Ce sont les sous-interfaces qui portent une IP, une par VLAN." },
       { type: 'reflection', content: "Que se passe-t-il si tu oublies un trunk entre SW1 et R8 ?<br>👉 Les trames taggées n\'atteignent jamais le routeur → aucune communication inter-VLAN, même avec les sous-interfaces parfaitement configurées." },
