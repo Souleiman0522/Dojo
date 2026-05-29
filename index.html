@@ -5451,7 +5451,7 @@ const DEFAULT_LABS = [
       { type: 'step', content: "Sur <strong>SW-GND</strong> — VPC5 (VLAN 20) sur e0/1 → access vlan 20 ; VPC6 (VLAN 10) sur e0/2 → access vlan 10." },
 
       { type: 'task', icon: '🔀', label: 'PRÉREQUIS 3', title: 'Monter les 2 trunks (encapsulation + allowed + native)', requires: ['trunk'] },
-      { type: 'step', content: "Un trunk a 3 réglages clés :<br>• <strong>encapsulation dot1q</strong> = la méthode de tag (802.1Q, le standard). Sur certains switches (3560/3750) il faut la définir AVANT [code]switchport mode trunk[/code] ; sur d'autres c'est automatique.<br>• <strong>allowed vlan</strong> = la liste blanche des VLANs autorisés à passer (sécurité + propreté).<br>• <strong>native vlan</strong> = le seul VLAN transporté NON taggé. Il DOIT être identique des 2 côtés du lien." },
+      { type: 'step', content: "Un trunk a 3 réglages clés :<br>• <strong>encapsulation dot1q</strong> = la méthode de tag (802.1Q, le standard). ⚠ Sur ce switch (type 3560/3750), tu DOIS la définir AVANT [code]switchport mode trunk[/code], sinon la commande est <strong>rejetée</strong> (« encapsulation is Auto… can not be configured to trunk mode »).<br>• <strong>allowed vlan</strong> = la liste blanche des VLANs autorisés à passer (sécurité + propreté).<br>• <strong>native vlan</strong> = le seul VLAN transporté NON taggé. Il DOIT être identique des 2 côtés du lien." },
       { type: 'step', content: "Sur <strong>SW-BRU</strong>, lien vers SW-GND (e0/0) : [code]interface e0/0[/code] → [code]switchport trunk encapsulation dot1q[/code] → [code]switchport mode trunk[/code] → [code]switchport trunk allowed vlan 10,20[/code]." },
       { type: 'step', content: "Sur <strong>SW-BRU</strong>, lien vers R8 (e0/3) — c'est par là que les VLANs montent au routeur : [code]interface e0/3[/code] → [code]switchport trunk encapsulation dot1q[/code] → [code]switchport mode trunk[/code] → [code]switchport trunk allowed vlan 10,20[/code]." },
       { type: 'step', content: "Sur <strong>SW-GND</strong>, lien vers SW-BRU (e0/0) : mêmes commandes (encapsulation dot1q + mode trunk + allowed vlan 10,20)." },
@@ -5519,7 +5519,7 @@ const DEFAULT_LABS = [
       tasks: [
         "🏷️ SW-OSAKA — crée VLAN 100 (PROD) et VLAN 200 (INVITES)",
         "🔌 SW-OSAKA — e0/1 en access VLAN 100, e0/2 en access VLAN 200",
-        "🔀 SW-OSAKA — e0/0 en trunk (encapsulation dot1q) vers R-OSAKA",
+        "🔀 SW-OSAKA — e0/0 vers R-OSAKA : encapsulation dot1q PUIS mode trunk (l'ordre compte !)",
         "📡 R-OSAKA — active l'interface physique e0/0 (no shutdown, AUCUNE IP)",
         "🏗️ R-OSAKA — sous-interfaces e0/0.100 (dot1q 100) et e0/0.200 (dot1q 200)",
         "🌐 R-OSAKA — gateways : e0/0.100 = 172.16.100.254/24, e0/0.200 = 172.16.200.254/24"
@@ -5798,7 +5798,7 @@ const DEFAULT_LABS = [
       "Étape 1 — Sur SW1 ET SW2, crée les 4 VLANs nécessaires (10 Ventes, 20 RH, 30 IT, 99 Native)",
       "Étape 2 — Sur SW1, configure Fa0/1 en access VLAN 10 (PC10) et Fa0/2 en access VLAN 20 (PC20)",
       "Étape 3 — Sur SW2, configure Fa0/1 en access VLAN 20 (PC20b) et Fa0/2 en access VLAN 30 (PC30)",
-      "Étape 4 — Sur SW1, configure Gi0/1 en trunk : 'switchport mode trunk' puis 'switchport trunk encapsulation dot1q'",
+      "Étape 4 — Sur SW1, configure Gi0/1 en trunk DANS LE BON ORDRE : 'switchport trunk encapsulation dot1q' PUIS 'switchport mode trunk' (sur 3560/3750, l'inverse est rejeté)",
       "Étape 5 — Sur SW1, restreins les VLANs autorisés sur le trunk : 'switchport trunk allowed vlan 10,20,30'",
       "Étape 6 — Sur SW1, définis VLAN 99 comme native : 'switchport trunk native vlan 99'",
       "Étape 7 — Sur SW2, applique la MÊME config sur Gi0/1 (sinon mismatch)",
@@ -5856,7 +5856,7 @@ const DEFAULT_LABS = [
       "Étape 5 — Vérifie [code]show interfaces port-channel 3[/code] → Po3 up/up, bande passante 200 Mbps (2 × Fa0/1)",
       "Étape 6 — Vérifie [code]show etherchannel port[/code] → détails de chaque port membre",
       "Étape 7 — Vérifie [code]show spanning-tree[/code] → STP voit Po3 comme UN seul lien logique (pas 2)",
-      "Étape 8 — Bonus : si tu veux configurer Po3 en trunk pour transporter plusieurs VLANs, fais 'interface port-channel 3' puis 'switchport mode trunk'",
+      "Étape 8 — Bonus : si tu veux configurer Po3 en trunk pour transporter plusieurs VLANs, fais 'interface port-channel 3' puis 'switchport trunk encapsulation dot1q' et 'switchport mode trunk'",
       "Réflexion 1 : pourquoi mode 'on' est dangereux en prod ? (Indice : pas de keepalive, donc pas de détection de mismatch côté voisin)",
       "Réflexion 2 : quel protocole préférer en prod (LACP ou PAgP) ? (LACP, standard multi-vendor)"
     ],
@@ -6302,7 +6302,7 @@ const DEFAULT_LABS = [
       "Configure les PCs : PC1=192.168.1.10/24 sur SW1 Fa0/10, PC2=192.168.1.11/24 sur SW2 Fa0/10",
       "Vérifie avec [code]show etherchannel summary[/code] → tu dois voir 'Po1(SU)' (Switch+in-Use) et le protocole 'LACP'",
       "Vérifie [code]show interfaces port-channel 1[/code] → le Po1 doit être up/up",
-      "Bonus : configure Po1 en mode trunk si tu veux que plusieurs VLANs passent dessus",
+      "Bonus : configure Po1 en trunk ('switchport trunk encapsulation dot1q' puis 'switchport mode trunk') si tu veux que plusieurs VLANs passent dessus",
       "Test : depuis PC1, ping PC2 → doit fonctionner. La trame peut emprunter Fa0/1 OU Fa0/2 (load-balancing)",
       "Réflexion : pourquoi LACP plutôt que le mode 'on' du Lab 10 ? (Indice : sécurité — pas de boucle accidentelle si l\'autre côté n\'est pas configuré)"
     ],
@@ -6978,8 +6978,9 @@ function scheduleExplain(cmd, lparts) {
       '→ Vérifier : show interfaces trunk',
 
       'Tu déclares un "port multi-VLAN" pour relier switches entre eux ou switch↔routeur (RoaS).\n' +
-      '⚠ Si le voisin n\'est pas configuré en trunk, le bundle ne monte pas.\n' +
-      '💡 Sur certains modèles (3560/3750), il faut d\'abord "switchport trunk encapsulation dot1q".'
+      '⚠ PIÈGE CCNA : sur ce switch (type 3560/3750), tu DOIS faire "switchport trunk encapsulation dot1q" AVANT,\n' +
+      'sinon : "Command rejected: ... encapsulation is Auto ... can not be configured to trunk mode".\n' +
+      '💡 Ordre correct : encapsulation dot1q → mode trunk → allowed vlan.'
     ]);
     if (args[0] === 'mode' && args[1] === 'dynamic') return explainLine(
       'Mode "dynamic" = négociation auto via DTP. Pratique mais risque de sécurité (DTP attacks).\n' +
@@ -8459,6 +8460,11 @@ function handleInterfaceCmd(cmd, parts, lparts) {
   if (lparts[0] === 'switchport') {
     if (matchPrefix(lparts.slice(1), ['mode','access'])) { iface.swMode = 'access'; return; }
     if (matchPrefix(lparts.slice(1), ['mode','trunk'])) {
+      // Comportement 3560/3750 (le grand classique CCNA) : l'encapsulation DOIT être définie AVANT.
+      if (!iface.trunkEncap) {
+        term.writeln('\x1b[31mCommand rejected: An interface whose trunk encapsulation is "Auto" can not be configured to "trunk" mode.\x1b[0m');
+        return;
+      }
       iface.swMode = 'trunk';
       sw.trunk[sw.context] = sw.trunk[sw.context] || { native: 1, allowed: 'all' };
       (sw._configTouched = sw._configTouched || {})['trunk'] = true;
@@ -8468,7 +8474,13 @@ function handleInterfaceCmd(cmd, parts, lparts) {
     if (matchPrefix(lparts.slice(1), ['mode','dynamic','auto'])) { iface.swMode = 'dyn-auto'; return; }
     if (matchPrefix(lparts.slice(1), ['access','vlan'])) { iface.accessVlan = parseInt(parts[3]); (sw._configTouched = sw._configTouched || {})['accessVlan'] = true; return; }
     if (matchPrefix(lparts.slice(1), ['voice','vlan'])) { iface.voiceVlan = parseInt(parts[3]); return; }
-    if (matchPrefix(lparts.slice(1), ['trunk','encapsulation'])) return;
+    if (matchPrefix(lparts.slice(1), ['trunk','encapsulation'])) {
+      const enc = (lparts[3] || '').toLowerCase();
+      if (enc === 'dot1q') iface.trunkEncap = 'dot1q';
+      else if (enc === 'isl') iface.trunkEncap = 'isl';
+      else if (enc === 'negotiate') iface.trunkEncap = null;  // retour en mode auto
+      return;
+    }
     if (matchPrefix(lparts.slice(1), ['trunk','native','vlan'])) {
       sw.trunk[sw.context] = sw.trunk[sw.context] || {};
       sw.trunk[sw.context].native = parseInt(parts[4]); return;
