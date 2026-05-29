@@ -12314,8 +12314,10 @@ function loadLab(idx) {
   if (currentLab.autoDevices && currentLab.topology && Array.isArray(currentLab.topology.devices)) {
     // CHARGEMENT AUTO : crée tous les équipements de la topologie (s'ils n'existent pas déjà)
     // pour que l'étudiant les retrouve directement en onglets, sans avoir à les ajouter à la main.
+    const topoNames = new Set();
     currentLab.topology.devices.forEach(d => {
       if (!d || !d.name) return;
+      topoNames.add(d.name);
       if (Object.values(devices).some(dev => dev.name === d.name)) return;  // déjà présent → on n'écrase pas
       const kind = d.type === 'svi' ? 'switchL3' : (d.type || 'switch');
       const newId = createDevice(kind, d.name);
@@ -12326,12 +12328,17 @@ function loadLab(idx) {
         if (d.gateway && /^\d{1,3}(\.\d{1,3}){3}$/.test(d.gateway)) st.gateway = d.gateway;
       }
     });
-    // Bascule sur l'équipement principal du chapitre
-    const primary = Object.values(devices).find(dev => dev.name === targetHost);
-    renderDeviceTabs();
+    // Bascule sur l'équipement principal du chapitre (AVANT de retirer les autres)
+    const primary = Object.values(devices).find(dev => dev.name === targetHost)
+                 || Object.values(devices).find(dev => topoNames.has(dev.name));
     if (primary && typeof switchToDevice === 'function' && primary.id !== activeDevice) {
       switchToDevice(primary.id);
     }
+    // Ne garde QUE les équipements de la topologie du chapitre (retire les devices par défaut type R1/PC1)
+    Object.values(devices).forEach(dev => {
+      if (!topoNames.has(dev.name) && dev.id !== activeDevice) delete devices[dev.id];
+    });
+    renderDeviceTabs();
   } else {
     // Comportement classique mono-device : renomme l'équipement Cisco actif
     if (activeDevice && devices[activeDevice]) {
