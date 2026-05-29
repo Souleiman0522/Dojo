@@ -5376,15 +5376,15 @@ const DEFAULT_LABS = [
     // (Router/Switch) pour que l'étudiant les nomme lui-même (TASK 1).
     devices: [
       { type: 'router', name: 'R8',  hostname: 'Router' },
-      { type: 'switch', name: 'SW1', hostname: 'Switch' },
-      { type: 'switch', name: 'SW2', hostname: 'Switch' },
+      { type: 'switch', name: 'SW-BRU', hostname: 'Switch' },
+      { type: 'switch', name: 'SW-GND', hostname: 'Switch' },
       { type: 'pc', name: 'VPC3' },
       { type: 'pc', name: 'VPC4' },
       { type: 'pc', name: 'VPC5' },
       { type: 'pc', name: 'VPC6' }
     ],
     narrative: {
-      intro: "Léo est devant SW1. La config du Chapitre 1 tient toujours : le hostname est bon, la console verrouillée, les mots de passe en place. Tout est en ordre. Et pourtant, quelque chose le travaille depuis le passage du Sensei.\n\n« Tu as fini ton étage », a lâché le vieux en pointant le switch. « Mais demain, les Ventes et l\'IT voudront se parler. Et un cran plus loin, c\'est avec l\'extérieur qu\'il faudra dialoguer. Tu vas devoir changer de niveau. »\n\nChanger de niveau. Léo retourne la phrase dans sa tête. Jusqu\'ici, tout ce qu\'il a vu se passait au même endroit — un switch, des ports, des trames qui circulent. Un seul monde. Mais le Sensei a dit « niveau » au pluriel. Combien y en a-t-il ?\n\nIl ouvre son carnet et note les questions qui le démangent :<br>• Deux PC dans le même VLAN se parlent tout seuls. Dans deux VLANs différents, il leur faut « autre chose ». Qu\'est-ce qui change EXACTEMENT quand le VLAN change ?<br>• Chaque carte réseau porte une suite hexadécimale gravée — et en même temps une IP que lui-même configure. Deux adresses pour une seule carte. Laquelle sert à quoi ? Voyagent-elles ensemble quand un paquet traverse le réseau ?<br>• Un switch « voit » ses voisins sans aucune IP. Comment découvrir qui est branché en face sans lui parler en IP ? Il existe donc une couche SOUS IP, qui sait communiquer toute seule ?<br>• Et si demain on remplaçait un switch Cisco par du HP ou du Juniper — sauraient-ils encore se voir ? Ou Cisco a-t-il son propre langage de découverte ?<br>• Et surtout : si les Ventes et l\'IT vivent dans deux VLANs séparés, par où passe le paquet pour aller de l\'un à l\'autre ? Un VLAN, c\'est un mur. Alors qui ouvre la porte ?\n\nLéo referme son carnet. Il le sent : il va devoir monter d\'un cran dans sa façon de penser. Le switch ne suffira plus. Il lui faut comprendre ce que le Sensei appelle la couche 3 — l\'endroit où les paquets ne sont plus seulement transmis, mais décidés. L\'endroit où l\'on choisit un chemin.\n\nAvant de partir, le vieux a laissé un dernier indice : « Tu construiras dans l\'ordre. Jamais le routeur avant le switch, jamais une sous-interface avant son VLAN. Un réseau s\'assemble de bas en haut, comme une maison. Commence par le toit, et tout s\'effondre. »",
+      intro: "Léo est devant SW-BRU. La config du Chapitre 1 tient toujours : le hostname est bon, la console verrouillée, les mots de passe en place. Tout est en ordre. Et pourtant, quelque chose le travaille depuis le passage du Sensei.\n\n« Tu as fini ton étage », a lâché le vieux en pointant le switch. « Mais demain, les Ventes et l\'IT voudront se parler. Et un cran plus loin, c\'est avec l\'extérieur qu\'il faudra dialoguer. Tu vas devoir changer de niveau. »\n\nChanger de niveau. Léo retourne la phrase dans sa tête. Jusqu\'ici, tout ce qu\'il a vu se passait au même endroit — un switch, des ports, des trames qui circulent. Un seul monde. Mais le Sensei a dit « niveau » au pluriel. Combien y en a-t-il ?\n\nIl ouvre son carnet et note les questions qui le démangent :<br>• Deux PC dans le même VLAN se parlent tout seuls. Dans deux VLANs différents, il leur faut « autre chose ». Qu\'est-ce qui change EXACTEMENT quand le VLAN change ?<br>• Chaque carte réseau porte une suite hexadécimale gravée — et en même temps une IP que lui-même configure. Deux adresses pour une seule carte. Laquelle sert à quoi ? Voyagent-elles ensemble quand un paquet traverse le réseau ?<br>• Un switch « voit » ses voisins sans aucune IP. Comment découvrir qui est branché en face sans lui parler en IP ? Il existe donc une couche SOUS IP, qui sait communiquer toute seule ?<br>• Et si demain on remplaçait un switch Cisco par du HP ou du Juniper — sauraient-ils encore se voir ? Ou Cisco a-t-il son propre langage de découverte ?<br>• Et surtout : si les Ventes et l\'IT vivent dans deux VLANs séparés, par où passe le paquet pour aller de l\'un à l\'autre ? Un VLAN, c\'est un mur. Alors qui ouvre la porte ?\n\nLéo referme son carnet. Il le sent : il va devoir monter d\'un cran dans sa façon de penser. Le switch ne suffira plus. Il lui faut comprendre ce que le Sensei appelle la couche 3 — l\'endroit où les paquets ne sont plus seulement transmis, mais décidés. L\'endroit où l\'on choisit un chemin.\n\nAvant de partir, le vieux a laissé un dernier indice : « Tu construiras dans l\'ordre. Jamais le routeur avant le switch, jamais une sous-interface avant son VLAN. Un réseau s\'assemble de bas en haut, comme une maison. Commence par le toit, et tout s\'effondre. »",
       mentor: "Respecte l\'ordre, Léo. Ne touche JAMAIS au routeur avant que le switch soit prêt — c\'est l\'erreur la plus fréquente, en lab CCNA comme en prod. Les VLANs avant les ports access, les ports access avant le trunk, le trunk avant les sous-interfaces. Et à chaque task, vérifie avec le bon « show » avant de passer à la suivante.\n\nOui, ce chapitre est dense — mais rien, ABSOLUMENT rien, n\'est hors de ta portée. Avance pas à pas, recommence une commande autant de fois qu\'il le faut, et garde le cap. Courage : à la fin, deux mondes séparés se parleront grâce à toi.",
       promptStart: "R8>",
       promptEnd: "R8(config-subif)#"
@@ -5414,7 +5414,7 @@ const DEFAULT_LABS = [
           icon: '🔀',
           name: '③ Trunk 802.1Q — l\'autoroute taggée',
           desc: '<strong>C\'est quoi :</strong> un lien qui transporte PLUSIEURS VLANs sur un seul câble. Chaque trame reçoit une étiquette (tag dot1Q) qui dit « je suis du VLAN X ».<br><br>' +
-                '<strong>Où :</strong> entre les 2 switches (SW1↔SW2) ET entre le switch et le routeur (SW1↔R8). Sans ce dernier trunk, les VLANs n\'atteignent jamais R8.<br><br>' +
+                '<strong>Où :</strong> entre les 2 switches (SW-BRU↔SW-GND) ET entre le switch et le routeur (SW-BRU↔R8). Sans ce dernier trunk, les VLANs n\'atteignent jamais R8.<br><br>' +
                 '<strong>3 réglages :</strong> <code>encapsulation dot1q</code> (méthode de tag), <code>allowed vlan</code> (liste blanche des VLANs), <code>native vlan</code> (le seul non taggé — identique des 2 côtés !).<br><br>' +
                 '<strong>À retenir :</strong> access = 1 VLAN non taggé (vers un PC) ; trunk = N VLANs taggés (entre équipements).<br><br>' +
                 '<strong>Config Cisco :</strong> <code>switchport trunk encapsulation dot1q</code> → <code>switchport mode trunk</code> → <code>switchport trunk allowed vlan 10,20</code>. Vérifie : <code>show interfaces trunk</code>.'
@@ -5424,7 +5424,7 @@ const DEFAULT_LABS = [
     },
     objectives: [
       "Comprendre pourquoi 2 VLANs ne communiquent PAS sans routage L3",
-      "PRÉREQUIS — créer les VLANs 10 et 20, affecter les ports access, monter les trunks (SW1↔SW2 et SW1↔R8)",
+      "PRÉREQUIS — créer les VLANs 10 et 20, affecter les ports access, monter les trunks (SW-BRU↔SW-GND et SW-BRU↔R8)",
       "Activer l'interface physique de R8 SANS lui donner d'IP (c'est un trunk pur)",
       "Créer une sous-interface par VLAN avec [code]encapsulation dot1q[/code] + l'IP de gateway",
       "Adresser CHAQUE PC : IP + masque + passerelle (la passerelle = la sous-interface R8 de son VLAN)",
@@ -5435,26 +5435,26 @@ const DEFAULT_LABS = [
     instructions: [
       { type: 'task', icon: '🏷️', label: 'ÉTAPE 1', title: 'Nommer les équipements et documenter les liens', requires: ['hostname'] },
       { type: 'step', content: "Comme au Chapitre 1, commence par donner une IDENTITÉ à chaque équipement (ils démarrent en <code>Router&gt;</code> / <code>Switch&gt;</code>). Clique sur <strong>R8</strong> : [code]enable[/code] → [code]configure terminal[/code] → [code]hostname R8[/code]. Le prompt devient <code>R8(config)#</code>." },
-      { type: 'step', content: "Fais pareil sur les switches : sur <strong>SW1</strong> → [code]hostname SW1[/code] ; sur <strong>SW2</strong> → [code]hostname SW2[/code]." },
-      { type: 'step', content: "📝 Documente chaque lien avec [code]description[/code] (l'étiquette du câble, pour les humains). Sur <strong>SW1</strong> :<br>• [code]interface e0/0[/code] → [code]description == TRUNK vers SW2[/code]<br>• [code]interface e0/3[/code] → [code]description == TRUNK vers R8 (routage inter-VLAN)[/code]<br>• [code]interface e0/1[/code] → [code]description >> VPC3 - VLAN10 Ventes[/code]<br>• [code]interface e0/2[/code] → [code]description >> VPC4 - VLAN20 RH[/code]" },
-      { type: 'step', content: "Sur <strong>SW2</strong> : [code]interface e0/0[/code] → [code]description == TRUNK vers SW1[/code] ; e0/1 → <code>description >> VPC5 - VLAN20 RH</code> ; e0/2 → <code>description >> VPC6 - VLAN10 Ventes</code>. Sur <strong>R8</strong> : [code]interface e0/0[/code] → [code]description == TRUNK 802.1Q vers SW1[/code]." },
+      { type: 'step', content: "Fais pareil sur les switches : sur <strong>SW-BRU</strong> → [code]hostname SW-BRU[/code] ; sur <strong>SW-GND</strong> → [code]hostname SW-GND[/code]." },
+      { type: 'step', content: "📝 Documente chaque lien avec [code]description[/code] (l'étiquette du câble, pour les humains). Sur <strong>SW-BRU</strong> :<br>• [code]interface e0/0[/code] → [code]description == TRUNK vers SW-GND[/code]<br>• [code]interface e0/3[/code] → [code]description == TRUNK vers R8 (routage inter-VLAN)[/code]<br>• [code]interface e0/1[/code] → [code]description >> VPC3 - VLAN10 Ventes[/code]<br>• [code]interface e0/2[/code] → [code]description >> VPC4 - VLAN20 RH[/code]" },
+      { type: 'step', content: "Sur <strong>SW-GND</strong> : [code]interface e0/0[/code] → [code]description == TRUNK vers SW-BRU[/code] ; e0/1 → <code>description >> VPC5 - VLAN20 RH</code> ; e0/2 → <code>description >> VPC6 - VLAN10 Ventes</code>. Sur <strong>R8</strong> : [code]interface e0/0[/code] → [code]description == TRUNK 802.1Q vers SW-BRU[/code]." },
       { type: 'step', content: "Vérifie sur chaque équipement avec [code]show interfaces description[/code] (statut + ta légende en une vue) ou [code]show running-config[/code]." },
 
-      { type: 'task', icon: '🧱', label: 'PRÉREQUIS 1', title: 'Créer les VLANs 10 et 20 sur SW1 ET SW2', requires: ['vlans'] },
-      { type: 'step', content: "Sur la topologie, clique sur <strong>SW1</strong> pour activer son terminal (ou onglet device). Passe en config : [code]enable[/code] → [code]configure terminal[/code]." },
+      { type: 'task', icon: '🧱', label: 'PRÉREQUIS 1', title: 'Créer les VLANs 10 et 20 sur SW-BRU ET SW-GND', requires: ['vlans'] },
+      { type: 'step', content: "Sur la topologie, clique sur <strong>SW-BRU</strong> pour activer son terminal (ou onglet device). Passe en config : [code]enable[/code] → [code]configure terminal[/code]." },
       { type: 'step', content: "Crée les 2 VLANs : [code]vlan 10[/code] → [code]name VENTES[/code] → [code]exit[/code], puis [code]vlan 20[/code] → [code]name RH[/code] → [code]exit[/code]." },
-      { type: 'step', content: "Bascule sur <strong>SW2</strong> et refais EXACTEMENT les mêmes 2 VLANs (un VLAN doit exister sur chaque switch qu\'il traverse, sinon la trame est jetée)." },
+      { type: 'step', content: "Bascule sur <strong>SW-GND</strong> et refais EXACTEMENT les mêmes 2 VLANs (un VLAN doit exister sur chaque switch qu\'il traverse, sinon la trame est jetée)." },
 
       { type: 'task', icon: '🔌', label: 'PRÉREQUIS 2', title: 'Affecter les ports access aux bons VLANs', requires: ['accessVlan'] },
-      { type: 'step', content: "Sur <strong>SW1</strong> — VPC3 (VLAN 10) sur e0/1 : [code]interface e0/1[/code] → [code]switchport mode access[/code] → [code]switchport access vlan 10[/code]." },
-      { type: 'step', content: "Toujours SW1 — VPC4 (VLAN 20) sur e0/2 : [code]interface e0/2[/code] → [code]switchport mode access[/code] → [code]switchport access vlan 20[/code]." },
-      { type: 'step', content: "Sur <strong>SW2</strong> — VPC5 (VLAN 20) sur e0/1 → access vlan 20 ; VPC6 (VLAN 10) sur e0/2 → access vlan 10." },
+      { type: 'step', content: "Sur <strong>SW-BRU</strong> — VPC3 (VLAN 10) sur e0/1 : [code]interface e0/1[/code] → [code]switchport mode access[/code] → [code]switchport access vlan 10[/code]." },
+      { type: 'step', content: "Toujours SW-BRU — VPC4 (VLAN 20) sur e0/2 : [code]interface e0/2[/code] → [code]switchport mode access[/code] → [code]switchport access vlan 20[/code]." },
+      { type: 'step', content: "Sur <strong>SW-GND</strong> — VPC5 (VLAN 20) sur e0/1 → access vlan 20 ; VPC6 (VLAN 10) sur e0/2 → access vlan 10." },
 
       { type: 'task', icon: '🔀', label: 'PRÉREQUIS 3', title: 'Monter les 2 trunks (encapsulation + allowed + native)', requires: ['trunk'] },
       { type: 'step', content: "Un trunk a 3 réglages clés :<br>• <strong>encapsulation dot1q</strong> = la méthode de tag (802.1Q, le standard). Sur certains switches (3560/3750) il faut la définir AVANT [code]switchport mode trunk[/code] ; sur d'autres c'est automatique.<br>• <strong>allowed vlan</strong> = la liste blanche des VLANs autorisés à passer (sécurité + propreté).<br>• <strong>native vlan</strong> = le seul VLAN transporté NON taggé. Il DOIT être identique des 2 côtés du lien." },
-      { type: 'step', content: "Sur <strong>SW1</strong>, lien vers SW2 (e0/0) : [code]interface e0/0[/code] → [code]switchport trunk encapsulation dot1q[/code] → [code]switchport mode trunk[/code] → [code]switchport trunk allowed vlan 10,20[/code]." },
-      { type: 'step', content: "Sur <strong>SW1</strong>, lien vers R8 (e0/3) — c'est par là que les VLANs montent au routeur : [code]interface e0/3[/code] → [code]switchport trunk encapsulation dot1q[/code] → [code]switchport mode trunk[/code] → [code]switchport trunk allowed vlan 10,20[/code]." },
-      { type: 'step', content: "Sur <strong>SW2</strong>, lien vers SW1 (e0/0) : mêmes commandes (encapsulation dot1q + mode trunk + allowed vlan 10,20)." },
+      { type: 'step', content: "Sur <strong>SW-BRU</strong>, lien vers SW-GND (e0/0) : [code]interface e0/0[/code] → [code]switchport trunk encapsulation dot1q[/code] → [code]switchport mode trunk[/code] → [code]switchport trunk allowed vlan 10,20[/code]." },
+      { type: 'step', content: "Sur <strong>SW-BRU</strong>, lien vers R8 (e0/3) — c'est par là que les VLANs montent au routeur : [code]interface e0/3[/code] → [code]switchport trunk encapsulation dot1q[/code] → [code]switchport mode trunk[/code] → [code]switchport trunk allowed vlan 10,20[/code]." },
+      { type: 'step', content: "Sur <strong>SW-GND</strong>, lien vers SW-BRU (e0/0) : mêmes commandes (encapsulation dot1q + mode trunk + allowed vlan 10,20)." },
       { type: 'step', content: "🔐 Bonne pratique sécurité — le <strong>native VLAN</strong> : par défaut c'est le VLAN 1 (à éviter). On le déplace vers un VLAN dédié inutilisé : [code]vlan 99[/code] → [code]name NATIVE[/code], puis sur CHAQUE trunk [code]switchport trunk native vlan 99[/code]. ⚠ S'il diffère d'un côté à l'autre → 'native VLAN mismatch' (CDP/STP gueule, trafic mal classé)." },
       { type: 'step', content: "⚠ PIÈGE allowed vlan : [code]switchport trunk allowed vlan 30[/code] ÉCRASE la liste (10,20 disparaissent !). Pour ajouter sans casser : [code]switchport trunk allowed vlan add 30[/code]." },
       { type: 'step', content: "Vérifie avec [code]show interfaces trunk[/code] : tu dois voir les ports en mode trunk, l'encapsulation 802.1q, le native VLAN et les VLANs 10,20 (et 99) autorisés." },
@@ -5465,7 +5465,7 @@ const DEFAULT_LABS = [
       { type: 'step', content: "Configure chaque PC :<br>• <strong>VPC3</strong> (VLAN 10) : [code]ip 192.168.10.10 255.255.255.0 192.168.10.1[/code]<br>• <strong>VPC4</strong> (VLAN 20) : [code]ip 192.168.20.10 255.255.255.0 192.168.20.1[/code]<br>• <strong>VPC5</strong> (VLAN 20) : [code]ip 192.168.20.11 255.255.255.0 192.168.20.1[/code]<br>• <strong>VPC6</strong> (VLAN 10) : [code]ip 192.168.10.11 255.255.255.0 192.168.10.1[/code]" },
       { type: 'step', content: "🏠 <strong>Analogie</strong> : deux PC du MÊME VLAN, c'est comme deux personnes dans la <strong>même chambre</strong> — vous vous parlez directement, sans sortir, sans routeur. Le switch suffit (couche 2)." },
       { type: 'step', content: "🧪 Test MÊME VLAN (doit marcher SANS routeur) :<br>• depuis <strong>VPC3</strong> : [code]ping 192.168.10.11[/code] (VPC6, même VLAN 10) → ✅<br>• depuis <strong>VPC4</strong> : [code]ping 192.168.20.11[/code] (VPC5, même VLAN 20) → ✅" },
-      { type: 'step', content: "🔍 Sur <strong>SW1</strong>, regarde la table que le switch a construite en écoutant le trafic : [code]show mac address-table[/code] → tu vois les MAC des PC avec leur port et leur VLAN. (Et [code]show interfaces trunk[/code] pour les VLANs qui transitent.)" },
+      { type: 'step', content: "🔍 Sur <strong>SW-BRU</strong>, regarde la table que le switch a construite en écoutant le trafic : [code]show mac address-table[/code] → tu vois les MAC des PC avec leur port et leur VLAN. (Et [code]show interfaces trunk[/code] pour les VLANs qui transitent.)" },
       { type: 'step', content: "🚪 Maintenant essaie de SORTIR de ta chambre — depuis <strong>VPC3</strong> (VLAN 10) : [code]ping 192.168.20.10[/code] (VPC4, VLAN 20) → ❌ ÉCHOUE pour l'instant. C'est NORMAL : pour aller dans une AUTRE chambre, il faut passer par la PORTE = la passerelle/le routeur. Or R8 n'est pas encore configuré. On construit cette porte maintenant." },
 
       { type: 'task', icon: '📡', label: 'TASK 5', title: "Activer l'interface physique de R8 (SANS IP !)", requires: ['physUp'] },
@@ -5483,8 +5483,8 @@ const DEFAULT_LABS = [
       { type: 'step', content: "🚪✅ La porte est ouverte ! Refais le test inter-VLAN — depuis <strong>VPC3</strong> (VLAN 10) : [code]ping 192.168.20.10[/code] (VPC4, VLAN 20) → marche maintenant, le trafic SORT par R8. Le pont entre les mondes est établi !" },
 
       { type: 'reflection', content: "Pourquoi AUCUNE IP sur l\'interface physique e0/0 de R8 ?<br>👉 Parce qu\'elle transporte plusieurs VLANs taggés (trunk). Ce sont les sous-interfaces qui portent une IP, une par VLAN." },
-      { type: 'reflection', content: "Que se passe-t-il si tu oublies un trunk entre SW1 et R8 ?<br>👉 Les trames taggées n\'atteignent jamais le routeur → aucune communication inter-VLAN, même avec les sous-interfaces parfaitement configurées." },
-      { type: 'reflection', content: "Pourquoi le <strong>native VLAN</strong> doit-il être identique des 2 côtés d\'un trunk ?<br>👉 C\'est le seul VLAN transporté NON taggé. Si SW1 dit « natif = 99 » et SW2 « natif = 1 », les trames non taggées sont rangées dans le mauvais VLAN → fuite de trafic entre VLANs + alertes 'native VLAN mismatch' (CDP/STP). Bonne pratique : un VLAN natif dédié, inutilisé par les hôtes." },
+      { type: 'reflection', content: "Que se passe-t-il si tu oublies un trunk entre SW-BRU et R8 ?<br>👉 Les trames taggées n\'atteignent jamais le routeur → aucune communication inter-VLAN, même avec les sous-interfaces parfaitement configurées." },
+      { type: 'reflection', content: "Pourquoi le <strong>native VLAN</strong> doit-il être identique des 2 côtés d\'un trunk ?<br>👉 C\'est le seul VLAN transporté NON taggé. Si SW-BRU dit « natif = 99 » et SW-GND « natif = 1 », les trames non taggées sont rangées dans le mauvais VLAN → fuite de trafic entre VLANs + alertes 'native VLAN mismatch' (CDP/STP). Bonne pratique : un VLAN natif dédié, inutilisé par les hôtes." },
       { type: 'reflection', content: "Quelle est la LIMITE du Router-on-a-Stick ?<br>👉 Tout le trafic inter-VLAN transite par UN SEUL câble = goulot d\'étranglement. En prod moderne, on préfère un switch L3 (SVI) qui route à la vitesse du matériel." }
     ],
     topology: {
@@ -5494,20 +5494,20 @@ const DEFAULT_LABS = [
       ],
       devices: [
         { type: 'router', name: 'R8',   x: 400, y: 30,  ip: '2 sous-interfaces .10/.20', iface: 'e0/0 trunk dot1q' },
-        { type: 'switch', name: 'SW1',  x: 280, y: 180, ip: 'pas d\'IP', iface: 'trunk e0/0 + e0/3, access e0/1 e0/2' },
-        { type: 'switch', name: 'SW2',  x: 560, y: 180, ip: 'pas d\'IP', iface: 'trunk e0/0, access e0/1 e0/2' },
-        { type: 'pc', name: 'VPC3', x: 110, y: 350, ip: '192.168.10.10', gateway: '192.168.10.1', iface: 'VLAN 10 — SW1 e0/1' },
-        { type: 'pc', name: 'VPC4', x: 300, y: 360, ip: '192.168.20.10', gateway: '192.168.20.1', iface: 'VLAN 20 — SW1 e0/2' },
-        { type: 'pc', name: 'VPC5', x: 560, y: 360, ip: '192.168.20.11', gateway: '192.168.20.1', iface: 'VLAN 20 — SW2 e0/1' },
-        { type: 'pc', name: 'VPC6', x: 750, y: 350, ip: '192.168.10.11', gateway: '192.168.10.1', iface: 'VLAN 10 — SW2 e0/2' }
+        { type: 'switch', name: 'SW-BRU',  x: 280, y: 180, ip: 'pas d\'IP', iface: 'trunk e0/0 + e0/3, access e0/1 e0/2' },
+        { type: 'switch', name: 'SW-GND',  x: 560, y: 180, ip: 'pas d\'IP', iface: 'trunk e0/0, access e0/1 e0/2' },
+        { type: 'pc', name: 'VPC3', x: 110, y: 350, ip: '192.168.10.10', gateway: '192.168.10.1', iface: 'VLAN 10 — SW-BRU e0/1' },
+        { type: 'pc', name: 'VPC4', x: 300, y: 360, ip: '192.168.20.10', gateway: '192.168.20.1', iface: 'VLAN 20 — SW-BRU e0/2' },
+        { type: 'pc', name: 'VPC5', x: 560, y: 360, ip: '192.168.20.11', gateway: '192.168.20.1', iface: 'VLAN 20 — SW-GND e0/1' },
+        { type: 'pc', name: 'VPC6', x: 750, y: 350, ip: '192.168.10.11', gateway: '192.168.10.1', iface: 'VLAN 10 — SW-GND e0/2' }
       ],
       links: [
-        { from: 'R8', to: 'SW1', label: 'e0/0 ↔ e0/3 TRUNK', trunk: true },
-        { from: 'SW1', to: 'SW2', label: 'e0/0 ↔ e0/0 TRUNK', trunk: true },
-        { from: 'SW1', to: 'VPC3', label: 'e0/1', vlan: 10 },
-        { from: 'SW1', to: 'VPC4', label: 'e0/2', vlan: 20 },
-        { from: 'SW2', to: 'VPC5', label: 'e0/1', vlan: 20 },
-        { from: 'SW2', to: 'VPC6', label: 'e0/2', vlan: 10 }
+        { from: 'R8', to: 'SW-BRU', label: 'e0/0 ↔ e0/3 TRUNK', trunk: true },
+        { from: 'SW-BRU', to: 'SW-GND', label: 'e0/0 ↔ e0/0 TRUNK', trunk: true },
+        { from: 'SW-BRU', to: 'VPC3', label: 'e0/1', vlan: 10 },
+        { from: 'SW-BRU', to: 'VPC4', label: 'e0/2', vlan: 20 },
+        { from: 'SW-GND', to: 'VPC5', label: 'e0/1', vlan: 20 },
+        { from: 'SW-GND', to: 'VPC6', label: 'e0/2', vlan: 10 }
       ]
     },
     hint: "ROUTER-ON-A-STICK (RoaS) : un routeur fait gateway pour N VLANs via N sous-interfaces sur UN SEUL lien trunk 802.1Q. ORDRE LOGIQUE : ① VLANs créés sur CHAQUE switch traversé. ② Ports access affectés (switchport mode access + access vlan X). ③ TRUNKS montés (switchport mode trunk) sur tous les liens switch-switch ET switch-routeur. ④ Interface physique du routeur : 'no shutdown' SANS IP. ⑤ Sous-interfaces : 'interface e0/0.10' → 'encapsulation dot1q 10' → 'ip address <gw> <mask>'. PIÈGE 1 : le numéro dot1q DOIT être identique à l\'ID du VLAN. PIÈGE 2 : oublier 'no shutdown' sur l\'interface PHYSIQUE → toutes les sous-interfaces restent down. PIÈGE 3 : oublier le trunk entre le switch et le routeur → les VLANs taggés n\'atteignent pas R8. PIÈGE 4 : VLAN absent d\'un switch intermédiaire → trames jetées. La gateway de chaque PC = l\'IP de la sous-interface de SON VLAN. LIMITE : 1 câble = goulot ; en prod on préfère un switch L3 (SVI) qui route en hardware.",
