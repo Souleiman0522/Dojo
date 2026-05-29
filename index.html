@@ -5704,59 +5704,6 @@ const DEFAULT_LABS = [
     hint: "Le VLAN natif DOIT être IDENTIQUE des deux côtés du trunk, sinon 'native VLAN mismatch' (CDP/STP envoie des warnings + trames natives mal classées + risque sécurité). Bonne pratique : utiliser un VLAN natif DÉDIÉ (99 ici), JAMAIS le VLAN 1 ni un VLAN utilisé par des hôtes (sécurité). En 2024, la tendance est même de 'tagger' le native VLAN avec 'vlan dot1q tag native' pour qu\'il soit aussi taggé."
   },
   
-  
-  {
-    id: 9, title: "Lab 9 — Router-on-a-Stick", category: "access",
-    difficulty: "Intermédiaire", duration: "45 min", device: "R1", hostname: "R1",
-    objectives: [
-      "Comprendre Router-on-a-Stick : un seul lien physique pour router N VLANs",
-      "Configurer 3 sous-interfaces sur R1 avec encapsulation 802.1Q",
-      "Assigner les IPs de chaque sous-interface comme gateway de son VLAN",
-      "Vérifier la communication inter-VLAN via R1",
-      "Comprendre quand RoaS est suffisant vs quand utiliser un switch L3 (Lab 17)"
-    ],
-    instructions: [
-      "Étape 1 — Sur SW1, crée les 3 VLANs (10 Ventes, 20 RH, 30 IT)",
-      "Étape 2 — Sur SW1, configure les ports access : Fa0/1 → VLAN 10, Fa0/2 → VLAN 20, Fa0/3 → VLAN 30",
-      "Étape 3 — Sur SW1, configure Gi0/1 vers R1 en TRUNK 802.1Q (allowed vlan 10,20,30)",
-      "Étape 4 — Sur R1, active l\'interface physique Gi0/0 (juste 'no shutdown', PAS d\'IP dessus !)",
-      "Étape 5 — Sur R1, crée la sous-interface Gi0/0.10 pour VLAN 10 :",
-      "  • interface gi0/0.10",
-      "  • encapsulation dot1q 10",
-      "  • ip address 192.168.10.1 255.255.255.0",
-      "Étape 6 — Répète pour Gi0/0.20 (VLAN 20) avec IP 192.168.20.1/24",
-      "Étape 7 — Répète pour Gi0/0.30 (VLAN 30) avec IP 192.168.30.1/24",
-      "Étape 8 — Configure PC1=192.168.10.10 GW 192.168.10.1, PC2=192.168.20.10 GW 192.168.20.1, PC3=192.168.30.10 GW 192.168.30.1",
-      "Étape 9 — Test : depuis PC1, [code]ping 192.168.20.10[/code] (PC2) → doit marcher via R1",
-      "Étape 10 — Test : depuis PC1, [code]ping 192.168.30.10[/code] (PC3) → doit aussi marcher",
-      "Étape 11 — Sur R1, vérifie [code]show ip route[/code] → 3 réseaux 'C' (Connected) un par sous-interface",
-      "Étape 12 — Sur R1, vérifie [code]show ip interface brief[/code] → 3 sous-interfaces up/up",
-      "Réflexion 1 : pourquoi PAS d\'IP sur l\'interface physique Gi0/0 ? (Indice : c\'est un trunk, les IPs sont sur les sous-interfaces)",
-      "Réflexion 2 : quel inconvénient de RoaS vs switch L3 ? (Indice : un seul câble = goulot d'étranglement pour 3 VLANs, et CPU du routeur pour switcher)"
-    ],
-    topology: {
-      networks: [
-        { name: 'VLAN 10 (Ventes)', subnet: '192.168.10.0/24', mask: '255.255.255.0', gateway: '192.168.10.1 (Gi0/0.10)' },
-        { name: 'VLAN 20 (RH)',     subnet: '192.168.20.0/24', mask: '255.255.255.0', gateway: '192.168.20.1 (Gi0/0.20)' },
-        { name: 'VLAN 30 (IT)',     subnet: '192.168.30.0/24', mask: '255.255.255.0', gateway: '192.168.30.1 (Gi0/0.30)' }
-      ],
-      devices: [
-        { type: 'router', name: 'R1',  x: 380, y: 60,  ip: '3 sous-interfaces .10/.20/.30', iface: 'Gi0/0 trunk dot1q' },
-        { type: 'switch', name: 'SW1', x: 380, y: 200, ip: 'pas d\'IP', iface: 'Trunk + 3 VLANs access' },
-        { type: 'pc',     name: 'PC1', x: 130, y: 360, ip: '192.168.10.10', gateway: '192.168.10.1', iface: 'VLAN 10 — Fa0/1' },
-        { type: 'pc',     name: 'PC2', x: 380, y: 360, ip: '192.168.20.10', gateway: '192.168.20.1', iface: 'VLAN 20 — Fa0/2' },
-        { type: 'pc',     name: 'PC3', x: 630, y: 360, ip: '192.168.30.10', gateway: '192.168.30.1', iface: 'VLAN 30 — Fa0/3' }
-      ],
-      links: [
-        { from: 'R1', to: 'SW1', label: 'Gi0/0 TRUNK (10,20,30)', trunk: true },
-        { from: 'SW1', to: 'PC1', label: 'Fa0/1', vlan: 10 },
-        { from: 'SW1', to: 'PC2', label: 'Fa0/2', vlan: 20 },
-        { from: 'SW1', to: 'PC3', label: 'Fa0/3', vlan: 30 }
-      ]
-    },
-    hint: "RoaS = Router-on-a-Stick. Le routeur fait office de gateway pour N VLANs via N sous-interfaces sur un SEUL câble trunk. Avantages : pas besoin de switch L3 (économique). Inconvénients : tout le trafic inter-VLAN passe par 1 seul câble = goulot. En prod moderne : préférer switch L3 avec SVI (Lab 17) qui fait du routage hardware à wire-speed. PIÈGE : oublier 'no shutdown' sur l\'interface physique Gi0/0 → toutes les sous-interfaces sont down. Activer l\'interface physique = condition préalable."
-  },
-  
   {
     id: 10, title: "Lab 10 — EtherChannel Static (mode on)", category: "access",
     difficulty: "Intermédiaire", duration: "25 min", device: "SW1", hostname: "SW1",
