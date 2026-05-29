@@ -5518,60 +5518,56 @@ const DEFAULT_LABS = [
     hint: "ROUTER-ON-A-STICK (RoaS) : un routeur fait gateway pour N VLANs via N sous-interfaces sur UN SEUL lien trunk 802.1Q. ORDRE LOGIQUE : ① VLANs créés sur CHAQUE switch traversé. ② Ports access affectés (switchport mode access + access vlan X). ③ TRUNKS montés (switchport mode trunk) sur tous les liens switch-switch ET switch-routeur. ④ Interface physique du routeur : 'no shutdown' SANS IP. ⑤ Sous-interfaces : 'interface e0/0.10' → 'encapsulation dot1q 10' → 'ip address <gw> <mask>'. PIÈGE 1 : le numéro dot1q DOIT être identique à l\'ID du VLAN. PIÈGE 2 : oublier 'no shutdown' sur l\'interface PHYSIQUE → toutes les sous-interfaces restent down. PIÈGE 3 : oublier le trunk entre le switch et le routeur → les VLANs taggés n\'atteignent pas R8. PIÈGE 4 : VLAN absent d\'un switch intermédiaire → trames jetées. La gateway de chaque PC = l\'IP de la sous-interface de SON VLAN. LIMITE : 1 câble = goulot ; en prod on préfère un switch L3 (SVI) qui route en hardware.",
     challenge: {
       title: "Le Défi du Sensei — RoaS complet en autonomie",
-      story: "« Léo, le pont entre les VLANs, tu l\'as bâti avec moi. » Le Sensei dévoile un nouveau site, Osaka : un switch <strong>SW-OSAKA</strong>, un routeur <strong>R-OSAKA</strong>, et deux machines — la Production (VLAN 100) et les Invités (VLAN 200). « Cette fois, tu montes TOUT : le switch ET le routeur. Dans l\'ordre. Sans regarder le chapitre. »",
-      scenario: "Construis le Router-on-a-Stick de bout en bout. D\'abord le switch (VLANs → ports access → trunk vers le routeur), ENSUITE le routeur (interface physique → sous-interfaces). Bascule entre les onglets SW-OSAKA et R-OSAKA. Réseaux imposés :",
-      multiDevice: ['SW-OSAKA', 'R-OSAKA'],
+      story: "« Léo, le pont entre les VLANs, tu l\'as bâti avec moi. » Le Sensei dévoile un nouveau site au Japon : deux switches — <strong>SW-OSAKA</strong> et <strong>SW-KYOTO</strong> — reliés par un trunk, et un routeur <strong>R-TOKYO</strong> au sommet. Deux VLANs à faire dialoguer : la Production (100) et les Invités (200). « Cette fois, tu montes TOUT : les deux switches ET le routeur. Dans l\'ordre. Sans regarder le chapitre. »",
+      scenario: "Construis le Router-on-a-Stick de bout en bout. D\'abord les switches (VLANs sur les DEUX → trunks → native VLAN), ENSUITE le routeur (interface physique → sous-interfaces). Bascule entre les onglets SW-OSAKA, SW-KYOTO et R-TOKYO. Réseaux imposés :",
+      multiDevice: ['SW-OSAKA', 'SW-KYOTO', 'R-TOKYO'],
       tasks: [
-        "🏷️ SW-OSAKA — crée VLAN 100 (PROD) et VLAN 200 (INVITES)",
-        "🔌 SW-OSAKA — e0/1 en access VLAN 100, e0/2 en access VLAN 200",
-        "🔀 SW-OSAKA — e0/0 vers R-OSAKA : encapsulation dot1q PUIS mode trunk (l'ordre compte !)",
-        "🔐 SW-OSAKA — VLAN natif dédié : crée le VLAN 99, puis sur e0/0 : switchport trunk native vlan 99",
-        "📡 R-OSAKA — active l'interface physique e0/0 (no shutdown, AUCUNE IP)",
-        "🏗️ R-OSAKA — sous-interfaces e0/0.100 (dot1q 100) et e0/0.200 (dot1q 200)",
-        "🌐 R-OSAKA — gateways : e0/0.100 = 172.16.100.254/24, e0/0.200 = 172.16.200.254/24"
+        "🏷️ Sur SW-OSAKA ET SW-KYOTO — crée VLAN 100 (PROD) et VLAN 200 (INVITES)",
+        "🔀 SW-OSAKA — e0/3 (vers R-TOKYO) et e0/0 (vers SW-KYOTO) en trunk : encapsulation dot1q PUIS mode trunk",
+        "🔀 SW-KYOTO — e0/0 (vers SW-OSAKA) en trunk : encapsulation dot1q PUIS mode trunk",
+        "🔐 Sur les DEUX switches — VLAN natif dédié 99 : crée le VLAN 99 puis switchport trunk native vlan 99 sur chaque trunk",
+        "📡 R-TOKYO — active l'interface physique e0/0 (no shutdown, AUCUNE IP)",
+        "🏗️ R-TOKYO — sous-interfaces e0/0.100 (dot1q 100) et e0/0.200 (dot1q 200)",
+        "🌐 R-TOKYO — gateways : e0/0.100 = 172.16.100.254/24, e0/0.200 = 172.16.200.254/24"
       ],
       topology: {
         networks: [
-          { name: 'VLAN 100 (Production)', subnet: '172.16.100.0/24', mask: '255.255.255.0', gateway: '172.16.100.254 (R-OSAKA e0/0.100)' },
-          { name: 'VLAN 200 (Invités)',    subnet: '172.16.200.0/24', mask: '255.255.255.0', gateway: '172.16.200.254 (R-OSAKA e0/0.200)' }
+          { name: 'VLAN 100 (Production)', subnet: '172.16.100.0/24', mask: '255.255.255.0', gateway: '172.16.100.254 (R-TOKYO e0/0.100)' },
+          { name: 'VLAN 200 (Invités)',    subnet: '172.16.200.0/24', mask: '255.255.255.0', gateway: '172.16.200.254 (R-TOKYO e0/0.200)' }
         ],
         devices: [
-          { type: 'router', name: 'R-OSAKA',  x: 400, y: 30,  ip: '2 sous-interfaces .100/.200', iface: 'e0/0 trunk dot1q' },
-          { type: 'switch', name: 'SW-OSAKA', x: 400, y: 180, ip: 'pas d\'IP', iface: 'trunk e0/0, access e0/1 e0/2' },
-          { type: 'pc', name: 'PC-PROD', x: 230, y: 350, ip: '172.16.100.10', gateway: '172.16.100.254', iface: 'VLAN 100 — e0/1' },
-          { type: 'pc', name: 'PC-INV',  x: 580, y: 350, ip: '172.16.200.10', gateway: '172.16.200.254', iface: 'VLAN 200 — e0/2' }
+          { type: 'router', name: 'R-TOKYO',  x: 280, y: 40,  ip: '2 sous-interfaces .100/.200', iface: 'e0/0 trunk dot1q' },
+          { type: 'switch', name: 'SW-OSAKA', x: 280, y: 210, ip: 'pas d\'IP', iface: 'trunk e0/3 (R-TOKYO) + e0/0 (SW-KYOTO)' },
+          { type: 'switch', name: 'SW-KYOTO', x: 580, y: 210, ip: 'pas d\'IP', iface: 'trunk e0/0 (SW-OSAKA)' }
         ],
         links: [
-          { from: 'R-OSAKA', to: 'SW-OSAKA', label: 'e0/0 ↔ e0/0 TRUNK', trunk: true },
-          { from: 'SW-OSAKA', to: 'PC-PROD', label: 'e0/1', vlan: 100 },
-          { from: 'SW-OSAKA', to: 'PC-INV',  label: 'e0/2', vlan: 200 }
+          { from: 'R-TOKYO', to: 'SW-OSAKA',  label: 'e0/0 ↔ e0/3 TRUNK', trunk: true },
+          { from: 'SW-OSAKA', to: 'SW-KYOTO', label: 'e0/0 ↔ e0/0 TRUNK', trunk: true }
         ]
       },
       checks: [
         { desc: "SW-OSAKA : VLAN 100 créé",
-          device: 'SW-OSAKA',
-          test: (s) => !!(s.vlans && s.vlans[100]) },
+          device: 'SW-OSAKA', test: (s) => !!(s.vlans && s.vlans[100]) },
         { desc: "SW-OSAKA : VLAN 200 créé",
-          device: 'SW-OSAKA',
-          test: (s) => !!(s.vlans && s.vlans[200]) },
-        { desc: "SW-OSAKA : ports access VLAN 100 et 200",
-          device: 'SW-OSAKA',
-          test: (s) => { const its = Object.values(s.interfaces || {}); return its.some(i => i.accessVlan === 100) && its.some(i => i.accessVlan === 200); } },
-        { desc: "SW-OSAKA : trunk vers le routeur (e0/0)",
-          device: 'SW-OSAKA',
-          test: (s) => Object.values(s.interfaces || {}).some(i => i.swMode === 'trunk') },
-        { desc: "SW-OSAKA : VLAN natif dédié 99 sur le trunk",
-          device: 'SW-OSAKA',
-          test: (s) => Object.values(s.trunk || {}).some(t => t.native === 99) },
-        { desc: "R-OSAKA : interface physique e0/0 activée (up)",
-          device: 'R-OSAKA',
-          test: (s) => { const i = s.interfaces && s.interfaces['Ethernet0/0']; return !!(i && i.status === 'up'); } },
-        { desc: "R-OSAKA : e0/0.100 dot1q 100 + IP 172.16.100.254",
-          device: 'R-OSAKA',
-          test: (s) => { const i = s.interfaces && s.interfaces['Ethernet0/0.100']; return !!(i && i.vlan === 100 && i.ip === '172.16.100.254'); } },
-        { desc: "R-OSAKA : e0/0.200 dot1q 200 + IP 172.16.200.254",
-          device: 'R-OSAKA',
-          test: (s) => { const i = s.interfaces && s.interfaces['Ethernet0/0.200']; return !!(i && i.vlan === 200 && i.ip === '172.16.200.254'); } }
+          device: 'SW-OSAKA', test: (s) => !!(s.vlans && s.vlans[200]) },
+        { desc: "SW-OSAKA : au moins un trunk monté",
+          device: 'SW-OSAKA', test: (s) => Object.values(s.interfaces || {}).some(i => i.swMode === 'trunk') },
+        { desc: "SW-OSAKA : VLAN natif dédié 99 sur le(s) trunk(s)",
+          device: 'SW-OSAKA', test: (s) => Object.values(s.trunk || {}).some(t => t.native === 99) },
+        { desc: "SW-KYOTO : VLAN 100 créé",
+          device: 'SW-KYOTO', test: (s) => !!(s.vlans && s.vlans[100]) },
+        { desc: "SW-KYOTO : VLAN 200 créé",
+          device: 'SW-KYOTO', test: (s) => !!(s.vlans && s.vlans[200]) },
+        { desc: "SW-KYOTO : trunk vers SW-OSAKA",
+          device: 'SW-KYOTO', test: (s) => Object.values(s.interfaces || {}).some(i => i.swMode === 'trunk') },
+        { desc: "SW-KYOTO : VLAN natif dédié 99",
+          device: 'SW-KYOTO', test: (s) => Object.values(s.trunk || {}).some(t => t.native === 99) },
+        { desc: "R-TOKYO : interface physique e0/0 activée (up)",
+          device: 'R-TOKYO', test: (s) => { const i = s.interfaces && s.interfaces['Ethernet0/0']; return !!(i && i.status === 'up'); } },
+        { desc: "R-TOKYO : e0/0.100 dot1q 100 + IP 172.16.100.254",
+          device: 'R-TOKYO', test: (s) => { const i = s.interfaces && s.interfaces['Ethernet0/0.100']; return !!(i && i.vlan === 100 && i.ip === '172.16.100.254'); } },
+        { desc: "R-TOKYO : e0/0.200 dot1q 200 + IP 172.16.200.254",
+          device: 'R-TOKYO', test: (s) => { const i = s.interfaces && s.interfaces['Ethernet0/0.200']; return !!(i && i.vlan === 200 && i.ip === '172.16.200.254'); } }
       ]
     }
   },
