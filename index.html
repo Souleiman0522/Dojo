@@ -5450,16 +5450,21 @@ const DEFAULT_LABS = [
       { type: 'step', content: "Toujours SW-BRU — VPC4 (VLAN 20) sur e0/2 : [code]interface e0/2[/code] → [code]switchport mode access[/code] → [code]switchport access vlan 20[/code]." },
       { type: 'step', content: "Sur <strong>SW-GND</strong> — VPC5 (VLAN 20) sur e0/1 → access vlan 20 ; VPC6 (VLAN 10) sur e0/2 → access vlan 10." },
 
-      { type: 'task', icon: '🔀', label: 'PRÉREQUIS 3', title: 'Monter les 2 trunks (encapsulation + allowed + native)', requires: ['trunk'] },
-      { type: 'step', content: "Un trunk a 3 réglages clés :<br>• <strong>encapsulation dot1q</strong> = la méthode de tag (802.1Q, le standard). ⚠ Sur ce switch (type 3560/3750), tu DOIS la définir AVANT [code]switchport mode trunk[/code], sinon la commande est <strong>rejetée</strong> (« encapsulation is Auto… can not be configured to trunk mode »).<br>• <strong>allowed vlan</strong> = la liste blanche des VLANs autorisés à passer (sécurité + propreté).<br>• <strong>native vlan</strong> = le seul VLAN transporté NON taggé. Il DOIT être identique des 2 côtés du lien." },
+      { type: 'task', icon: '🔀', label: 'PRÉREQUIS 3', title: 'Monter les 2 trunks (encapsulation + mode + allowed)', requires: ['trunk'] },
+      { type: 'step', content: "Un trunk a 3 réglages clés :<br>• <strong>encapsulation dot1q</strong> = la méthode de tag (802.1Q, le standard). ⚠ Sur ce switch (type 3560/3750), tu DOIS la définir AVANT [code]switchport mode trunk[/code], sinon la commande est <strong>rejetée</strong> (« encapsulation is Auto… can not be configured to trunk mode »).<br>• <strong>allowed vlan</strong> = la liste blanche des VLANs autorisés à passer (sécurité + propreté).<br>• <strong>native vlan</strong> = le seul VLAN transporté NON taggé (on s'en occupe à l'étape suivante)." },
       { type: 'step', content: "Sur <strong>SW-BRU</strong>, lien vers SW-GND (e0/0) : [code]interface e0/0[/code] → [code]switchport trunk encapsulation dot1q[/code] → [code]switchport mode trunk[/code] → [code]switchport trunk allowed vlan 10,20[/code]." },
       { type: 'step', content: "Sur <strong>SW-BRU</strong>, lien vers R8 (e0/3) — c'est par là que les VLANs montent au routeur : [code]interface e0/3[/code] → [code]switchport trunk encapsulation dot1q[/code] → [code]switchport mode trunk[/code] → [code]switchport trunk allowed vlan 10,20[/code]." },
       { type: 'step', content: "Sur <strong>SW-GND</strong>, lien vers SW-BRU (e0/0) : mêmes commandes (encapsulation dot1q + mode trunk + allowed vlan 10,20)." },
-      { type: 'step', content: "🔐 Bonne pratique sécurité — le <strong>native VLAN</strong> : par défaut c'est le VLAN 1 (à éviter). On le déplace vers un VLAN dédié inutilisé : [code]vlan 99[/code] → [code]name NATIVE[/code], puis sur CHAQUE trunk [code]switchport trunk native vlan 99[/code]. ⚠ S'il diffère d'un côté à l'autre → 'native VLAN mismatch' (CDP/STP gueule, trafic mal classé)." },
       { type: 'step', content: "⚠ PIÈGE allowed vlan : [code]switchport trunk allowed vlan 30[/code] ÉCRASE la liste (10,20 disparaissent !). Pour ajouter sans casser : [code]switchport trunk allowed vlan add 30[/code]." },
-      { type: 'step', content: "Vérifie avec [code]show interfaces trunk[/code] : tu dois voir les ports en mode trunk, l'encapsulation 802.1q, le native VLAN et les VLANs 10,20 (et 99) autorisés." },
 
-      { type: 'task', icon: '💻', label: 'TASK 4', title: 'Adresser les PC, puis tester DANS le même VLAN', requires: ['vpcAddressed'] },
+      { type: 'task', icon: '🔐', label: 'PRÉREQUIS 4', title: 'Sécuriser les trunks : VLAN natif dédié (VLAN 99)', requires: ['nativeVlan'] },
+      { type: 'step', content: "Le <strong>native VLAN</strong> est le SEUL transporté NON taggé sur un trunk. Par défaut c'est le VLAN 1 — à éviter (sécurité). On le déplace vers un VLAN dédié et inutilisé : le 99." },
+      { type: 'step', content: "Crée le VLAN natif sur <strong>SW-BRU</strong> ET <strong>SW-GND</strong> : [code]vlan 99[/code] → [code]name NATIVE[/code]." },
+      { type: 'step', content: "Applique-le sur CHAQUE trunk des deux switches (SW-BRU e0/0 et e0/3, SW-GND e0/0) : [code]switchport trunk native vlan 99[/code]." },
+      { type: 'step', content: "⚠ Le native VLAN DOIT être IDENTIQUE des 2 côtés d'un trunk. S'il diffère → <code>%CDP-4-NATIVE_VLAN_MISMATCH</code> + le trafic non taggé tombe dans le mauvais VLAN (faille de sécurité)." },
+      { type: 'step', content: "Vérifie avec [code]show interfaces trunk[/code] : colonne « Native vlan » = 99, encapsulation 802.1q, VLANs 10,20 autorisés." },
+
+      { type: 'task', icon: '💻', label: 'TASK 5', title: 'Adresser les PC, puis tester DANS le même VLAN', requires: ['vpcAddressed'] },
       { type: 'step', content: "Les 4 VPC démarrent SANS adresse IP — à toi de les configurer. Sur un PC, tout se fait en une ligne : [code]ip <adresse> <masque> <passerelle>[/code]." },
       { type: 'step', content: "⚠ Le <strong>masque</strong> 255.255.255.0 dit au PC qui est « chez lui » (même VLAN) ; la <strong>passerelle</strong> = l'IP de la sous-interface R8 de SON VLAN (la PORTE de sortie vers les autres VLANs)." },
       { type: 'step', content: "Configure chaque PC :<br>• <strong>VPC3</strong> (VLAN 10) : [code]ip 192.168.10.10 255.255.255.0 192.168.10.1[/code]<br>• <strong>VPC4</strong> (VLAN 20) : [code]ip 192.168.20.10 255.255.255.0 192.168.20.1[/code]<br>• <strong>VPC5</strong> (VLAN 20) : [code]ip 192.168.20.11 255.255.255.0 192.168.20.1[/code]<br>• <strong>VPC6</strong> (VLAN 10) : [code]ip 192.168.10.11 255.255.255.0 192.168.10.1[/code]" },
@@ -5468,15 +5473,15 @@ const DEFAULT_LABS = [
       { type: 'step', content: "🔍 Sur <strong>SW-BRU</strong>, regarde la table que le switch a construite en écoutant le trafic : [code]show mac address-table[/code] → tu vois les MAC des PC avec leur port et leur VLAN. (Et [code]show interfaces trunk[/code] pour les VLANs qui transitent.)" },
       { type: 'step', content: "🚪 Maintenant essaie de SORTIR de ta chambre — depuis <strong>VPC3</strong> (VLAN 10) : [code]ping 192.168.20.10[/code] (VPC4, VLAN 20) → ❌ ÉCHOUE pour l'instant. C'est NORMAL : pour aller dans une AUTRE chambre, il faut passer par la PORTE = la passerelle/le routeur. Or R8 n'est pas encore configuré. On construit cette porte maintenant." },
 
-      { type: 'task', icon: '📡', label: 'TASK 5', title: "Activer l'interface physique de R8 (SANS IP !)", requires: ['physUp'] },
+      { type: 'task', icon: '📡', label: 'TASK 6', title: "Activer l'interface physique de R8 (SANS IP !)", requires: ['physUp'] },
       { type: 'step', content: "Clique sur <strong>R8</strong>. Passe en config et active l\'interface physique reliée au switch : [code]interface e0/0[/code] → [code]no shutdown[/code]." },
       { type: 'step', content: "⚠ Ne mets AUCUNE adresse IP sur e0/0. C\'est un trunk : les IPs vivront sur les sous-interfaces. Oublier ce [code]no shutdown[/code] = toutes les sous-interfaces restent DOWN." },
 
-      { type: 'task', icon: '🏗️', label: 'TASK 6', title: 'Créer une sous-interface par VLAN (encapsulation dot1Q)', requires: ['subif'] },
+      { type: 'task', icon: '🏗️', label: 'TASK 7', title: 'Créer une sous-interface par VLAN (encapsulation dot1Q)', requires: ['subif'] },
       { type: 'step', content: "Sous-interface VLAN 10 : [code]interface e0/0.10[/code] → [code]encapsulation dot1q 10[/code]. Le numéro dot1q DOIT matcher l\'ID du VLAN." },
       { type: 'step', content: "Sous-interface VLAN 20 : [code]interface e0/0.20[/code] → [code]encapsulation dot1q 20[/code]." },
 
-      { type: 'task', icon: '🌐', label: 'TASK 7', title: 'Donner à chaque sous-interface son IP de gateway', requires: ['subifIp'] },
+      { type: 'task', icon: '🌐', label: 'TASK 8', title: 'Donner à chaque sous-interface son IP de gateway', requires: ['subifIp'] },
       { type: 'step', content: "Sur e0/0.10 : [code]ip address 192.168.10.1 255.255.255.0[/code] (c\'est la passerelle du VLAN 10)." },
       { type: 'step', content: "Sur e0/0.20 : [code]ip address 192.168.20.1 255.255.255.0[/code] (passerelle du VLAN 20)." },
       { type: 'step', content: "Vérifie : [code]show ip interface brief[/code] → e0/0.10 et e0/0.20 doivent être up/up. Puis [code]show ip route[/code] → 2 réseaux 'C' (Connected)." },
@@ -5520,6 +5525,7 @@ const DEFAULT_LABS = [
         "🏷️ SW-OSAKA — crée VLAN 100 (PROD) et VLAN 200 (INVITES)",
         "🔌 SW-OSAKA — e0/1 en access VLAN 100, e0/2 en access VLAN 200",
         "🔀 SW-OSAKA — e0/0 vers R-OSAKA : encapsulation dot1q PUIS mode trunk (l'ordre compte !)",
+        "🔐 SW-OSAKA — VLAN natif dédié : crée le VLAN 99, puis sur e0/0 : switchport trunk native vlan 99",
         "📡 R-OSAKA — active l'interface physique e0/0 (no shutdown, AUCUNE IP)",
         "🏗️ R-OSAKA — sous-interfaces e0/0.100 (dot1q 100) et e0/0.200 (dot1q 200)",
         "🌐 R-OSAKA — gateways : e0/0.100 = 172.16.100.254/24, e0/0.200 = 172.16.200.254/24"
@@ -5554,6 +5560,9 @@ const DEFAULT_LABS = [
         { desc: "SW-OSAKA : trunk vers le routeur (e0/0)",
           device: 'SW-OSAKA',
           test: (s) => Object.values(s.interfaces || {}).some(i => i.swMode === 'trunk') },
+        { desc: "SW-OSAKA : VLAN natif dédié 99 sur le trunk",
+          device: 'SW-OSAKA',
+          test: (s) => Object.values(s.trunk || {}).some(t => t.native === 99) },
         { desc: "R-OSAKA : interface physique e0/0 activée (up)",
           device: 'R-OSAKA',
           test: (s) => { const i = s.interfaces && s.interfaces['Ethernet0/0']; return !!(i && i.status === 'up'); } },
@@ -8483,7 +8492,9 @@ function handleInterfaceCmd(cmd, parts, lparts) {
     }
     if (matchPrefix(lparts.slice(1), ['trunk','native','vlan'])) {
       sw.trunk[sw.context] = sw.trunk[sw.context] || {};
-      sw.trunk[sw.context].native = parseInt(parts[4]); return;
+      sw.trunk[sw.context].native = parseInt(parts[4]);
+      (sw._configTouched = sw._configTouched || {})['nativeVlan'] = true;
+      return;
     }
     if (matchPrefix(lparts.slice(1), ['trunk','allowed','vlan'])) {
       sw.trunk[sw.context] = sw.trunk[sw.context] || {};
