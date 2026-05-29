@@ -6437,6 +6437,7 @@ function Buffer_obfuscate_7(plaintext) {
 function executeCommand(raw) {
   const trimmedRaw = raw.trim();
   if (!trimmedRaw) return;
+  _pendingExplain = null;  // reset : l'explication éventuelle sera posée par scheduleExplain puis flushée avant le prompt
 
   // ============ HANDLE PIPE FILTER (| include / | exclude / | begin) ============
   // Cisco IOS standard : "show run | include username" → filtre la sortie
@@ -6493,11 +6494,13 @@ function executeCommand(raw) {
       }
     }
     filtered.forEach(l => term.writeln(l));
+    flushExplain();  // explication imprimée APRÈS la sortie filtrée, sur le vrai terminal
     return;
   }
 
   // Pas de pipe : exécution normale
   _executeCommandWithoutPipe(trimmedRaw);
+  flushExplain();  // explication imprimée APRÈS la sortie de la commande, AVANT le prompt
 }
 
 function _executeCommandWithoutPipe(trimmedRaw) {
@@ -6577,31 +6580,32 @@ function _executeCommandWithoutPipe(trimmedRaw) {
 // Format: "→ short reason | argN = what argN does"
 // ============================================================
 function explainLine(text) {
-  // Multi-line: split by \n and indent continuations
-  // Couleurs : titre cyan, contenu jaune-doré pour bonne lisibilité sur fond sombre
-  // If text is an array, pick a random variation (keeps explanations fresh on re-runs)
+  // Si text est un tableau, on prend une variation au hasard (explications fraîches au re-run)
   if (Array.isArray(text)) {
     text = text[Math.floor(Math.random() * text.length)];
   }
-  // Capture l'ID du device au moment de l'appel pour éviter d'écrire sur le mauvais terminal
-  // si l'utilisateur switche de device entre l'exécution et l'affichage différé
-  const targetDeviceId = activeDevice;
-  // Différé au prochain tick → l'état (sw.hostname, sw.banners, etc.) est déjà mis à jour
-  setTimeout(() => {
-    // Vérifier qu'on est toujours sur le même device
-    if (activeDevice !== targetDeviceId) return;
-    try {
-      const lines = text.split('\n');
-      lines.forEach((ln, i) => {
-        const prefix = i === 0 ? '\x1b[38;5;75m   ↳ \x1b[0m' : '     ';
-        let colored = ln
-          .replace(/💡/g, '\x1b[38;5;226m💡\x1b[38;5;221m')
-          .replace(/⚠/g, '\x1b[38;5;208m⚠\x1b[38;5;221m')
-          .replace(/→/g, '\x1b[38;5;213m→\x1b[38;5;221m');
-        term.write(prefix + '\x1b[38;5;221m' + colored + '\x1b[0m\r\n');
-      });
-    } catch(_) {}
-  }, 0);
+  // On NE PRINTE PAS ici : on mémorise l'explication. Elle sera imprimée par flushExplain()
+  // de façon SYNCHRONE, juste après la sortie de la commande et AVANT le nouveau prompt.
+  // (Avant, un setTimeout(0) imprimait après le prompt → affichage imbriqué/déroutant.)
+  _pendingExplain = text;
+}
+
+let _pendingExplain = null;
+function flushExplain() {
+  const text = _pendingExplain;
+  _pendingExplain = null;
+  if (!text) return;
+  try {
+    const lines = String(text).split('\n');
+    lines.forEach((ln, i) => {
+      const prefix = i === 0 ? '\x1b[38;5;75m   ↳ \x1b[0m' : '     ';
+      let colored = ln
+        .replace(/💡/g, '\x1b[38;5;226m💡\x1b[38;5;221m')
+        .replace(/⚠/g, '\x1b[38;5;208m⚠\x1b[38;5;221m')
+        .replace(/→/g, '\x1b[38;5;213m→\x1b[38;5;221m');
+      term.write(prefix + '\x1b[38;5;221m' + colored + '\x1b[0m\r\n');
+    });
+  } catch(_) {}
 }
 
 function scheduleExplain(cmd, lparts) {
