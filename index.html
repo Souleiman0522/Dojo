@@ -5213,6 +5213,18 @@ Créez le VLAN : [code]vlan 10[/code]"></textarea>
 // ============================================================
 // [§DATA-LABS] — LABS PAR DÉFAUT
 // ============================================================
+
+// ===== VERROUILLAGE (session publique étudiants) =====
+// Seuls ces chapitres sont accessibles ; les autres affichent un cadenas.
+// Mets ACCESS_LOCK = false pour tout déverrouiller.
+const ACCESS_LOCK = true;
+const UNLOCKED_LAB_IDS = [1, 2];
+const CHALLENGES_LOCKED = true;  // Le Défi du Sensei est fermé pour cette session
+function isLabLocked(lab) {
+  if (!ACCESS_LOCK || !lab) return false;
+  return !UNLOCKED_LAB_IDS.includes(lab.id);
+}
+
 const DEFAULT_LABS = [
   {
     id: 1, title: "Chapitre 1 — La Découverte du Switch", category: "fundamentals",
@@ -6657,7 +6669,7 @@ function _executeCommandWithoutPipe(trimmedRaw) {
         // Mémorisation de l'état précédent (par lab)
         window._challengeUnlockedMap = window._challengeUnlockedMap || {};
         const wasUnlocked = !!window._challengeUnlockedMap[labId];
-        if (isUnlockedNow && !wasUnlocked) {
+        if (isUnlockedNow && !wasUnlocked && !CHALLENGES_LOCKED) {
           window._challengeUnlockedMap[labId] = true;
           try { showToast('⚔️ Le Défi du Sensei est déverrouillé ! (bouton ⚔️ Défis en haut)', 'success'); } catch(_) {}
           // Animation du bouton ⚔️ Défis pour attirer l'œil
@@ -12384,6 +12396,12 @@ document.getElementById('terminal').addEventListener('click', () => term.focus()
 // ============================================================
 function loadLab(idx) {
   if (idx < 0 || idx >= LABS.length) return;
+  // Verrouillage session publique : on bloque les chapitres non débloqués
+  if (isLabLocked(LABS[idx])) {
+    try { showToast('🔒 Ce chapitre sera débloqué prochainement. Termine d\'abord les Chapitres 1 et 2 !', 'warn'); } catch(_) {}
+    if (typeof buildLabSelector === 'function') buildLabSelector();  // remet le sélecteur sur le lab courant
+    return;
+  }
   currentLabIdx = idx;
   currentLab = LABS[idx];
 
@@ -13158,6 +13176,10 @@ let _challengeBackupLab = null;  // pour pouvoir revenir au lab
 window.inChallengeMode = false;
 
 function openChallenge() {
+  if (CHALLENGES_LOCKED) {
+    try { showToast('🔒 Le Défi du Sensei est fermé pour cette session de test. Bientôt disponible !', 'warn'); } catch(_) {}
+    return;
+  }
   if (!currentLab || !currentLab.challenge) {
     console.warn('[openChallenge] Pas de défi disponible pour ce lab');
     return;
@@ -13306,6 +13328,10 @@ function closeChallenge() {
 // Chaque défi est verrouillé tant que le chapitre lié n'est pas suffisamment avancé.
 // =========================================================================
 function openChallengesGallery() {
+  if (CHALLENGES_LOCKED) {
+    try { showToast('🔒 Les Défis du Sensei sont fermés pour cette session de test. Bientôt disponible !', 'warn'); } catch(_) {}
+    return;
+  }
   const modal = document.getElementById('challenges-gallery-modal');
   if (!modal) return;
   renderChallengesGallery();
@@ -13539,6 +13565,11 @@ document.addEventListener('keydown', (e) => {
 });
 
 function nextLab() {
+  const next = LABS[currentLabIdx + 1];
+  if (next && isLabLocked(next)) {
+    showToast('🔒 La suite arrive bientôt ! Merci d\'avoir testé les Chapitres 1 et 2 🙏', 'success');
+    return;
+  }
   if (currentLabIdx < LABS.length - 1) loadLab(currentLabIdx + 1);
   else showToast('Vous avez terminé tous les labs ! 🎉');
 }
@@ -13614,7 +13645,12 @@ function buildLabSelector() {
       const opt = document.createElement('option');
       opt.value = idx;
       const done = progress[lab.id] && progress[lab.id].done;
-      opt.textContent = (done ? '✓ ' : '   ') + lab.title;
+      if (isLabLocked(lab)) {
+        opt.textContent = '🔒 ' + lab.title + ' (bientôt)';
+        opt.disabled = true;
+      } else {
+        opt.textContent = (done ? '✓ ' : '   ') + lab.title;
+      }
       group.appendChild(opt);
     });
     sel.appendChild(group);
@@ -13645,7 +13681,8 @@ function buildLabSelector() {
         opt.value = idx;
         const done = progress[lab.id] && progress[lab.id].done;
         const diffIcon = diff === 'Débutant' ? '🟢' : diff === 'Intermédiaire' ? '🟡' : diff === 'Avancé' ? '🟠' : '🔴';
-        opt.textContent = (done ? '✓ ' : '   ') + diffIcon + ' ' + lab.title;
+        if (isLabLocked(lab)) { opt.textContent = '🔒 ' + diffIcon + ' ' + lab.title + ' (bientôt)'; opt.disabled = true; }
+        else opt.textContent = (done ? '✓ ' : '   ') + diffIcon + ' ' + lab.title;
         group.appendChild(opt);
       });
     });
@@ -13660,7 +13697,8 @@ function buildLabSelector() {
       const idx = LABS.indexOf(lab);
       const opt = document.createElement('option');
       opt.value = idx;
-      opt.textContent = lab.title;
+      if (isLabLocked(lab)) { opt.textContent = '🔒 ' + lab.title + ' (bientôt)'; opt.disabled = true; }
+      else opt.textContent = lab.title;
       group.appendChild(opt);
     });
     sel.appendChild(group);
@@ -14197,6 +14235,10 @@ if (btnChallenges) btnChallenges.addEventListener('click', openChallengesGallery
 // puis ouvre directement le défi du chapitre courant
 // ============================================================
 function devSkipToChallenge() {
+  if (CHALLENGES_LOCKED) {
+    try { showToast('🔒 Le Défi du Sensei est fermé pour cette session de test.', 'warn'); } catch(_) {}
+    return;
+  }
   if (!currentLab) {
     showToast('Aucun lab chargé');
     return;
@@ -14222,7 +14264,10 @@ function devSkipToChallenge() {
 }
 
 const btnDevSkip = document.getElementById('btn-dev-skip');
-if (btnDevSkip) btnDevSkip.addEventListener('click', devSkipToChallenge);
+if (btnDevSkip) {
+  btnDevSkip.addEventListener('click', devSkipToChallenge);
+  if (ACCESS_LOCK) btnDevSkip.style.display = 'none';  // outil DEV masqué en session publique
+}
 
 function showCorrection() {
   const existing = document.getElementById('correction-modal');
