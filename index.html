@@ -5325,6 +5325,17 @@ const DEFAULT_LABS = [
     id: 2, title: "Chapitre 2 — Le Pont entre les Mondes (Router-on-a-Stick)", category: "access",
     difficulty: "Débutant", duration: "45 min", device: "R8", hostname: "R8",
     autoDevices: true,
+    // Onglets chargés au démarrage. Les équipements Cisco démarrent avec un hostname GÉNÉRIQUE
+    // (Router/Switch) pour que l'étudiant les nomme lui-même (TASK 1).
+    devices: [
+      { type: 'router', name: 'R8',  hostname: 'Router' },
+      { type: 'switch', name: 'SW1', hostname: 'Switch' },
+      { type: 'switch', name: 'SW2', hostname: 'Switch' },
+      { type: 'pc', name: 'VPC3' },
+      { type: 'pc', name: 'VPC4' },
+      { type: 'pc', name: 'VPC5' },
+      { type: 'pc', name: 'VPC6' }
+    ],
     narrative: {
       intro: "Léo est devant SW1. La config du Chapitre 1 tient toujours : le hostname est bon, la console verrouillée, les mots de passe en place. Tout est en ordre. Et pourtant, quelque chose le travaille depuis le passage du Sensei.\n\n« Tu as fini ton étage », a lâché le vieux en pointant le switch. « Mais demain, les Ventes et l\'IT voudront se parler. Et un cran plus loin, c\'est avec l\'extérieur qu\'il faudra dialoguer. Tu vas devoir changer de niveau. »\n\nChanger de niveau. Léo retourne la phrase dans sa tête. Jusqu\'ici, tout ce qu\'il a vu se passait au même endroit — un switch, des ports, des trames qui circulent. Un seul monde. Mais le Sensei a dit « niveau » au pluriel. Combien y en a-t-il ?\n\nIl ouvre son carnet et note les questions qui le démangent :<br>• Deux PC dans le même VLAN se parlent tout seuls. Dans deux VLANs différents, il leur faut « autre chose ». Qu\'est-ce qui change EXACTEMENT quand le VLAN change ?<br>• Chaque carte réseau porte une suite hexadécimale gravée — et en même temps une IP que lui-même configure. Deux adresses pour une seule carte. Laquelle sert à quoi ? Voyagent-elles ensemble quand un paquet traverse le réseau ?<br>• Un switch « voit » ses voisins sans aucune IP. Comment découvrir qui est branché en face sans lui parler en IP ? Il existe donc une couche SOUS IP, qui sait communiquer toute seule ?<br>• Et si demain on remplaçait un switch Cisco par du HP ou du Juniper — sauraient-ils encore se voir ? Ou Cisco a-t-il son propre langage de découverte ?<br>• Et surtout : si les Ventes et l\'IT vivent dans deux VLANs séparés, par où passe le paquet pour aller de l\'un à l\'autre ? Un VLAN, c\'est un mur. Alors qui ouvre la porte ?\n\nLéo referme son carnet. Il le sent : il va devoir monter d\'un cran dans sa façon de penser. Le switch ne suffira plus. Il lui faut comprendre ce que le Sensei appelle la couche 3 — l\'endroit où les paquets ne sont plus seulement transmis, mais décidés. L\'endroit où l\'on choisit un chemin.\n\nAvant de partir, le vieux a laissé un dernier indice : « Tu construiras dans l\'ordre. Jamais le routeur avant le switch, jamais une sous-interface avant son VLAN. Un réseau s\'assemble de bas en haut, comme une maison. Commence par le toit, et tout s\'effondre. »",
       mentor: "Respecte l\'ordre, Léo. Ne touche JAMAIS au routeur avant que le switch soit prêt — c\'est l\'erreur la plus fréquente, en lab CCNA comme en prod. Les VLANs avant les ports access, les ports access avant le trunk, le trunk avant les sous-interfaces. Et à chaque task, vérifie avec le bon « show » avant de passer à la suivante.",
@@ -5375,6 +5386,13 @@ const DEFAULT_LABS = [
       "Comprendre la limite du RoaS (un seul câble = goulot) vs un switch L3"
     ],
     instructions: [
+      { type: 'task', icon: '🏷️', label: 'ÉTAPE 1', title: 'Nommer les équipements et documenter les liens', requires: ['hostname'] },
+      { type: 'step', content: "Comme au Chapitre 1, commence par donner une IDENTITÉ à chaque équipement (ils démarrent en <code>Router&gt;</code> / <code>Switch&gt;</code>). Clique sur <strong>R8</strong> : [code]enable[/code] → [code]configure terminal[/code] → [code]hostname R8[/code]. Le prompt devient <code>R8(config)#</code>." },
+      { type: 'step', content: "Fais pareil sur les switches : sur <strong>SW1</strong> → [code]hostname SW1[/code] ; sur <strong>SW2</strong> → [code]hostname SW2[/code]." },
+      { type: 'step', content: "📝 Documente chaque lien avec [code]description[/code] (l'étiquette du câble, pour les humains). Sur <strong>SW1</strong> :<br>• [code]interface e0/0[/code] → [code]description == TRUNK vers SW2[/code]<br>• [code]interface e0/3[/code] → [code]description == TRUNK vers R8 (routage inter-VLAN)[/code]<br>• [code]interface e0/1[/code] → [code]description >> VPC3 - VLAN10 Ventes[/code]<br>• [code]interface e0/2[/code] → [code]description >> VPC4 - VLAN20 RH[/code]" },
+      { type: 'step', content: "Sur <strong>SW2</strong> : [code]interface e0/0[/code] → [code]description == TRUNK vers SW1[/code] ; e0/1 → <code>description >> VPC5 - VLAN20 RH</code> ; e0/2 → <code>description >> VPC6 - VLAN10 Ventes</code>. Sur <strong>R8</strong> : [code]interface e0/0[/code] → [code]description == TRUNK 802.1Q vers SW1[/code]." },
+      { type: 'step', content: "Vérifie sur chaque équipement avec [code]show interfaces description[/code] (statut + ta légende en une vue) ou [code]show running-config[/code]." },
+
       { type: 'task', icon: '🧱', label: 'PRÉREQUIS 1', title: 'Créer les VLANs 10 et 20 sur SW1 ET SW2', requires: ['vlans'] },
       { type: 'step', content: "Sur la topologie, clique sur <strong>SW1</strong> pour activer son terminal (ou onglet device). Passe en config : [code]enable[/code] → [code]configure terminal[/code]." },
       { type: 'step', content: "Crée les 2 VLANs : [code]vlan 10[/code] → [code]name VENTES[/code] → [code]exit[/code], puis [code]vlan 20[/code] → [code]name RH[/code] → [code]exit[/code]." },
@@ -7503,10 +7521,18 @@ function scheduleExplain(cmd, lparts) {
     '→ Une fois créé, le VLAN existe dans la VLAN database et peut être utilisé sur n\'importe quel port.'
   ]);
 
-  if (c === 'description' && sw.mode === 'config-if') return explainLine(
-    'Étiquette pour TOI ou ton collègue qui débarquera dans 6 mois.\n' +
-    '💡 Bonne pratique : "*** WAN ISP Orange - contrat #12345 ***". Apparaît dans show interfaces.'
-  );
+  if (c === 'description' && sw.mode === 'config-if') return explainLine([
+    'La description, c\'est l\'ÉTIQUETTE collée sur le câble — pour les humains, pas pour la machine.\n' +
+    'Le switch s\'en fiche. Mais à 3h du mat, un an plus tard, sur 48 ports identiques, c\'est elle qui te dit\n' +
+    'où va ce fichu lien. Ex : "== TRUNK vers SW2" ou ">> VPC3 - VLAN10 Ventes".\n' +
+    '💡 Visible dans "show interfaces description" et "show running-config".\n' +
+    '→ Convention pro : un préfixe par rôle (>> hôte, == lien d\'infra/trunk, ## note) pour scanner en un coup d\'œil.',
+
+    'Documenter = un cadeau à ton futur toi. Une interface sans description, c\'est une boîte sans étiquette\n' +
+    'dans un déménagement : tu devras tout rouvrir pour savoir ce qu\'il y a dedans.\n' +
+    '💡 Coût : 5 secondes maintenant. Gain : 30 minutes de panique évitées le jour de la panne.\n' +
+    '→ Astuce CCNA : "show interfaces description" liste tout (statut + ta légende) en une vue.'
+  ]);
   if (c === 'duplex') return explainLine(
     'Duplex : full = bidirectionnel simultané (normal aujourd\'hui), half = collisions (vieux).\n' +
     '💡 "auto" recommandé sauf cas spécifique de mismatch.'
@@ -12377,6 +12403,10 @@ function loadLab(idx) {
       if (Object.values(devices).some(dev => dev.name === d.name)) return;  // déjà présent → on n'écrase pas
       const kind = d.type === 'svi' ? 'switchL3' : (d.type || 'switch');
       const newId = createDevice(kind, d.name);
+      // Hostname de DÉPART optionnel (ex: "Router"/"Switch" pour que l'étudiant le renomme lui-même).
+      if (d.hostname && devices[newId] && devices[newId].state && d.type !== 'pc' && d.type !== 'server') {
+        devices[newId].state.hostname = d.hostname;
+      }
       // Les PC/serveurs démarrent NON adressés : c'est à l'étudiant de configurer IP + masque + passerelle.
       if ((d.type === 'pc' || d.type === 'server') && devices[newId]) {
         const st = devices[newId].state;
