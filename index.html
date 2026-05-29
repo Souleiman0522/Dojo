@@ -4765,6 +4765,9 @@ button:focus-visible, .concept-nav-item:focus-visible, .partners-tab:focus-visib
       <!-- 1.5. Méthodes d'accès admin (panneau pédagogique optionnel) -->
       <div id="lab-access-methods-slot"></div>
 
+      <!-- 1.6. Panneau prérequis générique (optionnel, piloté par lab.prereqPanel) -->
+      <div id="lab-prereq-panel-slot"></div>
+
       <!-- 2. Objectifs -->
       <div class="lab-section lab-section-objectives">
         <h3>🎯 Objectifs</h3>
@@ -5324,6 +5327,38 @@ const DEFAULT_LABS = [
       mentor: "Respecte l\'ordre, Léo. Ne touche JAMAIS au routeur avant que le switch soit prêt — c\'est l\'erreur la plus fréquente, en lab CCNA comme en prod. Les VLANs avant les ports access, les ports access avant le trunk, le trunk avant les sous-interfaces. Et à chaque task, vérifie avec le bon « show » avant de passer à la suivante.",
       promptStart: "R8>",
       promptEnd: "R8(config-subif)#"
+    },
+    prereqPanel: {
+      icon: '🧱',
+      title: 'Les fondations avant le pont (prérequis Router-on-a-Stick)',
+      subtitle: 'On construit de BAS en HAUT : VLAN → port access → trunk. Jamais l\'inverse.',
+      cards: [
+        {
+          icon: '🏷️',
+          name: '① VLAN — le découpage logique (L2)',
+          desc: '<strong>C\'est quoi :</strong> un VLAN découpe un switch en plusieurs réseaux isolés. VLAN 10 et VLAN 20 ne se voient PAS, même branchés sur le même switch.<br><br>' +
+                '<strong>Règle d\'or :</strong> un VLAN doit exister sur CHAQUE switch qu\'il traverse, sinon la trame est jetée en chemin.<br><br>' +
+                '<strong>Pourquoi d\'abord :</strong> un port access ou une sous-interface qui pointe vers un VLAN inexistant ne sert à rien.<br><br>' +
+                '<strong>Config Cisco :</strong> <code>vlan 10</code> → <code>name VENTES</code>. Vérifie : <code>show vlan brief</code>.'
+        },
+        {
+          icon: '🔌',
+          name: '② Port access + adressage des hôtes',
+          desc: '<strong>Port access :</strong> un port relié à UN PC appartient à UN seul VLAN. C\'est la « porte d\'entrée » de la machine dans son monde.<br><br>' +
+                '<strong>Le PC, lui :</strong> reçoit une <strong>IP</strong> + un <strong>masque</strong> (qui dit « voici MON réseau ») + une <strong>passerelle</strong> (= l\'IP de la sous-interface du routeur, la sortie vers les autres VLANs).<br><br>' +
+                '<strong>Piège masque :</strong> /24 = 255.255.255.0. Mauvais masque = le PC croit que tout le monde est « chez lui » et n\'envoie jamais vers la passerelle.<br><br>' +
+                '<strong>Config Cisco :</strong> <code>switchport mode access</code> + <code>switchport access vlan 10</code>.'
+        },
+        {
+          icon: '🔀',
+          name: '③ Trunk 802.1Q — l\'autoroute taggée',
+          desc: '<strong>C\'est quoi :</strong> un lien qui transporte PLUSIEURS VLANs sur un seul câble. Chaque trame reçoit une étiquette (tag dot1Q) qui dit « je suis du VLAN X ».<br><br>' +
+                '<strong>Où :</strong> entre les 2 switches (SW1↔SW2) ET entre le switch et le routeur (SW1↔R8). Sans ce dernier trunk, les VLANs n\'atteignent jamais R8.<br><br>' +
+                '<strong>À retenir :</strong> access = 1 VLAN, non taggé (vers un PC) ; trunk = N VLANs, taggés (entre équipements).<br><br>' +
+                '<strong>Config Cisco :</strong> <code>switchport mode trunk</code>. Vérifie : <code>show interfaces trunk</code>.'
+        }
+      ],
+      footer: '💡 <strong>L\'ordre du métier :</strong> les <strong>VLANs</strong> d\'abord (ils doivent exister), puis les <strong>ports access</strong> (on range les PC), puis les <strong>trunks</strong> (on relie les mondes). Et SEULEMENT après, on monte sur le routeur pour créer les sous-interfaces. Commence par le toit, et tout s\'effondre.'
     },
     objectives: [
       "Comprendre pourquoi 2 VLANs ne communiquent PAS sans routage L3",
@@ -12262,6 +12297,7 @@ function loadLab(idx) {
 
   renderTopology(currentLab.topology);
   if (typeof renderAccessMethods === 'function') renderAccessMethods();
+  if (typeof renderPrereqPanel === 'function') renderPrereqPanel();
   // Reset les tasks validées en mémoire (au changement de lab) et init la barre
   if (typeof _taskValidated !== 'undefined' && currentLab.id) {
     _taskValidated[currentLab.id] = _taskValidated[currentLab.id] || {};
@@ -12756,6 +12792,38 @@ function renderAccessMethods() {
         💡 <strong>L'ordre du métier :</strong> tu utilises la <strong>console</strong> pour le premier setup (créer un user, IP de management),
         puis tu repasses ensuite via <strong>SSH</strong> pour tout le reste. L'<strong>AUX</strong> reste un plan B en cas de panne.
       </div>
+    </div>
+  `;
+}
+
+// Panneau prérequis GÉNÉRIQUE — piloté par currentLab.prereqPanel
+// Format : { icon, title, subtitle, cards: [{ icon, name, desc }], footer }
+// Réutilise le style .access-methods-* du panneau des 3 accès.
+function renderPrereqPanel() {
+  const slot = document.getElementById('lab-prereq-panel-slot');
+  if (!slot) return;
+  const p = currentLab && currentLab.prereqPanel;
+  if (!p) { slot.innerHTML = ''; return; }
+
+  const cards = (p.cards || []).map(c => `
+    <div class="access-method-card">
+      <div class="access-method-img" style="font-size:2.6rem;line-height:1;display:flex;align-items:center;justify-content:center;min-height:64px">${c.icon || '📦'}</div>
+      <div class="access-method-name">${c.name || ''}</div>
+      <div class="access-method-desc">${c.desc || ''}</div>
+    </div>
+  `).join('');
+
+  slot.innerHTML = `
+    <div class="access-methods-panel">
+      <div class="access-methods-header">
+        <span class="access-methods-icon">${p.icon || '🧱'}</span>
+        <div>
+          <div class="access-methods-title">${p.title || 'Prérequis'}</div>
+          ${p.subtitle ? `<div class="access-methods-sub">${p.subtitle}</div>` : ''}
+        </div>
+      </div>
+      <div class="access-methods-grid">${cards}</div>
+      ${p.footer ? `<div class="access-methods-footer">${p.footer}</div>` : ''}
     </div>
   `;
 }
