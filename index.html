@@ -5171,6 +5171,8 @@ const DEFAULT_LABS = [
     id: 1, title: "Chapitre 1 — La Découverte du Switch", category: "fundamentals",
     difficulty: "Débutant", duration: "35 min", device: "SW1", hostname: "Switch",
     accessMethods: true,  // Affiche le panneau pédagogique des 3 méthodes d'accès
+    autoDevices: true,
+    devices: [ { type: 'switch', name: 'Switch' } ],  // démarre sur un switch vierge ; l'étudiant le renomme en SW-BRU
     narrative: {
       intro: "Quand Léo entra dans le laboratoire Cisco de l\'académie, tout semblait mort. Des racks silencieux. Un switch couvert de poussière, encore vierge. Le mentor pointa l\'écran : « Switch> ». Trois caractères. Une promesse. Mais aucun mot de passe. N\'importe qui pourrait le contrôler.\n\nImagine ce switch comme la maison que tu viens d\'acheter. Les murs sont là, mais la porte est grande ouverte. Pas de nom sur la sonnette. Pas de serrure. Pas même un mot d\'avertissement à l\'entrée. Avant d\'y vivre sereinement, tu vas devoir poser ton nom, installer les serrures, et accrocher la pancarte qui dit « propriété privée ».",
       mentor: "Ce chapitre va te sembler dense — c'est normal, on apprend beaucoup d'un coup. Mais prends ton temps, étape par étape. Chaque commande que tu tapes pose une brique. Et à la fin, tu auras sécurisé ton premier switch — un geste que tu referas mille fois dans ta carrière, presque les yeux fermés.",
@@ -12315,13 +12317,17 @@ function loadLab(idx) {
   // Update lab info (no terminal changes — let user switch to the right device themselves)
   const targetHost = currentLab.hostname || currentLab.device || 'Switch';
 
-  if (currentLab.autoDevices && currentLab.topology && Array.isArray(currentLab.topology.devices)) {
-    // CHARGEMENT AUTO : crée tous les équipements de la topologie (s'ils n'existent pas déjà)
+  // Manifeste des équipements du chapitre : champ `devices` explicite, sinon la topologie.
+  const _deviceManifest = (Array.isArray(currentLab.devices) && currentLab.devices.length)
+    ? currentLab.devices
+    : (currentLab.topology && Array.isArray(currentLab.topology.devices) ? currentLab.topology.devices : null);
+  if (currentLab.autoDevices && _deviceManifest) {
+    // CHARGEMENT AUTO : crée les équipements voulus (s'ils n'existent pas déjà)
     // pour que l'étudiant les retrouve directement en onglets, sans avoir à les ajouter à la main.
-    const topoNames = new Set();
-    currentLab.topology.devices.forEach(d => {
+    const wantNames = new Set();
+    _deviceManifest.forEach(d => {
       if (!d || !d.name) return;
-      topoNames.add(d.name);
+      wantNames.add(d.name);
       if (Object.values(devices).some(dev => dev.name === d.name)) return;  // déjà présent → on n'écrase pas
       const kind = d.type === 'svi' ? 'switchL3' : (d.type || 'switch');
       const newId = createDevice(kind, d.name);
@@ -12332,15 +12338,16 @@ function loadLab(idx) {
         if (d.gateway && /^\d{1,3}(\.\d{1,3}){3}$/.test(d.gateway)) st.gateway = d.gateway;
       }
     });
-    // Bascule sur l'équipement principal du chapitre (AVANT de retirer les autres)
+    // Bascule sur l'équipement principal (nom = hostname/device du lab, sinon 1er non-PC voulu)
     const primary = Object.values(devices).find(dev => dev.name === targetHost)
-                 || Object.values(devices).find(dev => topoNames.has(dev.name));
+                 || Object.values(devices).find(dev => wantNames.has(dev.name) && dev.type !== 'pc')
+                 || Object.values(devices).find(dev => wantNames.has(dev.name));
     if (primary && typeof switchToDevice === 'function' && primary.id !== activeDevice) {
       switchToDevice(primary.id);
     }
-    // Ne garde QUE les équipements de la topologie du chapitre (retire les devices par défaut type R1/PC1)
+    // Ne garde QUE les équipements voulus par le chapitre (retire les devices d'autres chapitres / par défaut)
     Object.values(devices).forEach(dev => {
-      if (!topoNames.has(dev.name) && dev.id !== activeDevice) delete devices[dev.id];
+      if (!wantNames.has(dev.name) && dev.id !== activeDevice) delete devices[dev.id];
     });
     renderDeviceTabs();
   } else {
