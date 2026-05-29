@@ -5368,6 +5368,7 @@ const DEFAULT_LABS = [
       "PRÉREQUIS — créer les VLANs 10 et 20, affecter les ports access, monter les trunks (SW1↔SW2 et SW1↔R8)",
       "Activer l'interface physique de R8 SANS lui donner d'IP (c'est un trunk pur)",
       "Créer une sous-interface par VLAN avec [code]encapsulation dot1q[/code] + l'IP de gateway",
+      "Adresser CHAQUE PC : IP + masque + passerelle (la passerelle = la sous-interface R8 de son VLAN)",
       "Vérifier la communication inter-VLAN par ping (VPC3 → VPC4)",
       "Comprendre la limite du RoaS (un seul câble = goulot) vs un switch L3"
     ],
@@ -5401,7 +5402,11 @@ const DEFAULT_LABS = [
       { type: 'step', content: "Sur e0/0.20 : [code]ip address 192.168.20.1 255.255.255.0[/code] (passerelle du VLAN 20)." },
       { type: 'step', content: "Vérifie : [code]show ip interface brief[/code] → e0/0.10 et e0/0.20 doivent être up/up. Puis [code]show ip route[/code] → 2 réseaux 'C' (Connected)." },
 
-      { type: 'step', content: "Les PC VPC3 à VPC6 sont déjà adressés (IP + passerelle) selon la topologie — tu peux vérifier sur chacun avec [code]ip[/code] (ou ipconfig). VPC3=192.168.10.10/.1, VPC4=192.168.20.10/.1, VPC5=192.168.20.11/.1, VPC6=192.168.10.11/.1." },
+      { type: 'task', icon: '💻', label: 'TASK 7', title: 'Adresser CHAQUE VPC : IP + masque + passerelle', requires: ['vpcAddressed'] },
+      { type: 'step', content: "Les 4 VPC démarrent SANS adresse IP — c'est à toi de les configurer. Sur un PC, tout se fait en une ligne : [code]ip <adresse> <masque> <passerelle>[/code]." },
+      { type: 'step', content: "⚠ La <strong>passerelle</strong> de chaque PC = l'IP de la sous-interface R8 de SON VLAN (la porte de sortie vers les autres VLANs). Sans elle, le PC ne sort JAMAIS de son réseau. Le <strong>masque</strong> 255.255.255.0 dit au PC qui est « chez lui » et qui nécessite la passerelle." },
+      { type: 'step', content: "Clique sur chaque onglet PC et configure :<br>• <strong>VPC3</strong> (VLAN 10) : [code]ip 192.168.10.10 255.255.255.0 192.168.10.1[/code]<br>• <strong>VPC4</strong> (VLAN 20) : [code]ip 192.168.20.10 255.255.255.0 192.168.20.1[/code]<br>• <strong>VPC5</strong> (VLAN 20) : [code]ip 192.168.20.11 255.255.255.0 192.168.20.1[/code]<br>• <strong>VPC6</strong> (VLAN 10) : [code]ip 192.168.10.11 255.255.255.0 192.168.10.1[/code]" },
+      { type: 'step', content: "Vérifie sur chaque PC avec [code]ipconfig[/code] : tu dois voir l'IP, le masque 255.255.255.0 ET la passerelle. Une passerelle vide = pas de communication inter-VLAN." },
       { type: 'step', content: "🧪 TEST FINAL : depuis VPC3 (VLAN 10), [code]ping 192.168.20.10[/code] (VPC4, VLAN 20) → DOIT marcher, le trafic passe par R8. Le pont est ouvert !" },
       { type: 'step', content: "Sur SW1, regarde aussi [code]show mac address-table[/code] : tu verras les MAC apprises avec leur port et leur VLAN. Et [code]show interfaces trunk[/code] pour confirmer les VLANs qui montent vers R8." },
 
@@ -10830,6 +10835,8 @@ function switchToDevice(id) {
   // Update UI
   document.getElementById('term-title').textContent = dev.name + ' — Console';
   renderDeviceTabs();
+  // Rafraîchit la progression (cumulative sur tous les équipements du chapitre)
+  try { if (typeof refreshLabProgress === 'function') refreshLabProgress(); } catch(_) {}
 
   // Force terminal to refit and scroll
   requestAnimationFrame(() => {
@@ -11138,6 +11145,25 @@ function successPing(target, tMin, tMax) {
   term.writeln('    Minimum = ' + minT + 'ms, Maximum = ' + maxT + 'ms, Moyenne = ' + Math.round(totalTime/4) + 'ms');
 }
 
+// Marque la tâche "vpcAddressed" validée quand TOUS les PC de la topologie ont IP + passerelle.
+function refreshPcAddressingProgress() {
+  if (!currentLab || !currentLab.topology) return;
+  const pcNames = (currentLab.topology.devices || [])
+    .filter(d => d.type === 'pc' || d.type === 'server')
+    .map(d => d.name);
+  if (!pcNames.length) return;
+  const allOk = pcNames.every(name => {
+    const dev = Object.values(devices).find(d => d.name === name);
+    const st = dev && dev.state;
+    return st && st.ip && st.ip !== '0.0.0.0' && !String(st.ip).startsWith('169.254.')
+        && st.gateway && st.gateway !== '0.0.0.0' && st.gateway !== '';
+  });
+  window._labExtraTouched = window._labExtraTouched || {};
+  window._labExtraTouched['vpcAddressed'] = allOk;
+  try { if (typeof renderProgressBar === 'function') renderProgressBar(); } catch(_) {}
+  try { if (typeof markValidatedTasksInList === 'function') markValidatedTasksInList(); } catch(_) {}
+}
+
 function executePcCommand(raw) {
   const cmd = raw.trim();
   if (!cmd) return;
@@ -11321,6 +11347,8 @@ function executePcCommand(raw) {
     if (activeDevice && devices[activeDevice]) {
       Object.assign(devices[activeDevice].state, pc);
     }
+    // Met à jour la progression "adressage des PC" (tâche vpcAddressed)
+    try { refreshPcAddressingProgress(); } catch(_) {}
 
     term.writeln('');
     term.writeln(C.brGreen + '✓ Configuration IP appliquée' + C.reset);
@@ -12312,6 +12340,7 @@ function loadLab(idx) {
   });
   instEl.innerHTML = parts.join('');
 
+  window._labExtraTouched = {};  // reset des flags de progression hors-Cisco (adressage PC, etc.)
   renderTopology(currentLab.topology);
   if (typeof renderAccessMethods === 'function') renderAccessMethods();
   if (typeof renderPrereqPanel === 'function') renderPrereqPanel();
@@ -12340,11 +12369,10 @@ function loadLab(idx) {
       if (Object.values(devices).some(dev => dev.name === d.name)) return;  // déjà présent → on n'écrase pas
       const kind = d.type === 'svi' ? 'switchL3' : (d.type || 'switch');
       const newId = createDevice(kind, d.name);
-      // Pré-adresse les PC/serveurs d'après la topologie (confort : le ping inter-VLAN marche dès que le routage est fait)
+      // Les PC/serveurs démarrent NON adressés : c'est à l'étudiant de configurer IP + masque + passerelle.
       if ((d.type === 'pc' || d.type === 'server') && devices[newId]) {
         const st = devices[newId].state;
-        if (d.ip && /^\d{1,3}(\.\d{1,3}){3}$/.test(d.ip)) st.ip = d.ip;
-        if (d.gateway && /^\d{1,3}(\.\d{1,3}){3}$/.test(d.gateway)) st.gateway = d.gateway;
+        st.ip = '0.0.0.0'; st.mask = '0.0.0.0'; st.gateway = '';
       }
     });
     // Bascule sur l'équipement principal (nom = hostname/device du lab, sinon 1er non-PC voulu)
@@ -12608,7 +12636,17 @@ const _taskValidated = {};
 function computeTaskStates() {
   if (!currentLab || !currentLab.instructions) return [];
   if (typeof sw === 'undefined' || !sw) return [];
-  const touched = sw._configTouched || {};
+  // Progression CUMULATIVE sur tous les équipements du chapitre (sinon, en passant de SW1 à R8,
+  // les tâches VLAN/trunk repasseraient en gris). On fusionne le _configTouched de chaque device
+  // du lab + le device actif (le plus à jour) + les flags hors-Cisco (adressage des PC).
+  const _wantNames = new Set([]
+    .concat((currentLab.topology && currentLab.topology.devices ? currentLab.topology.devices : []).map(d => d.name))
+    .concat((Array.isArray(currentLab.devices) ? currentLab.devices : []).map(d => d.name)));
+  const touched = Object.assign({}, window._labExtraTouched || {});
+  Object.values(devices).forEach(d => {
+    if (_wantNames.has(d.name) && d.state && d.state._configTouched) Object.assign(touched, d.state._configTouched);
+  });
+  Object.assign(touched, sw._configTouched || {});
   const states = [];
   let currentTaskIdx = -1;
   let currentTaskRequires = [];
