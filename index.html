@@ -3588,18 +3588,65 @@ table.topo-addr code {
 
 /* ===== TOPOLOGY — schéma statique ===== */
 .topo-static {
+  position: relative;
   width: 100%;
-  overflow: visible;
-  display: flex;
-  justify-content: center;
 }
-.topo-static svg {
-  width: auto;
-  max-width: 100%;
-  height: auto;
-  max-height: 260px;
+.topo-zoom-viewport {
+  width: 100%;
+  height: 440px;
+  overflow: hidden;
+  border-radius: 8px;
+  border: 1px solid var(--border-soft);
+  background: var(--bg-elevated);
+  background-image:
+    linear-gradient(rgba(168, 163, 148, 0.10) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(168, 163, 148, 0.10) 1px, transparent 1px);
+  background-size: 26px 26px;
+  cursor: grab;
+  touch-action: none;
+}
+.topo-zoom-viewport.grabbing { cursor: grabbing; }
+.topo-zoom-viewport svg {
+  width: 100%;
+  height: 100%;
   display: block;
+  transform-origin: 0 0;
+  will-change: transform;
 }
+.topo-zoom-controls {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 6;
+  display: flex;
+  gap: 5px;
+}
+.topo-zoom-controls button {
+  width: 30px; height: 30px;
+  border: 1px solid var(--border-medium);
+  background: rgba(255,255,255,0.92);
+  color: #333;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  transition: .12s;
+}
+.topo-zoom-controls button:hover { background: #fff; transform: translateY(-1px); }
+.topo-zoom-hint {
+  position: absolute;
+  left: 10px; bottom: 8px;
+  z-index: 6;
+  font-size: .68rem;
+  color: var(--text-muted);
+  background: rgba(255,255,255,0.85);
+  padding: 2px 7px; border-radius: 5px;
+  pointer-events: none;
+}
+.topo-static:fullscreen { background: var(--bg-elevated); padding: 20px; }
+.topo-static:fullscreen .topo-zoom-viewport { height: calc(100vh - 40px); }
 
 /* ===== CONCEPTS MODAL — fondamentaux animés ===== */
 .concepts-nav {
@@ -12466,6 +12513,7 @@ function renderTopology(topo, customContainerId) {
   if (!customContainerId) {
     if (_topoCache.key === cacheKey && _topoCache.html) {
       container.innerHTML = _topoCache.html;
+      try { enableTopoZoom(container); } catch(_) {}
       return;
     }
   }
@@ -12644,10 +12692,17 @@ function renderTopology(topo, customContainerId) {
     addrTable += '</div>';
   }
 
-  // Schéma statique simple — pas de zoom ni fullscreen (inutile pour un lab pédagogique)
+  // Schéma interactif : zoom (molette + boutons), déplacement (glisser), plein écran
   const wrappedHtml =
     '<div class="topo-static">' +
-      svg +
+      '<div class="topo-zoom-controls">' +
+        '<button onclick="topoZoom(this,1.25)" title="Zoomer">+</button>' +
+        '<button onclick="topoZoom(this,0.8)" title="Dézoomer">−</button>' +
+        '<button onclick="topoZoomReset(this)" title="Réinitialiser la vue">⟳</button>' +
+        '<button onclick="topoFullscreen(this)" title="Plein écran">⛶</button>' +
+      '</div>' +
+      '<div class="topo-zoom-viewport">' + svg + '</div>' +
+      '<div class="topo-zoom-hint">Molette = zoom · glisser = déplacer</div>' +
     '</div>' +
     addrTable +
     legend;
@@ -12656,6 +12711,62 @@ function renderTopology(topo, customContainerId) {
   if (!customContainerId) {
     _topoCache = { key: cacheKey, html: wrappedHtml };
   }
+  try { enableTopoZoom(container); } catch(_) {}
+}
+
+// Zoom/pan interactif sur la topologie (molette, glisser, boutons, plein écran)
+function enableTopoZoom(container) {
+  const vp = container.querySelector('.topo-zoom-viewport');
+  if (!vp) return;
+  const svg = vp.querySelector('svg');
+  if (!svg) return;
+  const st = { s: 1, x: 0, y: 0, dragging: false, ox: 0, oy: 0 };
+  vp._topoState = st;
+  const apply = () => { svg.style.transform = 'translate(' + st.x + 'px,' + st.y + 'px) scale(' + st.s + ')'; };
+  vp._topoApply = apply;
+  vp.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const rect = vp.getBoundingClientRect();
+    const cx = e.clientX - rect.left, cy = e.clientY - rect.top;
+    const f = e.deltaY < 0 ? 1.12 : 0.89;
+    const ns = Math.min(5, Math.max(0.4, st.s * f));
+    // zoom centré sur le curseur
+    st.x = cx - (cx - st.x) * (ns / st.s);
+    st.y = cy - (cy - st.y) * (ns / st.s);
+    st.s = ns;
+    apply();
+  }, { passive: false });
+  vp.addEventListener('pointerdown', (e) => {
+    st.dragging = true; st.ox = e.clientX - st.x; st.oy = e.clientY - st.y;
+    vp.classList.add('grabbing');
+    try { vp.setPointerCapture(e.pointerId); } catch(_) {}
+  });
+  vp.addEventListener('pointermove', (e) => {
+    if (!st.dragging) return;
+    st.x = e.clientX - st.ox; st.y = e.clientY - st.oy; apply();
+  });
+  const endDrag = () => { st.dragging = false; vp.classList.remove('grabbing'); };
+  vp.addEventListener('pointerup', endDrag);
+  vp.addEventListener('pointercancel', endDrag);
+  apply();
+}
+function topoZoom(btn, f) {
+  const vp = btn.closest('.topo-static').querySelector('.topo-zoom-viewport');
+  if (!vp || !vp._topoState) return;
+  vp._topoState.s = Math.min(5, Math.max(0.4, vp._topoState.s * f));
+  vp._topoApply && vp._topoApply();
+}
+function topoZoomReset(btn) {
+  const vp = btn.closest('.topo-static').querySelector('.topo-zoom-viewport');
+  if (!vp || !vp._topoState) return;
+  vp._topoState.s = 1; vp._topoState.x = 0; vp._topoState.y = 0;
+  vp._topoApply && vp._topoApply();
+}
+function topoFullscreen(btn) {
+  const el = btn.closest('.topo-static');
+  if (!el) return;
+  if (document.fullscreenElement) { document.exitFullscreen(); }
+  else if (el.requestFullscreen) { el.requestFullscreen(); }
 }
 
 
