@@ -10780,9 +10780,18 @@ function switchToDevice(id) {
 
   // Save current state
   if (activeDevice && devices[activeDevice]) {
-    devices[activeDevice].buffer = buffer;
-    devices[activeDevice].history = history.slice();
-    devices[activeDevice].historyIdx = historyIdx;
+    const prevDev = devices[activeDevice];
+    prevDev.buffer = buffer;
+    prevDev.history = history.slice();
+    prevDev.historyIdx = historyIdx;
+    // PERSISTE l'état live → l'état du device. Sinon, en changeant d'onglet (ou en re-cliquant
+    // sur le même), la config en cours est perdue et le device repart à zéro (mode user) :
+    // c'est ce qui cassait `do ...` et tout lab multi-équipements (SW1/SW2/R8…).
+    if (prevDev.type === 'pc' || prevDev.type === 'server') {
+      if (typeof pc !== 'undefined' && pc) prevDev.state = { ...pc };
+    } else {
+      prevDev.state = { ...sw };
+    }
   }
 
   activeDevice = id;
