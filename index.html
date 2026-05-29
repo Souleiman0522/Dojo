@@ -5357,8 +5357,9 @@ const DEFAULT_LABS = [
           name: '③ Trunk 802.1Q — l\'autoroute taggée',
           desc: '<strong>C\'est quoi :</strong> un lien qui transporte PLUSIEURS VLANs sur un seul câble. Chaque trame reçoit une étiquette (tag dot1Q) qui dit « je suis du VLAN X ».<br><br>' +
                 '<strong>Où :</strong> entre les 2 switches (SW1↔SW2) ET entre le switch et le routeur (SW1↔R8). Sans ce dernier trunk, les VLANs n\'atteignent jamais R8.<br><br>' +
-                '<strong>À retenir :</strong> access = 1 VLAN, non taggé (vers un PC) ; trunk = N VLANs, taggés (entre équipements).<br><br>' +
-                '<strong>Config Cisco :</strong> <code>switchport mode trunk</code>. Vérifie : <code>show interfaces trunk</code>.'
+                '<strong>3 réglages :</strong> <code>encapsulation dot1q</code> (méthode de tag), <code>allowed vlan</code> (liste blanche des VLANs), <code>native vlan</code> (le seul non taggé — identique des 2 côtés !).<br><br>' +
+                '<strong>À retenir :</strong> access = 1 VLAN non taggé (vers un PC) ; trunk = N VLANs taggés (entre équipements).<br><br>' +
+                '<strong>Config Cisco :</strong> <code>switchport trunk encapsulation dot1q</code> → <code>switchport mode trunk</code> → <code>switchport trunk allowed vlan 10,20</code>. Vérifie : <code>show interfaces trunk</code>.'
         }
       ],
       footer: '💡 <strong>L\'ordre du métier :</strong> les <strong>VLANs</strong> d\'abord (ils doivent exister), puis les <strong>ports access</strong> (on range les PC), puis les <strong>trunks</strong> (on relie les mondes). Et SEULEMENT après, on monte sur le routeur pour créer les sous-interfaces. Commence par le toit, et tout s\'effondre.'
@@ -5383,11 +5384,14 @@ const DEFAULT_LABS = [
       { type: 'step', content: "Toujours SW1 — VPC4 (VLAN 20) sur e0/2 : [code]interface e0/2[/code] → [code]switchport mode access[/code] → [code]switchport access vlan 20[/code]." },
       { type: 'step', content: "Sur <strong>SW2</strong> — VPC5 (VLAN 20) sur e0/1 → access vlan 20 ; VPC6 (VLAN 10) sur e0/2 → access vlan 10." },
 
-      { type: 'task', icon: '🔀', label: 'PRÉREQUIS 3', title: 'Monter les 2 trunks (SW1↔SW2 et SW1↔R8)', requires: ['trunk'] },
-      { type: 'step', content: "Sur <strong>SW1</strong>, le lien vers SW2 (e0/0) doit transporter LES DEUX VLANs : [code]interface e0/0[/code] → [code]switchport mode trunk[/code]." },
-      { type: 'step', content: "Sur <strong>SW1</strong>, le lien vers R8 (e0/3) est AUSSI un trunk : [code]interface e0/3[/code] → [code]switchport mode trunk[/code]. C\'est par là que les VLANs montent vers le routeur." },
-      { type: 'step', content: "Sur <strong>SW2</strong>, le lien vers SW1 (e0/0) : [code]interface e0/0[/code] → [code]switchport mode trunk[/code]." },
-      { type: 'step', content: "Vérifie avec [code]show interfaces trunk[/code] : tu dois voir les ports en mode trunk et les VLANs 10,20 autorisés." },
+      { type: 'task', icon: '🔀', label: 'PRÉREQUIS 3', title: 'Monter les 2 trunks (encapsulation + allowed + native)', requires: ['trunk'] },
+      { type: 'step', content: "Un trunk a 3 réglages clés :<br>• <strong>encapsulation dot1q</strong> = la méthode de tag (802.1Q, le standard). Sur certains switches (3560/3750) il faut la définir AVANT [code]switchport mode trunk[/code] ; sur d'autres c'est automatique.<br>• <strong>allowed vlan</strong> = la liste blanche des VLANs autorisés à passer (sécurité + propreté).<br>• <strong>native vlan</strong> = le seul VLAN transporté NON taggé. Il DOIT être identique des 2 côtés du lien." },
+      { type: 'step', content: "Sur <strong>SW1</strong>, lien vers SW2 (e0/0) : [code]interface e0/0[/code] → [code]switchport trunk encapsulation dot1q[/code] → [code]switchport mode trunk[/code] → [code]switchport trunk allowed vlan 10,20[/code]." },
+      { type: 'step', content: "Sur <strong>SW1</strong>, lien vers R8 (e0/3) — c'est par là que les VLANs montent au routeur : [code]interface e0/3[/code] → [code]switchport trunk encapsulation dot1q[/code] → [code]switchport mode trunk[/code] → [code]switchport trunk allowed vlan 10,20[/code]." },
+      { type: 'step', content: "Sur <strong>SW2</strong>, lien vers SW1 (e0/0) : mêmes commandes (encapsulation dot1q + mode trunk + allowed vlan 10,20)." },
+      { type: 'step', content: "🔐 Bonne pratique sécurité — le <strong>native VLAN</strong> : par défaut c'est le VLAN 1 (à éviter). On le déplace vers un VLAN dédié inutilisé : [code]vlan 99[/code] → [code]name NATIVE[/code], puis sur CHAQUE trunk [code]switchport trunk native vlan 99[/code]. ⚠ S'il diffère d'un côté à l'autre → 'native VLAN mismatch' (CDP/STP gueule, trafic mal classé)." },
+      { type: 'step', content: "⚠ PIÈGE allowed vlan : [code]switchport trunk allowed vlan 30[/code] ÉCRASE la liste (10,20 disparaissent !). Pour ajouter sans casser : [code]switchport trunk allowed vlan add 30[/code]." },
+      { type: 'step', content: "Vérifie avec [code]show interfaces trunk[/code] : tu dois voir les ports en mode trunk, l'encapsulation 802.1q, le native VLAN et les VLANs 10,20 (et 99) autorisés." },
 
       { type: 'task', icon: '📡', label: 'TASK 4', title: "Activer l'interface physique de R8 (SANS IP !)", requires: ['physUp'] },
       { type: 'step', content: "Clique sur <strong>R8</strong>. Passe en config et active l\'interface physique reliée au switch : [code]interface e0/0[/code] → [code]no shutdown[/code]." },
@@ -5412,6 +5416,7 @@ const DEFAULT_LABS = [
 
       { type: 'reflection', content: "Pourquoi AUCUNE IP sur l\'interface physique e0/0 de R8 ?<br>👉 Parce qu\'elle transporte plusieurs VLANs taggés (trunk). Ce sont les sous-interfaces qui portent une IP, une par VLAN." },
       { type: 'reflection', content: "Que se passe-t-il si tu oublies un trunk entre SW1 et R8 ?<br>👉 Les trames taggées n\'atteignent jamais le routeur → aucune communication inter-VLAN, même avec les sous-interfaces parfaitement configurées." },
+      { type: 'reflection', content: "Pourquoi le <strong>native VLAN</strong> doit-il être identique des 2 côtés d\'un trunk ?<br>👉 C\'est le seul VLAN transporté NON taggé. Si SW1 dit « natif = 99 » et SW2 « natif = 1 », les trames non taggées sont rangées dans le mauvais VLAN → fuite de trafic entre VLANs + alertes 'native VLAN mismatch' (CDP/STP). Bonne pratique : un VLAN natif dédié, inutilisé par les hôtes." },
       { type: 'reflection', content: "Quelle est la LIMITE du Router-on-a-Stick ?<br>👉 Tout le trafic inter-VLAN transite par UN SEUL câble = goulot d\'étranglement. En prod moderne, on préfère un switch L3 (SVI) qui route à la vitesse du matériel." }
     ],
     topology: {
