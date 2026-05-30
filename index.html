@@ -4748,8 +4748,8 @@ button:focus-visible, .concept-nav-item:focus-visible, .partners-tab:focus-visib
   <select class="lab-select" id="lab-selector"></select>
   <button class="btn primary icon-only" id="btn-prev" title="Lab précédent">◀</button>
   <button class="btn primary icon-only" id="btn-next" title="Lab suivant">▶</button>
-  <button class="btn primary" id="btn-challenges" title="Les Défis du Sensei — un défi par chapitre">⚔️ Défis</button>
-  <button class="btn" id="btn-dev-skip" title="DEV : marquer le chapitre comme complété et ouvrir le défi" style="background:#9333ea;color:#fff;border:none;font-size:0.78rem;padding:6px 10px">🧪 Skip</button>
+  <button class="btn primary" id="btn-challenges" data-i18n="btn.challenges" data-i18n-title="btn.challenges.tt" title="Les Défis du Sensei — un défi par chapitre">⚔️ Défis</button>
+  <button class="btn" id="btn-dev-skip" data-i18n="btn.skip" data-i18n-title="btn.skip.tt" title="DEV : marquer le chapitre comme complété et ouvrir le défi" style="background:#9333ea;color:#fff;border:none;font-size:0.78rem;padding:6px 10px">🧪 Skip</button>
 
   <!-- Menu déroulant "Apprendre" -->
   <div class="dropdown-wrapper">
@@ -4788,10 +4788,16 @@ button:focus-visible, .concept-nav-item:focus-visible, .partners-tab:focus-visib
     </div>
   </div>
 
-  <button class="btn primary icon-only" id="btn-roadmap" title="Roadmap progression">📜</button>
-  <button class="btn primary icon-only" id="btn-settings" title="Préférences (thème, taille)">⚙</button>
-  <button class="btn warn icon-only" id="btn-toggle-panel" title="Replier le panneau lab">▲</button>
-  <button class="btn danger icon-only" id="btn-admin" title="Admin — gérer les labs">🛠</button>
+  <select id="lang-selector" title="Langue / Language" style="background:rgba(255,255,255,0.08);color:var(--gold-light,#d4a017);border:1px solid var(--gold,#d4a017);border-radius:4px;padding:5px 8px;font-size:0.78rem;font-family:var(--font-mono,monospace);margin-right:6px;cursor:pointer">
+    <option value="fr">🇫🇷 FR</option>
+    <option value="en">🇬🇧 EN</option>
+    <option value="nl">🇳🇱 NL</option>
+    <option value="es">🇪🇸 ES</option>
+  </select>
+  <button class="btn primary icon-only" id="btn-roadmap" data-i18n-title="btn.roadmap.tt" title="Roadmap progression">📜</button>
+  <button class="btn primary icon-only" id="btn-settings" data-i18n-title="btn.settings.tt" title="Préférences (thème, taille)">⚙</button>
+  <button class="btn warn icon-only" id="btn-toggle-panel" data-i18n-title="btn.toggle.tt" title="Replier le panneau lab">▲</button>
+  <button class="btn danger icon-only" id="btn-admin" data-i18n-title="btn.admin.tt" title="Admin — gérer les labs">🛠</button>
 </div>
 
 <div class="app-body">
@@ -5215,16 +5221,166 @@ function isLabLocked(lab) {
   return !UNLOCKED_LAB_IDS.includes(lab.id);
 }
 
+// ============================================================
+// [§I18N] — MULTILANGUE (FR / EN / NL / ES)
+// ============================================================
+// Tables de traduction UI + helper t(key) et localizeLab(lab).
+// Les champs de lab peuvent être soit des strings (français par défaut),
+// soit des objets {fr, en, nl, es}. localizeLab(lab) parcourt récursivement
+// et résout chaque objet locale en string pour la langue courante.
+const I18N_LANGS = ['fr','en','nl','es'];
+let currentLang = (function(){
+  try { const s = localStorage.getItem('dojo_lang'); if (s && I18N_LANGS.includes(s)) return s; } catch(_){}
+  return 'fr';
+})();
+
+const I18N = {
+  fr: {
+    'menu.courses':"📚 Les Cours", 'menu.revision':"📖 Révision CCNA", 'menu.commands':"⌨ Commandes",
+    'menu.chronicles_title':"Les Chroniques Cisco", 'menu.chronicles_sub':"L'aventure de Léo et son Mentor",
+    'btn.challenges':"⚔️ Défis", 'btn.challenges.tt':"Les Défis du Sensei — un défi par chapitre",
+    'btn.roadmap.tt':"Roadmap progression", 'btn.settings.tt':"Préférences (thème, taille)",
+    'btn.toggle.tt':"Replier le panneau lab", 'btn.admin.tt':"Admin — gérer les labs",
+    'btn.skip':"🧪 Skip", 'btn.skip.tt':"DEV : marquer le chapitre comme complété et ouvrir le défi",
+    'lock.lab':"🔒 Ce chapitre sera débloqué prochainement. Termine d'abord les Chapitres 1 et 2 !",
+    'lock.next':"🔒 La suite arrive bientôt ! Merci d'avoir testé les Chapitres 1 et 2 🙏",
+    'lock.challenge':"🔒 Le Défi du Sensei est fermé pour cette session de test. Bientôt disponible !",
+    'lock.gallery':"🔒 Les Défis du Sensei sont fermés pour cette session de test. Bientôt disponible !",
+    'lab.objectives':"🎯 Objectifs", 'lab.instructions':"📋 Instructions", 'lab.topology':"📡 Topologie",
+    'lab.hint':"💡 Aide", 'lab.next':"▶ Chapitre suivant", 'lab.prev':"◀ Chapitre précédent",
+    'lab.loaded':"Lab chargé : ", 'lab.progress':"📍 Progression du chapitre",
+    'lab.reflections':"🎓 RÉFLEXIONS",
+    'modal.close':"✕ Fermer", 'topo.zoom':"Molette = zoom · glisser = déplacer",
+    'topo.addressing':"📋 Plan d'adressage", 'topo.networks':"Réseaux", 'topo.devices':"Équipements"
+  },
+  en: {
+    'menu.courses':"📚 Courses", 'menu.revision':"📖 CCNA Review", 'menu.commands':"⌨ Commands",
+    'menu.chronicles_title':"The Cisco Chronicles", 'menu.chronicles_sub':"Leo and his Mentor's journey",
+    'btn.challenges':"⚔️ Challenges", 'btn.challenges.tt':"Sensei's Challenges — one per chapter",
+    'btn.roadmap.tt':"Progress roadmap", 'btn.settings.tt':"Preferences (theme, size)",
+    'btn.toggle.tt':"Collapse lab panel", 'btn.admin.tt':"Admin — manage labs",
+    'btn.skip':"🧪 Skip", 'btn.skip.tt':"DEV: mark chapter as completed and open the challenge",
+    'lock.lab':"🔒 This chapter will unlock soon. Finish Chapters 1 and 2 first!",
+    'lock.next':"🔒 More chapters coming soon! Thanks for testing Chapters 1 and 2 🙏",
+    'lock.challenge':"🔒 The Sensei's Challenge is closed for this test session. Coming soon!",
+    'lock.gallery':"🔒 The Sensei's Challenges are closed for this test session. Coming soon!",
+    'lab.objectives':"🎯 Objectives", 'lab.instructions':"📋 Instructions", 'lab.topology':"📡 Topology",
+    'lab.hint':"💡 Hint", 'lab.next':"▶ Next chapter", 'lab.prev':"◀ Previous chapter",
+    'lab.loaded':"Lab loaded: ", 'lab.progress':"📍 Chapter progress",
+    'lab.reflections':"🎓 REFLECTIONS",
+    'modal.close':"✕ Close", 'topo.zoom':"Wheel = zoom · drag = pan",
+    'topo.addressing':"📋 Addressing plan", 'topo.networks':"Networks", 'topo.devices':"Devices"
+  },
+  nl: {
+    'menu.courses':"📚 De Cursussen", 'menu.revision':"📖 CCNA Herhaling", 'menu.commands':"⌨ Commando's",
+    'menu.chronicles_title':"De Cisco-Kronieken", 'menu.chronicles_sub':"Het avontuur van Léo en zijn Mentor",
+    'btn.challenges':"⚔️ Uitdagingen", 'btn.challenges.tt':"De Uitdagingen van de Sensei — één per hoofdstuk",
+    'btn.roadmap.tt':"Voortgangsplan", 'btn.settings.tt':"Voorkeuren (thema, grootte)",
+    'btn.toggle.tt':"Labpaneel inklappen", 'btn.admin.tt':"Admin — labs beheren",
+    'btn.skip':"🧪 Skip", 'btn.skip.tt':"DEV: hoofdstuk als voltooid markeren en uitdaging openen",
+    'lock.lab':"🔒 Dit hoofdstuk wordt binnenkort vrijgegeven. Voltooi eerst Hoofdstukken 1 en 2!",
+    'lock.next':"🔒 Meer komt eraan! Bedankt voor het testen van Hoofdstukken 1 en 2 🙏",
+    'lock.challenge':"🔒 De Sensei-Uitdaging is gesloten voor deze testsessie. Binnenkort beschikbaar!",
+    'lock.gallery':"🔒 De Sensei-Uitdagingen zijn gesloten voor deze testsessie. Binnenkort beschikbaar!",
+    'lab.objectives':"🎯 Doelstellingen", 'lab.instructions':"📋 Instructies", 'lab.topology':"📡 Topologie",
+    'lab.hint':"💡 Tip", 'lab.next':"▶ Volgend hoofdstuk", 'lab.prev':"◀ Vorig hoofdstuk",
+    'lab.loaded':"Lab geladen: ", 'lab.progress':"📍 Voortgang hoofdstuk",
+    'lab.reflections':"🎓 REFLECTIES",
+    'modal.close':"✕ Sluiten", 'topo.zoom':"Wiel = zoom · slepen = verplaatsen",
+    'topo.addressing':"📋 Adresseringsplan", 'topo.networks':"Netwerken", 'topo.devices':"Apparaten"
+  },
+  es: {
+    'menu.courses':"📚 Los Cursos", 'menu.revision':"📖 Repaso CCNA", 'menu.commands':"⌨ Comandos",
+    'menu.chronicles_title':"Las Crónicas de Cisco", 'menu.chronicles_sub':"La aventura de Léo y su Mentor",
+    'btn.challenges':"⚔️ Desafíos", 'btn.challenges.tt':"Los Desafíos del Sensei — uno por capítulo",
+    'btn.roadmap.tt':"Hoja de ruta de progreso", 'btn.settings.tt':"Preferencias (tema, tamaño)",
+    'btn.toggle.tt':"Plegar el panel de laboratorio", 'btn.admin.tt':"Admin — gestionar labs",
+    'btn.skip':"🧪 Skip", 'btn.skip.tt':"DEV: marcar capítulo como completado y abrir el desafío",
+    'lock.lab':"🔒 Este capítulo se desbloqueará pronto. ¡Termina primero los Capítulos 1 y 2!",
+    'lock.next':"🔒 ¡Más capítulos llegando pronto! Gracias por probar los Capítulos 1 y 2 🙏",
+    'lock.challenge':"🔒 El Desafío del Sensei está cerrado en esta sesión de prueba. ¡Próximamente!",
+    'lock.gallery':"🔒 Los Desafíos del Sensei están cerrados en esta sesión de prueba. ¡Próximamente!",
+    'lab.objectives':"🎯 Objetivos", 'lab.instructions':"📋 Instrucciones", 'lab.topology':"📡 Topología",
+    'lab.hint':"💡 Pista", 'lab.next':"▶ Capítulo siguiente", 'lab.prev':"◀ Capítulo anterior",
+    'lab.loaded':"Lab cargado: ", 'lab.progress':"📍 Progreso del capítulo",
+    'lab.reflections':"🎓 REFLEXIONES",
+    'modal.close':"✕ Cerrar", 'topo.zoom':"Rueda = zoom · arrastrar = mover",
+    'topo.addressing':"📋 Plan de direccionamiento", 'topo.networks':"Redes", 'topo.devices':"Equipos"
+  }
+};
+
+function t(key, fallback) {
+  return (I18N[currentLang] && I18N[currentLang][key])
+      || (I18N.fr && I18N.fr[key])
+      || (fallback != null ? fallback : key);
+}
+// Détecte un objet "locale" {fr, en, nl, es} (au moins une clé de langue, et seulement des clés de langue)
+function _isLocaleObj(o) {
+  if (!o || typeof o !== 'object' || Array.isArray(o)) return false;
+  const keys = Object.keys(o);
+  if (keys.length === 0) return false;
+  return keys.every(k => I18N_LANGS.includes(k));
+}
+function tField(v) {
+  if (!_isLocaleObj(v)) return v;
+  return v[currentLang] || v.fr || v.en || Object.values(v)[0];
+}
+// Parcourt récursivement un lab et résout tous les objets locale en strings de la langue courante.
+function localizeLab(lab) {
+  function resolve(v) {
+    if (v == null) return v;
+    if (typeof v === 'function') return v;
+    if (Array.isArray(v)) return v.map(resolve);
+    if (typeof v === 'object') {
+      if (_isLocaleObj(v)) return tField(v);
+      const out = {}; for (const k of Object.keys(v)) out[k] = resolve(v[k]);
+      return out;
+    }
+    return v;
+  }
+  return resolve(lab);
+}
+// Applique les traductions sur les éléments du DOM marqués data-i18n / data-i18n-title
+function applyI18nDom() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    el.textContent = t(key);
+  });
+  document.querySelectorAll('[data-i18n-title]').forEach(el => {
+    const key = el.getAttribute('data-i18n-title');
+    el.setAttribute('title', t(key));
+  });
+  document.documentElement.lang = currentLang;
+}
+function setLang(lang) {
+  if (!I18N_LANGS.includes(lang)) return;
+  currentLang = lang;
+  try { localStorage.setItem('dojo_lang', lang); } catch(_) {}
+  applyI18nDom();
+  if (typeof currentLabIdx !== 'undefined' && typeof loadLab === 'function') loadLab(currentLabIdx);
+  if (typeof buildLabSelector === 'function') buildLabSelector();
+}
+
 const DEFAULT_LABS = [
   {
-    id: 1, title: "Chapitre 1 — La Découverte du Switch", category: "fundamentals",
+    id: 1, title: { fr:"Chapitre 1 — La Découverte du Switch", en:"Chapter 1 — Discovering the Switch", nl:"Hoofdstuk 1 — De Switch Ontdekken", es:"Capítulo 1 — Descubriendo el Switch" }, category: "fundamentals",
     difficulty: "Débutant", duration: "35 min", device: "SW1", hostname: "Switch",
     accessMethods: true,  // Affiche le panneau pédagogique des 3 méthodes d'accès
     autoDevices: true,
     devices: [ { type: 'switch', name: 'Switch' } ],  // démarre sur un switch vierge ; l'étudiant le renomme en SW-BRU
     narrative: {
-      intro: "Quand Léo entra dans le laboratoire Cisco de l\'académie, tout semblait mort. Des racks silencieux. Un switch couvert de poussière, encore vierge. Le mentor pointa l\'écran : « Switch> ». Trois caractères. Une promesse. Mais aucun mot de passe. N\'importe qui pourrait le contrôler.\n\nImagine ce switch comme la maison que tu viens d\'acheter. Les murs sont là, mais la porte est grande ouverte. Pas de nom sur la sonnette. Pas de serrure. Pas même un mot d\'avertissement à l\'entrée. Avant d\'y vivre sereinement, tu vas devoir poser ton nom, installer les serrures, et accrocher la pancarte qui dit « propriété privée ».",
-      mentor: "Ce chapitre va te sembler dense — c'est normal, on apprend beaucoup d'un coup. Mais prends ton temps, étape par étape. Chaque commande que tu tapes pose une brique. Et à la fin, tu auras sécurisé ton premier switch — un geste que tu referas mille fois dans ta carrière, presque les yeux fermés.",
+      intro: {
+        fr: "Quand Léo entra dans le laboratoire Cisco de l\'académie, tout semblait mort. Des racks silencieux. Un switch couvert de poussière, encore vierge. Le mentor pointa l\'écran : « Switch> ». Trois caractères. Une promesse. Mais aucun mot de passe. N\'importe qui pourrait le contrôler.\n\nImagine ce switch comme la maison que tu viens d\'acheter. Les murs sont là, mais la porte est grande ouverte. Pas de nom sur la sonnette. Pas de serrure. Pas même un mot d\'avertissement à l\'entrée. Avant d\'y vivre sereinement, tu vas devoir poser ton nom, installer les serrures, et accrocher la pancarte qui dit « propriété privée ».",
+        en: "When Leo walked into the academy's Cisco lab, everything felt dead. Silent racks. A dusty switch, factory-fresh. The mentor pointed at the screen: \"Switch>\". Three characters. A promise. But no password. Anyone could take it over.\n\nThink of this switch as the house you just bought. The walls are up, but the door is wide open. No name on the doorbell. No lock. Not even a sign at the entrance. Before you can live in it safely, you'll need to put up your name, install the locks, and hang the « private property » sign.",
+        nl: "Toen Léo het Cisco-lab van de academie binnenliep, leek alles dood. Stille racks. Een stoffige switch, fabrieksnieuw. De mentor wees naar het scherm: « Switch> ». Drie tekens. Een belofte. Maar geen wachtwoord. Iedereen kon hem overnemen.\n\nStel je deze switch voor als het huis dat je net hebt gekocht. De muren staan er, maar de deur staat wagenwijd open. Geen naam op de bel. Geen slot. Zelfs geen bord bij de ingang. Voordat je er rustig kunt wonen, moet je je naam ophangen, sloten installeren en het bord « privé-eigendom » plaatsen.",
+        es: "Cuando Léo entró en el laboratorio Cisco de la academia, todo parecía muerto. Racks silenciosos. Un switch cubierto de polvo, recién salido de fábrica. El mentor señaló la pantalla: « Switch> ». Tres caracteres. Una promesa. Pero ninguna contraseña. Cualquiera podría tomar el control.\n\nImagina este switch como la casa que acabas de comprar. Las paredes están en pie, pero la puerta está de par en par. Sin nombre en el timbre. Sin cerradura. Ni siquiera un letrero a la entrada. Antes de poder vivir en ella tranquilamente, deberás poner tu nombre, instalar las cerraduras y colgar el cartel « propiedad privada »."
+      },
+      mentor: {
+        fr: "Ce chapitre va te sembler dense — c'est normal, on apprend beaucoup d'un coup. Mais prends ton temps, étape par étape. Chaque commande que tu tapes pose une brique. Et à la fin, tu auras sécurisé ton premier switch — un geste que tu referas mille fois dans ta carrière, presque les yeux fermés.",
+        en: "This chapter will feel dense — that's normal, you're learning a lot at once. Take your time, step by step. Every command you type lays a brick. By the end, you'll have secured your first switch — something you'll do a thousand times in your career, almost with your eyes closed.",
+        nl: "Dit hoofdstuk zal druk lijken — dat is normaal, je leert veel tegelijk. Neem de tijd, stap voor stap. Elk commando dat je typt legt een baksteen. Aan het eind heb je je eerste switch beveiligd — een handeling die je in je carrière duizend keer zult herhalen, bijna met je ogen dicht.",
+        es: "Este capítulo te parecerá denso — es normal, aprendes mucho de golpe. Tómate tu tiempo, paso a paso. Cada comando que escribes coloca un ladrillo. Al final, habrás asegurado tu primer switch — un gesto que repetirás mil veces en tu carrera, casi con los ojos cerrados."
+      },
       promptStart: "Switch>",
       promptEnd: "SW-BRU(config)#"
     },
@@ -5371,7 +5527,7 @@ const DEFAULT_LABS = [
   },
 
   {
-    id: 2, title: "Chapitre 2 — Le Pont entre les Mondes (Router-on-a-Stick)", category: "access",
+    id: 2, title: { fr:"Chapitre 2 — Le Pont entre les Mondes (Router-on-a-Stick)", en:"Chapter 2 — The Bridge Between Worlds (Router-on-a-Stick)", nl:"Hoofdstuk 2 — De Brug Tussen Werelden (Router-on-a-Stick)", es:"Capítulo 2 — El Puente Entre Mundos (Router-on-a-Stick)" }, category: "access",
     difficulty: "Débutant", duration: "45 min", device: "R8", hostname: "R8",
     autoDevices: true,
     // Onglets chargés au démarrage. Les équipements Cisco démarrent avec un hostname GÉNÉRIQUE
@@ -5386,8 +5542,18 @@ const DEFAULT_LABS = [
       { type: 'pc', name: 'VPC6' }
     ],
     narrative: {
-      intro: "Léo est devant SW-BRU. La config du Chapitre 1 tient toujours : le hostname est bon, la console verrouillée, les mots de passe en place. Tout est en ordre. Et pourtant, quelque chose le travaille depuis le passage du Sensei.\n\n« Tu as fini ton étage », a lâché le vieux en pointant le switch. « Mais demain, les Ventes et l\'IT voudront se parler. Et un cran plus loin, c\'est avec l\'extérieur qu\'il faudra dialoguer. Tu vas devoir changer de niveau. »\n\nChanger de niveau. Léo retourne la phrase dans sa tête. Jusqu\'ici, tout ce qu\'il a vu se passait au même endroit — un switch, des ports, des trames qui circulent. Un seul monde. Mais le Sensei a dit « niveau » au pluriel. Combien y en a-t-il ?\n\nIl ouvre son carnet et note les questions qui le démangent :<br>• Deux PC dans le même VLAN se parlent tout seuls. Dans deux VLANs différents, il leur faut « autre chose ». Qu\'est-ce qui change EXACTEMENT quand le VLAN change ?<br>• Chaque carte réseau porte une suite hexadécimale gravée — et en même temps une IP que lui-même configure. Deux adresses pour une seule carte. Laquelle sert à quoi ? Voyagent-elles ensemble quand un paquet traverse le réseau ?<br>• Un switch « voit » ses voisins sans aucune IP. Comment découvrir qui est branché en face sans lui parler en IP ? Il existe donc une couche SOUS IP, qui sait communiquer toute seule ?<br>• Et si demain on remplaçait un switch Cisco par du HP ou du Juniper — sauraient-ils encore se voir ? Ou Cisco a-t-il son propre langage de découverte ?<br>• Et surtout : si les Ventes et l\'IT vivent dans deux VLANs séparés, par où passe le paquet pour aller de l\'un à l\'autre ? Un VLAN, c\'est un mur. Alors qui ouvre la porte ?\n\nLéo referme son carnet. Il le sent : il va devoir monter d\'un cran dans sa façon de penser. Le switch ne suffira plus. Il lui faut comprendre ce que le Sensei appelle la couche 3 — l\'endroit où les paquets ne sont plus seulement transmis, mais décidés. L\'endroit où l\'on choisit un chemin.\n\nAvant de partir, le vieux a laissé un dernier indice : « Tu construiras dans l\'ordre. Jamais le routeur avant le switch, jamais une sous-interface avant son VLAN. Un réseau s\'assemble de bas en haut, comme une maison. Commence par le toit, et tout s\'effondre. »",
-      mentor: "Respecte l\'ordre, Léo. Ne touche JAMAIS au routeur avant que le switch soit prêt — c\'est l\'erreur la plus fréquente, en lab CCNA comme en prod. Les VLANs avant les ports access, les ports access avant le trunk, le trunk avant les sous-interfaces. Et à chaque task, vérifie avec le bon « show » avant de passer à la suivante.\n\nOui, ce chapitre est dense — mais rien, ABSOLUMENT rien, n\'est hors de ta portée. Avance pas à pas, recommence une commande autant de fois qu\'il le faut, et garde le cap. Courage : à la fin, deux mondes séparés se parleront grâce à toi.",
+      intro: {
+        fr: "Léo est devant SW-BRU. La config du Chapitre 1 tient toujours : le hostname est bon, la console verrouillée, les mots de passe en place. Tout est en ordre. Et pourtant, quelque chose le travaille depuis le passage du Sensei.\n\n« Tu as fini ton étage », a lâché le vieux en pointant le switch. « Mais demain, les Ventes et l\'IT voudront se parler. Et un cran plus loin, c\'est avec l\'extérieur qu\'il faudra dialoguer. Tu vas devoir changer de niveau. »\n\nChanger de niveau. Léo retourne la phrase dans sa tête. Jusqu\'ici, tout ce qu\'il a vu se passait au même endroit — un switch, des ports, des trames qui circulent. Un seul monde. Mais le Sensei a dit « niveau » au pluriel. Combien y en a-t-il ?\n\nIl ouvre son carnet et note les questions qui le démangent :<br>• Deux PC dans le même VLAN se parlent tout seuls. Dans deux VLANs différents, il leur faut « autre chose ». Qu\'est-ce qui change EXACTEMENT quand le VLAN change ?<br>• Chaque carte réseau porte une suite hexadécimale gravée — et en même temps une IP que lui-même configure. Deux adresses pour une seule carte. Laquelle sert à quoi ? Voyagent-elles ensemble quand un paquet traverse le réseau ?<br>• Un switch « voit » ses voisins sans aucune IP. Comment découvrir qui est branché en face sans lui parler en IP ? Il existe donc une couche SOUS IP, qui sait communiquer toute seule ?<br>• Et si demain on remplaçait un switch Cisco par du HP ou du Juniper — sauraient-ils encore se voir ? Ou Cisco a-t-il son propre langage de découverte ?<br>• Et surtout : si les Ventes et l\'IT vivent dans deux VLANs séparés, par où passe le paquet pour aller de l\'un à l\'autre ? Un VLAN, c\'est un mur. Alors qui ouvre la porte ?\n\nLéo referme son carnet. Il le sent : il va devoir monter d\'un cran dans sa façon de penser. Le switch ne suffira plus. Il lui faut comprendre ce que le Sensei appelle la couche 3 — l\'endroit où les paquets ne sont plus seulement transmis, mais décidés. L\'endroit où l\'on choisit un chemin.\n\nAvant de partir, le vieux a laissé un dernier indice : « Tu construiras dans l\'ordre. Jamais le routeur avant le switch, jamais une sous-interface avant son VLAN. Un réseau s\'assemble de bas en haut, comme une maison. Commence par le toit, et tout s\'effondre. »",
+        en: "Leo stands in front of SW-BRU. The Chapter 1 config still holds: the hostname is set, the console locked, the passwords in place. Everything's in order. And yet, something has been gnawing at him since the Sensei dropped by.\n\n« You've finished your floor, » the old man said, pointing at the switch. « But tomorrow, Sales and IT will want to talk to each other. And one step further, you'll need to dialog with the outside world. You're going to need to change levels. »\n\nChange levels. Leo turns the phrase over in his head. So far, everything he's seen happened in the same place — a switch, ports, frames flowing. One world. But the Sensei said « level » in the plural. How many are there?\n\nHe opens his notebook and jots the questions itching at him:<br>• Two PCs in the same VLAN talk to each other on their own. In two different VLANs, they need « something else ». What EXACTLY changes when the VLAN changes?<br>• Every network card carries an engraved hex string — and at the same time an IP he himself configures. Two addresses for a single card. Which is for what? Do they travel together when a packet crosses the network?<br>• A switch « sees » its neighbors with no IP at all. How does it discover what's plugged in across the wire without talking to it in IP? There must be a layer BENEATH IP that knows how to communicate on its own?<br>• And if tomorrow we swapped a Cisco switch for HP or Juniper gear — would they still see each other? Or does Cisco have its own discovery language?<br>• Most importantly: if Sales and IT live in two separate VLANs, where does the packet go to reach the other side? A VLAN is a wall. So who opens the door?\n\nLeo closes his notebook. He feels it: he's going to have to step up in his way of thinking. The switch alone won't be enough. He needs to understand what the Sensei calls layer 3 — the place where packets are no longer simply forwarded, but decided. The place where you choose a path.\n\nBefore leaving, the old man left one last clue: « You will build in order. Never the router before the switch, never a subinterface before its VLAN. A network is assembled bottom-up, like a house. Start with the roof, and everything collapses. »",
+        nl: "Léo staat voor SW-BRU. De configuratie van Hoofdstuk 1 houdt stand: de hostname klopt, de console vergrendeld, de wachtwoorden op hun plaats. Alles is in orde. En toch knaagt er iets aan hem sinds de Sensei langskwam.\n\n« Je verdieping is af, » liet de oude man vallen terwijl hij naar de switch wees. « Maar morgen zullen Verkoop en IT met elkaar willen praten. En één stap verder moet je met de buitenwereld in dialoog. Je zult van niveau moeten veranderen. »\n\nVan niveau veranderen. Léo draait de zin in zijn hoofd om. Tot nu toe gebeurde alles op dezelfde plek — een switch, poorten, frames die circuleren. Eén wereld. Maar de Sensei zei « niveau » in het meervoud. Hoeveel zijn er?\n\nHij opent zijn notitieboek en noteert de vragen die hem dwarszitten:<br>• Twee PC's in hetzelfde VLAN praten vanzelf met elkaar. In twee verschillende VLAN's hebben ze « iets anders » nodig. Wat verandert er PRECIES wanneer het VLAN verandert?<br>• Elke netwerkkaart draagt een ingegraveerde hex-reeks — en tegelijk een IP die hij zelf configureert. Twee adressen voor één kaart. Waar dient elk voor? Reizen ze samen wanneer een pakket het netwerk doorkruist?<br>• Een switch « ziet » zijn buren zonder enig IP. Hoe ontdek je wie aangesloten is zonder hem in IP aan te spreken? Er bestaat dus een laag ONDER IP die zelf kan communiceren?<br>• En als we morgen een Cisco-switch zouden vervangen door HP of Juniper — zouden ze elkaar nog zien? Of heeft Cisco zijn eigen ontdekkingstaal?<br>• En vooral: als Verkoop en IT in twee gescheiden VLAN's leven, waarlangs gaat het pakket om van de ene naar de andere te gaan? Een VLAN is een muur. Wie opent dan de deur?\n\nLéo sluit zijn notitieboek. Hij voelt het: hij zal een stap omhoog moeten in zijn manier van denken. De switch volstaat niet meer. Hij moet begrijpen wat de Sensei laag 3 noemt — de plek waar pakketten niet meer alleen worden doorgegeven, maar beslist. De plek waar een pad wordt gekozen.\n\nVoor zijn vertrek liet de oude man een laatste hint achter: « Je bouwt in de juiste volgorde. Nooit de router vóór de switch, nooit een sub-interface vóór zijn VLAN. Een netwerk bouw je van onder naar boven, als een huis. Begin met het dak, en alles stort in. »",
+        es: "Léo está frente a SW-BRU. La configuración del Capítulo 1 sigue en pie: el hostname está bien, la consola bloqueada, las contraseñas en su sitio. Todo en orden. Y sin embargo, algo le ronda desde el paso del Sensei.\n\n« Has terminado tu piso, » soltó el viejo señalando el switch. « Pero mañana, Ventas e IT querrán hablarse. Y un paso más allá, tendrás que dialogar con el exterior. Vas a tener que cambiar de nivel. »\n\nCambiar de nivel. Léo le da vueltas a la frase. Hasta ahora, todo lo que ha visto ocurría en el mismo lugar — un switch, puertos, tramas circulando. Un solo mundo. Pero el Sensei dijo « nivel » en plural. ¿Cuántos hay?\n\nAbre su cuaderno y anota las preguntas que le pican:<br>• Dos PCs del mismo VLAN se hablan solos. En dos VLANs distintos necesitan « otra cosa ». ¿Qué cambia EXACTAMENTE cuando cambia el VLAN?<br>• Cada tarjeta de red lleva una secuencia hexadecimal grabada — y a la vez una IP que él mismo configura. Dos direcciones para una sola tarjeta. ¿Cuál sirve para qué? ¿Viajan juntas cuando un paquete atraviesa la red?<br>• Un switch « ve » a sus vecinos sin ninguna IP. ¿Cómo descubre qué hay enchufado enfrente sin hablarle por IP? ¿Existe entonces una capa BAJO IP que sabe comunicar sola?<br>• Y si mañana se cambiara un switch Cisco por uno HP o Juniper — ¿seguirían viéndose? ¿O tiene Cisco su propio lenguaje de descubrimiento?<br>• Y sobre todo: si Ventas e IT viven en dos VLANs separados, ¿por dónde pasa el paquete para ir de uno a otro? Un VLAN es un muro. ¿Quién abre entonces la puerta?\n\nLéo cierra su cuaderno. Lo siente: tendrá que subir un peldaño en su forma de pensar. El switch ya no bastará. Necesita entender lo que el Sensei llama capa 3 — el lugar donde los paquetes ya no se reenvían sin más, sino que se deciden. El lugar donde se elige un camino.\n\nAntes de irse, el viejo dejó una última pista: « Construirás en orden. Nunca el router antes que el switch, nunca una subinterfaz antes que su VLAN. Una red se monta de abajo arriba, como una casa. Empieza por el tejado, y todo se viene abajo. »"
+      },
+      mentor: {
+        fr: "Respecte l\'ordre, Léo. Ne touche JAMAIS au routeur avant que le switch soit prêt — c\'est l\'erreur la plus fréquente, en lab CCNA comme en prod. Les VLANs avant les ports access, les ports access avant le trunk, le trunk avant les sous-interfaces. Et à chaque task, vérifie avec le bon « show » avant de passer à la suivante.\n\nOui, ce chapitre est dense — mais rien, ABSOLUMENT rien, n\'est hors de ta portée. Avance pas à pas, recommence une commande autant de fois qu\'il le faut, et garde le cap. Courage : à la fin, deux mondes séparés se parleront grâce à toi.",
+        en: "Respect the order, Leo. NEVER touch the router before the switch is ready — that's the most common mistake, both in CCNA labs and in production. VLANs before access ports, access ports before the trunk, the trunk before the subinterfaces. And on every task, check with the right « show » before moving on.\n\nYes, this chapter is dense — but nothing, ABSOLUTELY nothing, is out of your reach. Move step by step, repeat a command as many times as you need, and stay the course. Courage: by the end, two separate worlds will speak to each other thanks to you.",
+        nl: "Respecteer de volgorde, Léo. Raak NOOIT de router aan voordat de switch klaar is — dat is de meest voorkomende fout, in een CCNA-lab en in productie. Eerst de VLAN's, dan de accesspoorten, dan de trunk, dan de sub-interfaces. En bij elke taak: controleer met de juiste « show » voordat je verdergaat.\n\nJa, dit hoofdstuk is druk — maar niets, ABSOLUUT niets, ligt buiten je bereik. Ga stap voor stap, herhaal een commando zo vaak als nodig, en blijf op koers. Moed: aan het eind zullen twee gescheiden werelden met elkaar praten dankzij jou.",
+        es: "Respeta el orden, Léo. NUNCA toques el router antes de que el switch esté listo — es el error más frecuente, tanto en lab CCNA como en producción. Las VLANs antes de los puertos access, los puertos access antes del trunk, el trunk antes de las subinterfaces. Y en cada tarea, verifica con el « show » adecuado antes de seguir.\n\nSí, este capítulo es denso — pero nada, ABSOLUTAMENTE nada, está fuera de tu alcance. Avanza paso a paso, repite un comando tantas veces como haga falta y mantén el rumbo. Ánimo: al final, dos mundos separados se hablarán gracias a ti."
+      },
       promptStart: "R8>",
       promptEnd: "R8(config-subif)#"
     },
@@ -12388,12 +12554,13 @@ function loadLab(idx) {
   if (idx < 0 || idx >= LABS.length) return;
   // Verrouillage session publique : on bloque les chapitres non débloqués
   if (isLabLocked(LABS[idx])) {
-    try { showToast('🔒 Ce chapitre sera débloqué prochainement. Termine d\'abord les Chapitres 1 et 2 !', 'warn'); } catch(_) {}
+    try { showToast(t('lock.lab'), 'warn'); } catch(_) {}
     if (typeof buildLabSelector === 'function') buildLabSelector();  // remet le sélecteur sur le lab courant
     return;
   }
   currentLabIdx = idx;
-  currentLab = LABS[idx];
+  // i18n : on résout les champs locale ({fr,en,nl,es}) dans la langue courante
+  currentLab = (typeof localizeLab === 'function') ? localizeLab(LABS[idx]) : LABS[idx];
 
   document.getElementById('lab-title').textContent = currentLab.title;
   document.getElementById('lab-difficulty').textContent = currentLab.difficulty;
@@ -13167,7 +13334,7 @@ window.inChallengeMode = false;
 
 function openChallenge() {
   if (CHALLENGES_LOCKED) {
-    try { showToast('🔒 Le Défi du Sensei est fermé pour cette session de test. Bientôt disponible !', 'warn'); } catch(_) {}
+    try { showToast(t('lock.challenge'), 'warn'); } catch(_) {}
     return;
   }
   if (!currentLab || !currentLab.challenge) {
@@ -13319,7 +13486,7 @@ function closeChallenge() {
 // =========================================================================
 function openChallengesGallery() {
   if (CHALLENGES_LOCKED) {
-    try { showToast('🔒 Les Défis du Sensei sont fermés pour cette session de test. Bientôt disponible !', 'warn'); } catch(_) {}
+    try { showToast(t('lock.gallery'), 'warn'); } catch(_) {}
     return;
   }
   const modal = document.getElementById('challenges-gallery-modal');
@@ -13557,7 +13724,7 @@ document.addEventListener('keydown', (e) => {
 function nextLab() {
   const next = LABS[currentLabIdx + 1];
   if (next && isLabLocked(next)) {
-    showToast('🔒 La suite arrive bientôt ! Merci d\'avoir testé les Chapitres 1 et 2 🙏', 'success');
+    showToast(t('lock.next'), 'success');
     return;
   }
   if (currentLabIdx < LABS.length - 1) loadLab(currentLabIdx + 1);
@@ -14219,6 +14386,14 @@ if (_btnCorr) _btnCorr.addEventListener('click', showCorrection);
 const btnChallenges = document.getElementById('btn-challenges');
 if (btnChallenges) btnChallenges.addEventListener('click', openChallengesGallery);
 
+// Sélecteur de langue (i18n)
+const langSelector = document.getElementById('lang-selector');
+if (langSelector) {
+  langSelector.value = currentLang;
+  langSelector.addEventListener('change', e => setLang(e.target.value));
+}
+try { applyI18nDom(); } catch(_) {}
+
 // ============================================================
 // 🧪 DEV — Skip rapide pour tester le défi sans refaire le lab
 // Marque tous les éléments comme touchés (débloque le défi à 100%)
@@ -14226,7 +14401,7 @@ if (btnChallenges) btnChallenges.addEventListener('click', openChallengesGallery
 // ============================================================
 function devSkipToChallenge() {
   if (CHALLENGES_LOCKED) {
-    try { showToast('🔒 Le Défi du Sensei est fermé pour cette session de test.', 'warn'); } catch(_) {}
+    try { showToast(t('lock.challenge'), 'warn'); } catch(_) {}
     return;
   }
   if (!currentLab) {
