@@ -1214,6 +1214,42 @@ body {
 }
 
 /* ============================================================
+   MODE PRO — masque le narratif RP, garde la pédagogie technique
+   Activé par body.mode-pro (toggle via btn-mode-toggle)
+   ============================================================ */
+body.mode-pro .lab-narrative-box,
+body.mode-pro #lab-narrative-slot {
+  display: none !important;
+}
+body.mode-pro .challenge-mode-header {
+  background: var(--bg-elevated, #f5f3ee) !important;
+  border: 1px solid var(--border-medium) !important;
+  border-top: 3px solid var(--accent-primary, #1e3a5f) !important;
+  box-shadow: none !important;
+}
+body.mode-pro .challenge-mode-header::before,
+body.mode-pro .challenge-mode-header::after {
+  display: none !important;
+}
+body.mode-pro .challenge-mode-back-wrap {
+  padding-left: 0 !important;
+}
+body.mode-pro .challenge-mode-badge {
+  color: var(--accent-primary, #1e3a5f) !important;
+  background: rgba(30, 58, 95, 0.08) !important;
+  border-color: var(--accent-primary, #1e3a5f) !important;
+}
+body.mode-pro .challenge-mode-title {
+  font-family: var(--font-sans, system-ui) !important;
+  color: var(--text-primary) !important;
+  font-size: 1.4rem !important;
+}
+body.mode-pro #btn-mode-toggle {
+  background: var(--accent-primary, #1e3a5f) !important;
+  color: #fff !important;
+}
+
+/* ============================================================
    CHRONICLES — parchemin animé immersif
    ============================================================ */
 .chronicles-box {
@@ -4719,6 +4755,7 @@ button:focus-visible, .concept-nav-item:focus-visible, .partners-tab:focus-visib
   </div>
 
   <button class="btn primary icon-only" id="btn-roadmap" title="Roadmap progression">📜</button>
+  <button class="btn icon-only" id="btn-mode-toggle" title="Basculer Mode Histoire ↔ Mode Pro">📖</button>
   <button class="btn primary icon-only" id="btn-settings" title="Préférences (thème, taille)">⚙</button>
   <button class="btn warn icon-only" id="btn-toggle-panel" title="Replier le panneau lab">▲</button>
   <button class="btn danger icon-only" id="btn-admin" title="Admin — gérer les labs">🛠</button>
@@ -16469,6 +16506,30 @@ document.addEventListener('keydown', (e) => {
     if (m && m.classList.contains('active')) closeChronicles();
   }
 });
+
+// ============================================================
+// [§UI-MODE-TOGGLE] — Mode Histoire ↔ Mode Pro
+// Masque le narratif RP (Sensei, Léo) sans toucher aux objectifs/instructions.
+// ============================================================
+(function initModeToggle() {
+  const btn = document.getElementById('btn-mode-toggle');
+  if (!btn) return;
+  const KEY = 'dojo.mode';
+  function apply(mode) {
+    const pro = mode === 'pro';
+    document.body.classList.toggle('mode-pro', pro);
+    btn.textContent = pro ? '⚔️' : '📖';
+    btn.title = pro
+      ? 'Mode Pro actif — cliquer pour le Mode Histoire'
+      : 'Mode Histoire actif — cliquer pour le Mode Pro';
+  }
+  apply(localStorage.getItem(KEY) || 'story');
+  btn.addEventListener('click', () => {
+    const next = document.body.classList.contains('mode-pro') ? 'story' : 'pro';
+    localStorage.setItem(KEY, next);
+    apply(next);
+  });
+})();
 
 // ============================================================
 // [§UI-SETTINGS] — SETTINGS MODAL
