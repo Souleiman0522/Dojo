@@ -349,6 +349,28 @@ body {
   margin-bottom: 10px;
   padding-left: 36px;
 }
+/* Bouton flottant toujours visible pour quitter le mode défi */
+.challenge-exit-floating {
+  position: fixed;
+  top: 14px;
+  right: 18px;
+  z-index: 9999;
+  background: var(--vermilion, #c0392b) !important;
+  color: #fff !important;
+  border: 1px solid var(--gold, #d4a017) !important;
+  font-family: var(--font-mono, monospace) !important;
+  font-size: 0.78rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.05em !important;
+  padding: 8px 14px !important;
+  border-radius: 4px !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4) !important;
+  cursor: pointer;
+}
+.challenge-exit-floating:hover {
+  background: #a02818 !important;
+  transform: translateY(-1px);
+}
 .challenge-mode-back-wrap .btn {
   background: rgba(255,255,255,0.08) !important;
   color: var(--gold-light) !important;
@@ -3602,18 +3624,65 @@ table.topo-addr code {
 
 /* ===== TOPOLOGY — schéma statique ===== */
 .topo-static {
+  position: relative;
   width: 100%;
-  overflow: visible;
-  display: flex;
-  justify-content: center;
 }
-.topo-static svg {
-  width: auto;
-  max-width: 100%;
-  height: auto;
-  max-height: 260px;
+.topo-zoom-viewport {
+  width: 100%;
+  height: 440px;
+  overflow: hidden;
+  border-radius: 8px;
+  border: 1px solid var(--border-soft);
+  background: var(--bg-elevated);
+  background-image:
+    linear-gradient(rgba(168, 163, 148, 0.10) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(168, 163, 148, 0.10) 1px, transparent 1px);
+  background-size: 26px 26px;
+  cursor: grab;
+  touch-action: none;
+}
+.topo-zoom-viewport.grabbing { cursor: grabbing; }
+.topo-zoom-viewport svg {
+  width: 100%;
+  height: 100%;
   display: block;
+  transform-origin: 0 0;
+  will-change: transform;
 }
+.topo-zoom-controls {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 6;
+  display: flex;
+  gap: 5px;
+}
+.topo-zoom-controls button {
+  width: 30px; height: 30px;
+  border: 1px solid var(--border-medium);
+  background: rgba(255,255,255,0.92);
+  color: #333;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  transition: .12s;
+}
+.topo-zoom-controls button:hover { background: #fff; transform: translateY(-1px); }
+.topo-zoom-hint {
+  position: absolute;
+  left: 10px; bottom: 8px;
+  z-index: 6;
+  font-size: .68rem;
+  color: var(--text-muted);
+  background: rgba(255,255,255,0.85);
+  padding: 2px 7px; border-radius: 5px;
+  pointer-events: none;
+}
+.topo-static:fullscreen { background: var(--bg-elevated); padding: 20px; }
+.topo-static:fullscreen .topo-zoom-viewport { height: calc(100vh - 40px); }
 
 /* ===== CONCEPTS MODAL — fondamentaux animés ===== */
 .concepts-nav {
@@ -4780,6 +4849,9 @@ button:focus-visible, .concept-nav-item:focus-visible, .partners-tab:focus-visib
       <!-- 1.5. Méthodes d'accès admin (panneau pédagogique optionnel) -->
       <div id="lab-access-methods-slot"></div>
 
+      <!-- 1.6. Panneau prérequis générique (optionnel, piloté par lab.prereqPanel) -->
+      <div id="lab-prereq-panel-slot"></div>
+
       <!-- 2. Objectifs -->
       <div class="lab-section lab-section-objectives">
         <h3>🎯 Objectifs</h3>
@@ -5178,11 +5250,25 @@ Créez le VLAN : [code]vlan 10[/code]"></textarea>
 // ============================================================
 // [§DATA-LABS] — LABS PAR DÉFAUT
 // ============================================================
+
+// ===== VERROUILLAGE (session publique étudiants) =====
+// Seuls ces chapitres sont accessibles ; les autres affichent un cadenas.
+// Mets ACCESS_LOCK = false pour tout déverrouiller.
+const ACCESS_LOCK = true;
+const UNLOCKED_LAB_IDS = [1, 2];
+const CHALLENGES_LOCKED = true;  // Le Défi du Sensei est fermé pour cette session
+function isLabLocked(lab) {
+  if (!ACCESS_LOCK || !lab) return false;
+  return !UNLOCKED_LAB_IDS.includes(lab.id);
+}
+
 const DEFAULT_LABS = [
   {
     id: 1, title: "Chapitre 1 — La Découverte du Switch", category: "fundamentals",
     difficulty: "Débutant", duration: "35 min", device: "SW1", hostname: "Switch",
     accessMethods: true,  // Affiche le panneau pédagogique des 3 méthodes d'accès
+    autoDevices: true,
+    devices: [ { type: 'switch', name: 'Switch' } ],  // démarre sur un switch vierge ; l'étudiant le renomme en SW-BRU
     narrative: {
       intro: "Quand Léo entra dans le laboratoire Cisco de l\'académie, tout semblait mort. Des racks silencieux. Un switch couvert de poussière, encore vierge. Le mentor pointa l\'écran : « Switch> ». Trois caractères. Une promesse. Mais aucun mot de passe. N\'importe qui pourrait le contrôler.\n\nImagine ce switch comme la maison que tu viens d\'acheter. Les murs sont là, mais la porte est grande ouverte. Pas de nom sur la sonnette. Pas de serrure. Pas même un mot d\'avertissement à l\'entrée. Avant d\'y vivre sereinement, tu vas devoir poser ton nom, installer les serrures, et accrocher la pancarte qui dit « propriété privée ».",
       mentor: "Ce chapitre va te sembler dense — c'est normal, on apprend beaucoup d'un coup. Mais prends ton temps, étape par étape. Chaque commande que tu tapes pose une brique. Et à la fin, tu auras sécurisé ton premier switch — un geste que tu referas mille fois dans ta carrière, presque les yeux fermés.",
@@ -5250,7 +5336,7 @@ const DEFAULT_LABS = [
       { type: 'step', content: "💡 Raccourcis acceptés (mais préfère la version complète à l\'examen CCNA) : <code>copy run start</code> (abrégé) ou <code>wr</code> (legacy IOS, équivalent à <code>write memory</code>). Toutes font la même chose." },
       { type: 'step', content: "🚨 TEST PIÈGE : repasse en config avec [code]configure terminal[/code] et essaie [code]copy running-config startup-config[/code] depuis ce mode → tu reçois <code>% Invalid input detected</code>. La sauvegarde ne s\'utilise QUE en mode privilégié #, JAMAIS en config." },
 
-      { type: 'reflection', content: "Pourquoi 'enable secret' > 'enable password' ? Indice : hash irréversible vs clair lisible." },
+      { type: 'reflection', content: "Pourquoi 'enable secret' > 'enable password' ? Indice : hash irréversible vs clair lisible.<br><br>⚠ À retenir aussi : <code>enable secret</code> (comme <code>enable password</code>) ne protège QUE le passage en mode privilégié <code>#</code> / config global. C\'est un mot de passe UNIQUE et PARTAGÉ — il n\'est rattaché à AUCUN username. Pour une authentification nominative (par compte), c\'est <code>username … secret …</code> + <code>login local</code> sur les lignes (console/VTY) qui s\'en charge." },
       { type: 'reflection', content: "Différence entre <strong>login</strong> et <strong>login local</strong> ?<br>👉 <code>login</code> → l\'utilisateur voit juste <code>Password:</code> (mot de passe partagé de la ligne).<br>👉 <code>login local</code> → l\'utilisateur voit <code>Username:</code> + <code>Password:</code> (compte nominatif depuis la base locale)." },
       { type: 'reflection', content: "Pourquoi un banner MOTD est-il JURIDIQUEMENT important ? Indice : il prouve que l\'attaquant savait qu\'il n\'avait pas le droit (preuve devant tribunal)." }
     ],
@@ -5330,55 +5416,211 @@ const DEFAULT_LABS = [
       ]
     }
   },
-  
+
   {
-    id: 2, title: "Lab 2 — VLAN de Base", category: "access",
-    difficulty: "Débutant", duration: "30 min", device: "SW1", hostname: "SW1",
+    id: 2, title: "Chapitre 2 — Le Pont entre les Mondes (Router-on-a-Stick)", category: "access",
+    difficulty: "Débutant", duration: "45 min", device: "R8", hostname: "R8",
+    autoDevices: true,
+    // Onglets chargés au démarrage. Les équipements Cisco démarrent avec un hostname GÉNÉRIQUE
+    // (Router/Switch) pour que l'étudiant les nomme lui-même (TASK 1).
+    devices: [
+      { type: 'router', name: 'R8',  hostname: 'Router' },
+      { type: 'switch', name: 'SW-BRU', hostname: 'Switch' },
+      { type: 'switch', name: 'SW-GND', hostname: 'Switch' },
+      { type: 'pc', name: 'VPC3' },
+      { type: 'pc', name: 'VPC4' },
+      { type: 'pc', name: 'VPC5' },
+      { type: 'pc', name: 'VPC6' }
+    ],
+    narrative: {
+      intro: "Léo est devant SW-BRU. La config du Chapitre 1 tient toujours : le hostname est bon, la console verrouillée, les mots de passe en place. Tout est en ordre. Et pourtant, quelque chose le travaille depuis le passage du Sensei.\n\n« Tu as fini ton étage », a lâché le vieux en pointant le switch. « Mais demain, les Ventes et l\'IT voudront se parler. Et un cran plus loin, c\'est avec l\'extérieur qu\'il faudra dialoguer. Tu vas devoir changer de niveau. »\n\nChanger de niveau. Léo retourne la phrase dans sa tête. Jusqu\'ici, tout ce qu\'il a vu se passait au même endroit — un switch, des ports, des trames qui circulent. Un seul monde. Mais le Sensei a dit « niveau » au pluriel. Combien y en a-t-il ?\n\nIl ouvre son carnet et note les questions qui le démangent :<br>• Deux PC dans le même VLAN se parlent tout seuls. Dans deux VLANs différents, il leur faut « autre chose ». Qu\'est-ce qui change EXACTEMENT quand le VLAN change ?<br>• Chaque carte réseau porte une suite hexadécimale gravée — et en même temps une IP que lui-même configure. Deux adresses pour une seule carte. Laquelle sert à quoi ? Voyagent-elles ensemble quand un paquet traverse le réseau ?<br>• Un switch « voit » ses voisins sans aucune IP. Comment découvrir qui est branché en face sans lui parler en IP ? Il existe donc une couche SOUS IP, qui sait communiquer toute seule ?<br>• Et si demain on remplaçait un switch Cisco par du HP ou du Juniper — sauraient-ils encore se voir ? Ou Cisco a-t-il son propre langage de découverte ?<br>• Et surtout : si les Ventes et l\'IT vivent dans deux VLANs séparés, par où passe le paquet pour aller de l\'un à l\'autre ? Un VLAN, c\'est un mur. Alors qui ouvre la porte ?\n\nLéo referme son carnet. Il le sent : il va devoir monter d\'un cran dans sa façon de penser. Le switch ne suffira plus. Il lui faut comprendre ce que le Sensei appelle la couche 3 — l\'endroit où les paquets ne sont plus seulement transmis, mais décidés. L\'endroit où l\'on choisit un chemin.\n\nAvant de partir, le vieux a laissé un dernier indice : « Tu construiras dans l\'ordre. Jamais le routeur avant le switch, jamais une sous-interface avant son VLAN. Un réseau s\'assemble de bas en haut, comme une maison. Commence par le toit, et tout s\'effondre. »",
+      mentor: "Respecte l\'ordre, Léo. Ne touche JAMAIS au routeur avant que le switch soit prêt — c\'est l\'erreur la plus fréquente, en lab CCNA comme en prod. Les VLANs avant les ports access, les ports access avant le trunk, le trunk avant les sous-interfaces. Et à chaque task, vérifie avec le bon « show » avant de passer à la suivante.\n\nOui, ce chapitre est dense — mais rien, ABSOLUMENT rien, n\'est hors de ta portée. Avance pas à pas, recommence une commande autant de fois qu\'il le faut, et garde le cap. Courage : à la fin, deux mondes séparés se parleront grâce à toi.",
+      promptStart: "R8>",
+      promptEnd: "R8(config-subif)#"
+    },
+    prereqPanel: {
+      icon: '🧱',
+      title: 'Les fondations avant le pont (prérequis Router-on-a-Stick)',
+      subtitle: 'On construit de BAS en HAUT : VLAN → port access → trunk. Jamais l\'inverse.',
+      cards: [
+        {
+          icon: '🏷️',
+          name: '① VLAN — le découpage logique (L2)',
+          desc: '<strong>C\'est quoi :</strong> un VLAN découpe un switch en plusieurs réseaux isolés. VLAN 10 et VLAN 20 ne se voient PAS, même branchés sur le même switch.<br><br>' +
+                '<strong>Règle d\'or :</strong> un VLAN doit exister sur CHAQUE switch qu\'il traverse, sinon la trame est jetée en chemin.<br><br>' +
+                '<strong>Pourquoi d\'abord :</strong> un port access ou une sous-interface qui pointe vers un VLAN inexistant ne sert à rien.<br><br>' +
+                '<strong>Config Cisco :</strong> <code>vlan 10</code> → <code>name VENTES</code>. Vérifie : <code>show vlan brief</code>.'
+        },
+        {
+          icon: '🔌',
+          name: '② Port access + adressage des hôtes',
+          desc: '<strong>Port access :</strong> un port relié à UN PC appartient à UN seul VLAN. C\'est la « porte d\'entrée » de la machine dans son monde.<br><br>' +
+                '<strong>Le PC, lui :</strong> reçoit une <strong>IP</strong> + un <strong>masque</strong> (qui dit « voici MON réseau ») + une <strong>passerelle</strong> (= l\'IP de la sous-interface du routeur, la sortie vers les autres VLANs).<br><br>' +
+                '<strong>Piège masque :</strong> /24 = 255.255.255.0. Mauvais masque = le PC croit que tout le monde est « chez lui » et n\'envoie jamais vers la passerelle.<br><br>' +
+                '<strong>Config Cisco :</strong> <code>switchport mode access</code> + <code>switchport access vlan 10</code>.'
+        },
+        {
+          icon: '🔀',
+          name: '③ Trunk 802.1Q — l\'autoroute taggée',
+          desc: '<strong>C\'est quoi :</strong> un lien qui transporte PLUSIEURS VLANs sur un seul câble. Chaque trame reçoit une étiquette (tag dot1Q) qui dit « je suis du VLAN X ».<br><br>' +
+                '<strong>Où :</strong> entre les 2 switches (SW-BRU↔SW-GND) ET entre le switch et le routeur (SW-BRU↔R8). Sans ce dernier trunk, les VLANs n\'atteignent jamais R8.<br><br>' +
+                '<strong>3 réglages :</strong> <code>encapsulation dot1q</code> (méthode de tag), <code>allowed vlan</code> (liste blanche des VLANs), <code>native vlan</code> (le seul non taggé — identique des 2 côtés !).<br><br>' +
+                '<strong>À retenir :</strong> access = 1 VLAN non taggé (vers un PC) ; trunk = N VLANs taggés (entre équipements).<br><br>' +
+                '<strong>Config Cisco :</strong> <code>switchport trunk encapsulation dot1q</code> → <code>switchport mode trunk</code> → <code>switchport trunk allowed vlan 10,20</code>. Vérifie : <code>show interfaces trunk</code>.'
+        }
+      ],
+      footer: '💡 <strong>L\'ordre du métier :</strong> les <strong>VLANs</strong> d\'abord (ils doivent exister), puis les <strong>ports access</strong> (on range les PC), puis les <strong>trunks</strong> (on relie les mondes). Et SEULEMENT après, on monte sur le routeur pour créer les sous-interfaces. Commence par le toit, et tout s\'effondre.'
+    },
     objectives: [
-      "Comprendre la notion de VLAN (Virtual LAN) = isolation L2 dans un même switch",
-      "Créer 3 VLANs sur 2 switches : 10 Sales, 20 IT, 99 Native (sécurité)",
-      "Configurer un trunk 802.1Q entre les 2 switches pour transporter plusieurs VLANs",
-      "Vérifier l'isolation : PCs du même VLAN se voient, PCs de VLANs différents NON"
+      "Comprendre pourquoi 2 VLANs ne communiquent PAS sans routage L3",
+      "PRÉREQUIS — créer les VLANs 10 et 20, affecter les ports access, monter les trunks (SW-BRU↔SW-GND et SW-BRU↔R8)",
+      "Activer l'interface physique de R8 SANS lui donner d'IP (c'est un trunk pur)",
+      "Créer une sous-interface par VLAN avec [code]encapsulation dot1q[/code] + l'IP de gateway",
+      "Adresser CHAQUE PC : IP + masque + passerelle (la passerelle = la sous-interface R8 de son VLAN)",
+      "Vérifier d'abord la connectivité DANS le même VLAN (L2, sans routeur) + show mac address-table",
+      "Constater que l'inter-VLAN échoue AVANT le routage, puis marche APRÈS (VPC3 → VPC4)",
+      "Comprendre la limite du RoaS (un seul câble = goulot) vs un switch L3"
     ],
     instructions: [
-      "Étape 1 — Sur SW1, crée les VLANs 10 (Sales), 20 (IT) et 99 (Native) en mode config",
-      "Étape 2 — Sur SW1, configure Fa0/1 en mode access dans VLAN 10 (PC1 Sales)",
-      "Étape 3 — Sur SW1, configure Fa0/2 en mode access dans VLAN 20 (PC2 IT)",
-      "Étape 4 — Sur SW1, configure Gi0/1 en TRUNK 802.1Q vers SW2 avec native VLAN 99",
-      "Étape 5 — Sur SW2, crée les MÊMES VLANs (10, 20, 99) — cohérence obligatoire",
-      "Étape 6 — Sur SW2, configure Fa0/1 en access VLAN 10 (PC3) et Gi0/1 en trunk vers SW1",
-      "Étape 7 — Configure les IPs des 3 PCs selon le plan d'adressage ci-dessous",
-      "Étape 8 — Test 1 : depuis PC1, [code]ping 192.168.10.11[/code] (PC3, même VLAN) → DOIT marcher",
-      "Étape 9 — Test 2 : depuis PC1, [code]ping 192.168.20.10[/code] (PC2, autre VLAN) → DOIT échouer (timeout)",
-      "Étape 10 — Vérifie sur SW1 : [code]show vlan brief[/code] → tu vois tes 3 VLANs avec les ports assignés",
-      "Étape 11 — Vérifie sur SW1 : [code]show interfaces trunk[/code] → Gi0/1 en mode 'on', VLANs 10,20,99 autorisés",
-      "Étape 12 — Sauvegarde avec [code]wr[/code] sur les 2 switches",
-      "Réflexion : pourquoi le VLAN 99 (native) doit-il être IDENTIQUE des 2 côtés du trunk ?"
+      { type: 'task', icon: '🏷️', label: 'ÉTAPE 1', title: 'Nommer les équipements et documenter les liens', requires: ['hostname'] },
+      { type: 'step', content: "Comme au Chapitre 1, commence par donner une IDENTITÉ à chaque équipement (ils démarrent en <code>Router&gt;</code> / <code>Switch&gt;</code>). Clique sur <strong>R8</strong> : [code]enable[/code] → [code]configure terminal[/code] → [code]hostname R8[/code]. Le prompt devient <code>R8(config)#</code>." },
+      { type: 'step', content: "Fais pareil sur les switches : sur <strong>SW-BRU</strong> → [code]hostname SW-BRU[/code] ; sur <strong>SW-GND</strong> → [code]hostname SW-GND[/code]." },
+      { type: 'step', content: "📝 Documente chaque lien avec [code]description[/code] (l'étiquette du câble, pour les humains). Sur <strong>SW-BRU</strong> :<br>• [code]interface e0/0[/code] → [code]description == TRUNK vers SW-GND[/code]<br>• [code]interface e0/3[/code] → [code]description == TRUNK vers R8 (routage inter-VLAN)[/code]<br>• [code]interface e0/1[/code] → [code]description >> VPC3 - VLAN10 Ventes[/code]<br>• [code]interface e0/2[/code] → [code]description >> VPC4 - VLAN20 RH[/code]" },
+      { type: 'step', content: "Sur <strong>SW-GND</strong> : [code]interface e0/0[/code] → [code]description == TRUNK vers SW-BRU[/code] ; e0/1 → <code>description >> VPC5 - VLAN20 RH</code> ; e0/2 → <code>description >> VPC6 - VLAN10 Ventes</code>. Sur <strong>R8</strong> : [code]interface e0/0[/code] → [code]description == TRUNK 802.1Q vers SW-BRU[/code]." },
+      { type: 'step', content: "Vérifie sur chaque équipement avec [code]show interfaces description[/code] (statut + ta légende en une vue) ou [code]show running-config[/code]." },
+
+      { type: 'task', icon: '🧱', label: 'PRÉREQUIS 1', title: 'Créer les VLANs 10 et 20 sur SW-BRU ET SW-GND', requires: ['vlans'] },
+      { type: 'step', content: "Sur la topologie, clique sur <strong>SW-BRU</strong> pour activer son terminal (ou onglet device). Passe en config : [code]enable[/code] → [code]configure terminal[/code]." },
+      { type: 'step', content: "Crée les 2 VLANs : [code]vlan 10[/code] → [code]name VENTES[/code] → [code]exit[/code], puis [code]vlan 20[/code] → [code]name RH[/code] → [code]exit[/code]." },
+      { type: 'step', content: "Bascule sur <strong>SW-GND</strong> et refais EXACTEMENT les mêmes 2 VLANs (un VLAN doit exister sur chaque switch qu\'il traverse, sinon la trame est jetée)." },
+
+      { type: 'task', icon: '🔌', label: 'PRÉREQUIS 2', title: 'Affecter les ports access aux bons VLANs', requires: ['accessVlan'] },
+      { type: 'step', content: "Sur <strong>SW-BRU</strong> — VPC3 (VLAN 10) sur e0/1 : [code]interface e0/1[/code] → [code]switchport mode access[/code] → [code]switchport access vlan 10[/code]." },
+      { type: 'step', content: "Toujours SW-BRU — VPC4 (VLAN 20) sur e0/2 : [code]interface e0/2[/code] → [code]switchport mode access[/code] → [code]switchport access vlan 20[/code]." },
+      { type: 'step', content: "Sur <strong>SW-GND</strong> — VPC5 (VLAN 20) sur e0/1 → access vlan 20 ; VPC6 (VLAN 10) sur e0/2 → access vlan 10." },
+
+      { type: 'task', icon: '🔀', label: 'PRÉREQUIS 3', title: 'Monter les 2 trunks (encapsulation + mode + allowed)', requires: ['trunk'] },
+      { type: 'step', content: "Un trunk a 3 réglages clés :<br>• <strong>encapsulation dot1q</strong> = la méthode de tag (802.1Q, le standard). ⚠ Sur ce switch (type 3560/3750), tu DOIS la définir AVANT [code]switchport mode trunk[/code], sinon la commande est <strong>rejetée</strong> (« encapsulation is Auto… can not be configured to trunk mode »).<br>• <strong>allowed vlan</strong> = la liste blanche des VLANs autorisés à passer (sécurité + propreté).<br>• <strong>native vlan</strong> = le seul VLAN transporté NON taggé (on s'en occupe à l'étape suivante)." },
+      { type: 'step', content: "Sur <strong>SW-BRU</strong>, lien vers SW-GND (e0/0) : [code]interface e0/0[/code] → [code]switchport trunk encapsulation dot1q[/code] → [code]switchport mode trunk[/code] → [code]switchport trunk allowed vlan 10,20[/code]." },
+      { type: 'step', content: "Sur <strong>SW-BRU</strong>, lien vers R8 (e0/3) — c'est par là que les VLANs montent au routeur : [code]interface e0/3[/code] → [code]switchport trunk encapsulation dot1q[/code] → [code]switchport mode trunk[/code] → [code]switchport trunk allowed vlan 10,20[/code]." },
+      { type: 'step', content: "Sur <strong>SW-GND</strong>, lien vers SW-BRU (e0/0) : mêmes commandes (encapsulation dot1q + mode trunk + allowed vlan 10,20)." },
+      { type: 'step', content: "⚠ PIÈGE allowed vlan : [code]switchport trunk allowed vlan 30[/code] ÉCRASE la liste (10,20 disparaissent !). Pour ajouter sans casser : [code]switchport trunk allowed vlan add 30[/code]." },
+
+      { type: 'task', icon: '🔐', label: 'PRÉREQUIS 4', title: 'Sécuriser les trunks : VLAN natif dédié (VLAN 99)', requires: ['nativeVlan'] },
+      { type: 'step', content: "Le <strong>native VLAN</strong> est le SEUL transporté NON taggé sur un trunk. Par défaut c'est le VLAN 1 — à éviter (sécurité). On le déplace vers un VLAN dédié et inutilisé : le 99." },
+      { type: 'step', content: "Crée le VLAN natif sur <strong>SW-BRU</strong> ET <strong>SW-GND</strong> : [code]vlan 99[/code] → [code]name NATIVE[/code]." },
+      { type: 'step', content: "Applique-le sur CHAQUE trunk des deux switches (SW-BRU e0/0 et e0/3, SW-GND e0/0) : [code]switchport trunk native vlan 99[/code]." },
+      { type: 'step', content: "⚠ Le native VLAN DOIT être IDENTIQUE des 2 côtés d'un trunk. S'il diffère → <code>%CDP-4-NATIVE_VLAN_MISMATCH</code> + le trafic non taggé tombe dans le mauvais VLAN (faille de sécurité)." },
+      { type: 'step', content: "Vérifie avec [code]show interfaces trunk[/code] : colonne « Native vlan » = 99, encapsulation 802.1q, VLANs 10,20 autorisés." },
+
+      { type: 'task', icon: '💻', label: 'TASK 5', title: 'Adresser les PC, puis tester DANS le même VLAN', requires: ['vpcAddressed'] },
+      { type: 'step', content: "Les 4 VPC démarrent SANS adresse IP — à toi de les configurer. Sur un PC, tout se fait en une ligne : [code]ip <adresse> <masque> <passerelle>[/code]." },
+      { type: 'step', content: "⚠ Le <strong>masque</strong> 255.255.255.0 dit au PC qui est « chez lui » (même VLAN) ; la <strong>passerelle</strong> = l'IP de la sous-interface R8 de SON VLAN (la PORTE de sortie vers les autres VLANs)." },
+      { type: 'step', content: "Configure chaque PC :<br>• <strong>VPC3</strong> (VLAN 10) : [code]ip 192.168.10.10 255.255.255.0 192.168.10.1[/code]<br>• <strong>VPC4</strong> (VLAN 20) : [code]ip 192.168.20.10 255.255.255.0 192.168.20.1[/code]<br>• <strong>VPC5</strong> (VLAN 20) : [code]ip 192.168.20.11 255.255.255.0 192.168.20.1[/code]<br>• <strong>VPC6</strong> (VLAN 10) : [code]ip 192.168.10.11 255.255.255.0 192.168.10.1[/code]" },
+      { type: 'step', content: "🏠 <strong>Analogie</strong> : deux PC du MÊME VLAN, c'est comme deux personnes dans la <strong>même chambre</strong> — vous vous parlez directement, sans sortir, sans routeur. Le switch suffit (couche 2)." },
+      { type: 'step', content: "🧪 Test MÊME VLAN (doit marcher SANS routeur) :<br>• depuis <strong>VPC3</strong> : [code]ping 192.168.10.11[/code] (VPC6, même VLAN 10) → ✅<br>• depuis <strong>VPC4</strong> : [code]ping 192.168.20.11[/code] (VPC5, même VLAN 20) → ✅" },
+      { type: 'step', content: "🔍 Sur <strong>SW-BRU</strong>, regarde la table que le switch a construite en écoutant le trafic : [code]show mac address-table[/code] → tu vois les MAC des PC avec leur port et leur VLAN. (Et [code]show interfaces trunk[/code] pour les VLANs qui transitent.)" },
+      { type: 'step', content: "🚪 Maintenant essaie de SORTIR de ta chambre — depuis <strong>VPC3</strong> (VLAN 10) : [code]ping 192.168.20.10[/code] (VPC4, VLAN 20) → ❌ ÉCHOUE pour l'instant. C'est NORMAL : pour aller dans une AUTRE chambre, il faut passer par la PORTE = la passerelle/le routeur. Or R8 n'est pas encore configuré. On construit cette porte maintenant." },
+
+      { type: 'task', icon: '📡', label: 'TASK 6', title: "Activer l'interface physique de R8 (SANS IP !)", requires: ['physUp'] },
+      { type: 'step', content: "Clique sur <strong>R8</strong>. Passe en config et active l\'interface physique reliée au switch : [code]interface e0/0[/code] → [code]no shutdown[/code]." },
+      { type: 'step', content: "⚠ Ne mets AUCUNE adresse IP sur e0/0. C\'est un trunk : les IPs vivront sur les sous-interfaces. Oublier ce [code]no shutdown[/code] = toutes les sous-interfaces restent DOWN." },
+
+      { type: 'task', icon: '🏗️', label: 'TASK 7', title: 'Créer une sous-interface par VLAN (encapsulation dot1Q)', requires: ['subif'] },
+      { type: 'step', content: "Sous-interface VLAN 10 : [code]interface e0/0.10[/code] → [code]encapsulation dot1q 10[/code]. Le numéro dot1q DOIT matcher l\'ID du VLAN." },
+      { type: 'step', content: "Sous-interface VLAN 20 : [code]interface e0/0.20[/code] → [code]encapsulation dot1q 20[/code]." },
+
+      { type: 'task', icon: '🌐', label: 'TASK 8', title: 'Donner à chaque sous-interface son IP de gateway', requires: ['subifIp'] },
+      { type: 'step', content: "Sur e0/0.10 : [code]ip address 192.168.10.1 255.255.255.0[/code] (c\'est la passerelle du VLAN 10)." },
+      { type: 'step', content: "Sur e0/0.20 : [code]ip address 192.168.20.1 255.255.255.0[/code] (passerelle du VLAN 20)." },
+      { type: 'step', content: "Vérifie : [code]show ip interface brief[/code] → e0/0.10 et e0/0.20 doivent être up/up. Puis [code]show ip route[/code] → 2 réseaux 'C' (Connected)." },
+      { type: 'step', content: "🚪✅ La porte est ouverte ! Refais le test inter-VLAN — depuis <strong>VPC3</strong> (VLAN 10) : [code]ping 192.168.20.10[/code] (VPC4, VLAN 20) → marche maintenant, le trafic SORT par R8. Le pont entre les mondes est établi !" },
+
+      { type: 'reflection', content: "Pourquoi AUCUNE IP sur l\'interface physique e0/0 de R8 ?<br>👉 Parce qu\'elle transporte plusieurs VLANs taggés (trunk). Ce sont les sous-interfaces qui portent une IP, une par VLAN." },
+      { type: 'reflection', content: "Que se passe-t-il si tu oublies un trunk entre SW-BRU et R8 ?<br>👉 Les trames taggées n\'atteignent jamais le routeur → aucune communication inter-VLAN, même avec les sous-interfaces parfaitement configurées." },
+      { type: 'reflection', content: "Pourquoi le <strong>native VLAN</strong> doit-il être identique des 2 côtés d\'un trunk ?<br>👉 C\'est le seul VLAN transporté NON taggé. Si SW-BRU dit « natif = 99 » et SW-GND « natif = 1 », les trames non taggées sont rangées dans le mauvais VLAN → fuite de trafic entre VLANs + alertes 'native VLAN mismatch' (CDP/STP). Bonne pratique : un VLAN natif dédié, inutilisé par les hôtes." },
+      { type: 'reflection', content: "Quelle est la LIMITE du Router-on-a-Stick ?<br>👉 Tout le trafic inter-VLAN transite par UN SEUL câble = goulot d\'étranglement. En prod moderne, on préfère un switch L3 (SVI) qui route à la vitesse du matériel." }
     ],
     topology: {
       networks: [
-        { name: 'VLAN 10 (Sales)',  subnet: '192.168.10.0/24', mask: '255.255.255.0', gateway: '— pas de gateway (L2 only)' },
-        { name: 'VLAN 20 (IT)',     subnet: '192.168.20.0/24', mask: '255.255.255.0', gateway: '— pas de gateway (L2 only)' },
-        { name: 'VLAN 99 (Native)', subnet: '— pas d\'hôte',  mask: '—',             gateway: 'sécurité du trunk' }
+        { name: 'VLAN 10 (Ventes)', subnet: '192.168.10.0/24', mask: '255.255.255.0', gateway: '192.168.10.1 (R8 e0/0.10)' },
+        { name: 'VLAN 20 (RH)',     subnet: '192.168.20.0/24', mask: '255.255.255.0', gateway: '192.168.20.1 (R8 e0/0.20)' }
       ],
       devices: [
-        { type: 'pc',     name: 'PC1', x: 60,  y: 70,  ip: '192.168.10.10', gateway: '— (pas de routage)', iface: 'VLAN 10 Sales' },
-        { type: 'pc',     name: 'PC2', x: 60,  y: 230, ip: '192.168.20.10', gateway: '— (pas de routage)', iface: 'VLAN 20 IT' },
-        { type: 'switch', name: 'SW1', x: 280, y: 150, ip: 'pas d\'IP',    iface: '3 VLANs + trunk' },
-        { type: 'switch', name: 'SW2', x: 540, y: 150, ip: 'pas d\'IP',    iface: '3 VLANs + trunk' },
-        { type: 'pc',     name: 'PC3', x: 760, y: 150, ip: '192.168.10.11', gateway: '— (pas de routage)', iface: 'VLAN 10 Sales' }
+        { type: 'router', name: 'R8',   x: 400, y: 30,  ip: '2 sous-interfaces .10/.20', iface: 'e0/0 trunk dot1q' },
+        { type: 'switch', name: 'SW-BRU',  x: 280, y: 180, ip: 'pas d\'IP', iface: 'trunk e0/0 + e0/3, access e0/1 e0/2' },
+        { type: 'switch', name: 'SW-GND',  x: 560, y: 180, ip: 'pas d\'IP', iface: 'trunk e0/0, access e0/1 e0/2' },
+        { type: 'pc', name: 'VPC3', x: 110, y: 350, ip: '192.168.10.10', gateway: '192.168.10.1', iface: 'VLAN 10 — SW-BRU e0/1' },
+        { type: 'pc', name: 'VPC4', x: 300, y: 360, ip: '192.168.20.10', gateway: '192.168.20.1', iface: 'VLAN 20 — SW-BRU e0/2' },
+        { type: 'pc', name: 'VPC5', x: 560, y: 360, ip: '192.168.20.11', gateway: '192.168.20.1', iface: 'VLAN 20 — SW-GND e0/1' },
+        { type: 'pc', name: 'VPC6', x: 750, y: 350, ip: '192.168.10.11', gateway: '192.168.10.1', iface: 'VLAN 10 — SW-GND e0/2' }
       ],
       links: [
-        { from: 'PC1', to: 'SW1', label: 'Fa0/1', vlan: 10 },
-        { from: 'PC2', to: 'SW1', label: 'Fa0/2', vlan: 20 },
-        { from: 'SW1', to: 'SW2', label: 'Gi0/1 TRUNK (10,20,99)', trunk: true },
-        { from: 'SW2', to: 'PC3', label: 'Fa0/1', vlan: 10 }
+        { from: 'R8', to: 'SW-BRU', label: 'e0/0 ↔ e0/3 TRUNK', trunk: true },
+        { from: 'SW-BRU', to: 'SW-GND', label: 'e0/0 ↔ e0/0 TRUNK', trunk: true },
+        { from: 'SW-BRU', to: 'VPC3', label: 'e0/1', vlan: 10 },
+        { from: 'SW-BRU', to: 'VPC4', label: 'e0/2', vlan: 20 },
+        { from: 'SW-GND', to: 'VPC5', label: 'e0/1', vlan: 20 },
+        { from: 'SW-GND', to: 'VPC6', label: 'e0/2', vlan: 10 }
       ]
     },
-    hint: "Pas de gateway sur les PCs car pas de routage L3 dans ce lab : la communication ne se fait QU'entre PCs du même VLAN (broadcast domain isolé). Pour faire communiquer VLAN 10 et 20, il faudrait un routeur (Router-on-a-Stick — Lab 9) ou un switch L3 avec SVI (Lab 17). NATIVE VLAN doit être identique des 2 côtés sinon STP envoie des warnings et le trafic du native fuit entre les VLANs."
+    hint: "ROUTER-ON-A-STICK (RoaS) : un routeur fait gateway pour N VLANs via N sous-interfaces sur UN SEUL lien trunk 802.1Q. ORDRE LOGIQUE : ① VLANs créés sur CHAQUE switch traversé. ② Ports access affectés (switchport mode access + access vlan X). ③ TRUNKS montés (switchport mode trunk) sur tous les liens switch-switch ET switch-routeur. ④ Interface physique du routeur : 'no shutdown' SANS IP. ⑤ Sous-interfaces : 'interface e0/0.10' → 'encapsulation dot1q 10' → 'ip address <gw> <mask>'. PIÈGE 1 : le numéro dot1q DOIT être identique à l\'ID du VLAN. PIÈGE 2 : oublier 'no shutdown' sur l\'interface PHYSIQUE → toutes les sous-interfaces restent down. PIÈGE 3 : oublier le trunk entre le switch et le routeur → les VLANs taggés n\'atteignent pas R8. PIÈGE 4 : VLAN absent d\'un switch intermédiaire → trames jetées. La gateway de chaque PC = l\'IP de la sous-interface de SON VLAN. LIMITE : 1 câble = goulot ; en prod on préfère un switch L3 (SVI) qui route en hardware.",
+    challenge: {
+      title: "Le Défi du Sensei — RoaS complet en autonomie",
+      story: "« Léo, le pont entre les VLANs, tu l\'as bâti avec moi. » Le Sensei dévoile un nouveau site au Japon : deux switches — <strong>SW-OSAKA</strong> et <strong>SW-KYOTO</strong> — reliés par un trunk, et un routeur <strong>R-TOKYO</strong> au sommet. Deux VLANs à faire dialoguer : la Production (100) et les Invités (200). « Cette fois, tu montes TOUT : les deux switches ET le routeur. Dans l\'ordre. Sans regarder le chapitre. »",
+      scenario: "Construis le Router-on-a-Stick de bout en bout. D\'abord les switches (VLANs sur les DEUX → trunks → native VLAN), ENSUITE le routeur (interface physique → sous-interfaces). Bascule entre les onglets SW-OSAKA, SW-KYOTO et R-TOKYO. Réseaux imposés :",
+      multiDevice: ['SW-OSAKA', 'SW-KYOTO', 'R-TOKYO'],
+      tasks: [
+        "🏷️ Sur SW-OSAKA ET SW-KYOTO — crée VLAN 100 (PROD) et VLAN 200 (INVITES)",
+        "🔀 SW-OSAKA — e0/3 (vers R-TOKYO) et e0/0 (vers SW-KYOTO) en trunk : encapsulation dot1q PUIS mode trunk",
+        "🔀 SW-KYOTO — e0/0 (vers SW-OSAKA) en trunk : encapsulation dot1q PUIS mode trunk",
+        "🔐 Sur les DEUX switches — VLAN natif dédié 99 : crée le VLAN 99 puis switchport trunk native vlan 99 sur chaque trunk",
+        "📡 R-TOKYO — active l'interface physique e0/0 (no shutdown, AUCUNE IP)",
+        "🏗️ R-TOKYO — sous-interfaces e0/0.100 (dot1q 100) et e0/0.200 (dot1q 200)",
+        "🌐 R-TOKYO — gateways : e0/0.100 = 172.16.100.254/24, e0/0.200 = 172.16.200.254/24"
+      ],
+      topology: {
+        networks: [
+          { name: 'VLAN 100 (Production)', subnet: '172.16.100.0/24', mask: '255.255.255.0', gateway: '172.16.100.254 (R-TOKYO e0/0.100)' },
+          { name: 'VLAN 200 (Invités)',    subnet: '172.16.200.0/24', mask: '255.255.255.0', gateway: '172.16.200.254 (R-TOKYO e0/0.200)' }
+        ],
+        devices: [
+          { type: 'router', name: 'R-TOKYO',  x: 280, y: 40,  ip: '2 sous-interfaces .100/.200', iface: 'e0/0 trunk dot1q' },
+          { type: 'switch', name: 'SW-OSAKA', x: 280, y: 210, ip: 'pas d\'IP', iface: 'trunk e0/3 (R-TOKYO) + e0/0 (SW-KYOTO)' },
+          { type: 'switch', name: 'SW-KYOTO', x: 580, y: 210, ip: 'pas d\'IP', iface: 'trunk e0/0 (SW-OSAKA)' }
+        ],
+        links: [
+          { from: 'R-TOKYO', to: 'SW-OSAKA',  label: 'e0/0 ↔ e0/3 TRUNK', trunk: true },
+          { from: 'SW-OSAKA', to: 'SW-KYOTO', label: 'e0/0 ↔ e0/0 TRUNK', trunk: true }
+        ]
+      },
+      checks: [
+        { desc: "SW-OSAKA : VLAN 100 créé",
+          device: 'SW-OSAKA', test: (s) => !!(s.vlans && s.vlans[100]) },
+        { desc: "SW-OSAKA : VLAN 200 créé",
+          device: 'SW-OSAKA', test: (s) => !!(s.vlans && s.vlans[200]) },
+        { desc: "SW-OSAKA : au moins un trunk monté",
+          device: 'SW-OSAKA', test: (s) => Object.values(s.interfaces || {}).some(i => i.swMode === 'trunk') },
+        { desc: "SW-OSAKA : VLAN natif dédié 99 sur le(s) trunk(s)",
+          device: 'SW-OSAKA', test: (s) => Object.values(s.trunk || {}).some(t => t.native === 99) },
+        { desc: "SW-KYOTO : VLAN 100 créé",
+          device: 'SW-KYOTO', test: (s) => !!(s.vlans && s.vlans[100]) },
+        { desc: "SW-KYOTO : VLAN 200 créé",
+          device: 'SW-KYOTO', test: (s) => !!(s.vlans && s.vlans[200]) },
+        { desc: "SW-KYOTO : trunk vers SW-OSAKA",
+          device: 'SW-KYOTO', test: (s) => Object.values(s.interfaces || {}).some(i => i.swMode === 'trunk') },
+        { desc: "SW-KYOTO : VLAN natif dédié 99",
+          device: 'SW-KYOTO', test: (s) => Object.values(s.trunk || {}).some(t => t.native === 99) },
+        { desc: "R-TOKYO : interface physique e0/0 activée (up)",
+          device: 'R-TOKYO', test: (s) => { const i = s.interfaces && s.interfaces['Ethernet0/0']; return !!(i && i.status === 'up'); } },
+        { desc: "R-TOKYO : e0/0.100 dot1q 100 + IP 172.16.100.254",
+          device: 'R-TOKYO', test: (s) => { const i = s.interfaces && s.interfaces['Ethernet0/0.100']; return !!(i && i.vlan === 100 && i.ip === '172.16.100.254'); } },
+        { desc: "R-TOKYO : e0/0.200 dot1q 200 + IP 172.16.200.254",
+          device: 'R-TOKYO', test: (s) => { const i = s.interfaces && s.interfaces['Ethernet0/0.200']; return !!(i && i.vlan === 200 && i.ip === '172.16.200.254'); } }
+      ]
+    }
   },
-  
-  
+
   {
     id: 3, title: "Lab 3 — CDP & LLDP", category: "fundamentals",
     difficulty: "Débutant", duration: "20 min", device: "R1", hostname: "R1",
@@ -5610,7 +5852,7 @@ const DEFAULT_LABS = [
       "Étape 1 — Sur SW1 ET SW2, crée les 4 VLANs nécessaires (10 Ventes, 20 RH, 30 IT, 99 Native)",
       "Étape 2 — Sur SW1, configure Fa0/1 en access VLAN 10 (PC10) et Fa0/2 en access VLAN 20 (PC20)",
       "Étape 3 — Sur SW2, configure Fa0/1 en access VLAN 20 (PC20b) et Fa0/2 en access VLAN 30 (PC30)",
-      "Étape 4 — Sur SW1, configure Gi0/1 en trunk : 'switchport mode trunk' puis 'switchport trunk encapsulation dot1q'",
+      "Étape 4 — Sur SW1, configure Gi0/1 en trunk DANS LE BON ORDRE : 'switchport trunk encapsulation dot1q' PUIS 'switchport mode trunk' (sur 3560/3750, l'inverse est rejeté)",
       "Étape 5 — Sur SW1, restreins les VLANs autorisés sur le trunk : 'switchport trunk allowed vlan 10,20,30'",
       "Étape 6 — Sur SW1, définis VLAN 99 comme native : 'switchport trunk native vlan 99'",
       "Étape 7 — Sur SW2, applique la MÊME config sur Gi0/1 (sinon mismatch)",
@@ -5648,59 +5890,6 @@ const DEFAULT_LABS = [
     hint: "Le VLAN natif DOIT être IDENTIQUE des deux côtés du trunk, sinon 'native VLAN mismatch' (CDP/STP envoie des warnings + trames natives mal classées + risque sécurité). Bonne pratique : utiliser un VLAN natif DÉDIÉ (99 ici), JAMAIS le VLAN 1 ni un VLAN utilisé par des hôtes (sécurité). En 2024, la tendance est même de 'tagger' le native VLAN avec 'vlan dot1q tag native' pour qu\'il soit aussi taggé."
   },
   
-  
-  {
-    id: 9, title: "Lab 9 — Router-on-a-Stick", category: "access",
-    difficulty: "Intermédiaire", duration: "45 min", device: "R1", hostname: "R1",
-    objectives: [
-      "Comprendre Router-on-a-Stick : un seul lien physique pour router N VLANs",
-      "Configurer 3 sous-interfaces sur R1 avec encapsulation 802.1Q",
-      "Assigner les IPs de chaque sous-interface comme gateway de son VLAN",
-      "Vérifier la communication inter-VLAN via R1",
-      "Comprendre quand RoaS est suffisant vs quand utiliser un switch L3 (Lab 17)"
-    ],
-    instructions: [
-      "Étape 1 — Sur SW1, crée les 3 VLANs (10 Ventes, 20 RH, 30 IT)",
-      "Étape 2 — Sur SW1, configure les ports access : Fa0/1 → VLAN 10, Fa0/2 → VLAN 20, Fa0/3 → VLAN 30",
-      "Étape 3 — Sur SW1, configure Gi0/1 vers R1 en TRUNK 802.1Q (allowed vlan 10,20,30)",
-      "Étape 4 — Sur R1, active l\'interface physique Gi0/0 (juste 'no shutdown', PAS d\'IP dessus !)",
-      "Étape 5 — Sur R1, crée la sous-interface Gi0/0.10 pour VLAN 10 :",
-      "  • interface gi0/0.10",
-      "  • encapsulation dot1q 10",
-      "  • ip address 192.168.10.1 255.255.255.0",
-      "Étape 6 — Répète pour Gi0/0.20 (VLAN 20) avec IP 192.168.20.1/24",
-      "Étape 7 — Répète pour Gi0/0.30 (VLAN 30) avec IP 192.168.30.1/24",
-      "Étape 8 — Configure PC1=192.168.10.10 GW 192.168.10.1, PC2=192.168.20.10 GW 192.168.20.1, PC3=192.168.30.10 GW 192.168.30.1",
-      "Étape 9 — Test : depuis PC1, [code]ping 192.168.20.10[/code] (PC2) → doit marcher via R1",
-      "Étape 10 — Test : depuis PC1, [code]ping 192.168.30.10[/code] (PC3) → doit aussi marcher",
-      "Étape 11 — Sur R1, vérifie [code]show ip route[/code] → 3 réseaux 'C' (Connected) un par sous-interface",
-      "Étape 12 — Sur R1, vérifie [code]show ip interface brief[/code] → 3 sous-interfaces up/up",
-      "Réflexion 1 : pourquoi PAS d\'IP sur l\'interface physique Gi0/0 ? (Indice : c\'est un trunk, les IPs sont sur les sous-interfaces)",
-      "Réflexion 2 : quel inconvénient de RoaS vs switch L3 ? (Indice : un seul câble = goulot d'étranglement pour 3 VLANs, et CPU du routeur pour switcher)"
-    ],
-    topology: {
-      networks: [
-        { name: 'VLAN 10 (Ventes)', subnet: '192.168.10.0/24', mask: '255.255.255.0', gateway: '192.168.10.1 (Gi0/0.10)' },
-        { name: 'VLAN 20 (RH)',     subnet: '192.168.20.0/24', mask: '255.255.255.0', gateway: '192.168.20.1 (Gi0/0.20)' },
-        { name: 'VLAN 30 (IT)',     subnet: '192.168.30.0/24', mask: '255.255.255.0', gateway: '192.168.30.1 (Gi0/0.30)' }
-      ],
-      devices: [
-        { type: 'router', name: 'R1',  x: 380, y: 60,  ip: '3 sous-interfaces .10/.20/.30', iface: 'Gi0/0 trunk dot1q' },
-        { type: 'switch', name: 'SW1', x: 380, y: 200, ip: 'pas d\'IP', iface: 'Trunk + 3 VLANs access' },
-        { type: 'pc',     name: 'PC1', x: 130, y: 360, ip: '192.168.10.10', gateway: '192.168.10.1', iface: 'VLAN 10 — Fa0/1' },
-        { type: 'pc',     name: 'PC2', x: 380, y: 360, ip: '192.168.20.10', gateway: '192.168.20.1', iface: 'VLAN 20 — Fa0/2' },
-        { type: 'pc',     name: 'PC3', x: 630, y: 360, ip: '192.168.30.10', gateway: '192.168.30.1', iface: 'VLAN 30 — Fa0/3' }
-      ],
-      links: [
-        { from: 'R1', to: 'SW1', label: 'Gi0/0 TRUNK (10,20,30)', trunk: true },
-        { from: 'SW1', to: 'PC1', label: 'Fa0/1', vlan: 10 },
-        { from: 'SW1', to: 'PC2', label: 'Fa0/2', vlan: 20 },
-        { from: 'SW1', to: 'PC3', label: 'Fa0/3', vlan: 30 }
-      ]
-    },
-    hint: "RoaS = Router-on-a-Stick. Le routeur fait office de gateway pour N VLANs via N sous-interfaces sur un SEUL câble trunk. Avantages : pas besoin de switch L3 (économique). Inconvénients : tout le trafic inter-VLAN passe par 1 seul câble = goulot. En prod moderne : préférer switch L3 avec SVI (Lab 17) qui fait du routage hardware à wire-speed. PIÈGE : oublier 'no shutdown' sur l\'interface physique Gi0/0 → toutes les sous-interfaces sont down. Activer l\'interface physique = condition préalable."
-  },
-  
   {
     id: 10, title: "Lab 10 — EtherChannel Static (mode on)", category: "access",
     difficulty: "Intermédiaire", duration: "25 min", device: "SW1", hostname: "SW1",
@@ -5721,7 +5910,7 @@ const DEFAULT_LABS = [
       "Étape 5 — Vérifie [code]show interfaces port-channel 3[/code] → Po3 up/up, bande passante 200 Mbps (2 × Fa0/1)",
       "Étape 6 — Vérifie [code]show etherchannel port[/code] → détails de chaque port membre",
       "Étape 7 — Vérifie [code]show spanning-tree[/code] → STP voit Po3 comme UN seul lien logique (pas 2)",
-      "Étape 8 — Bonus : si tu veux configurer Po3 en trunk pour transporter plusieurs VLANs, fais 'interface port-channel 3' puis 'switchport mode trunk'",
+      "Étape 8 — Bonus : si tu veux configurer Po3 en trunk pour transporter plusieurs VLANs, fais 'interface port-channel 3' puis 'switchport trunk encapsulation dot1q' et 'switchport mode trunk'",
       "Réflexion 1 : pourquoi mode 'on' est dangereux en prod ? (Indice : pas de keepalive, donc pas de détection de mismatch côté voisin)",
       "Réflexion 2 : quel protocole préférer en prod (LACP ou PAgP) ? (LACP, standard multi-vendor)"
     ],
@@ -6167,7 +6356,7 @@ const DEFAULT_LABS = [
       "Configure les PCs : PC1=192.168.1.10/24 sur SW1 Fa0/10, PC2=192.168.1.11/24 sur SW2 Fa0/10",
       "Vérifie avec [code]show etherchannel summary[/code] → tu dois voir 'Po1(SU)' (Switch+in-Use) et le protocole 'LACP'",
       "Vérifie [code]show interfaces port-channel 1[/code] → le Po1 doit être up/up",
-      "Bonus : configure Po1 en mode trunk si tu veux que plusieurs VLANs passent dessus",
+      "Bonus : configure Po1 en trunk ('switchport trunk encapsulation dot1q' puis 'switchport mode trunk') si tu veux que plusieurs VLANs passent dessus",
       "Test : depuis PC1, ping PC2 → doit fonctionner. La trame peut emprunter Fa0/1 OU Fa0/2 (load-balancing)",
       "Réflexion : pourquoi LACP plutôt que le mode 'on' du Lab 10 ? (Indice : sécurité — pas de boucle accidentelle si l\'autre côté n\'est pas configuré)"
     ],
@@ -6397,6 +6586,7 @@ function Buffer_obfuscate_7(plaintext) {
 function executeCommand(raw) {
   const trimmedRaw = raw.trim();
   if (!trimmedRaw) return;
+  _pendingExplain = null;  // reset : l'explication éventuelle sera posée par scheduleExplain puis flushée avant le prompt
 
   // ============ HANDLE PIPE FILTER (| include / | exclude / | begin) ============
   // Cisco IOS standard : "show run | include username" → filtre la sortie
@@ -6453,11 +6643,13 @@ function executeCommand(raw) {
       }
     }
     filtered.forEach(l => term.writeln(l));
+    flushExplain();  // explication imprimée APRÈS la sortie filtrée, sur le vrai terminal
     return;
   }
 
   // Pas de pipe : exécution normale
   _executeCommandWithoutPipe(trimmedRaw);
+  flushExplain();  // explication imprimée APRÈS la sortie de la commande, AVANT le prompt
 }
 
 function _executeCommandWithoutPipe(trimmedRaw) {
@@ -6514,7 +6706,7 @@ function _executeCommandWithoutPipe(trimmedRaw) {
         // Mémorisation de l'état précédent (par lab)
         window._challengeUnlockedMap = window._challengeUnlockedMap || {};
         const wasUnlocked = !!window._challengeUnlockedMap[labId];
-        if (isUnlockedNow && !wasUnlocked) {
+        if (isUnlockedNow && !wasUnlocked && !CHALLENGES_LOCKED) {
           window._challengeUnlockedMap[labId] = true;
           try { showToast('⚔️ Le Défi du Sensei est déverrouillé ! (bouton ⚔️ Défis en haut)', 'success'); } catch(_) {}
           // Animation du bouton ⚔️ Défis pour attirer l'œil
@@ -6537,31 +6729,32 @@ function _executeCommandWithoutPipe(trimmedRaw) {
 // Format: "→ short reason | argN = what argN does"
 // ============================================================
 function explainLine(text) {
-  // Multi-line: split by \n and indent continuations
-  // Couleurs : titre cyan, contenu jaune-doré pour bonne lisibilité sur fond sombre
-  // If text is an array, pick a random variation (keeps explanations fresh on re-runs)
+  // Si text est un tableau, on prend une variation au hasard (explications fraîches au re-run)
   if (Array.isArray(text)) {
     text = text[Math.floor(Math.random() * text.length)];
   }
-  // Capture l'ID du device au moment de l'appel pour éviter d'écrire sur le mauvais terminal
-  // si l'utilisateur switche de device entre l'exécution et l'affichage différé
-  const targetDeviceId = activeDevice;
-  // Différé au prochain tick → l'état (sw.hostname, sw.banners, etc.) est déjà mis à jour
-  setTimeout(() => {
-    // Vérifier qu'on est toujours sur le même device
-    if (activeDevice !== targetDeviceId) return;
-    try {
-      const lines = text.split('\n');
-      lines.forEach((ln, i) => {
-        const prefix = i === 0 ? '\x1b[38;5;75m   ↳ \x1b[0m' : '     ';
-        let colored = ln
-          .replace(/💡/g, '\x1b[38;5;226m💡\x1b[38;5;221m')
-          .replace(/⚠/g, '\x1b[38;5;208m⚠\x1b[38;5;221m')
-          .replace(/→/g, '\x1b[38;5;213m→\x1b[38;5;221m');
-        term.write(prefix + '\x1b[38;5;221m' + colored + '\x1b[0m\r\n');
-      });
-    } catch(_) {}
-  }, 0);
+  // On NE PRINTE PAS ici : on mémorise l'explication. Elle sera imprimée par flushExplain()
+  // de façon SYNCHRONE, juste après la sortie de la commande et AVANT le nouveau prompt.
+  // (Avant, un setTimeout(0) imprimait après le prompt → affichage imbriqué/déroutant.)
+  _pendingExplain = text;
+}
+
+let _pendingExplain = null;
+function flushExplain() {
+  const text = _pendingExplain;
+  _pendingExplain = null;
+  if (!text) return;
+  try {
+    const lines = String(text).split('\n');
+    lines.forEach((ln, i) => {
+      const prefix = i === 0 ? '\x1b[38;5;75m   ↳ \x1b[0m' : '     ';
+      let colored = ln
+        .replace(/💡/g, '\x1b[38;5;226m💡\x1b[38;5;221m')
+        .replace(/⚠/g, '\x1b[38;5;208m⚠\x1b[38;5;221m')
+        .replace(/→/g, '\x1b[38;5;213m→\x1b[38;5;221m');
+      term.write(prefix + '\x1b[38;5;221m' + colored + '\x1b[0m\r\n');
+    });
+  } catch(_) {}
 }
 
 function scheduleExplain(cmd, lparts) {
@@ -6839,8 +7032,9 @@ function scheduleExplain(cmd, lparts) {
       '→ Vérifier : show interfaces trunk',
 
       'Tu déclares un "port multi-VLAN" pour relier switches entre eux ou switch↔routeur (RoaS).\n' +
-      '⚠ Si le voisin n\'est pas configuré en trunk, le bundle ne monte pas.\n' +
-      '💡 Sur certains modèles (3560/3750), il faut d\'abord "switchport trunk encapsulation dot1q".'
+      '⚠ PIÈGE CCNA : sur ce switch (type 3560/3750), tu DOIS faire "switchport trunk encapsulation dot1q" AVANT,\n' +
+      'sinon : "Command rejected: ... encapsulation is Auto ... can not be configured to trunk mode".\n' +
+      '💡 Ordre correct : encapsulation dot1q → mode trunk → allowed vlan.'
     ]);
     if (args[0] === 'mode' && args[1] === 'dynamic') return explainLine(
       'Mode "dynamic" = négociation auto via DTP. Pratique mais risque de sécurité (DTP attacks).\n' +
@@ -7444,10 +7638,18 @@ function scheduleExplain(cmd, lparts) {
     '→ Une fois créé, le VLAN existe dans la VLAN database et peut être utilisé sur n\'importe quel port.'
   ]);
 
-  if (c === 'description' && sw.mode === 'config-if') return explainLine(
-    'Étiquette pour TOI ou ton collègue qui débarquera dans 6 mois.\n' +
-    '💡 Bonne pratique : "*** WAN ISP Orange - contrat #12345 ***". Apparaît dans show interfaces.'
-  );
+  if (c === 'description' && sw.mode === 'config-if') return explainLine([
+    'La description, c\'est l\'ÉTIQUETTE collée sur le câble — pour les humains, pas pour la machine.\n' +
+    'Le switch s\'en fiche. Mais à 3h du mat, un an plus tard, sur 48 ports identiques, c\'est elle qui te dit\n' +
+    'où va ce fichu lien. Ex : "== TRUNK vers SW2" ou ">> VPC3 - VLAN10 Ventes".\n' +
+    '💡 Visible dans "show interfaces description" et "show running-config".\n' +
+    '→ Convention pro : un préfixe par rôle (>> hôte, == lien d\'infra/trunk, ## note) pour scanner en un coup d\'œil.',
+
+    'Documenter = un cadeau à ton futur toi. Une interface sans description, c\'est une boîte sans étiquette\n' +
+    'dans un déménagement : tu devras tout rouvrir pour savoir ce qu\'il y a dedans.\n' +
+    '💡 Coût : 5 secondes maintenant. Gain : 30 minutes de panique évitées le jour de la panne.\n' +
+    '→ Astuce CCNA : "show interfaces description" liste tout (statut + ta légende) en une vue.'
+  ]);
   if (c === 'duplex') return explainLine(
     'Duplex : full = bidirectionnel simultané (normal aujourd\'hui), half = collisions (vieux).\n' +
     '💡 "auto" recommandé sauf cas spécifique de mismatch.'
@@ -7457,8 +7659,11 @@ function scheduleExplain(cmd, lparts) {
     '⚠ Si tu forces d\'un côté et pas de l\'autre = duplex mismatch = collisions = lenteurs.'
   );
   if (c === 'encapsulation' && args[0] === 'dot1q' && sw.mode === 'config-if') return explainLine(
-    'Sur sous-interface : tu dis "cette sous-interface gère le VLAN ' + (args[1] || 'X') + '".\n' +
-    '💡 C\'est la technique "Router-on-a-Stick" : un seul câble physique, plusieurs VLANs.'
+    'Le câble entre le routeur et le switch est une autoroute à plusieurs files. dot1Q = le panneau\n' +
+    'qui dit à quelle file (VLAN) appartient chaque voiture (trame). Ici : VLAN ' + (args[1] || 'X') + '.\n' +
+    '💡 C\'est le cœur du "Router-on-a-Stick" : un seul câble physique, une sous-interface par VLAN.\n' +
+    '⚠ Le numéro dot1q DOIT être identique à l\'ID du VLAN côté switch, sinon le trafic tombe dans le vide.\n' +
+    '→ Pourquoi l\'interface physique n\'a-t-elle PAS d\'IP ? (Indice : c\'est un trunk, les IPs sont sur les sous-interfaces)'
   );
 }
 
@@ -7760,6 +7965,7 @@ function _executeCommandInner(cmd, lower, parts, lparts) {
     const vid = parseInt(parts[1]);
     if (isNaN(vid)) return termErr('% VLAN ID invalide');
     if (!sw.vlans[vid]) sw.vlans[vid] = `VLAN${String(vid).padStart(4,'0')}`;
+    (sw._configTouched = sw._configTouched || {})['vlans'] = true;
     sw.mode = 'config-vlan'; sw.context = vid.toString();
     return;
   }
@@ -8187,6 +8393,7 @@ function termErr(msg) { term.writeln('\x1b[31m' + msg + '\x1b[0m'); }
 function normalizeInterface(name) {
   if (!name) return null;
   const map = {
+    'e': 'Ethernet', 'eth': 'Ethernet', 'ethernet': 'Ethernet',
     'fa': 'FastEthernet', 'fas': 'FastEthernet', 'fast': 'FastEthernet',
     'gi': 'GigabitEthernet', 'gig': 'GigabitEthernet',
     'te': 'TenGigabitEthernet',
@@ -8220,6 +8427,7 @@ function handleInterfaceCmd(cmd, parts, lparts) {
 
   if (matchCmd(cmd.toLowerCase(), ['no shutdown','no shut'])) {
     iface.status = 'up'; iface.lineProtocol = 'up';
+    if (iface.type === 'ethernet') (sw._configTouched = sw._configTouched || {})['physUp'] = true;
     term.writeln(C.brGreen + '%LINK-5-CHANGED: Interface ' + sw.context + ', changed state to up' + C.reset);
     term.writeln(C.brGreen + '%LINEPROTO-5-UPDOWN: Line protocol on Interface ' + sw.context + ', changed state to up' + C.reset);
     return;
@@ -8235,6 +8443,7 @@ function handleInterfaceCmd(cmd, parts, lparts) {
     if (lparts[2] === 'dhcp') { iface.dhcp = true; iface.ip = '(DHCP)'; return; }
     iface.ip = parts[2]; iface.mask = parts[3];
     iface.status = iface.status || 'up'; iface.lineProtocol = iface.lineProtocol || 'up';
+    if (iface.type === 'subinterface') (sw._configTouched = sw._configTouched || {})['subifIp'] = true;
     return;
   }
   // ========== IPv6 INTERFACE COMMANDS ==========
@@ -8305,18 +8514,32 @@ function handleInterfaceCmd(cmd, parts, lparts) {
   if (lparts[0] === 'switchport') {
     if (matchPrefix(lparts.slice(1), ['mode','access'])) { iface.swMode = 'access'; return; }
     if (matchPrefix(lparts.slice(1), ['mode','trunk'])) {
+      // Comportement 3560/3750 (le grand classique CCNA) : l'encapsulation DOIT être définie AVANT.
+      if (!iface.trunkEncap) {
+        term.writeln('\x1b[31mCommand rejected: An interface whose trunk encapsulation is "Auto" can not be configured to "trunk" mode.\x1b[0m');
+        return;
+      }
       iface.swMode = 'trunk';
       sw.trunk[sw.context] = sw.trunk[sw.context] || { native: 1, allowed: 'all' };
+      (sw._configTouched = sw._configTouched || {})['trunk'] = true;
       return;
     }
     if (matchPrefix(lparts.slice(1), ['mode','dynamic','desirable'])) { iface.swMode = 'dyn-desirable'; return; }
     if (matchPrefix(lparts.slice(1), ['mode','dynamic','auto'])) { iface.swMode = 'dyn-auto'; return; }
-    if (matchPrefix(lparts.slice(1), ['access','vlan'])) { iface.accessVlan = parseInt(parts[3]); return; }
+    if (matchPrefix(lparts.slice(1), ['access','vlan'])) { iface.accessVlan = parseInt(parts[3]); (sw._configTouched = sw._configTouched || {})['accessVlan'] = true; return; }
     if (matchPrefix(lparts.slice(1), ['voice','vlan'])) { iface.voiceVlan = parseInt(parts[3]); return; }
-    if (matchPrefix(lparts.slice(1), ['trunk','encapsulation'])) return;
+    if (matchPrefix(lparts.slice(1), ['trunk','encapsulation'])) {
+      const enc = (lparts[3] || '').toLowerCase();
+      if (enc === 'dot1q') iface.trunkEncap = 'dot1q';
+      else if (enc === 'isl') iface.trunkEncap = 'isl';
+      else if (enc === 'negotiate') iface.trunkEncap = null;  // retour en mode auto
+      return;
+    }
     if (matchPrefix(lparts.slice(1), ['trunk','native','vlan'])) {
       sw.trunk[sw.context] = sw.trunk[sw.context] || {};
-      sw.trunk[sw.context].native = parseInt(parts[4]); return;
+      sw.trunk[sw.context].native = parseInt(parts[4]);
+      (sw._configTouched = sw._configTouched || {})['nativeVlan'] = true;
+      return;
     }
     if (matchPrefix(lparts.slice(1), ['trunk','allowed','vlan'])) {
       sw.trunk[sw.context] = sw.trunk[sw.context] || {};
@@ -8339,6 +8562,7 @@ function handleInterfaceCmd(cmd, parts, lparts) {
     if (lparts[1] === 'dot1q' || lparts[1] === 'dot1Q') {
       iface.encapsulation = 'dot1Q ' + parts[2];
       iface.vlan = parseInt(parts[2]);
+      (sw._configTouched = sw._configTouched || {})['subif'] = true;
     }
     return;
   }
@@ -10725,9 +10949,18 @@ function switchToDevice(id) {
 
   // Save current state
   if (activeDevice && devices[activeDevice]) {
-    devices[activeDevice].buffer = buffer;
-    devices[activeDevice].history = history.slice();
-    devices[activeDevice].historyIdx = historyIdx;
+    const prevDev = devices[activeDevice];
+    prevDev.buffer = buffer;
+    prevDev.history = history.slice();
+    prevDev.historyIdx = historyIdx;
+    // PERSISTE l'état live → l'état du device. Sinon, en changeant d'onglet (ou en re-cliquant
+    // sur le même), la config en cours est perdue et le device repart à zéro (mode user) :
+    // c'est ce qui cassait `do ...` et tout lab multi-équipements (SW1/SW2/R8…).
+    if (prevDev.type === 'pc' || prevDev.type === 'server') {
+      if (typeof pc !== 'undefined' && pc) prevDev.state = { ...pc };
+    } else {
+      prevDev.state = { ...sw };
+    }
   }
 
   activeDevice = id;
@@ -10766,6 +10999,8 @@ function switchToDevice(id) {
   // Update UI
   document.getElementById('term-title').textContent = dev.name + ' — Console';
   renderDeviceTabs();
+  // Rafraîchit la progression (cumulative sur tous les équipements du chapitre)
+  try { if (typeof refreshLabProgress === 'function') refreshLabProgress(); } catch(_) {}
 
   // Force terminal to refit and scroll
   requestAnimationFrame(() => {
@@ -11074,6 +11309,25 @@ function successPing(target, tMin, tMax) {
   term.writeln('    Minimum = ' + minT + 'ms, Maximum = ' + maxT + 'ms, Moyenne = ' + Math.round(totalTime/4) + 'ms');
 }
 
+// Marque la tâche "vpcAddressed" validée quand TOUS les PC de la topologie ont IP + passerelle.
+function refreshPcAddressingProgress() {
+  if (!currentLab || !currentLab.topology) return;
+  const pcNames = (currentLab.topology.devices || [])
+    .filter(d => d.type === 'pc' || d.type === 'server')
+    .map(d => d.name);
+  if (!pcNames.length) return;
+  const allOk = pcNames.every(name => {
+    const dev = Object.values(devices).find(d => d.name === name);
+    const st = dev && dev.state;
+    return st && st.ip && st.ip !== '0.0.0.0' && !String(st.ip).startsWith('169.254.')
+        && st.gateway && st.gateway !== '0.0.0.0' && st.gateway !== '';
+  });
+  window._labExtraTouched = window._labExtraTouched || {};
+  window._labExtraTouched['vpcAddressed'] = allOk;
+  try { if (typeof renderProgressBar === 'function') renderProgressBar(); } catch(_) {}
+  try { if (typeof markValidatedTasksInList === 'function') markValidatedTasksInList(); } catch(_) {}
+}
+
 function executePcCommand(raw) {
   const cmd = raw.trim();
   if (!cmd) return;
@@ -11257,6 +11511,8 @@ function executePcCommand(raw) {
     if (activeDevice && devices[activeDevice]) {
       Object.assign(devices[activeDevice].state, pc);
     }
+    // Met à jour la progression "adressage des PC" (tâche vpcAddressed)
+    try { refreshPcAddressingProgress(); } catch(_) {}
 
     term.writeln('');
     term.writeln(C.brGreen + '✓ Configuration IP appliquée' + C.reset);
@@ -12177,6 +12433,12 @@ document.getElementById('terminal').addEventListener('click', () => term.focus()
 // ============================================================
 function loadLab(idx) {
   if (idx < 0 || idx >= LABS.length) return;
+  // Verrouillage session publique : on bloque les chapitres non débloqués
+  if (isLabLocked(LABS[idx])) {
+    try { showToast('🔒 Ce chapitre sera débloqué prochainement. Termine d\'abord les Chapitres 1 et 2 !', 'warn'); } catch(_) {}
+    if (typeof buildLabSelector === 'function') buildLabSelector();  // remet le sélecteur sur le lab courant
+    return;
+  }
   currentLabIdx = idx;
   currentLab = LABS[idx];
 
@@ -12248,8 +12510,10 @@ function loadLab(idx) {
   });
   instEl.innerHTML = parts.join('');
 
+  window._labExtraTouched = {};  // reset des flags de progression hors-Cisco (adressage PC, etc.)
   renderTopology(currentLab.topology);
   if (typeof renderAccessMethods === 'function') renderAccessMethods();
+  if (typeof renderPrereqPanel === 'function') renderPrereqPanel();
   // Reset les tasks validées en mémoire (au changement de lab) et init la barre
   if (typeof _taskValidated !== 'undefined' && currentLab.id) {
     _taskValidated[currentLab.id] = _taskValidated[currentLab.id] || {};
@@ -12261,30 +12525,64 @@ function loadLab(idx) {
   // Update lab info (no terminal changes — let user switch to the right device themselves)
   const targetHost = currentLab.hostname || currentLab.device || 'Switch';
 
-  // Find or rename the matching Cisco device
-  if (activeDevice && devices[activeDevice]) {
-    const dev = devices[activeDevice];
-    // Only rename if active device is a Cisco device
-    if (dev.type !== 'pc') {
-      dev.name = targetHost;
-      dev.state.hostname = targetHost;
-      Object.assign(sw, dev.state);
-      document.getElementById('term-title').textContent = targetHost + ' — Console';
-      resetSwitch();
-    } else {
-      // Active is a PC — just update the FIRST cisco device
-      const ciscoDev = Object.values(devices).find(d => d.type !== 'pc');
-      if (ciscoDev) {
-        ciscoDev.name = targetHost;
-        ciscoDev.state.hostname = targetHost;
-        // Reset its state (without touching terminal since it's not active)
-        const newState = createCiscoState(targetHost);
-        ciscoDev.state = newState;
+  // Manifeste des équipements du chapitre : champ `devices` explicite, sinon la topologie.
+  const _deviceManifest = (Array.isArray(currentLab.devices) && currentLab.devices.length)
+    ? currentLab.devices
+    : (currentLab.topology && Array.isArray(currentLab.topology.devices) ? currentLab.topology.devices : null);
+  if (currentLab.autoDevices && _deviceManifest) {
+    // CHARGEMENT AUTO : crée les équipements voulus (s'ils n'existent pas déjà)
+    // pour que l'étudiant les retrouve directement en onglets, sans avoir à les ajouter à la main.
+    const wantNames = new Set();
+    _deviceManifest.forEach(d => {
+      if (!d || !d.name) return;
+      wantNames.add(d.name);
+      if (Object.values(devices).some(dev => dev.name === d.name)) return;  // déjà présent → on n'écrase pas
+      const kind = d.type === 'svi' ? 'switchL3' : (d.type || 'switch');
+      const newId = createDevice(kind, d.name);
+      // Hostname de DÉPART optionnel (ex: "Router"/"Switch" pour que l'étudiant le renomme lui-même).
+      if (d.hostname && devices[newId] && devices[newId].state && d.type !== 'pc' && d.type !== 'server') {
+        devices[newId].state.hostname = d.hostname;
+      }
+      // Les PC/serveurs démarrent NON adressés : c'est à l'étudiant de configurer IP + masque + passerelle.
+      if ((d.type === 'pc' || d.type === 'server') && devices[newId]) {
+        const st = devices[newId].state;
+        st.ip = '0.0.0.0'; st.mask = '0.0.0.0'; st.gateway = '';
+      }
+    });
+    // Bascule sur l'équipement principal (nom = hostname/device du lab, sinon 1er non-PC voulu)
+    const primary = Object.values(devices).find(dev => dev.name === targetHost)
+                 || Object.values(devices).find(dev => wantNames.has(dev.name) && dev.type !== 'pc')
+                 || Object.values(devices).find(dev => wantNames.has(dev.name));
+    if (primary && typeof switchToDevice === 'function' && primary.id !== activeDevice) {
+      switchToDevice(primary.id);
+    }
+    // Ne garde QUE les équipements voulus par le chapitre (retire les devices d'autres chapitres / par défaut)
+    Object.values(devices).forEach(dev => {
+      if (!wantNames.has(dev.name) && dev.id !== activeDevice) delete devices[dev.id];
+    });
+    renderDeviceTabs();
+  } else {
+    // Comportement classique mono-device : renomme l'équipement Cisco actif
+    if (activeDevice && devices[activeDevice]) {
+      const dev = devices[activeDevice];
+      if (dev.type !== 'pc') {
+        dev.name = targetHost;
+        dev.state.hostname = targetHost;
+        Object.assign(sw, dev.state);
+        document.getElementById('term-title').textContent = targetHost + ' — Console';
+        resetSwitch();
+      } else {
+        const ciscoDev = Object.values(devices).find(d => d.type !== 'pc');
+        if (ciscoDev) {
+          ciscoDev.name = targetHost;
+          ciscoDev.state.hostname = targetHost;
+          const newState = createCiscoState(targetHost);
+          ciscoDev.state = newState;
+        }
       }
     }
+    renderDeviceTabs();
   }
-
-  renderDeviceTabs();
   document.getElementById('lab-selector').value = idx;
 
 
@@ -12304,6 +12602,7 @@ function renderTopology(topo, customContainerId) {
   if (!customContainerId) {
     if (_topoCache.key === cacheKey && _topoCache.html) {
       container.innerHTML = _topoCache.html;
+      try { enableTopoZoom(container); } catch(_) {}
       return;
     }
   }
@@ -12482,10 +12781,17 @@ function renderTopology(topo, customContainerId) {
     addrTable += '</div>';
   }
 
-  // Schéma statique simple — pas de zoom ni fullscreen (inutile pour un lab pédagogique)
+  // Schéma interactif : zoom (molette + boutons), déplacement (glisser), plein écran
   const wrappedHtml =
     '<div class="topo-static">' +
-      svg +
+      '<div class="topo-zoom-controls">' +
+        '<button onclick="topoZoom(this,1.25)" title="Zoomer">+</button>' +
+        '<button onclick="topoZoom(this,0.8)" title="Dézoomer">−</button>' +
+        '<button onclick="topoZoomReset(this)" title="Réinitialiser la vue">⟳</button>' +
+        '<button onclick="topoFullscreen(this)" title="Plein écran">⛶</button>' +
+      '</div>' +
+      '<div class="topo-zoom-viewport">' + svg + '</div>' +
+      '<div class="topo-zoom-hint">Molette = zoom · glisser = déplacer</div>' +
     '</div>' +
     addrTable +
     legend;
@@ -12494,6 +12800,62 @@ function renderTopology(topo, customContainerId) {
   if (!customContainerId) {
     _topoCache = { key: cacheKey, html: wrappedHtml };
   }
+  try { enableTopoZoom(container); } catch(_) {}
+}
+
+// Zoom/pan interactif sur la topologie (molette, glisser, boutons, plein écran)
+function enableTopoZoom(container) {
+  const vp = container.querySelector('.topo-zoom-viewport');
+  if (!vp) return;
+  const svg = vp.querySelector('svg');
+  if (!svg) return;
+  const st = { s: 1, x: 0, y: 0, dragging: false, ox: 0, oy: 0 };
+  vp._topoState = st;
+  const apply = () => { svg.style.transform = 'translate(' + st.x + 'px,' + st.y + 'px) scale(' + st.s + ')'; };
+  vp._topoApply = apply;
+  vp.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const rect = vp.getBoundingClientRect();
+    const cx = e.clientX - rect.left, cy = e.clientY - rect.top;
+    const f = e.deltaY < 0 ? 1.12 : 0.89;
+    const ns = Math.min(5, Math.max(0.4, st.s * f));
+    // zoom centré sur le curseur
+    st.x = cx - (cx - st.x) * (ns / st.s);
+    st.y = cy - (cy - st.y) * (ns / st.s);
+    st.s = ns;
+    apply();
+  }, { passive: false });
+  vp.addEventListener('pointerdown', (e) => {
+    st.dragging = true; st.ox = e.clientX - st.x; st.oy = e.clientY - st.y;
+    vp.classList.add('grabbing');
+    try { vp.setPointerCapture(e.pointerId); } catch(_) {}
+  });
+  vp.addEventListener('pointermove', (e) => {
+    if (!st.dragging) return;
+    st.x = e.clientX - st.ox; st.y = e.clientY - st.oy; apply();
+  });
+  const endDrag = () => { st.dragging = false; vp.classList.remove('grabbing'); };
+  vp.addEventListener('pointerup', endDrag);
+  vp.addEventListener('pointercancel', endDrag);
+  apply();
+}
+function topoZoom(btn, f) {
+  const vp = btn.closest('.topo-static').querySelector('.topo-zoom-viewport');
+  if (!vp || !vp._topoState) return;
+  vp._topoState.s = Math.min(5, Math.max(0.4, vp._topoState.s * f));
+  vp._topoApply && vp._topoApply();
+}
+function topoZoomReset(btn) {
+  const vp = btn.closest('.topo-static').querySelector('.topo-zoom-viewport');
+  if (!vp || !vp._topoState) return;
+  vp._topoState.s = 1; vp._topoState.x = 0; vp._topoState.y = 0;
+  vp._topoApply && vp._topoApply();
+}
+function topoFullscreen(btn) {
+  const el = btn.closest('.topo-static');
+  if (!el) return;
+  if (document.fullscreenElement) { document.exitFullscreen(); }
+  else if (el.requestFullscreen) { el.requestFullscreen(); }
 }
 
 
@@ -12512,7 +12874,17 @@ const _taskValidated = {};
 function computeTaskStates() {
   if (!currentLab || !currentLab.instructions) return [];
   if (typeof sw === 'undefined' || !sw) return [];
-  const touched = sw._configTouched || {};
+  // Progression CUMULATIVE sur tous les équipements du chapitre (sinon, en passant de SW1 à R8,
+  // les tâches VLAN/trunk repasseraient en gris). On fusionne le _configTouched de chaque device
+  // du lab + le device actif (le plus à jour) + les flags hors-Cisco (adressage des PC).
+  const _wantNames = new Set([]
+    .concat((currentLab.topology && currentLab.topology.devices ? currentLab.topology.devices : []).map(d => d.name))
+    .concat((Array.isArray(currentLab.devices) ? currentLab.devices : []).map(d => d.name)));
+  const touched = Object.assign({}, window._labExtraTouched || {});
+  Object.values(devices).forEach(d => {
+    if (_wantNames.has(d.name) && d.state && d.state._configTouched) Object.assign(touched, d.state._configTouched);
+  });
+  Object.assign(touched, sw._configTouched || {});
   const states = [];
   let currentTaskIdx = -1;
   let currentTaskRequires = [];
@@ -12748,6 +13120,38 @@ function renderAccessMethods() {
   `;
 }
 
+// Panneau prérequis GÉNÉRIQUE — piloté par currentLab.prereqPanel
+// Format : { icon, title, subtitle, cards: [{ icon, name, desc }], footer }
+// Réutilise le style .access-methods-* du panneau des 3 accès.
+function renderPrereqPanel() {
+  const slot = document.getElementById('lab-prereq-panel-slot');
+  if (!slot) return;
+  const p = currentLab && currentLab.prereqPanel;
+  if (!p) { slot.innerHTML = ''; return; }
+
+  const cards = (p.cards || []).map(c => `
+    <div class="access-method-card">
+      <div class="access-method-img" style="font-size:2.6rem;line-height:1;display:flex;align-items:center;justify-content:center;min-height:64px">${c.icon || '📦'}</div>
+      <div class="access-method-name">${c.name || ''}</div>
+      <div class="access-method-desc">${c.desc || ''}</div>
+    </div>
+  `).join('');
+
+  slot.innerHTML = `
+    <div class="access-methods-panel">
+      <div class="access-methods-header">
+        <span class="access-methods-icon">${p.icon || '🧱'}</span>
+        <div>
+          <div class="access-methods-title">${p.title || 'Prérequis'}</div>
+          ${p.subtitle ? `<div class="access-methods-sub">${p.subtitle}</div>` : ''}
+        </div>
+      </div>
+      <div class="access-methods-grid">${cards}</div>
+      ${p.footer ? `<div class="access-methods-footer">${p.footer}</div>` : ''}
+    </div>
+  `;
+}
+
 function renderChallengeSlot() {
   const slot = document.getElementById('lab-challenge-slot');
   if (!slot) return;
@@ -12809,6 +13213,10 @@ let _challengeBackupLab = null;  // pour pouvoir revenir au lab
 window.inChallengeMode = false;
 
 function openChallenge() {
+  if (CHALLENGES_LOCKED) {
+    try { showToast('🔒 Le Défi du Sensei est fermé pour cette session de test. Bientôt disponible !', 'warn'); } catch(_) {}
+    return;
+  }
   if (!currentLab || !currentLab.challenge) {
     console.warn('[openChallenge] Pas de défi disponible pour ce lab');
     return;
@@ -12862,6 +13270,9 @@ function openChallenge() {
     : '';
 
   challengeSlot.innerHTML = `
+    <!-- Bouton flottant toujours accessible pour quitter le défi -->
+    <button class="challenge-exit-floating" onclick="closeChallenge()" title="Quitter le défi (Échap)">✕ Quitter le défi</button>
+
     <!-- Bandeau "Mode défi" -->
     <div class="challenge-mode-header">
       <div class="challenge-mode-back-wrap">
@@ -12954,6 +13365,10 @@ function closeChallenge() {
 // Chaque défi est verrouillé tant que le chapitre lié n'est pas suffisamment avancé.
 // =========================================================================
 function openChallengesGallery() {
+  if (CHALLENGES_LOCKED) {
+    try { showToast('🔒 Les Défis du Sensei sont fermés pour cette session de test. Bientôt disponible !', 'warn'); } catch(_) {}
+    return;
+  }
   const modal = document.getElementById('challenges-gallery-modal');
   if (!modal) return;
   renderChallengesGallery();
@@ -13175,13 +13590,23 @@ function verifyChallenge() {
 
 // Close challenge on Escape
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') {
-    const m = document.getElementById('challenge-modal');
-    if (m && m.classList.contains('active')) closeChallenge();
+  if (e.key !== 'Escape') return;
+  // Nouveau flux : le défi est injecté dans .lab-flow via challenge-mode-slot
+  if (_challengeActive || window.inChallengeMode === true) {
+    closeChallenge();
+    return;
   }
+  // Ancien flux : modal flottante (rétro-compat)
+  const m = document.getElementById('challenge-modal');
+  if (m && m.classList.contains('active')) closeChallenge();
 });
 
 function nextLab() {
+  const next = LABS[currentLabIdx + 1];
+  if (next && isLabLocked(next)) {
+    showToast('🔒 La suite arrive bientôt ! Merci d\'avoir testé les Chapitres 1 et 2 🙏', 'success');
+    return;
+  }
   if (currentLabIdx < LABS.length - 1) loadLab(currentLabIdx + 1);
   else showToast('Vous avez terminé tous les labs ! 🎉');
 }
@@ -13257,7 +13682,12 @@ function buildLabSelector() {
       const opt = document.createElement('option');
       opt.value = idx;
       const done = progress[lab.id] && progress[lab.id].done;
-      opt.textContent = (done ? '✓ ' : '   ') + lab.title;
+      if (isLabLocked(lab)) {
+        opt.textContent = '🔒 ' + lab.title + ' (bientôt)';
+        opt.disabled = true;
+      } else {
+        opt.textContent = (done ? '✓ ' : '   ') + lab.title;
+      }
       group.appendChild(opt);
     });
     sel.appendChild(group);
@@ -13288,7 +13718,8 @@ function buildLabSelector() {
         opt.value = idx;
         const done = progress[lab.id] && progress[lab.id].done;
         const diffIcon = diff === 'Débutant' ? '🟢' : diff === 'Intermédiaire' ? '🟡' : diff === 'Avancé' ? '🟠' : '🔴';
-        opt.textContent = (done ? '✓ ' : '   ') + diffIcon + ' ' + lab.title;
+        if (isLabLocked(lab)) { opt.textContent = '🔒 ' + diffIcon + ' ' + lab.title + ' (bientôt)'; opt.disabled = true; }
+        else opt.textContent = (done ? '✓ ' : '   ') + diffIcon + ' ' + lab.title;
         group.appendChild(opt);
       });
     });
@@ -13303,7 +13734,8 @@ function buildLabSelector() {
       const idx = LABS.indexOf(lab);
       const opt = document.createElement('option');
       opt.value = idx;
-      opt.textContent = lab.title;
+      if (isLabLocked(lab)) { opt.textContent = '🔒 ' + lab.title + ' (bientôt)'; opt.disabled = true; }
+      else opt.textContent = lab.title;
       group.appendChild(opt);
     });
     sel.appendChild(group);
@@ -13840,6 +14272,10 @@ if (btnChallenges) btnChallenges.addEventListener('click', openChallengesGallery
 // puis ouvre directement le défi du chapitre courant
 // ============================================================
 function devSkipToChallenge() {
+  if (CHALLENGES_LOCKED) {
+    try { showToast('🔒 Le Défi du Sensei est fermé pour cette session de test.', 'warn'); } catch(_) {}
+    return;
+  }
   if (!currentLab) {
     showToast('Aucun lab chargé');
     return;
@@ -13865,7 +14301,10 @@ function devSkipToChallenge() {
 }
 
 const btnDevSkip = document.getElementById('btn-dev-skip');
-if (btnDevSkip) btnDevSkip.addEventListener('click', devSkipToChallenge);
+if (btnDevSkip) {
+  btnDevSkip.addEventListener('click', devSkipToChallenge);
+  if (ACCESS_LOCK) btnDevSkip.style.display = 'none';  // outil DEV masqué en session publique
+}
 
 function showCorrection() {
   const existing = document.getElementById('correction-modal');
