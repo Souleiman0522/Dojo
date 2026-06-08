@@ -1272,6 +1272,40 @@ body.mode-pro #btn-mode-toggle {
 }
 
 /* ============================================================
+   MODE GUIDÉ + TASKS REPLIABLES
+   - .inst-task est cliquable, ouvre/replie ses steps suivants
+   - body.mode-guided masque réflexions + steps "extra" (analogies,
+     concepts) et replie toutes les tasks (accordéon).
+   ============================================================ */
+.inst-task {
+  cursor: pointer;
+  user-select: none;
+  transition: opacity 0.15s ease;
+}
+.inst-task:hover { filter: brightness(1.04); }
+.inst-task-chevron {
+  margin-left: auto;
+  font-size: 0.95rem;
+  color: var(--accent-primary, #1e3a5f);
+  transition: transform 0.2s ease;
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+.inst-task.task-collapsed { opacity: 0.78; }
+.inst-task.task-collapsed .inst-task-chevron { transform: rotate(-90deg); }
+.inst-task.task-validated .inst-task-chevron { margin-right: 70px; }
+
+body.mode-guided .inst-step-extra,
+body.mode-guided .inst-reflection,
+body.mode-guided .inst-reflection-header {
+  display: none !important;
+}
+body.mode-guided #btn-guided-toggle {
+  background: var(--accent-warning, #c89028) !important;
+  color: #fff !important;
+}
+
+/* ============================================================
    CHRONICLES — parchemin animé immersif
    ============================================================ */
 .chronicles-box {
@@ -4825,6 +4859,7 @@ button:focus-visible, .concept-nav-item:focus-visible, .partners-tab:focus-visib
 
   <button class="btn primary icon-only" id="btn-roadmap" title="Roadmap progression">📜</button>
   <button class="btn icon-only" id="btn-mode-toggle" title="Basculer Mode Histoire ↔ Mode Pro">📖</button>
+  <button class="btn icon-only" id="btn-guided-toggle" title="Basculer Mode Complet ↔ Mode Guidé (replie tâches + masque analogies)">📚</button>
   <button class="btn primary icon-only" id="btn-settings" title="Préférences (thème, taille)">⚙</button>
   <button class="btn warn icon-only" id="btn-toggle-panel" title="Replier le panneau lab">▲</button>
   <button class="btn danger icon-only" id="btn-admin" title="Admin — gérer les labs">🛠</button>
@@ -12506,7 +12541,10 @@ function loadLab(idx) {
     }
     if (inst.type === 'step') {
       stepCounter++;
-      return `<li class="inst-step"><span class="inst-num">${stepCounter}</span><span class="inst-content">${parseCodeTags(inst.content)}</span></li>`;
+      // Marque "extra" les analogies / concepts (cachés en mode guidé)
+      const raw = (inst.content || '').trim();
+      const isExtra = /^[🏠🧠🎭]/.test(raw) || /\bAnalogie\b/i.test(raw);
+      return `<li class="inst-step${isExtra ? ' inst-step-extra' : ''}"><span class="inst-num">${stepCounter}</span><span class="inst-content">${parseCodeTags(inst.content)}</span></li>`;
     }
     if (inst.type === 'reflection') {
       let header = '';
@@ -12519,6 +12557,7 @@ function loadLab(idx) {
     return '';
   });
   instEl.innerHTML = parts.join('');
+  if (typeof initCollapsibleTasks === 'function') initCollapsibleTasks();
 
   window._labExtraTouched = {};  // reset des flags de progression hors-Cisco (adressage PC, etc.)
   renderTopology(currentLab.topology);
@@ -16975,6 +17014,67 @@ document.addEventListener('keydown', (e) => {
   apply(localStorage.getItem(KEY) || 'story');
   btn.addEventListener('click', () => {
     const next = document.body.classList.contains('mode-pro') ? 'story' : 'pro';
+    localStorage.setItem(KEY, next);
+    apply(next);
+  });
+})();
+
+// ============================================================
+// [§UI-COLLAPSIBLE-TASKS] — Tasks repliables + Mode Guidé
+// - Chaque .inst-task cliquable replie ses steps suivants (jusqu'à la
+//   prochaine task ou la section réflexions).
+// - Mode Guidé : replie tout par défaut + masque réflexions / "extra".
+// - Appelé depuis loadLab après injection des instructions.
+// ============================================================
+function _taskSiblings(task) {
+  const out = [];
+  let sib = task.nextElementSibling;
+  while (sib && !sib.classList.contains('inst-task')) {
+    out.push(sib);
+    sib = sib.nextElementSibling;
+  }
+  return out;
+}
+function setTaskCollapsed(task, collapsed) {
+  task.classList.toggle('task-collapsed', collapsed);
+  _taskSiblings(task).forEach(el => { el.style.display = collapsed ? 'none' : ''; });
+}
+function initCollapsibleTasks() {
+  const list = document.getElementById('lab-instructions');
+  if (!list) return;
+  const tasks = Array.from(list.querySelectorAll('.inst-task'));
+  tasks.forEach((task, i) => {
+    if (!task.querySelector('.inst-task-chevron')) {
+      const chev = document.createElement('span');
+      chev.className = 'inst-task-chevron';
+      chev.textContent = '▾';
+      task.appendChild(chev);
+    }
+    task.onclick = () => setTaskCollapsed(task, !task.classList.contains('task-collapsed'));
+    // En mode guidé : replie tout sauf la 1ʳᵉ
+    if (document.body.classList.contains('mode-guided')) {
+      setTaskCollapsed(task, i !== 0);
+    }
+  });
+}
+
+(function initGuidedToggle() {
+  const btn = document.getElementById('btn-guided-toggle');
+  if (!btn) return;
+  const KEY = 'dojo.guided';
+  function apply(mode) {
+    const guided = mode === 'guided';
+    document.body.classList.toggle('mode-guided', guided);
+    btn.textContent = guided ? '🎯' : '📚';
+    btn.title = guided
+      ? 'Mode Guidé actif — cliquer pour le Mode Complet (analogies + réflexions)'
+      : 'Mode Complet actif — cliquer pour le Mode Guidé (tâche par tâche)';
+    const tasks = document.querySelectorAll('#lab-instructions .inst-task');
+    tasks.forEach((t, i) => setTaskCollapsed(t, guided && i !== 0));
+  }
+  apply(localStorage.getItem(KEY) || 'full');
+  btn.addEventListener('click', () => {
+    const next = document.body.classList.contains('mode-guided') ? 'full' : 'guided';
     localStorage.setItem(KEY, next);
     apply(next);
   });
