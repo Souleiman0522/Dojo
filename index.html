@@ -5537,10 +5537,12 @@ const DEFAULT_LABS = [
       { type: 'task', icon: '🏗️', label: 'TASK 7', title: 'Créer une sous-interface par VLAN (encapsulation dot1Q)', requires: ['subif'] },
       { type: 'step', content: "Sous-interface VLAN 10 : [code]interface e0/0.10[/code] → [code]encapsulation dot1q 10[/code]. Le numéro dot1q DOIT matcher l\'ID du VLAN." },
       { type: 'step', content: "Sous-interface VLAN 20 : [code]interface e0/0.20[/code] → [code]encapsulation dot1q 20[/code]." },
+      { type: 'step', content: "Sous-interface VLAN 30 (VOIX) : [code]interface e0/0.30[/code] → [code]encapsulation dot1q 30[/code]. Sans cette sous-interface, les téléphones IP n'ont pas de passerelle et ne peuvent pas joindre un Call Manager ou un autre site." },
 
       { type: 'task', icon: '🌐', label: 'TASK 8', title: 'Donner à chaque sous-interface son IP de gateway', requires: ['subifIp'] },
       { type: 'step', content: "Sur e0/0.10 : [code]ip address 192.168.10.1 255.255.255.0[/code] (c\'est la passerelle du VLAN 10)." },
       { type: 'step', content: "Sur e0/0.20 : [code]ip address 192.168.20.1 255.255.255.0[/code] (passerelle du VLAN 20)." },
+      { type: 'step', content: "Sur e0/0.30 : [code]ip address 192.168.30.1 255.255.255.0[/code] (passerelle du VLAN VOIX — les téléphones la prendront en gateway via CDP/DHCP option 150)." },
       { type: 'step', content: "Vérifie : [code]show ip interface brief[/code] → e0/0.10 et e0/0.20 doivent être up/up. Puis [code]show ip route[/code] → 2 réseaux 'C' (Connected)." },
       { type: 'step', content: "🚪✅ La porte est ouverte ! Refais le test inter-VLAN — depuis <strong>VPC3</strong> (VLAN 10) : [code]ping 192.168.20.10[/code] (VPC4, VLAN 20) → marche maintenant, le trafic SORT par R8. Le pont entre les mondes est établi !" },
 
