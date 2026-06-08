@@ -5578,7 +5578,7 @@ const DEFAULT_LABS = [
       { type: 'step', content: "Sur e0/0.10 : [code]ip address 192.168.10.1 255.255.255.0[/code] (c\'est la passerelle du VLAN 10)." },
       { type: 'step', content: "Sur e0/0.20 : [code]ip address 192.168.20.1 255.255.255.0[/code] (passerelle du VLAN 20)." },
       { type: 'step', content: "Sur e0/0.30 : [code]ip address 192.168.30.1 255.255.255.0[/code] (passerelle du VLAN VOIX — les téléphones la prendront en gateway via CDP/DHCP option 150)." },
-      { type: 'step', content: "Vérifie : [code]show ip interface brief[/code] → e0/0.10 et e0/0.20 doivent être up/up. Puis [code]show ip route[/code] → 2 réseaux 'C' (Connected)." },
+      { type: 'step', content: "Vérifie : [code]show ip interface brief[/code] → e0/0.10, e0/0.20 et e0/0.30 doivent être up/up. Puis [code]show ip route[/code] → 3 réseaux 'C' (Connected) : 192.168.10.0/24, 192.168.20.0/24 et 192.168.30.0/24." },
       { type: 'step', content: "🚪✅ La porte est ouverte ! Refais le test inter-VLAN — depuis <strong>VPC3</strong> (VLAN 10) : [code]ping 192.168.20.10[/code] (VPC4, VLAN 20) → marche maintenant, le trafic SORT par R8. Le pont entre les mondes est établi !" },
 
       { type: 'reflection', content: "Pourquoi AUCUNE IP sur l\'interface physique e0/0 de R8 ?<br>👉 Parce qu\'elle transporte plusieurs VLANs taggés (trunk). Ce sont les sous-interfaces qui portent une IP, une par VLAN." },
