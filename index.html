@@ -5667,7 +5667,190 @@ const DEFAULT_LABS = [
   },
 
   {
-    id: 3, title: "Lab 3 — CDP & LLDP", category: "fundamentals",
+    id: 3, title: "Chapitre 3 — Tisser les Câbles (EtherChannel)", category: "access",
+    difficulty: "Intermédiaire", duration: "40 min", device: "SW-BRU", hostname: "SW-BRU",
+    autoDevices: true,
+    devices: [
+      { type: 'router', name: 'R8',  hostname: 'R8' },
+      { type: 'switch', name: 'SW-BRU', hostname: 'SW-BRU' },
+      { type: 'switch', name: 'SW-GND', hostname: 'SW-GND' },
+      { type: 'pc', name: 'VPC3' },
+      { type: 'pc', name: 'VPC4' },
+      { type: 'pc', name: 'VPC5' },
+      { type: 'pc', name: 'VPC6' }
+    ],
+    narrative: {
+      intro: "Quelques semaines après le Chapitre 2. Le pont entre Ventes et RH tient, le routage inter-VLAN ronronne, R8 ne bronche pas. Léo passe ses matinées à observer les écrans de monitoring, presque rassuré. Presque.\n\n9h17, lundi. Les Ventes appellent en panique : « le partage de fichiers rame, on n'avance plus. » Léo se penche sur SW-BRU. L'interface e0/0 — l'unique câble qui relie SW-BRU à SW-GND — est saturée à 96 %. Le backup hebdo des Ventes vers les serveurs côté SW-GND mange toute la bande. Et derrière, les téléphones IP (VLAN 30) commencent à coucher.\n\n10h04. Une femme de ménage trop zélée arrache d'un coup d'aspirateur le seul câble entre SW-BRU et SW-GND. <strong>Tout</strong> tombe entre les deux sites. Plus de partage, plus de visio, plus rien. Un seul câble — un seul point de défaillance.\n\nLe Sensei arrive sans frapper, pose trois câbles en éventail sur le bureau.\n\n« Léo. Tu as construit un pont. Mais un pont à une seule arche, c'est un pont condamné. <strong>Tisse-les.</strong> Un câble peut casser. Deux câbles, c'est deux fois plus rapide ET déjà résilient. Trois câbles, c'est ce que tout admin sérieux pose entre deux switches en prod. La technique s'appelle <strong>EtherChannel</strong> : tu prends N câbles physiques, tu les fusionnes en UN seul lien logique. Au-dessus, le réseau ne voit qu'un lien — Spanning-Tree, les VLANs, le routage, tout reste simple. En dessous, trois autoroutes en parallèle. »\n\nLéo prend les câbles, mais une question le démange déjà :\n\n« Sensei… si je colle 3 fils entre les MÊMES deux switches, c'est une boucle, non ? STP va en bloquer deux ? »\n\n« Excellente question, jeune lion. Sans EtherChannel : oui. Deux ports bloqués, deux fils gâchés. AVEC EtherChannel : non. Le bundle se présente à STP comme UN seul lien logique. Aucun port bloqué. Les trois câbles transportent en même temps. »\n\nLéo ouvre son carnet et note ce qu'il sent venir :<br>• Il existe TROIS façons de monter un bundle — trois protocoles différents. Pourquoi trois ? Lequel choisir ?<br>• Comment le bundle décide-t-il QUEL câble physique utilise QUELLE trame ?<br>• Si un câble tombe en plein milieu, le bundle saute aussi, ou il continue à fonctionner ?<br>• Et si je me trompe de mode sur un seul des deux switches : boucle ? blackout ? les deux ?\n\nLe Sensei sourit en repartant : « Avant de tisser, lis l'étiquette du fil. Et tisse-les TOUS dans le bundle AVANT de remonter le trunk. Sinon tu vas reconfigurer trois fois. »",
+      mentor: "Trois règles d'or, Léo. (1) <strong>MÊME mode des deux côtés</strong> — ON face à ON, LACP face à LACP, PAgP face à PAgP. Une lettre de différence et tu casses tout. (2) <strong>Bundle d'abord, trunk ensuite.</strong> La config trunk se met sur Port-channel1, pas sur les ports physiques. Les ports membres héritent automatiquement. (3) <strong>Speed, duplex, allowed VLAN identiques sur tous les membres</strong> — sinon Cisco refuse l'agrégation, et c'est tant mieux. En cas de doute, sors d'abord le câble du mur, configure ensuite : un câble branché avec un mode incompatible, c'est une boucle qui tourne en silence.",
+      promptStart: "SW-BRU(config)#",
+      promptEnd: "SW-BRU(config-if-Po1)#"
+    },
+    prereqPanel: {
+      icon: '🧶',
+      title: 'Tisser plusieurs câbles en un seul lien logique (EtherChannel)',
+      subtitle: 'Avant de bundler : POURQUOI on le fait, QUELS sont les 3 modes, COMMENT le trafic se répartit.',
+      cards: [
+        {
+          icon: '🚦',
+          name: '① Pourquoi un bundle ?',
+          desc: '<strong>Le problème :</strong> un seul câble entre deux switches = goulot de bande passante + SPOF (si le câble casse, plus rien).<br><br>' +
+                '<strong>La solution :</strong> bundler 2, 3, 4 ou jusqu\'à 8 câbles physiques dans UN seul lien logique appelé <strong>Port-Channel</strong> (abrégé <code>Po</code>).<br><br>' +
+                '<strong>Bénéfices :</strong> bande passante = somme des membres (3 liens 1G = 3G logique). <strong>Résilience :</strong> un membre tombe, le bundle reste up. <strong>STP-friendly :</strong> un seul port logique → aucun port bloqué.'
+        },
+        {
+          icon: '🤝',
+          name: '② Les 3 protocoles d\'agrégation',
+          desc: '<strong>ON</strong> (statique) : pas de négo, les DEUX côtés OBLIGATOIREMENT en ON. Bundle instantané, mais aucune sécurité.<br><br>' +
+                '<strong>LACP</strong> (standard IEEE 802.3ad) : négocié via LACPDU. Rôles <code>active</code> / <code>passive</code>. Valides : active+active, active+passive. INVALIDE : passive+passive. <strong>Multi-vendor</strong> → la référence en prod.<br><br>' +
+                '<strong>PAgP</strong> (Cisco only) : négocié. Rôles <code>desirable</code> / <code>auto</code>. Valides : desirable+desirable, desirable+auto. INVALIDE : auto+auto. Legacy.'
+        },
+        {
+          icon: '⚖️',
+          name: '③ Load-balancing — qui passe par quel câble ?',
+          desc: '<strong>Question :</strong> quand Po1 doit envoyer une trame, il choisit quel câble physique parmi les 3 ?<br><br>' +
+                '<strong>Réponse :</strong> un <strong>hash</strong> calculé sur des champs de la trame (MAC src/dst, IP src/dst, port L4…). Même flux → toujours le même câble (évite le re-ordering).<br><br>' +
+                '<strong>Bonne pratique :</strong> <code>port-channel load-balance src-dst-ip</code> répartit selon les paires d\'IP. Le défaut <code>src-mac</code> est piégeux : si tout le trafic vient d\'UN routeur (même MAC source) → un seul câble utilisé, les 2 autres gaspillés.'
+        }
+      ],
+      footer: '💡 <strong>L\'ordre du métier :</strong> ① câble TOUS les liens physiques. ② sélectionne-les en bloc avec <code>interface range</code>. ③ bundle via <code>channel-group N mode X</code> — MÊME mode des 2 côtés. ④ configure trunk/VLAN sur <code>interface Port-channel N</code>. ⑤ <code>port-channel load-balance src-dst-ip</code> en config globale. ⑥ vérifie : <code>show etherchannel summary</code> → Po(SU) + membres en (P).'
+    },
+    objectives: [
+      "Comprendre pourquoi un seul lien entre deux switches est un goulot ET un SPOF",
+      "Bundler 3 liens physiques entre SW-BRU et SW-GND dans un seul Port-Channel logique (Po1)",
+      "Maîtriser les 3 modes : ON (statique), LACP (standard IEEE), PAgP (Cisco only) — pros & cons",
+      "Reconfigurer le trunk + les VLANs autorisés sur l'interface Port-Channel (pas sur les ports membres)",
+      "Régler le load-balancing pour répartir intelligemment le trafic sur les 3 liens",
+      "Vérifier la résilience : si un lien tombe, Po1 reste up sur les autres (test de panne)",
+      "Connaître les pièges : mismatch de mode, mismatch duplex/speed, mismatch VLAN autorisé"
+    ],
+    instructions: [
+      { type: 'task', icon: '🚦', label: 'TASK 1', title: 'Diagnostic — un seul câble = un goulot + un SPOF' },
+      { type: 'step', content: "Reprends la topologie du Chapitre 2 : entre SW-BRU et SW-GND, il n'y a qu'UN câble (e0/0). Tout le trafic inter-switch passe par ce lien unique. Sur <strong>SW-BRU</strong> : [code]show interfaces e0/0[/code] → repère la bande passante et le compteur de bits émis/reçus." },
+      { type: 'step', content: "🧠 Deux problèmes apparaissent vite en prod :<br>• <strong>Goulot</strong> : Ventes + RH + Voix partagent la même conduite. Heure de pointe = saturation.<br>• <strong>SPOF</strong> (Single Point Of Failure) : si le câble est coupé, plus AUCUNE communication entre les deux switches. Plus de ping inter-VLAN entre les sites." },
+      { type: 'step', content: "🧶 La solution : <strong>EtherChannel</strong>. On tisse 2, 3 ou plusieurs câbles physiques en un SEUL lien logique appelé <strong>Port-Channel</strong> (Po). Au-dessus, STP, les VLANs, le routage ne voient qu'UN lien — pas de boucle. En dessous, plusieurs autoroutes en parallèle. Si un fil casse, le bundle reste up." },
+
+      { type: 'task', icon: '🔌', label: 'TASK 2', title: 'Câbler 2 liens supplémentaires entre SW-BRU et SW-GND' },
+      { type: 'step', content: "Sur la topologie, branche deux nouveaux liens : SW-BRU e1/0 ↔ SW-GND e1/0, et SW-BRU e1/1 ↔ SW-GND e1/1. Avec e0/0 déjà en place, ça fait 3 câbles parallèles entre les deux switches." },
+      { type: 'step', content: "⚠ <strong>STP entre immédiatement en jeu.</strong> Trois liens parallèles entre 2 switches = boucle L2 potentielle. Sans EtherChannel, STP va automatiquement BLOQUER 2 des 3 ports (état BLK) — les 2 câbles seront branchés mais inutilisés. Vérifie : [code]show spanning-tree[/code]." },
+      { type: 'step', content: "🎯 L'EtherChannel résout exactement ce piège : pour STP, le Port-Channel est UN seul lien logique. Aucun port bloqué. Les 3 câbles transportent en même temps." },
+
+      { type: 'task', icon: '🟢', label: 'MÉTHODE A', title: 'Mode ON — bundle statique sans négociation' },
+      { type: 'step', content: "🧠 Le mode <strong>ON</strong> force le bundle sans aucun keep-alive ni négociation. Les deux côtés DOIVENT être en ON. Si un seul côté est en ON et l'autre en mode négocié (LACP/PAgP) → BOUCLE assurée, car le côté ON envoie du trafic sans attendre l'accord d'en face." },
+      { type: 'step', content: "Sur <strong>SW-BRU</strong>, sélectionne les 3 ports d'un bloc et bundle-les : [code]interface range e0/0 , e1/0 - 1[/code] → [code]channel-group 1 mode on[/code]. Cisco crée automatiquement [code]interface Port-channel1[/code] (Po1)." },
+      { type: 'step', content: "Sur <strong>SW-GND</strong>, refais EXACTEMENT la même chose : [code]interface range e0/0 , e1/0 - 1[/code] → [code]channel-group 1 mode on[/code]." },
+      { type: 'step', content: "Vérifie : [code]show etherchannel summary[/code] → tu dois voir <code>Po1(SU)</code> et les 3 ports en (P) Bundled. Puis [code]show spanning-tree[/code] → un seul port logique (Po1), zéro BLK." },
+      { type: 'step', content: "✅ <strong>Pros</strong> : simple, pas de négo = bundle instantané, zéro overhead.<br>❌ <strong>Cons</strong> : aucune sécurité. Si un seul côté oublie le ON, ou si un port est par erreur branché ailleurs → BOUCLE silencieuse. Mode interdit en prod, sauf niche (lien direct ultra-fiable, équipement legacy)." },
+
+      { type: 'task', icon: '🌐', label: 'MÉTHODE B', title: 'Mode LACP — standard IEEE 802.3ad (recommandé en prod)' },
+      { type: 'step', content: "🧠 <strong>LACP</strong> (Link Aggregation Control Protocol) est le STANDARD multi-vendor. Il négocie le bundle entre les deux switches via des <strong>LACPDU</strong> envoyés toutes les 30 sec (slow) ou 1 sec (fast). Si la négo échoue → port en standalone, pas de bundle, pas de boucle. Sûr." },
+      { type: 'step', content: "Deux rôles : <strong>active</strong> (j'initie la négo) / <strong>passive</strong> (je réponds si on me parle). Combinaisons valides : <code>active+active</code>, <code>active+passive</code>. Combinaison INVALIDE : <code>passive+passive</code> (personne n'initie → silence radio, pas de bundle)." },
+      { type: 'step', content: "Pour la démo, on défait d'abord le mode ON. Sur les <strong>2 switches</strong> : [code]interface range e0/0 , e1/0 - 1[/code] → [code]no channel-group 1 mode on[/code]." },
+      { type: 'step', content: "Reconfigure en LACP. Sur <strong>SW-BRU</strong> (initiateur, active) : [code]interface range e0/0 , e1/0 - 1[/code] → [code]channel-group 1 mode active[/code]. Sur <strong>SW-GND</strong> (passif suffit) : même range → [code]channel-group 1 mode passive[/code]." },
+      { type: 'step', content: "Vérifie : [code]show etherchannel summary[/code] → colonne Protocol = <strong>LACP</strong>. Puis [code]show lacp neighbor[/code] → tu vois le voisin (MAC du switch d'en face) et les drapeaux SA / SP (Synchronisation, Aggregation)." },
+      { type: 'step', content: "✅ <strong>Pros</strong> : standard ouvert (Cisco, HP, Aruba, Juniper, MikroTik parlent tous LACP), détection auto de mismatch, sûr en prod, supporte le hot-standby (jusqu'à 16 ports déclarés, 8 actifs).<br>❌ <strong>Cons</strong> : ~30 sec de négo au boot. LACPDU consomment un peu de CPU (négligeable)." },
+
+      { type: 'task', icon: '🟠', label: 'MÉTHODE C', title: 'Mode PAgP — propriétaire Cisco (legacy)' },
+      { type: 'step', content: "🧠 <strong>PAgP</strong> (Port Aggregation Protocol) est l'ancêtre Cisco-only. Mêmes idées que LACP — négociation, détection de mismatch — mais incompatible avec les autres vendeurs. Encore très présent dans des parcs Cisco historiques." },
+      { type: 'step', content: "Deux rôles miroir : <strong>desirable</strong> (j'initie) / <strong>auto</strong> (je réponds). Combinaisons valides : <code>desirable+desirable</code>, <code>desirable+auto</code>. Combinaison INVALIDE : <code>auto+auto</code>." },
+      { type: 'step', content: "Démontage du LACP puis remontage en PAgP. Sur les <strong>2 switches</strong> : [code]interface range e0/0 , e1/0 - 1[/code] → [code]no channel-group 1 mode active[/code] (ou passive selon le côté)." },
+      { type: 'step', content: "Reconfigure en PAgP. Sur <strong>SW-BRU</strong> : [code]channel-group 1 mode desirable[/code]. Sur <strong>SW-GND</strong> : [code]channel-group 1 mode auto[/code]." },
+      { type: 'step', content: "Vérifie : [code]show etherchannel summary[/code] → Protocol = <strong>PAgP</strong>. Et [code]show pagp neighbor[/code] pour les détails par port." },
+      { type: 'step', content: "✅ <strong>Pros</strong> : robuste, intégré IOS depuis 20 ans.<br>❌ <strong>Cons</strong> : Cisco-only. Dès qu'on mélange avec du HP/Aruba/Juniper, il faut basculer en LACP. <strong>Verdict : préférer LACP en neuf, garder PAgP uniquement sur du legacy en attente de migration.</strong>" },
+
+      { type: 'task', icon: '📊', label: 'SYNTHÈSE', title: 'Comparer les 3 modes — quand utiliser quoi' },
+      { type: 'step', content: "🏠 <strong>Analogie</strong> : trois ouvriers veulent porter une poutre lourde ensemble.<br>• <strong>ON</strong> : « 1, 2, 3, GO ! » — aucune discussion préalable, ils soulèvent. Si un n'a pas entendu, la poutre tombe.<br>• <strong>LACP</strong> : ils se mettent d'accord avant (« t'es prêt ? — oui, à 3 — ok »). Sûr, marche même avec un nouvel arrivant qu'ils ne connaissent pas (standard universel).<br>• <strong>PAgP</strong> : pareil, mais ils ne parlent qu'un dialecte régional. Avec un étranger : aucune coordination possible." },
+      { type: 'step', content: "📋 Table récap :<br>• <strong>ON</strong> = pas de keep-alive, vitesse max, risque max → labo, SPAN, niche.<br>• <strong>LACP</strong> = standard IEEE, négocié, multi-vendor → <strong>défaut en prod</strong>.<br>• <strong>PAgP</strong> = Cisco-only, négocié → legacy, à migrer vers LACP.<br><br>Règle absolue dans les trois cas : <strong>MÊME mode des deux côtés.</strong>" },
+
+      { type: 'task', icon: '🚇', label: 'TASK 7', title: 'Remettre le trunk + VLANs sur Po1 (pas sur les membres !)' },
+      { type: 'step', content: "🧠 Concept clé : la config L2 (trunk, allowed vlan, native vlan) se pose désormais sur l'interface logique <strong>Po1</strong>. Les ports physiques (e0/0, e1/0, e1/1) en héritent automatiquement. Tu n'as PLUS besoin de reconfigurer chaque port membre." },
+      { type: 'step', content: "Sur <strong>SW-BRU</strong> ET <strong>SW-GND</strong> : [code]interface port-channel 1[/code] → [code]switchport trunk encapsulation dot1q[/code] → [code]switchport mode trunk[/code] → [code]switchport trunk allowed vlan 10,20,30[/code] → [code]switchport trunk native vlan 99[/code]." },
+      { type: 'step', content: "Vérifie : [code]show interfaces trunk[/code] → tu vois <code>Po1</code> en mode trunk dot1q, allowed VLANs 10,20,30, native 99. Les VPC doivent toujours pinger entre eux comme au Chap 2." },
+
+      { type: 'task', icon: '⚖️', label: 'TASK 8', title: 'Load-balancing — répartir intelligemment le trafic' },
+      { type: 'step', content: "🧠 Quand Po1 doit envoyer une trame, il choisit le câble physique via un <strong>hash</strong> sur des champs de la trame. Même flux = toujours le même câble (pas de re-ordering). Le mode de hash est <strong>global</strong> au switch (pas par Port-Channel)." },
+      { type: 'step', content: "Vérifie le mode actuel : [code]show etherchannel load-balance[/code] → par défaut souvent <code>src-mac</code>. Or si tout ton trafic vient de R8 (même MAC source) → un seul câble utilisé, les 2 autres dormant." },
+      { type: 'step', content: "Bonne pratique en prod : hasher sur src+dst IP. En config globale (les 2 switches) : [code]port-channel load-balance src-dst-ip[/code]. Re-vérifie avec [code]show etherchannel load-balance[/code]." },
+      { type: 'step', content: "💡 Règle : plus tu mets de critères dans le hash, mieux le trafic se répartit. Mais ne mets PAS de port L4 si tes flux sont fixes (NFS, iSCSI, vMotion) — tu aurais du re-ordering qui dégrade ces protocoles." },
+
+      { type: 'task', icon: '💥', label: 'TASK 9', title: 'Test de résilience — débrancher (logiquement) un câble' },
+      { type: 'step', content: "Lance un ping continu entre <strong>VPC3</strong> et <strong>VPC6</strong> (même VLAN 10, traverse Po1) : [code]ping 192.168.10.11[/code]." },
+      { type: 'step', content: "Sur <strong>SW-BRU</strong>, simule la panne d'un membre : [code]interface e1/1[/code] → [code]shutdown[/code]. Observe le ping : il continue de répondre, peut-être 1 ou 2 paquets perdus le temps du recalcul." },
+      { type: 'step', content: "Vérifie : [code]show etherchannel summary[/code] → Po1 toujours en <code>(SU)</code>, mais e1/1 marqué <code>(D)</code> Down. Les 2 autres membres tiennent le trafic." },
+      { type: 'step', content: "Rétablis le lien : [code]no shutdown[/code]. Au bout de quelques secondes, e1/1 redevient <code>(P)</code> Bundled. C'est l'auto-healing de l'EtherChannel — aucune intervention manuelle." },
+
+      { type: 'reflection', content: "Pourquoi STP voit-il un Port-Channel comme un SEUL lien ?<br>👉 STP raisonne sur les ports logiques. Po1 est un port logique unique du point de vue BPDU et calcul de coût. Les ports physiques membres sont transparents pour STP — c'est exactement ce qui élimine la boucle." },
+      { type: 'reflection', content: "Que se passe-t-il si je configure SW-BRU en <code>mode on</code> et SW-GND en <code>mode active</code> (LACP) ?<br>👉 Boucle catastrophique. SW-BRU ne parle pas LACP → il envoie du trafic sans attendre la négo. SW-GND attend des LACPDU qui ne viennent jamais → ses ports restent en mode standalone (3 ports trunk parallèles). Diagnostic difficile, trafic dupliqué, MAC flapping. <strong>Règle d'or absolue : mêmes modes des 2 côtés.</strong>" },
+      { type: 'reflection', content: "Pourquoi tous les membres d'un bundle doivent avoir la MÊME config (speed, duplex, allowed vlan, encapsulation) ?<br>👉 Sinon Cisco refuse l'agrégation (<code>%EC-5-CANNOT_BUNDLE2</code>) et c'est tant mieux. Logique : Po1 est UN lien logique, ses brins doivent être homogènes — sinon les paquets répartis par hash arrivent désordonnés ou dans le mauvais VLAN." },
+      { type: 'reflection', content: "Limite de l'EtherChannel : combien de membres maximum ?<br>👉 Cisco supporte jusqu'à 8 membres actifs par Port-Channel (16 déclarés avec hot-standby en LACP). Au-delà, il faut empiler des Port-Channels sur des paires de switches différentes (avec MEC/MLAG ou StackWise/VSS) — mais ça, c'est l'histoire du Chapitre 4." }
+    ],
+    topology: {
+      networks: [
+        { name: 'Po1 — bundle 3 liens', subnet: 'e0/0 + e1/0 + e1/1', mask: '3× bande passante', gateway: 'logique unique pour STP/VLAN' },
+        { name: 'VLAN 10 (Ventes)', subnet: '192.168.10.0/24', mask: '255.255.255.0', gateway: '192.168.10.1' },
+        { name: 'VLAN 20 (RH)',     subnet: '192.168.20.0/24', mask: '255.255.255.0', gateway: '192.168.20.1' },
+        { name: 'VLAN 30 (Voix)',   subnet: '192.168.30.0/24', mask: '255.255.255.0', gateway: '192.168.30.1' }
+      ],
+      devices: [
+        { type: 'router', name: 'R8',   x: 400, y: 30,  ip: '3 sous-interfaces .10/.20/.30', iface: 'e0/0 trunk dot1q' },
+        { type: 'switch', name: 'SW-BRU', x: 240, y: 200, ip: 'Po1 = e0/0+e1/0+e1/1', iface: 'LACP active' },
+        { type: 'switch', name: 'SW-GND', x: 600, y: 200, ip: 'Po1 = e0/0+e1/0+e1/1', iface: 'LACP passive' },
+        { type: 'pc', name: 'VPC3', x: 90,  y: 380, ip: '192.168.10.10', gateway: '192.168.10.1', iface: 'VLAN 10 — SW-BRU e0/1' },
+        { type: 'pc', name: 'VPC4', x: 270, y: 390, ip: '192.168.20.10', gateway: '192.168.20.1', iface: 'VLAN 20 — SW-BRU e0/2' },
+        { type: 'pc', name: 'VPC5', x: 560, y: 390, ip: '192.168.20.11', gateway: '192.168.20.1', iface: 'VLAN 20 — SW-GND e0/1' },
+        { type: 'pc', name: 'VPC6', x: 750, y: 380, ip: '192.168.10.11', gateway: '192.168.10.1', iface: 'VLAN 10 — SW-GND e0/2' }
+      ],
+      links: [
+        { from: 'R8', to: 'SW-BRU', label: 'e0/0 ↔ e0/3 TRUNK', trunk: true },
+        { from: 'SW-BRU', to: 'SW-GND', label: 'Po1 (e0/0 + e1/0 + e1/1)', trunk: true, bundle: 3 },
+        { from: 'SW-BRU', to: 'VPC3', label: 'e0/1', vlan: 10 },
+        { from: 'SW-BRU', to: 'VPC4', label: 'e0/2', vlan: 20 },
+        { from: 'SW-GND', to: 'VPC5', label: 'e0/1', vlan: 20 },
+        { from: 'SW-GND', to: 'VPC6', label: 'e0/2', vlan: 10 }
+      ]
+    },
+    hint: "ETHERCHANNEL = N câbles physiques (1 à 8) tissés en UN lien logique (Port-Channel, Po). 3 MODES : (1) ON = statique, pas de négo, OBLIGATOIREMENT ON des 2 côtés sinon BOUCLE. (2) LACP = standard IEEE 802.3ad, multi-vendor, rôles active/passive (passive+passive invalide), REFERENCE en prod. (3) PAgP = Cisco-only, rôles desirable/auto (auto+auto invalide), legacy. COMMANDES CLÉS : interface range eX/Y , eA/B - C → channel-group N mode {on|active|passive|desirable|auto}. La config TRUNK/VLAN se met sur Po1, PAS sur les membres. LOAD-BALANCING global : port-channel load-balance src-dst-ip (mieux que src-mac par défaut). STP voit Po1 comme UN lien = 0 port bloqué. RÉSILIENCE : un membre tombe → Po1 reste up, hash se rééquilibre auto. PIÈGES : (a) duplex/speed différents = pas de bundle, (b) modes incompatibles 2 côtés = boucle ou pas de bundle, (c) trunk allowed vlan différent = bundle refusé, (d) ON+LACP = catastrophe silencieuse.",
+    challenge: {
+      title: "Le Défi du Sensei — Tisser le bon nœud du premier coup",
+      story: "« Léo, tu connais les trois nœuds. Montre-moi maintenant que tu choisis le bon. » Le Sensei pose deux nouveaux switches japonais — <strong>SW-OSAKA</strong> et <strong>SW-KYOTO</strong> — reliés par 3 câbles flambant neufs. « Cette fois, je veux du LACP, fait dans les règles. Load-balancing par IP, pas par MAC. Et trunk pour les VLANs 100 (PROD) et 200 (INVITES). Sans regarder le chapitre. »",
+      scenario: "Bundle les 3 liens entre SW-OSAKA et SW-KYOTO en Port-channel 2 via LACP (active côté OSAKA, passive côté KYOTO). Load-balancing global en src-dst-ip. Puis Po2 en trunk dot1q autorisant les VLANs 100 et 200. Bascule entre les onglets SW-OSAKA et SW-KYOTO.",
+      multiDevice: ['SW-OSAKA', 'SW-KYOTO'],
+      tasks: [
+        "🏷️ Sur SW-OSAKA ET SW-KYOTO — crée VLAN 100 (PROD) et VLAN 200 (INVITES)",
+        "🔌 Sur SW-OSAKA — bundle e0/0, e1/0 et e1/1 en channel-group 2 mode active",
+        "🔌 Sur SW-KYOTO — bundle e0/0, e1/0 et e1/1 en channel-group 2 mode passive",
+        "🚇 Sur Po2 des DEUX switches — interface Port-channel 2 → switchport trunk encapsulation dot1q → switchport mode trunk → switchport trunk allowed vlan 100,200",
+        "⚖️ Globalement (les 2 switches) — port-channel load-balance src-dst-ip",
+        "🔍 Vérifie show etherchannel summary : Po2(SU), Protocol LACP, 3 membres en (P)"
+      ],
+      topology: {
+        networks: [
+          { name: 'Po2 (3 liens LACP)', subnet: 'load-balance src-dst-ip', mask: '3× BW', gateway: 'trunk dot1q 100,200' }
+        ],
+        devices: [
+          { type: 'switch', name: 'SW-OSAKA', x: 240, y: 200, ip: 'Po2 LACP active',  iface: 'e0/0 + e1/0 + e1/1' },
+          { type: 'switch', name: 'SW-KYOTO', x: 600, y: 200, ip: 'Po2 LACP passive', iface: 'e0/0 + e1/0 + e1/1' }
+        ],
+        links: [
+          { from: 'SW-OSAKA', to: 'SW-KYOTO', label: 'Po2 LACP (3 liens)', trunk: true, bundle: 3 }
+        ]
+      },
+      checks: [
+        { desc: "SW-OSAKA : VLAN 100 et 200 existent",
+          device: 'SW-OSAKA', test: (s) => s.vlans && s.vlans['100'] && s.vlans['200'] },
+        { desc: "SW-KYOTO : VLAN 100 et 200 existent",
+          device: 'SW-KYOTO', test: (s) => s.vlans && s.vlans['100'] && s.vlans['200'] },
+        { desc: "SW-OSAKA : Po2 monté en LACP active avec 3 membres",
+          device: 'SW-OSAKA',
+          test: (s) => s.etherchannel && s.etherchannel['2'] && s.etherchannel['2'].mode === 'active' && (s.etherchannel['2'].members || []).length === 3 },
+        { desc: "SW-KYOTO : Po2 monté en LACP passive avec 3 membres",
+          device: 'SW-KYOTO',
+          test: (s) => s.etherchannel && s.etherchannel['2'] && s.etherchannel['2'].mode === 'passive' && (s.etherchannel['2'].members || []).length === 3 }
+      ]
+    }
+  },
+
+  {
+    id: 30, title: "Lab — CDP & LLDP", category: "fundamentals",
     difficulty: "Débutant", duration: "20 min", device: "R1", hostname: "R1",
     objectives: [
       "Découvrir automatiquement les voisins L2 directement connectés (sans IP nécessaire)",
