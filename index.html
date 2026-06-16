@@ -12873,7 +12873,20 @@ function renderTopology(topo, customContainerId) {
     if (link.secure) cls += ' secure';
     if (link.blocked) cls += ' blocked';
     if (link.acl) cls += ' acl';
-    svg += '<line class="' + cls + '" x1="' + a.x + '" y1="' + a.y + '" x2="' + b.x + '" y2="' + b.y + '"/>';
+    // Bundle (EtherChannel) : on dessine N câbles parallèles décalés perpendiculairement
+    const bundleN = Math.max(1, parseInt(link.bundle) || 1);
+    if (bundleN > 1) {
+      const dxB = b.x - a.x, dyB = b.y - a.y;
+      const distB = Math.sqrt(dxB*dxB + dyB*dyB) || 1;
+      const pX = -dyB / distB, pY = dxB / distB;
+      const spacing = 7;
+      for (let i = 0; i < bundleN; i++) {
+        const off = (i - (bundleN - 1) / 2) * spacing;
+        svg += '<line class="' + cls + '" x1="' + (a.x + pX*off) + '" y1="' + (a.y + pY*off) + '" x2="' + (b.x + pX*off) + '" y2="' + (b.y + pY*off) + '"/>';
+      }
+    } else {
+      svg += '<line class="' + cls + '" x1="' + a.x + '" y1="' + a.y + '" x2="' + b.x + '" y2="' + b.y + '"/>';
+    }
 
     // Position label at 35% from 'a' (the source side, usually switch/router) instead of midpoint
     // so it doesn't overlap with the PC on the other end
