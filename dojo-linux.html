@@ -71,9 +71,13 @@ window.addEventListener('error', function(e) {
     --border-strong:  #a89876;
     --accent-primary: #c8341c;
     --accent-primary-hover: #962617;
+    --accent-soft:    #f9e6e0;
     --accent-success: #1e5a3d;
+    --accent-success-soft: #e0ebd9;
     --accent-warning: #c89028;
+    --accent-warning-soft: #faf0d4;
     --accent-danger:  #8b2c2c;
+    --accent-danger-soft:  #f5e5e5;
     --gold:           #c89028;
     --gold-light:     #e8c468;
     --vermilion:      #c8341c;
@@ -357,14 +361,94 @@ window.addEventListener('error', function(e) {
   .exo-section ol li {
     margin: 3px 0;
   }
+  /* Culture Unix — encadré or (histoire, pourquoi ça marche ainsi) */
+  .exo-section.culture {
+    border-left-color: var(--gold, #c89028);
+    background: var(--accent-warning-soft, #faf0d4);
+    color: var(--text-2);
+  }
+  /* Réflexion — encadré indigo (question qui fait réfléchir) */
+  .exo-section.reflection {
+    border-left-color: var(--indigo, #1e3a5c);
+    background: rgba(30,58,92,0.06);
+    color: var(--text-2);
+    font-style: italic;
+  }
 
   .active-exo code {
-    background: rgba(30,90,61,0.15);
-    border: 1px solid rgba(30,90,61,0.35);
-    color: #5dffe0;
+    background: var(--bg-code, #efe9d4);
+    border: 1px solid var(--border-medium, #c8baa0);
+    color: var(--accent-primary, #c8341c);
     padding: 1px 6px; border-radius: 4px;
     font-family: var(--font-mono);
     font-size: 0.85em;
+    font-weight: 500;
+  }
+
+  /* ═══ RÉCIT + MENTOR (en tête de catégorie) ═══ */
+  .quest-story {
+    margin: 4px 0 10px;
+    padding: 12px 14px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-light);
+    border-left: 3px solid var(--vermilion, #c8341c);
+    border-radius: 6px;
+    font-size: 0.78rem;
+    line-height: 1.6;
+    color: var(--text-2);
+    font-family: var(--font-serif);
+    font-size: 0.92rem;
+  }
+  .quest-story-label, .quest-mentor-label {
+    display: block;
+    font-size: 0.58rem; font-weight: 700;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--vermilion, #c8341c);
+    margin-bottom: 6px;
+    font-family: var(--font-mono);
+    opacity: 0.85;
+  }
+  .quest-mentor {
+    margin: 0 0 12px;
+    padding: 12px 14px;
+    background: rgba(30,58,92,0.05);
+    border: 1px solid var(--border-light);
+    border-left: 3px solid var(--indigo, #1e3a5c);
+    border-radius: 6px;
+    font-size: 0.78rem;
+    line-height: 1.6;
+    color: var(--text-2);
+  }
+  .quest-mentor-label { color: var(--indigo, #1e3a5c); }
+
+  /* ═══ DÉFI DU SENSEI (fin de catégorie) ═══ */
+  .quest-challenge {
+    margin: 12px 0 6px;
+    padding: 14px 16px;
+    background: linear-gradient(135deg, #fff8e1, #faf0d4);
+    border: 1px solid var(--gold, #c89028);
+    border-left: 5px solid var(--gold, #c89028);
+    border-radius: 8px;
+    box-shadow: var(--shadow-sm);
+  }
+  .quest-challenge-head {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 0.62rem; font-weight: 700;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: #7a4e10;
+    font-family: var(--font-mono);
+    margin-bottom: 6px;
+  }
+  .quest-challenge-icon { font-size: 1rem; }
+  .quest-challenge-title {
+    font-family: var(--font-serif);
+    font-size: 1.05rem; font-weight: 700;
+    color: #7a4e10;
+    margin-bottom: 5px;
+  }
+  .quest-challenge-body {
+    font-size: 0.78rem; line-height: 1.55;
+    color: var(--text-2);
   }
 
   .exo-status {
@@ -1290,8 +1374,14 @@ var QUESTS = [
     id: 'fundamentals',
     icon: '🌱',
     title: 'Les fondations',
-    color: '#00f5d4',
+    color: '#1e5a3d',
     desc: 'Premiers pas dans le terminal',
+    story: "Premier jour. Le Sensei te fait asseoir devant un écran noir. Pas d'icônes, pas de souris qui glisse — juste un curseur qui clignote et attend. \"C'est là que vivent les vrais administrateurs\", dit-il. \"L'interface graphique, c'est la salle d'exposition. **Le terminal, c'est l'atelier.**\"\n\nTu n'as pas encore tapé une seule lettre que déjà tu te sens perdu. Où es-tu ? Que contient ce dossier ? Le vieux sourit : \"Avant de courir, on apprend à ouvrir les yeux. Trois commandes, et tu ne seras plus jamais aveugle dans un système Unix.\"",
+    mentor: "Trois réflexes pour ne jamais te sentir perdu, apprenti :\n\n① **Toujours savoir OÙ tu es** avant d'agir — `pwd` répond en une seconde.\n② **Toujours regarder AVANT de toucher** — `ls` puis `ls -la` te montrent le terrain, y compris les fichiers cachés.\n③ Les fichiers qui commencent par un point (`.bashrc`, `.ssh`) sont **cachés volontairement** : ce sont des configs, pas des secrets. `-a` les révèle.\n\nCes trois gestes, tu les feras des milliers de fois. Grave-les maintenant.",
+    challenge: {
+      title: "L'exploration à l'aveugle",
+      desc: "Le Sensei te bande les yeux (métaphoriquement). Depuis ton home, sans jamais utiliser d'explorateur graphique : **① trouve où tu es**, **② liste tout le contenu caché avec les permissions**, **③ repère le fichier `.bashrc` et lis ses permissions**. Trois commandes, dans l'ordre. Si tu hésites sur une, recommence la catégorie."
+    },
     exos: [
       {
         level: 'beginner',
@@ -1302,6 +1392,8 @@ var QUESTS = [
         steps: ["Tape simplement la commande `pwd`", "Lis le chemin renvoyé"],
         expected: "$ pwd\n/home/user",
         diagram: "  /\n  ├── etc/\n  ├── var/\n  └── home/\n      └── user/  ← TU ES ICI",
+        culture: "`pwd` signifie **Print Working Directory**. Le terme *working directory* (répertoire de travail) date des premiers Unix des années 70 : chaque processus garde en mémoire UN dossier courant, et toutes les commandes relatives partent de là. Ce n'est pas qu'un affichage — c'est un vrai état du système que tu déplaces avec `cd`.",
+        reflection: "Pourquoi le terminal ne t'affiche-t-il pas ton dossier courant en permanence, en gros, comme un explorateur graphique ?\n👉 Parce qu'Unix est bâti sur la philosophie du minimalisme : le terminal ne montre QUE ce que tu demandes. Ton prompt (`user@dojo:~$`) contient déjà l'info en abrégé — le `~` veut dire /home/user.",
         check: function(s) { return s.history.indexOf('pwd') >= 0; }
       },
       {
@@ -2295,7 +2387,14 @@ function escapeHtml(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 function formatTextWithCode(text) {
-  return escapeHtml(text).replace(/`([^`]+)`/g, '<code>$1</code>');
+  // Markdown léger et SÛR : on échappe d'abord tout le HTML, puis on
+  // ré-introduit un sous-ensemble contrôlé (code, gras, retours ligne).
+  var s = escapeHtml(text);
+  s = s.replace(/`([^`]+)`/g, '<code>$1</code>');       // `code`
+  s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>'); // **gras**
+  s = s.replace(/\n\n/g, '<br><br>');                    // paragraphes
+  s = s.replace(/\n/g, '<br>');                          // retours ligne
+  return s;
 }
 function newlineToBr(s) { return s.replace(/\n/g, '<br>'); }
 
@@ -2425,6 +2524,18 @@ function renderExercises() {
     html += '<span class="quest-chevron">▶</span>';
     html += '</div>';
     html += '<div class="quest-body">';
+    if (quest.story) {
+      html += '<div class="quest-story">';
+      html += '<span class="quest-story-label">📖 Le récit</span>';
+      html += formatTextWithCode(quest.story);
+      html += '</div>';
+    }
+    if (quest.mentor) {
+      html += '<div class="quest-mentor">';
+      html += '<span class="quest-mentor-label">🧙 Le Sensei</span>';
+      html += formatTextWithCode(quest.mentor);
+      html += '</div>';
+    }
     quest.exos.forEach(function(ex) {
       var idx = EXERCISES.indexOf(ex);
       var cls = 'exo-card' + (idx === currentExoIdx ? ' active' : '') + (completed.has(idx) ? ' completed' : '');
@@ -2435,6 +2546,13 @@ function renderExercises() {
       html += '<div class="exo-card-title">' + escapeHtml(ex.title) + '</div>';
       html += '</div>';
     });
+    if (quest.challenge) {
+      html += '<div class="quest-challenge">';
+      html += '<div class="quest-challenge-head"><span class="quest-challenge-icon">⚔️</span> Le Défi du Sensei</div>';
+      html += '<div class="quest-challenge-title">' + escapeHtml(quest.challenge.title) + '</div>';
+      html += '<div class="quest-challenge-body">' + formatTextWithCode(quest.challenge.desc) + '</div>';
+      html += '</div>';
+    }
     html += '</div></div>';
   });
 
@@ -2527,6 +2645,18 @@ function renderActiveExo() {
     html += '<div class="exo-section diagram">';
     html += '<span class="exo-section-label">📐 Schéma</span>';
     html += escapeHtml(ex.diagram);
+    html += '</div>';
+  }
+  if (ex.culture) {
+    html += '<div class="exo-section culture">';
+    html += '<span class="exo-section-label">📜 Culture Unix</span>';
+    html += formatTextWithCode(ex.culture);
+    html += '</div>';
+  }
+  if (ex.reflection) {
+    html += '<div class="exo-section reflection">';
+    html += '<span class="exo-section-label">🧠 Réflexion</span>';
+    html += formatTextWithCode(ex.reflection);
     html += '</div>';
   }
 
