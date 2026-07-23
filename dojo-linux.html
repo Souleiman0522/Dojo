@@ -2078,6 +2078,8 @@ var QUESTS = [
         mission: "Affiche l'espace disque avec df -h.",
         steps: ["`df -h`", "Lis les colonnes : Size, Used, Avail, Use%"],
         expected: "Filesystem  Size  Used  Avail  Use%  Mounted\n/dev/sda1   50G   12G   36G    25%   /\ntmpfs       2G    0     2G     0%    /tmp",
+        culture: "Un disque plein à **100%** est l'une des pannes les plus vicieuses : le système ne peut plus écrire de logs (donc plus de traces), les bases de données refusent les écritures, les sessions plantent. Et le pire : parfois `df` montre de la place libre mais l'écriture échoue quand même — parce que ce sont les **inodes** (le nombre de fichiers possibles) qui sont épuisés, pas l'espace. `df -i` révèle ce cas rare. Toujours garder une marge : au-dessus de 90%, on agit.",
+        reflection: "Que représente la ligne `tmpfs` montée sur `/tmp` dans la sortie de `df` ?\n👉 `tmpfs` est un système de fichiers **en mémoire RAM**, pas sur le disque. `/tmp` y est souvent monté pour des raisons de vitesse — mais attention : son contenu **disparaît au redémarrage** (c'est de la RAM). D'où le nom /tmp (temporaire). Ne jamais y stocker quelque chose d'important. C'est un exemple du principe Unix : « tout est fichier », même la mémoire vive.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('df') === 0; }); }
       },
       {
@@ -2088,6 +2090,8 @@ var QUESTS = [
         mission: "Affiche la taille de ton home.",
         steps: ["`du -sh ~`", "Le résultat est la taille totale (récursive)"],
         expected: "$ du -sh ~\n128M  /home/user",
+        culture: "`df` et `du` sont complémentaires mais différents : `df` regarde le disque **d'en haut** (combien reste-t-il sur la partition ?), `du` regarde **d'en bas** (combien pèse ce dossier précis ?). Le combo qui sauve : quand un disque est plein (`df` à 95%), on lance `du -sh /var/*` pour trouver QUEL dossier est le coupable, puis on descend : `du -sh /var/log/*`. On traque le gouffre de proche en proche jusqu'à trouver le fichier géant.",
+        reflection: "Ton disque est plein. Quelle stratégie avec `du` pour trouver ce qui le remplit ?\n👉 On descend l'arbre en suivant le plus gros à chaque niveau : `du -sh /*` (racine), repère le plus lourd (souvent `/var`), puis `du -sh /var/*`, puis `du -sh /var/log/*`... jusqu'au fichier coupable. Astuce pro : `du -sh /var/* | sort -rh | head` trie et montre directement les plus gros. La chasse au gaspillage d'espace, geste hebdomadaire de l'admin.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('du') === 0; }); }
       },
       {
@@ -2098,6 +2102,8 @@ var QUESTS = [
         mission: "Affiche /proc/cpuinfo.",
         steps: ["`cat /proc/cpuinfo`", "Lis le model name et cpu cores"],
         expected: "model name : Intel(R) Core(TM) i7-9700K\ncpu cores : 8",
+        culture: "`/proc` est l'une des idées les plus géniales d'Unix : un **faux système de fichiers** qui n'existe pas sur le disque. Chaque fichier dedans est généré à la volée par le noyau quand tu le lis. `cat /proc/cpuinfo` interroge en direct le processeur, `/proc/meminfo` la RAM, `/proc/1234/` expose les entrailles du processus 1234. C'est l'incarnation parfaite du principe « tout est fichier » : même l'état vivant du noyau se lit avec un simple `cat`.",
+        reflection: "Pourquoi les fichiers de `/proc` affichent-ils une taille de 0 octet avec `ls -l`, alors que `cat` en montre le contenu ?\n👉 Parce qu'ils n'existent pas vraiment sur le disque : ils sont **générés à la lecture**. Leur « taille » n'a pas de sens avant qu'on les lise — le noyau produit le contenu à la demande. C'est pour ça qu'on ne peut pas les copier normalement ni connaître leur taille à l'avance. Des fenêtres en temps réel sur le cœur du système, pas des fichiers ordinaires.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('cpuinfo') >= 0; }); }
       },
       {
@@ -2152,7 +2158,8 @@ var QUESTS = [
         scene: "Tu veux voir quels serveurs DNS sont utilisés.",
         mission: "Affiche /etc/resolv.conf.",
         steps: ["`cat /etc/resolv.conf`", "Lis les lignes nameserver"],
-        expected: "nameserver 8.8.8.8\nnameserver 1.1.1.1",
+        culture: "Le **DNS** (Domain Name System) est l'annuaire d'Internet : il traduit `google.com` en une adresse IP comme `142.250.75.238`. Sans lui, il faudrait mémoriser des numéros. `/etc/resolv.conf` dit à ta machine QUELS serveurs DNS interroger : `8.8.8.8` (Google) et `1.1.1.1` (Cloudflare) sont les plus connus, faciles à retenir. Quand un site « ne charge pas » alors que le réseau marche, le DNS est souvent le coupable — d'où le réflexe `ping 8.8.8.8` (par IP, sans DNS) pour isoler le problème.",
+        reflection: "`ping google.com` échoue mais `ping 8.8.8.8` fonctionne. Quel est le problème ?\n👉 C'est le **DNS**, pas le réseau. Puisque `8.8.8.8` (une IP directe) répond, ta connexion Internet marche. Mais `google.com` ne se traduit pas en IP → le service DNS est en panne ou mal configuré (`/etc/resolv.conf` vide ou serveur DNS injoignable). Ce test en deux `ping` est LE diagnostic réseau de base : IP d'abord (couche réseau), nom ensuite (couche DNS).",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('resolv.conf') >= 0; }); }
       },
       {
@@ -2163,6 +2170,8 @@ var QUESTS = [
         mission: "Affiche ta clé SSH publique.",
         steps: ["`cat ~/.ssh/id_rsa.pub`", "Cette ligne est ce qu'on partage avec le serveur"],
         expected: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC7vbqajD... user@dojo",
+        culture: "Les clés SSH reposent sur la **cryptographie asymétrique**, l'une des plus belles idées de l'informatique. Deux clés mathématiquement liées : la **publique** (`.pub`) chiffre et vérifie, la **privée** déchiffre et signe. Ce qui est chiffré par l'une ne se déchiffre que par l'autre. Résultat magique : tu peux distribuer ta clé publique au monde entier, personne ne peut en déduire la privée. Le serveur défie ton client de prouver qu'il possède la clé privée — sans jamais qu'elle transite sur le réseau. Plus sûr qu'un mot de passe, et sans rien à retenir.",
+        reflection: "Pourquoi ne partage-t-on JAMAIS le fichier `id_rsa` (la clé privée), alors qu'on distribue librement `id_rsa.pub` ?\n👉 Parce que la clé privée EST ton identité. Quiconque la possède peut se faire passer pour toi sur tous les serveurs qui font confiance à ta clé publique. La publique, elle, ne permet que de VÉRIFIER — la donner ne risque rien, c'est même son but. Règle absolue : la privée reste sur TA machine, protégée en permissions `600`, et ne quitte jamais ton disque.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('id_rsa.pub') >= 0; }); }
       },
       {
@@ -2173,6 +2182,8 @@ var QUESTS = [
         mission: "Affiche ~/.ssh/authorized_keys.",
         steps: ["`cat ~/.ssh/authorized_keys`", "Chaque ligne = un appareil autorisé"],
         expected: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC7vbqajD... user@laptop",
+        culture: "`~/.ssh/authorized_keys` est la **liste des invités** de ton compte : chaque ligne est une clé publique autorisée à se connecter sans mot de passe. Quand quelqu'un tente de se connecter, le serveur parcourt ce fichier et lance un défi cryptographique pour chaque clé. C'est ainsi qu'on donne accès à un serveur : on ajoute une ligne (la clé publique de la personne) dans son authorized_keys. Retirer l'accès ? On supprime la ligne. Simple, précis, révocable.",
+        reflection: "Ce fichier doit avoir les permissions `600` (rw-------). Pourquoi SSH refuse-t-il de fonctionner sinon ?\n👉 Sécurité stricte : si `authorized_keys` était modifiable par d'autres utilisateurs (permissions trop larges), n'importe qui pourrait y ajouter SA clé et s'octroyer un accès à ton compte. SSH vérifie donc les permissions AVANT d'accepter la connexion et refuse net si le fichier (ou le dossier `~/.ssh`) est trop ouvert. Un cas rare où être « trop permissif » bloque tout — par précaution.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('authorized_keys') >= 0; }); }
       }
     ]
