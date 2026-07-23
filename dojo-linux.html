@@ -1942,6 +1942,8 @@ var QUESTS = [
         mission: "Affiche /etc/nginx/nginx.conf.",
         steps: ["`cat /etc/nginx/nginx.conf`", "Note la ligne `include /etc/nginx/sites-enabled/*;`"],
         expected: "user www-data;\nhttp {\n    include /etc/nginx/sites-enabled/*;\n}",
+        culture: "nginx tourne sous l'utilisateur **www-data**, pas root — un principe de sécurité fondamental : si un pirate exploite une faille du serveur web, il n'obtient que les maigres droits de www-data, pas les clés du système. Le motif `sites-available` / `sites-enabled` est aussi élégant : on écrit les configs de site dans `sites-available`, et on les ACTIVE en créant un lien symbolique dans `sites-enabled`. Désactiver un site = supprimer le lien, sans perdre la config. Séparer « disponible » et « activé » est un pattern qu'on retrouve partout en administration Linux.",
+        reflection: "Pourquoi faire tourner nginx sous `www-data` plutôt que sous `root`, alors que root pourrait tout faire plus simplement ?\n👉 **Principe du moindre privilège.** Un serveur web est exposé à Internet, donc vulnérable. S'il tournait en root et qu'un attaquant l'exploitait, il contrôlerait TOUTE la machine. Sous www-data (un compte volontairement sans pouvoir), le dégât maximal est limité aux fichiers web. On donne à chaque service le MINIMUM de droits nécessaire — jamais plus. Root ne lance que le strict nécessaire.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('nginx.conf') >= 0; }); }
       },
       {
@@ -1962,6 +1964,8 @@ var QUESTS = [
         mission: "Copie ~/site/index.html vers /var/www/html.",
         steps: ["`cd /var/www/html`", "`sudo cp ~/site/index.html .`", "Le `.` = dossier courant", "`ls`"],
         expected: "$ ls\nindex.html  index.nginx-debian.html",
+        culture: "`/var/www/html` est la **racine web** (document root) par convention : tout fichier ici devient accessible depuis un navigateur. `index.html` a un statut spécial — c'est la page servie quand on visite `/` sans préciser de fichier. Le `/var` (variable) est le dossier des données qui changent au fil de la vie du serveur : sites web, logs, bases de données, files d'attente. Le déploiement d'un site, dans sa forme la plus simple, c'est exactement ça : copier des fichiers au bon endroit avec les bonnes permissions.",
+        reflection: "Ton `index.html` est bien copié dans `/var/www/html` mais le navigateur affiche « 403 Forbidden ». Pourquoi ?\n👉 Un problème de **permissions**. nginx (utilisateur www-data) doit pouvoir LIRE le fichier. S'il a été copié par root avec des permissions trop restrictives (`600`, lisible par root seul), www-data ne peut pas y accéder → 403 Forbidden. La correction : `chmod 644 index.html` (lisible par tous) et vérifier que les dossiers parents ont le bit `x` (droit de traverser). 403 = « le fichier existe mais je n'ai pas le droit de te le donner ».",
         check: function(s) { var d = getNode('/var/www/html'); return !!(d && d.children && d.children['index.html']); }
       },
       {
@@ -1982,6 +1986,8 @@ var QUESTS = [
         mission: "Affiche les dernières lignes de /var/log/nginx/access.log.",
         steps: ["`tail /var/log/nginx/access.log`", "Chaque ligne = une requête HTTP", "Format : IP - - [date] \"GET / HTTP/1.1\" 200"],
         expected: "127.0.0.1 - - [28/Apr/2026:12:00:01] \"GET / HTTP/1.1\" 200 612",
+        culture: "Chaque ligne d'`access.log` raconte une visite : l'IP du visiteur, la date, la requête (`GET / HTTP/1.1`), et surtout le **code de statut HTTP**. Ces codes sont un langage universel : **2xx** = succès (200 = OK), **3xx** = redirection (301 = déplacé définitivement), **4xx** = erreur du client (404 = introuvable, 403 = interdit), **5xx** = erreur du serveur (500 = plantage interne, 502 = passerelle en panne). Lire ces logs en direct avec `tail -f`, c'est voir battre le cœur de ton site.",
+        reflection: "Dans les logs, tu vois beaucoup de `404` sur des URL comme `/wp-login.php` alors que ton site n'utilise pas WordPress. Que se passe-t-il ?\n👉 Des **robots malveillants** scannent automatiquement tout Internet à la recherche de failles connues (ici, la page de login WordPress). Les 404 signifient qu'ils ne trouvent rien — ton site n'est pas concerné. C'est le bruit de fond permanent d'un serveur exposé. Utile pour repérer les attaques : une avalanche de 404 ou 403 depuis une même IP = un scanner qu'on peut bannir avec `ufw` ou fail2ban.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('tail') >= 0 && c.indexOf('access.log') >= 0; }); }
       }
     ]
@@ -2476,6 +2482,8 @@ var QUESTS = [
         steps: ["`free -h`", "Lis MemTotal, used, available", "Si swap used > 0, la RAM est saturée"],
         expected: "        total   used   free   shared  buff/cache  available\nMem:     16G   4.2G   3.8G   200M    8.0G        11G\nSwap:    2G    0      2G",
         diagram: "Lire free :\n  used      = utilisé\n  free      = inutilisé\n  available = ce que tu peux\n              vraiment allouer\n              (used+cache récupérable)",
+        culture: "Le plus grand malentendu de Linux : « ma RAM est pleine, il y a une fuite ! ». En réalité, **Linux utilise volontairement la RAM libre comme cache disque** (`buff/cache`) pour accélérer les lectures. Cette mémoire n'est PAS perdue : dès qu'une application en a besoin, le cache est libéré instantanément. Le site *linuxatemyram.com* existe uniquement pour rassurer les débutants paniqués. La colonne à regarder n'est pas `free` (qui sera toujours bas et c'est normal) mais **`available`** — la mémoire réellement allouable.",
+        reflection: "Pourquoi la colonne `available` est-elle plus fiable que `free` pour juger si la machine manque de mémoire ?\n👉 Parce que `free` ne compte QUE la RAM totalement inutilisée — or Linux garde toujours peu de RAM vraiment « free », le reste servant de cache. `available` fait le vrai calcul : RAM libre PLUS le cache récupérable à la demande. C'est ce qu'une application pourrait réellement obtenir. Une machine avec `free` à 200 Mo mais `available` à 11 Go se porte très bien.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('free') === 0; }); }
       },
       {
@@ -2486,6 +2494,8 @@ var QUESTS = [
         mission: "Affiche uptime.",
         steps: ["`uptime`", "Lis la load average à droite", "Si load > 8 sur un 8-cores, la machine rame"],
         expected: "$ uptime\n10:30:42 up 2 days, 3:14, 1 user, load average: 0.05, 0.10, 0.08",
+        culture: "La **load average** (trois nombres : 1, 5, 15 minutes) mesure le nombre moyen de processus qui attendent le CPU. Sa lecture géniale : compare-la au nombre de cœurs (`nproc`). Sur une machine à 4 cœurs, une load de `4.0` = pleinement occupée (100%), `8.0` = deux fois trop de travail (ça rame). Les trois valeurs racontent une tendance : si `1min > 15min`, la charge MONTE (crise en cours) ; si `1min < 15min`, elle REDESCEND (le pic est passé). Un diagnostic en un coup d'œil.",
+        reflection: "Load average `0.05, 2.00, 8.00` sur une machine à 4 cœurs : que raconte cette évolution ?\n👉 Une crise qui vient de se **terminer**. Il y a 15 min, la charge était de 8.0 (le double de la capacité — la machine ramait à mort). Depuis, elle a chuté : 2.0 il y a 5 min, et seulement 0.05 maintenant. Le pic est passé, tout est rentré dans l'ordre. Lire les trois nombres de gauche à droite = lire le passé récent : ordre chronologique inversé (récent → ancien).",
         check: function(s) { return s.history.some(function(c) { return c.trim() === 'uptime'; }); }
       },
       {
@@ -2526,6 +2536,8 @@ var QUESTS = [
         mission: "Lance vmstat.",
         steps: ["`vmstat`", "Lis colonnes us, sy, wa", "wa élevé = disque saturé", "us élevé = CPU saturé"],
         expected: "procs  memory      swap    io     system     cpu\n r b   free  buff cache  si so  bi bo  in cs   us sy id wa\n 1 0   3.8G  120M 8.0G   0  0   2  3   25 130   1  0 99  0",
+        culture: "`vmstat` répond à LA question du diagnostic : « ça rame, mais à cause de QUOI ? ». Ses colonnes CPU sont un partage à 100% : `us` (temps passé dans les programmes), `sy` (dans le noyau), `id` (inactif), et surtout **`wa`** (wait — le CPU attend le disque). Un `wa` élevé est le signe classique d'un disque saturé qui étrangle tout : le processeur est prêt mais poireaute. `si`/`so` (swap in/out) non nuls = la RAM déborde sur le disque, catastrophe de lenteur.",
+        reflection: "Ta machine rame. `vmstat` montre `us=5, wa=80`. CPU ou disque ?\n👉 **Le disque.** `wa` (wait I/O) à 80% signifie que le CPU passe l'essentiel de son temps à ATTENDRE le disque — il est prêt mais bloqué par des lectures/écritures lentes. Le CPU lui-même est peu utilisé (`us=5`). Ajouter un processeur n'y changerait rien ; il faut un disque plus rapide (SSD), moins d'I/O, ou plus de RAM (pour cacher). À l'inverse, `us=95, wa=2` pointerait vers un CPU saturé.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('vmstat') === 0; }); }
       }
     ]
