@@ -594,6 +594,20 @@ window.addEventListener('error', function(e) {
     color: var(--text-1);
     line-height: 1.2;
   }
+  .quest-chapter {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.56rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--gold, #c89028);
+    background: rgba(200,144,40,0.12);
+    border: 1px solid rgba(200,144,40,0.35);
+    border-radius: 4px;
+    padding: 0 5px;
+    vertical-align: middle;
+    margin-right: 2px;
+  }
   .quest-meta {
     font-size: 0.62rem;
     color: var(--text-3);
@@ -1381,6 +1395,7 @@ var FILE_CONTENTS = {
 var QUESTS = [
   {
     id: 'fundamentals',
+    chapter: 1,
     icon: '🌱',
     title: 'Les fondations',
     color: '#1e5a3d',
@@ -1434,6 +1449,7 @@ var QUESTS = [
   },
   {
     id: 'navigation',
+    chapter: 2,
     icon: '🧭',
     title: 'Navigation',
     color: '#1e3a5c',
@@ -1520,6 +1536,7 @@ var QUESTS = [
   },
   {
     id: 'files',
+    chapter: 3,
     icon: '📄',
     title: 'Fichiers & dossiers',
     color: '#c89028',
@@ -1628,6 +1645,7 @@ var QUESTS = [
   },
   {
     id: 'users',
+    chapter: 4,
     icon: '👤',
     title: 'Utilisateurs & permissions',
     color: '#8b2c2c',
@@ -1714,6 +1732,7 @@ var QUESTS = [
   },
   {
     id: 'processes',
+    chapter: 7,
     icon: '⚙️',
     title: 'Processus système',
     color: '#962617',
@@ -1765,6 +1784,7 @@ var QUESTS = [
   },
   {
     id: 'pipes',
+    chapter: 6,
     icon: '🔗',
     title: 'Recherche & filtrage',
     color: '#1e3a5c',
@@ -1853,6 +1873,7 @@ var QUESTS = [
   },
   {
     id: 'services',
+    chapter: 9,
     icon: '🛠️',
     title: 'Services & systemd',
     color: '#1e5a3d',
@@ -1912,6 +1933,7 @@ var QUESTS = [
   },
   {
     id: 'webserver',
+    chapter: 10,
     icon: '🌐',
     title: 'Quête : déployer un site web',
     color: '#c89028',
@@ -1994,6 +2016,7 @@ var QUESTS = [
   },
   {
     id: 'security',
+    chapter: 12,
     icon: '🛡️',
     title: 'Sécurité & hardening',
     color: '#8b2c2c',
@@ -2065,6 +2088,7 @@ var QUESTS = [
   },
   {
     id: 'system',
+    chapter: 13,
     icon: '💾',
     title: 'Système & disque',
     color: '#1e3a5c',
@@ -2136,6 +2160,7 @@ var QUESTS = [
   },
   {
     id: 'network',
+    chapter: 11,
     icon: '📡',
     title: 'Réseau & SSH',
     color: '#1e3a5c',
@@ -2196,6 +2221,7 @@ var QUESTS = [
   },
   {
     id: 'cron',
+    chapter: 15,
     icon: '⏰',
     title: 'Planification (cron)',
     color: '#1e5a3d',
@@ -2236,6 +2262,7 @@ var QUESTS = [
   }  ,
   {
     id: 'usermgmt',
+    chapter: 8,
     icon: '👥',
     title: 'Gestion des utilisateurs',
     color: '#8b2c2c',
@@ -2329,6 +2356,7 @@ var QUESTS = [
   },
   {
     id: 'editors',
+    chapter: 5,
     icon: '✏️',
     title: 'Éditeurs en ligne (nano/vim)',
     color: '#1e5a3d',
@@ -2390,6 +2418,7 @@ var QUESTS = [
   },
   {
     id: 'bashscript',
+    chapter: 16,
     icon: '📜',
     title: 'Scripting Bash',
     color: '#c89028',
@@ -2462,6 +2491,7 @@ var QUESTS = [
   },
   {
     id: 'monitoring',
+    chapter: 14,
     icon: '📊',
     title: 'Monitoring système',
     color: '#1e5a3d',
@@ -2544,6 +2574,7 @@ var QUESTS = [
   },
   {
     id: 'git',
+    chapter: 17,
     icon: '🔀',
     title: 'Git — le versioning',
     color: '#962617',
@@ -2616,6 +2647,7 @@ var QUESTS = [
   },
   {
     id: 'archives',
+    chapter: 18,
     icon: '📦',
     title: 'Archives & compression',
     color: '#c89028',
@@ -2657,6 +2689,8 @@ var QUESTS = [
 ];
 
 // Aplatir en EXERCISES (avec idx global)
+QUESTS.sort(function(a,b){ return (a.chapter||99)-(b.chapter||99); });
+
 var EXERCISES = [];
 QUESTS.forEach(function(quest) {
   quest.exos.forEach(function(ex) {
@@ -2835,7 +2869,8 @@ function renderExercises() {
     html += '<div class="quest-header" data-qid="' + quest.id + '">';
     html += '<span class="quest-icon" style="color:' + quest.color + '">' + quest.icon + '</span>';
     html += '<div style="flex:1">';
-    html += '<div class="quest-title">' + escapeHtml(quest.title) + '</div>';
+    var chapPrefix = quest.chapter ? '<span class="quest-chapter">Ch ' + quest.chapter + '</span> ' : '';
+    html += '<div class="quest-title">' + chapPrefix + escapeHtml(quest.title) + '</div>';
     html += '<div class="quest-meta">' + doneInQuest + '/' + quest.exos.length + ' · ' + escapeHtml(quest.desc) + '</div>';
     html += '</div>';
     html += '<span class="quest-chevron">▶</span>';
