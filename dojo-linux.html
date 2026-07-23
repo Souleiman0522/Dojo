@@ -1423,8 +1423,14 @@ var QUESTS = [
     id: 'navigation',
     icon: '🧭',
     title: 'Navigation',
-    color: '#3a86ff',
+    color: '#1e3a5c',
     desc: 'Se déplacer dans l\'arborescence',
+    story: "\"Un système Unix, c'est un arbre\", dit le Sensei en traçant des branches dans la poussière. \"Une seule racine — le `/` — et tout pousse à partir d'elle. Pas de C:, pas de D: comme sur les machines Windows. **Un seul point de départ, et des milliers de branches.**\"\n\nIl te tend une carte du système. \"Apprends à te déplacer de branche en branche sans jamais te perdre. `cd` pour descendre ou remonter, `pwd` pour te repérer, `ls` pour regarder autour. Un bon administrateur navigue son système les yeux fermés — comme toi dans ta propre maison.\"",
+    mentor: "Deux façons de désigner un chemin, ne les confonds jamais :\n\n① **Chemin ABSOLU** — commence par `/`. Il part toujours de la racine, peu importe où tu es. `/etc/hosts` pointe au même endroit depuis n'importe où.\n② **Chemin RELATIF** — part de ta position actuelle. `Documents/rapport.txt` dépend d'où tu te trouves.\n\nRaccourcis à graver : `~` = ton home, `..` = le dossier parent, `.` = le dossier courant, `cd` seul = retour au home. En cas de doute, `pwd` te dit toujours la vérité.",
+    challenge: {
+      title: "Le voyage aveugle",
+      desc: "Sans jamais taper deux fois la même commande de vérification : **① descends jusqu'à `/etc`** (chemin absolu), **② remonte d'un cran** avec `..`, **③ rentre chez toi** avec le raccourci le plus court, **④ prouve où tu es** avec `pwd`. Bonus : atteins `/home/user/Documents` en UN SEUL `cd` avec un chemin absolu."
+    },
     exos: [
       {
         level: 'beginner',
@@ -1492,8 +1498,14 @@ var QUESTS = [
     id: 'files',
     icon: '📄',
     title: 'Fichiers & dossiers',
-    color: '#ffbe0b',
+    color: '#c89028',
     desc: 'Lire, créer, copier, déplacer',
+    story: "\"Maintenant que tu sais te déplacer, tu vas apprendre à **créer et détruire**\", annonce le Sensei. \"Un administrateur ne fait pas que regarder — il façonne. Il crée des dossiers, copie des fichiers avant de les modifier, range son travail proprement.\"\n\nIl pose une règle dès le départ : \"En Unix, il n'y a pas de corbeille. `rm` supprime **définitivement**. Le jour où tu tapes `rm -rf` sur le mauvais dossier, personne ne pourra te sauver. Alors on apprend d'abord à **copier pour sauvegarder**, ensuite à supprimer. Dans cet ordre.\"",
+    mentor: "Les gestes du quotidien, et leurs pièges :\n\n① `mkdir` crée un dossier, `touch` crée un fichier vide. `cp` copie, `mv` déplace ET renomme (c'est la même commande).\n② **Toujours copier avant de modifier un fichier important** : `cp config config.bak`. Ça t'a déjà sauvé la vie, tu ne le sais pas encore.\n③ `rm` est **irréversible**. `rm -r` supprime un dossier entier. `rm -rf /` détruit tout — ne le tape JAMAIS pour \"voir\". Réfléchis deux fois, tape une fois.",
+    challenge: {
+      title: "Le projet propre",
+      desc: "Monte une structure de projet complète : **① crée un dossier `monprojet`** avec **② deux sous-dossiers `src` et `docs`**, **③ un `README.md`** dedans. Puis **④ sauvegarde un fichier important** en `.bak` avant de le toucher. Enfin, **⑤ supprime proprement** le dossier de test avec `rm -r`. Un cycle de vie complet : créer, organiser, sauvegarder, nettoyer."
+    },
     exos: [
       {
         level: 'intermediate',
@@ -1582,8 +1594,14 @@ var QUESTS = [
     id: 'users',
     icon: '👤',
     title: 'Utilisateurs & permissions',
-    color: '#8338ec',
+    color: '#8b2c2c',
     desc: 'Qui peut quoi ?',
+    story: "Le Sensei devient grave. \"Ici commence la vraie responsabilité. En Unix, **chaque fichier appartient à quelqu'un**, et chaque fichier dit qui a le droit de le lire, de l'écrire, de l'exécuter. C'est le cœur de la sécurité du système.\"\n\nIl te montre une ligne étrange : `-rwxr-xr--`. \"Ces dix caractères racontent toute l'histoire d'un fichier : qui le possède, qui peut le toucher, ce qu'il est. Apprends à les lire comme une phrase, et plus aucun système n'aura de secret pour toi.\"",
+    mentor: "Les permissions, décodées une fois pour toutes :\n\n① Les 10 caractères : `d` (type) + `rwx` (propriétaire) + `r-x` (groupe) + `r--` (autres). `r`=lire, `w`=écrire, `x`=exécuter.\n② `chmod` change les permissions. Deux notations : symbolique (`chmod +x script.sh`) ou **numérique** (`chmod 755`). Le 755 = rwx pour le proprio, r-x pour les autres.\n③ Mémo numérique : `r=4`, `w=2`, `x=1`. On additionne : `7=rwx`, `6=rw-`, `5=r-x`. `chmod 600` = privé total (proprio lit/écrit, personne d'autre).\n④ `chown` change le propriétaire. Souvent réservé à root.",
+    challenge: {
+      title: "Le coffre-fort",
+      desc: "Tu prépares un script sensible : **① identifie qui tu es** (`whoami` et `id`), **② lis les permissions** d'un dossier de scripts (`ls -l`), **③ rends un script exécutable** (`chmod +x`), **④ verrouille un fichier de secrets** en `600` (rwx------) avec la notation numérique. À la fin, seul toi peux lire tes secrets, et ton script tourne."
+    },
     exos: [
       {
         level: 'intermediate',
@@ -1653,8 +1671,14 @@ var QUESTS = [
     id: 'processes',
     icon: '⚙️',
     title: 'Processus système',
-    color: '#ff5c8a',
+    color: '#962617',
     desc: 'Voir ce qui tourne',
+    story: "\"Un système vivant, c'est des dizaines de programmes qui tournent en même temps, invisibles\", explique le Sensei. \"Le serveur web, la base de données, tes propres commandes — chacun est un **processus**, avec un numéro unique, le PID.\"\n\nIl fronce les sourcils : \"Un jour, un processus va s'emballer. Il mangera tout le CPU, la machine ralentira, les utilisateurs crieront. Ce jour-là, tu devras le **trouver** et le **tuer** — proprement d'abord, brutalement si nécessaire. Apprends à voir l'invisible.\"",
+    mentor: "Traquer et maîtriser les processus :\n\n① `ps aux` liste TOUS les processus avec leur PID, CPU et mémoire. `top` (ou `htop`) montre la même chose **en temps réel**, rafraîchi chaque seconde.\n② Pour arrêter un processus : `kill PID`. Ça envoie SIGTERM — une demande polie de s'arrêter.\n③ S'il refuse : `kill -9 PID` envoie SIGKILL — l'arrêt brutal, non négociable. **Dernier recours seulement** : le processus n'a pas le temps de nettoyer.\n④ Réflexe : `ps aux | grep nginx` pour trouver le PID d'un programme précis.",
+    challenge: {
+      title: "La chasse au processus fou",
+      desc: "Un processus mystère consomme des ressources. **① Liste tous les processus** (`ps aux`), **② observe les gros consommateurs en direct** (`top`), **③ trouve le PID** du coupable, **④ tue-le proprement** avec `kill`. Réflexion : dans quel cas passerais-tu à `kill -9` ? (Réponse dans l'encadré Culture du dernier exo.)"
+    },
     exos: [
       {
         level: 'intermediate',
@@ -1692,8 +1716,14 @@ var QUESTS = [
     id: 'pipes',
     icon: '🔗',
     title: 'Recherche & filtrage',
-    color: '#3a86ff',
+    color: '#1e3a5c',
     desc: 'grep, pipes et redirections',
+    story: "\"Voici le secret le mieux gardé d'Unix\", murmure le Sensei comme s'il partageait un trésor. \"Chaque commande fait UNE chose. Mais tu peux les **enchaîner** — la sortie de l'une devient l'entrée de la suivante. C'est le `|`, le *pipe*. C'est ce qui transforme dix petites commandes en un outil surpuissant.\"\n\nIl écrit au tableau : `cat log | grep ERROR | wc -l`. \"Lis ça comme une phrase : prends le fichier, garde les lignes qui contiennent ERROR, compte-les. Trois outils simples, une réponse précise. **C'est ça, penser en Unix.**\"",
+    mentor: "L'art de composer les commandes :\n\n① `grep MOT fichier` cherche un motif. `head` / `tail` montrent le début / la fin (parfait pour les logs : `tail -f` suit en direct).\n② Le pipe `|` connecte : `commande1 | commande2` envoie la sortie de 1 dans 2. On peut en chaîner autant qu'on veut.\n③ `wc -l` compte les lignes. `sort`, `uniq`, `cut` transforment le flux au passage.\n④ **Rediriger** au lieu d'afficher : `>` écrit dans un fichier (écrase), `>>` ajoute à la fin. `commande > fichier.txt` capture le résultat.",
+    challenge: {
+      title: "Le détective des logs",
+      desc: "Un fichier de log cache des erreurs. **① Affiche les premières lignes** pour comprendre le format, **② les dernières** pour voir l'activité récente, **③ filtre les lignes contenant `ERROR`** avec grep, **④ compte-les** avec un pipe vers `wc -l`, **⑤ sauvegarde le résultat** dans un fichier avec `>`. Une seule ligne de pipe pour les étapes 3-4 : `grep ERROR log | wc -l`."
+    },
     exos: [
       {
         level: 'intermediate',
@@ -1762,8 +1792,14 @@ var QUESTS = [
     id: 'services',
     icon: '🛠️',
     title: 'Services & systemd',
-    color: '#00f5d4',
+    color: '#1e5a3d',
     desc: 'Démarrer, arrêter, gérer',
+    story: "\"Un serveur, ce ne sont pas des programmes que tu lances à la main\", dit le Sensei. \"Ce sont des **services** : ils démarrent tout seuls au boot, redémarrent s'ils plantent, tournent en arrière-plan pendant des mois. Le chef d'orchestre qui les gère tous s'appelle **systemd**.\"\n\nIl te confie la baguette : \"`systemctl`, c'est ta télécommande. Démarrer nginx, l'arrêter, vérifier s'il tourne, le lancer automatiquement au prochain redémarrage. Un administrateur qui maîtrise systemctl maîtrise sa machine.\"",
+    mentor: "La télécommande des services — `systemctl` :\n\n① `systemctl status nginx` — l'état actuel (active/inactive, depuis quand, dernières lignes de log). **Ton premier réflexe** en cas de souci.\n② `systemctl start` / `stop` / `restart` — démarre, arrête, redémarre maintenant.\n③ `systemctl enable` / `disable` — active ou désactive le **démarrage automatique au boot**. Attention : `start` ≠ `enable`. Start lance maintenant, enable lance à chaque redémarrage. Souvent on veut les deux.\n④ Réflexe pro : après `enable`, fais aussi `start` — sinon le service ne démarre qu'au prochain reboot.",
+    challenge: {
+      title: "Mettre nginx en ligne",
+      desc: "Le serveur web est installé mais éteint. **① Vérifie son état** (`systemctl status nginx` → stopped), **② démarre-le** maintenant, **③ confirme** qu'il tourne, **④ active-le au boot** pour qu'il survive à un redémarrage. Réflexion : pourquoi doit-on faire À LA FOIS `start` et `enable` ?"
+    },
     exos: [
       {
         level: 'advanced',
@@ -1811,9 +1847,15 @@ var QUESTS = [
     id: 'webserver',
     icon: '🌐',
     title: 'Quête : déployer un site web',
-    color: '#ffbe0b',
+    color: '#c89028',
     desc: 'De zéro au site en ligne',
     isQuest: true,
+    story: "\"Assez de théorie. On construit **pour de vrai**\", déclare le Sensei en se levant. \"Un vrai site web, servi par un vrai serveur, sur cette machine. Tu vas assembler tout ce que tu as appris : naviguer, créer des fichiers, régler des permissions, piloter un service.\"\n\nIl trace le chemin : \"Le HTML vit dans `/var/www`. Nginx le sert au monde. Tu vas créer la page, la placer au bon endroit, donner les bonnes permissions, démarrer nginx, et vérifier que ça répond. **De la page blanche au site en ligne.** C'est le métier.\"",
+    mentor: "Le déploiement, étape par étape :\n\n① Le contenu web vit dans `/var/www/html` (la racine par défaut de nginx). C'est là que tu poses ton `index.html`.\n② Les permissions comptent : le serveur doit pouvoir **lire** les fichiers. Trop permissif = risque, trop restrictif = erreur 403.\n③ `systemctl start nginx` met le serveur en marche. `curl localhost` teste depuis la machine elle-même — pas besoin de navigateur.\n④ Le trio du débogage web : vérifier que le fichier existe (`ls`), que nginx tourne (`systemctl status`), et que la réponse arrive (`curl`).",
+    challenge: {
+      title: "Ton premier site en ligne",
+      desc: "Objectif : une page servie de bout en bout. **① Crée un `index.html`** avec un titre, **② place-le dans `/var/www/html`**, **③ règle les permissions** pour que nginx puisse le lire, **④ démarre nginx**, **⑤ teste avec `curl localhost`** et vois ton HTML revenir. Si `curl` renvoie ta page, tu es officiellement administrateur web."
+    },
     exos: [
       {
         level: 'advanced',
@@ -1881,8 +1923,14 @@ var QUESTS = [
     id: 'security',
     icon: '🛡️',
     title: 'Sécurité & hardening',
-    color: '#c8341c',
+    color: '#8b2c2c',
     desc: 'Protéger le système',
+    story: "Le Sensei baisse la voix. \"Ton serveur est en ligne. Ça veut dire que **le monde entier peut frapper à ta porte** — y compris ceux qui veulent entrer par effraction. Un administrateur qui ne sécurise pas son système est un gardien qui laisse les portes ouvertes.\"\n\nIl énumère les points faibles : \"Un pare-feu qui filtre qui peut entrer. Un SSH qui refuse le compte root. Des mots de passe qui expirent. Des logs qu'on surveille. La sécurité n'est pas un produit qu'on installe — **c'est une discipline qu'on pratique**, chaque jour.\"",
+    mentor: "Le durcissement (hardening) — les bases vitales :\n\n① **Pare-feu** : `ufw` (Uncomplicated Firewall) contrôle qui peut se connecter. `ufw allow 22` ouvre SSH, `ufw enable` active le mur. Principe : tout fermer, puis ouvrir SEULEMENT ce qui est nécessaire.\n② **SSH** : désactive la connexion root directe (`PermitRootLogin no`), préfère les clés aux mots de passe. Un attaquant qui teste 'root' à l'aveugle doit échouer d'office.\n③ **Surveillance** : `/var/log/auth.log` enregistre chaque tentative de connexion. `grep 'Failed' auth.log` révèle les intrus qui frappent.\n④ Règle d'or : **le moindre privilège**. Chaque service, chaque user n'a QUE les droits dont il a besoin. Rien de plus.",
+    challenge: {
+      title: "Verrouiller la forteresse",
+      desc: "Ton serveur doit résister. **① Inspecte les règles du pare-feu** (`ufw status`), **② autorise uniquement SSH et HTTP**, **③ chasse les tentatives de connexion échouées** dans `/var/log/auth.log` avec grep, **④ vérifie qu'aucun login root direct n'est permis**. Réflexion : pourquoi 'tout fermer puis ouvrir le minimum' est plus sûr que 'tout ouvrir puis fermer les risques' ?"
+    },
     exos: [
       {
         level: 'expert',
@@ -1942,6 +1990,12 @@ var QUESTS = [
     title: 'Système & disque',
     color: '#1e3a5c',
     desc: 'Espace, mémoire, infos',
+    story: "\"Une machine, ça a des limites\", rappelle le Sensei en tapotant le boîtier. \"De l'espace disque qui se remplit, de la mémoire qui sature, un processeur qui chauffe. Le jour où un disque est plein à 100%, **tout s'arrête** — les logs ne s'écrivent plus, la base de données refuse d'écrire, le serveur tombe.\"\n\nIl te confie les instruments : \"Apprends à ausculter ta machine comme un médecin. `df` pour le disque, `free` pour la mémoire, `top` pour le CPU. Un bon admin sent venir la panne **avant** qu'elle n'arrive.\"",
+    mentor: "Ausculter la santé du système :\n\n① `df -h` — l'espace disque, en format lisible (`-h` = human). La colonne 'Use%' est celle à surveiller. Au-dessus de 90%, agis.\n② `free -h` — la mémoire RAM. Attention au piège : Linux 'utilise' la RAM libre pour du cache — c'est normal et sain, pas une fuite. Regarde 'available', pas 'free'.\n③ `du -sh dossier` — la taille d'un dossier précis. Pour trouver ce qui remplit le disque : `du -sh /var/*`.\n④ `uptime` montre depuis quand la machine tourne et sa charge (load average). `uname -a` donne la version du noyau.",
+    challenge: {
+      title: "Le bilan de santé",
+      desc: "Un check-up complet de la machine. **① Mesure l'espace disque** (`df -h`) et repère la partition la plus pleine, **② vérifie la mémoire** (`free -h`), **③ trouve quel dossier de `/var` mange le plus d'espace** avec `du -sh`, **④ relève depuis quand la machine tourne** (`uptime`). Réflexion : pourquoi 'available' est plus fiable que 'free' pour juger la mémoire ?"
+    },
     exos: [
       {
         level: 'advanced',
@@ -1999,8 +2053,14 @@ var QUESTS = [
     id: 'network',
     icon: '📡',
     title: 'Réseau & SSH',
-    color: '#3a86ff',
+    color: '#1e3a5c',
     desc: 'Configuration et accès distant',
+    story: "\"Un serveur, tu ne le touches presque jamais physiquement\", explique le Sensei. \"Il vit dans un datacenter à des kilomètres. Tu l'administres **à distance**, par le réseau, via un tunnel chiffré : **SSH**. C'est ta télécommande sécurisée, ton fil invisible jusqu'à la machine.\"\n\nIl ajoute : \"Mais avant de te connecter ailleurs, tu dois connaître ta propre machine sur le réseau. Son adresse IP, ses connexions ouvertes, si elle peut joindre l'extérieur. Un réseau qu'on ne comprend pas est un réseau qu'on ne peut pas réparer.\"",
+    mentor: "Le réseau et l'accès distant :\n\n① `ip addr` (ou `ifconfig`) montre les adresses IP de tes interfaces. `ping` teste si une machine répond. `ss -tuln` (ou `netstat`) liste les ports en écoute.\n② **SSH** : `ssh user@serveur` ouvre une session distante chiffrée. Toute la communication est protégée — mots de passe, commandes, données.\n③ Les **clés SSH** valent mieux que les mots de passe : `~/.ssh/id_rsa` (privée, JAMAIS partagée) et `id_rsa.pub` (publique, à déposer sur le serveur). Plus sûr et plus pratique.\n④ `scp fichier user@serveur:/chemin` copie un fichier à distance, à travers le même tunnel SSH.",
+    challenge: {
+      title: "Le pont vers l'extérieur",
+      desc: "Connais ta machine, puis atteins l'ailleurs. **① Trouve ton adresse IP** (`ip addr`), **② liste les ports en écoute** (`ss -tuln`), **③ teste la connectivité** vers une machine (`ping`), **④ inspecte ta clé SSH publique** (`cat ~/.ssh/id_rsa.pub`). Réflexion : pourquoi ne partage-t-on JAMAIS le fichier `id_rsa` (sans .pub) ?"
+    },
     exos: [
       {
         level: 'advanced',
@@ -2048,8 +2108,14 @@ var QUESTS = [
     id: 'cron',
     icon: '⏰',
     title: 'Planification (cron)',
-    color: '#00f5d4',
+    color: '#1e5a3d',
     desc: 'Tâches automatiques',
+    story: "\"Le meilleur administrateur est **paresseux**\", sourit le Sensei. \"Pas fainéant — malin. Il ne fait jamais deux fois à la main ce qu'une machine peut faire toute seule. La sauvegarde de minuit, le nettoyage des logs du dimanche, le rapport du lundi matin — tout ça tourne sans lui, pendant qu'il dort.\"\n\nIl te montre un fichier plein de chiffres mystérieux : `0 2 * * *`. \"Ça, c'est du **cron**. Cinq nombres qui disent QUAND une tâche doit s'exécuter. Maîtrise-les, et ta machine travaillera pour toi 24h/24, sans jamais oublier.\"",
+    mentor: "Automatiser avec cron :\n\n① `crontab -l` liste tes tâches planifiées, `crontab -e` les édite. Le fichier système est `/etc/crontab`.\n② Les **5 champs** : `minute heure jour-du-mois mois jour-de-semaine` puis la commande. `*` veut dire 'chaque'. Exemple : `0 2 * * *` = tous les jours à 2h00.\n③ Exemples utiles : `*/15 * * * *` = toutes les 15 min ; `0 0 * * 0` = chaque dimanche minuit ; `30 6 1 * *` = le 1er du mois à 6h30.\n④ Piège : cron a un environnement minimal. **Utilise toujours des chemins absolus** dans tes commandes (`/usr/bin/backup.sh`, pas `backup.sh`), sinon la tâche échoue en silence.",
+    challenge: {
+      title: "Le majordome invisible",
+      desc: "Programme la machine pour qu'elle travaille seule. **① Lis le crontab système** (`cat /etc/crontab`), **② décode un horaire** cron existant (que signifie `0 3 * * 1` ?), **③ liste tes propres tâches** (`crontab -l`). Réflexion : pourquoi une tâche cron qui marche à la main échoue-t-elle parfois une fois planifiée ? (Indice : chemins absolus.)"
+    },
     exos: [
       {
         level: 'expert',
