@@ -2163,8 +2163,14 @@ var QUESTS = [
     id: 'usermgmt',
     icon: '👥',
     title: 'Gestion des utilisateurs',
-    color: '#1e3a5c',
+    color: '#8b2c2c',
     desc: 'Créer, modifier, supprimer des comptes',
+    story: "\"Un serveur n'est jamais seul\", explique le Sensei. \"Des humains s'y connectent, des services y tournent sous des identités précises. **Chaque compte est une clé** qui ouvre certaines portes. En créer, en révoquer, les ranger en groupes : c'est le travail quotidien de l'administrateur.\"\n\nIl te met en garde : \"Le jour où un employé part, son compte doit disparaître — sinon c'est une porte laissée ouverte. Le jour où un stagiaire arrive, il faut lui donner JUSTE ce qu'il faut, pas les clés du royaume. La gestion des comptes, c'est la gestion de la confiance.\"",
+    mentor: "Gérer les comptes proprement (souvent avec sudo) :\n\n① `useradd` (ou `adduser`, plus convivial) crée un compte. `userdel` le supprime. `usermod` le modifie (ajouter à un groupe, changer le shell).\n② `passwd utilisateur` définit ou change son mot de passe. Sans argument, il change le tien.\n③ Les **groupes** simplifient les permissions : au lieu de donner un droit à 50 users un par un, on les met dans un groupe et on donne le droit au groupe. `groupadd`, puis `usermod -aG groupe user`.\n④ Le groupe `sudo` (ou `wheel`) est spécial : ses membres peuvent exécuter des commandes en root. **À accorder avec parcimonie** — c'est la clé maîtresse.",
+    challenge: {
+      title: "Le nouvel arrivant",
+      desc: "Un stagiaire rejoint l'équipe. **① Crée son compte** (`useradd`), **② donne-lui un mot de passe** (`passwd`), **③ ajoute-le à un groupe** existant (`usermod -aG`), **④ vérifie ses groupes** (`groups`). Puis, le stage terminé : **⑤ supprime son compte** (`userdel`). Le cycle de vie complet d'un utilisateur. Réflexion : pourquoi ne PAS mettre tout le monde dans le groupe sudo ?"
+    },
     exos: [
       {
         level: 'advanced',
@@ -2244,8 +2250,14 @@ var QUESTS = [
     id: 'editors',
     icon: '✏️',
     title: 'Éditeurs en ligne (nano/vim)',
-    color: '#3a86ff',
+    color: '#1e5a3d',
     desc: 'Modifier des fichiers en CLI',
+    story: "\"Un jour, sur un serveur distant à 3h du matin, tu devras corriger un fichier de config\", prévient le Sensei. \"Pas de Notepad, pas de VS Code. Juste toi et un éditeur en terminal. Si tu ne sais pas en SORTIR, tu es piégé.\"\n\nIl sourit : \"Deux écoles s'affrontent. **nano**, doux et bienveillant, affiche ses raccourcis en bas. **vim**, austère et redoutable, ne pardonne rien mais décuple qui le maîtrise. Apprends d'abord à ENTRER, ÉCRIRE, et surtout QUITTER. Le reste viendra avec les années.\"",
+    mentor: "Survivre dans les éditeurs terminal :\n\n① **nano** est le plus simple : `nano fichier`, tu tapes directement, `Ctrl+O` pour sauver, `Ctrl+X` pour quitter. Le `^` en bas de l'écran = la touche Ctrl.\n② **vim** est modal — c'est ce qui déroute : au départ tu es en mode **Normal** (les touches sont des COMMANDES, pas du texte). `i` entre en **Insertion**, `Échap` en ressort.\n③ Les commandes de survie vim, à graver : `:wq` = sauver et quitter, `:q!` = quitter SANS sauver (force). Sans elles, tu restes prisonnier.\n④ Astuce de pro : sans même ouvrir d'éditeur, `echo \"texte\" > fichier` crée un fichier d'une ligne. Parfait pour les scripts.",
+    challenge: {
+      title: "Ne plus jamais être piégé",
+      desc: "Prouve ta maîtrise des éditeurs. **① Ouvre un fichier avec `nano`**, **② ouvre-en un avec `vim`**, **③ cherche un motif** dans vim (`/mot`), **④ crée un fichier sans éditeur** avec `echo \"...\" > README.md`. Réflexion : quelle commande vim te libère SANS sauver, si tu as fait une bêtise ?"
+    },
     exos: [
       {
         level: 'intermediate',
@@ -2256,6 +2268,8 @@ var QUESTS = [
         steps: ["Crée d'abord le fichier : `touch notes.txt`", "Puis : `nano notes.txt`", "Pour quitter : Ctrl+X", "Pour enregistrer : Ctrl+O puis Entrée"],
         expected: "(éditeur ouvert)\n^G Aide   ^O Écrire\n^X Quitter ^W Chercher\n^K Couper  ^U Coller",
         diagram: "Raccourcis nano :\n  Ctrl+X  →  Quitter\n  Ctrl+O  →  Enregistrer (write Out)\n  Ctrl+W  →  Rechercher (Where)\n  Ctrl+K  →  Couper la ligne\n  Ctrl+U  →  Coller",
+        culture: "nano est né en 1999 comme clone libre de **pico**, l'éditeur du logiciel de mail Pine. Sa philosophie : **zéro courbe d'apprentissage**. Tout est affiché, rien à mémoriser. Le `^` de sa barre du bas représente la touche **Ctrl** — une notation héritée des vieux terminaux où Ctrl générait des « caractères de contrôle ». C'est aujourd'hui l'éditeur par défaut de nombreuses distributions et le premier réflexe des débutants comme des pros pressés.",
+        reflection: "Pourquoi `^O` pour « sauver » plutôt qu'un plus logique `^S` ?\n👉 `^O` = Write **O**ut (écrire vers le disque). `Ctrl+S` était historiquement pris par les terminaux pour METTRE EN PAUSE l'affichage (XOFF) — l'utiliser aurait figé l'écran ! nano a donc choisi `^O`. Ce genre d'héritage des terminaux des années 70 explique beaucoup de raccourcis Unix « bizarres ».",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('nano') === 0; }); }
       },
       {
@@ -2267,6 +2281,8 @@ var QUESTS = [
         steps: ["`vim /etc/hostname`", "Tu démarres en mode NORMAL", "Pour modifier : tape `i` (insert)", "Pour sortir d'insert : Échap", "Pour quitter : `:q` (ou `:q!` sans sauver)"],
         expected: "(vim ouvert)\n~\n~\n~\n\"hostname\" 1L, 5C\n-- INSERT --  (après `i`)",
         diagram: "Cycle vim :\n         ┌──────────┐\n   `i`  →│  INSERT  │ Esc → NORMAL\n         └──────────┘\n  ┌─────────┐\n  │ NORMAL  │ ←── démarrage\n  └────┬────┘\n       │  `:`\n       ↓\n   ┌─────────┐\n   │ COMMAND │  → :w :q :wq :q!\n   └─────────┘",
+        culture: "vim (**Vi IMproved**) descend de `vi`, écrit en 1976 par Bill Joy. Son système modal déroute mais permet d'éditer à la vitesse de la pensée sans jamais quitter le clavier : `dd` supprime une ligne, `yy` la copie, `p` la colle. Des développeurs l'utilisent depuis 40 ans et refusent d'en changer. Sa réputation d'« impossible à quitter » est si tenace que la question *how to exit vim* a été vue des **millions** de fois sur Stack Overflow — et est devenue un mème.",
+        reflection: "Tu as ouvert vim par erreur et modifié un fichier important. Comment sortir SANS sauver tes bêtises ?\n👉 `Échap` (pour revenir en mode Normal si tu tapais), puis `:q!` — le `!` force la sortie en jetant les modifications. Si au contraire tu veux garder : `:wq`. Ces deux commandes sont le strict minimum de survie dans vim.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('vim') === 0 || c.indexOf('vi ') === 0; }); }
       },
       {
@@ -2295,8 +2311,14 @@ var QUESTS = [
     id: 'bashscript',
     icon: '📜',
     title: 'Scripting Bash',
-    color: '#ffbe0b',
+    color: '#c89028',
     desc: 'Automatiser avec des scripts',
+    story: "\"Voici l'aboutissement de tout ton apprentissage\", annonce le Sensei avec solennité. \"Jusqu'ici tu tapais des commandes une à une. Maintenant tu vas les **enchaîner dans un fichier** — un script — qui les rejoue toutes seules, dans l'ordre, à l'infini. C'est le passage de l'artisan à l'architecte.\"\n\nIl trace le chemin : \"Un script Bash, c'est du texte : une première ligne magique, le `#!/bin/bash`, puis tes commandes. Tu le rends exécutable, tu le lances, et la machine fait le travail de cent gestes manuels. Sauvegardes, déploiements, rapports — tout ce qui se répète mérite un script.\"",
+    mentor: "Écrire ton premier script Bash :\n\n① La **première ligne** est sacrée : `#!/bin/bash` (le *shebang*). Elle dit au système quel interpréteur utiliser. Sans elle, ton script est juste du texte.\n② Un script doit être **exécutable** : `chmod +x script.sh`, puis on le lance avec `./script.sh` (le `./` dit « ici, dans ce dossier »).\n③ Les **variables** : `nom=\"valeur\"` (sans espaces autour du `=` !), et on les lit avec `$nom`. `$1`, `$2` sont les arguments passés au script.\n④ Les briques logiques : `if [ condition ]; then ... fi`, les boucles `for x in ...; do ... done`. Avec ça, un script devient un vrai programme.",
+    challenge: {
+      title: "Le premier automate",
+      desc: "Crée un script qui travaille pour toi. **① Écris un fichier `backup.sh`** commençant par `#!/bin/bash`, **② rends-le exécutable** (`chmod +x`), **③ lance-le** (`./backup.sh`), **④ vérifie qu'il s'exécute**. Réflexion : à quoi sert exactement la ligne `#!/bin/bash` tout en haut, et que se passe-t-il si tu l'oublies ?"
+    },
     exos: [
       {
         level: 'advanced',
@@ -2355,8 +2377,14 @@ var QUESTS = [
     id: 'monitoring',
     icon: '📊',
     title: 'Monitoring système',
-    color: '#00f5d4',
+    color: '#1e5a3d',
     desc: 'Surveiller charge, RAM, disque',
+    story: "\"Un bon administrateur ne répare pas les pannes\", dit le Sensei. \"Il les **empêche**. Il sent venir la surchauffe avant l'incendie. Pour ça, il garde un œil constant sur les signes vitaux de sa machine : la charge du processeur, la mémoire, l'espace disque, les entrées-sorties.\"\n\nIl te confie le stéthoscope : \"Une charge qui grimpe, une RAM qui sature, un disque à 95% — ce sont des symptômes. Apprends à les lire en temps réel avec `top`, `htop`, `vmstat`. Le jour où une alerte sonne à 3h du matin, ces outils seront tes premiers réflexes, ceux qui te diront où frapper.\"",
+    mentor: "Surveiller les signes vitaux :\n\n① `top` (ou `htop`, plus visuel) montre en **temps réel** les processus, le CPU et la RAM. La **load average** (charge moyenne sur 1/5/15 min) est cruciale : au-dessus du nombre de cœurs, la machine est surchargée.\n② `vmstat 2` rafraîchit toutes les 2 secondes les stats CPU/mémoire/IO. La colonne `wa` (wait) élevée = le disque est le goulot ; `us`/`sy` élevés = c'est le CPU.\n③ `free -h` pour la RAM, `df -h` pour le disque : les deux ressources qui, une fois pleines, font tout tomber.\n④ Réflexe de diagnostic : quand « ça rame », regarde d'ABORD la load (`uptime`/`top`), PUIS si c'est CPU (`us`), disque (`wa`) ou mémoire (`free`). Le bon outil au bon symptôme.",
+    challenge: {
+      title: "Le diagnostic d'urgence",
+      desc: "La machine rame, on t'appelle en urgence. **① Regarde la charge en temps réel** (`top`), **② identifie si c'est CPU ou disque** (`vmstat`), **③ vérifie la RAM** (`free -h`), **④ contrôle l'espace disque** (`df -h`). En 4 commandes, pose ton diagnostic. Réflexion : une colonne `wa` élevée dans vmstat, ça pointe vers quel matériel ?"
+    },
     exos: [
       {
         level: 'intermediate',
@@ -2490,46 +2518,6 @@ var QUESTS = [
         steps: ["`git log`", "Chaque bloc = un commit avec son hash et son message"],
         expected: "commit a1b2c3d...\nAuthor: user <user@dojo>\nDate:   ...\n\n    Ajoute mes notes",
         check: function(s) { return sysState.git.commits.length > 0 && s.history.some(function(c) { return c.indexOf('git log') === 0; }); }
-      }
-    ]
-  },
-  {
-    id: 'editors',
-    icon: '✍️',
-    title: 'Éditeurs — vim & nano',
-    color: '#1e5a3d',
-    desc: 'Modifier des fichiers en terminal',
-    story: "\"Un jour, sans interface graphique, sur un serveur distant à 3h du matin, tu devras modifier un fichier de config\", prévient le Sensei. \"Pas de Notepad, pas de VS Code. Juste toi et un éditeur en terminal. Si tu ne sais pas en sortir, tu es piégé.\"\n\nIl sourit : \"Il existe deux écoles. **nano**, doux et bienveillant, affiche ses raccourcis en bas. **vim**, austère et redoutablement puissant, ne pardonne rien mais décuple qui le maîtrise. Commence par savoir ENTRER, ÉCRIRE, et surtout SORTIR. Le reste viendra.\"",
-    mentor: "Survivre dans les éditeurs terminal :\n\n① **nano** est le plus simple : `nano fichier`, tu tapes directement, `Ctrl+O` pour sauver (Write Out), `Ctrl+X` pour quitter. Les raccourcis sont affichés en bas — aucune surprise.\n② **vim** a deux modes qui déroutent tout débutant : le mode **Normal** (les touches sont des commandes) et le mode **Insertion** (tu tapes du texte). On entre en insertion avec `i`, on en sort avec `Échap`.\n③ La commande de survie vim : `:wq` = **w**rite + **q**uit (sauver et quitter). `:q!` = quitter SANS sauver (force). Grave ces deux-là.\n④ La blague culte : \"Comment générer une chaîne aléatoire ? Mettre un débutant devant vim et lui dire de quitter.\"",
-    challenge: {
-      title: "Entrer et sortir vivant",
-      desc: "Prouve que vim ne te fait plus peur. **① Ouvre un fichier avec `nano`**, **② ouvre-en un avec `vim`**, **③ passe en mode insertion** (`i`), **④ ressors du mode** (`Échap`), **⑤ sauve et quitte** (`:wq`). Réflexion : quelle commande te sort de vim SANS sauver tes modifications, en cas d'erreur ?"
-    },
-    exos: [
-      {
-        level: 'beginner',
-        title: 'Ouvrir avec nano',
-        context: "nano est l'éditeur le plus accessible. `nano fichier.txt` l'ouvre (le crée s'il n'existe pas). Les raccourcis apparaissent en bas : ^O = sauver, ^X = quitter (le ^ signifie Ctrl).",
-        scene: "Tu veux éditer un fichier de config simplement, sans prise de tête.",
-        mission: "Ouvre un fichier avec nano.",
-        steps: ["`nano notes.txt`", "Observe la barre de raccourcis en bas", "^O sauve, ^X quitte"],
-        expected: "  GNU nano 6.2      notes.txt\n\n  [ texte ici ]\n\n^O Écrire  ^X Quitter  ^W Chercher",
-        culture: "nano est né en 1999 comme un clone libre de **pico**, l'éditeur du logiciel mail Pine. Sa philosophie : **zéro courbe d'apprentissage**. Tout est affiché à l'écran, rien à mémoriser. C'est pour ça qu'il est l'éditeur par défaut de nombreuses distributions Linux et le premier réflexe des débutants — et de beaucoup de pros pressés pour une modif rapide.",
-        reflection: "Sur la barre du bas de nano, que signifie le symbole `^` (ex : `^X`) ?\n👉 Le `^` représente la touche **Ctrl**. Donc `^X` = Ctrl+X (quitter), `^O` = Ctrl+O (sauver). Cette notation vient des vieux terminaux où Ctrl générait des 'caractères de contrôle'. nano l'affiche en permanence pour que tu n'aies jamais à deviner.",
-        check: function(s) { return s.history.some(function(c) { return c.indexOf('nano') === 0; }); }
-      },
-      {
-        level: 'intermediate',
-        title: 'Survivre dans vim',
-        context: "vim est modal : au départ tu es en mode Normal (les touches sont des commandes, pas du texte !). `i` entre en Insertion pour taper. `Échap` revient en Normal. `:wq` sauve et quitte. `:q!` quitte sans sauver.",
-        scene: "Le seul éditeur dispo sur ce serveur est vim. Tu dois t'en sortir.",
-        mission: "Ouvre un fichier avec vim.",
-        steps: ["`vim config.txt`", "`i` pour écrire", "`Échap` pour arrêter d'écrire", "`:wq` pour sauver et quitter"],
-        expected: "  ~ config.txt\n  ~\n  -- INSERTION --\n  :wq",
-        diagram: "  Mode NORMAL ──i──▶ Mode INSERTION\n       ▲                  │\n       └──── Échap ────────┘\n  (:wq sauve+quitte, :q! quitte sans sauver)",
-        culture: "vim (**Vi IMproved**) descend de `vi`, écrit en 1976 par Bill Joy. Son système à deux modes déroute mais permet d'éditer à la vitesse de la pensée sans jamais quitter le clavier : `dd` supprime une ligne, `yy` la copie, `p` la colle, `/mot` cherche. Des développeurs l'utilisent depuis 40 ans et refusent d'en changer. Sa réputation : \"impossible à quitter\" — la question \"how to exit vim\" a été vue des millions de fois sur Stack Overflow.",
-        reflection: "Tu as ouvert vim par erreur et modifié un fichier important. Comment sortir SANS sauver tes bêtises ?\n👉 `Échap` (pour revenir en mode Normal si tu tapais), puis `:q!` — le `!` force la sortie en jetant les modifications. Si tu voulais garder : `:wq`. Ces deux commandes sont le minimum vital de survie vim.",
-        check: function(s) { return s.history.some(function(c) { return c.indexOf('vim') === 0 || c.indexOf('vi ') === 0; }); }
       }
     ]
   },
