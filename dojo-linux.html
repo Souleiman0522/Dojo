@@ -1647,6 +1647,8 @@ var QUESTS = [
         mission: "Affiche ton identité avec `whoami`.",
         steps: ["Tape `whoami`", "Pour plus d'infos : `id`"],
         expected: "$ whoami\nuser\n$ id\nuid=1000(user) gid=1000(user) groups=1000(user),27(sudo)",
+        culture: "Derrière ton nom se cache un **numéro** : l'UID (User ID). Le tien est 1000 — le premier utilisateur humain (les distributions démarrent les comptes humains à 1000). Mais l'UID qui fait trembler, c'est le **0** : c'est **root**, le super-utilisateur qui peut TOUT faire, ignorer toutes les permissions. Le système ne connaît que les numéros ; les noms (`user`, `root`) ne sont qu'un confort humain traduit via `/etc/passwd`.",
+        reflection: "Comment le système sait-il que tu es « user » et pas quelqu'un d'autre ?\n👉 Chaque processus porte l'UID de qui l'a lancé. Ton shell tourne sous l'UID 1000, hérité de ta connexion. `whoami` lit juste cet UID et le traduit en nom. Quand tu fais `sudo`, tu demandes temporairement l'UID 0 (root) — d'où la question de mot de passe : le système vérifie que tu as le DROIT d'emprunter cette identité.",
         check: function(s) { return s.history.indexOf('whoami') >= 0; }
       },
       {
@@ -1657,6 +1659,7 @@ var QUESTS = [
         mission: "Affiche ton ID complet avec `id`.",
         steps: ["Tape `id`", "Cherche `sudo` dans la liste des groupes"],
         expected: "uid=1000(user) gid=1000(user) groups=1000(user),27(sudo)",
+        reflection: "Dans la sortie de `id`, que signifie la présence de `27(sudo)` dans les groupes ?\n👉 Tu es membre du groupe **sudo** (numéro 27). C'est le sésame de l'administration : ses membres peuvent lancer des commandes en tant que root via `sudo`. Sans ce groupe, `sudo apt install ...` te répondrait « user is not in the sudoers file ». Être dans le groupe sudo = détenir les clés du royaume. À accorder avec prudence.",
         check: function(s) { return s.history.indexOf('id') >= 0 || s.history.some(function(c) { return c === 'id'; }); }
       },
       {
@@ -1668,6 +1671,8 @@ var QUESTS = [
         steps: ["`cd ~/scripts`", "`ls -l`", "Lis `-rw-r--r--` : propriétaire peut lire/écrire, groupe et autres seulement lire"],
         expected: "-rw-r--r--  user  user  234  install.sh\n-rw-r--r--  user  user  512  backup.sh",
         diagram: "  -rwxr-xr-x\n  │└┬┘└┬┘└┬┘\n  │ u  g  o\n  └ type fichier",
+        culture: "Les permissions se lisent en **trois publics** : `u` (user, le propriétaire), `g` (group, son groupe), `o` (others, tout le reste). Chaque public a ses trois droits : `r`ead, `w`rite, e`x`ecute. Ce modèle date de 1971 et n'a quasiment pas changé — sa simplicité (3×3 bits) est sa force. Sur un dossier, les droits ont un sens légèrement différent : `x` = « droit d'entrer » (`cd`), `r` = « droit de lister le contenu ».",
+        reflection: "Un fichier `-rw-r--r--` : qui peut le modifier ?\n👉 **Seul le propriétaire** (`u` a `rw`). Le groupe (`g` a `r--`) et les autres (`o` a `r--`) peuvent seulement LIRE. C'est la permission par défaut de la plupart des fichiers créés : mon propriétaire écrit, le monde lit. Pour qu'un collègue puisse aussi écrire, il faudrait ajouter `w` au groupe (`chmod g+w`) et qu'il soit dans le bon groupe.",
         check: function(s) { return s.cwd === '/home/user/scripts' && s.history.some(function(c) { return /^ls\s+-l/.test(c); }); }
       },
       {
@@ -1678,6 +1683,8 @@ var QUESTS = [
         mission: "Ajoute le droit d'exécution à install.sh.",
         steps: ["`cd ~/scripts`", "`chmod +x install.sh`", "Vérifie : `ls -l` — un x apparaît"],
         expected: "Avant : -rw-r--r--  install.sh\nAprès : -rwxr-xr-x  install.sh",
+        culture: "Sous Windows, un fichier est « exécutable » selon son extension (`.exe`, `.bat`). Sous Unix, l'extension ne veut RIEN dire : c'est le **bit d'exécution** (`x`) qui décide. Un fichier peut s'appeler `install.sh`, `install`, ou `install.txt` — s'il a le bit `x` et un shebang valide, il tourne. Cette séparation entre nom et permission est plus sûre : un fichier téléchangé n'est pas exécutable par accident, il faut explicitement lui donner le droit.",
+        reflection: "Tu télécharges un script mais `./script.sh` répond « Permission denied ». Pourquoi, et comment corriger ?\n👉 Le fichier n'a pas le bit d'exécution (`x`) — c'est la protection par défaut. `chmod +x script.sh` l'ajoute, et `./script.sh` fonctionne. C'est une sécurité voulue : rien de téléchargé ne s'exécute sans que tu l'autorises explicitement. Le réflexe : `chmod +x` puis lancer.",
         check: function(s) { var f = getNode('/home/user/scripts/install.sh'); return !!(f && f.perms && f.perms.indexOf('x') > 0); }
       },
       {
@@ -1777,6 +1784,8 @@ var QUESTS = [
         mission: "Affiche les 5 premières lignes de /var/log/syslog.",
         steps: ["`head -n 5 /var/log/syslog`", "Lis ce qui est affiché"],
         expected: "Apr 28 12:00:01 dojo systemd[1]: Started...\nApr 28 12:01:23 dojo kernel: ...",
+        culture: "`head` et `tail` sont des jumeaux : l'un montre le début, l'autre la fin. Ils brillent en **pipe** : `ls -lS | head -3` = les 3 plus gros fichiers, `sort notes.txt | tail -5` = les 5 derniers alphabétiquement. Ce sont des « robinets » qu'on branche en bout de chaîne pour ne garder qu'un échantillon d'un flux potentiellement gigantesque, sans jamais tout charger.",
+        reflection: "Un log de 2 millions de lignes : `cat` le déverse en entier, ce qui est ingérable. Comment voir juste le début ?\n👉 `head fichier` (10 premières lignes) ou `head -n 20 fichier` pour en voir 20. C'est instantané même sur un énorme fichier, car `head` s'arrête dès qu'il a lu ce qu'il faut — il ne charge pas le reste. Pour la fin : `tail`. Pour naviguer librement : `less`.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('head') === 0 && c.indexOf('syslog') >= 0; }); }
       },
       {
@@ -1787,6 +1796,8 @@ var QUESTS = [
         mission: "Affiche les 5 dernières lignes de /var/log/syslog.",
         steps: ["`tail -n 5 /var/log/syslog`", "Tu vois les événements les plus récents"],
         expected: "Apr 28 12:10:11 dojo systemd[1]: Started Session 12.",
+        culture: "L'option la plus culte de `tail` est `-f` (**follow**) : `tail -f /var/log/nginx/access.log` affiche les nouvelles lignes **en temps réel**, à mesure qu'elles arrivent. C'est LE geste de tout admin qui débogue un serveur en direct : on lance `tail -f` sur un log, on reproduit le bug, et on voit l'erreur s'écrire sous ses yeux. On quitte avec `Ctrl+C`. Un outil de 1979 encore irremplaçable aujourd'hui.",
+        reflection: "Pourquoi regarde-t-on la FIN des logs (`tail`) et non le début (`head`) la plupart du temps ?\n👉 Parce que les logs s'écrivent chronologiquement : les événements RÉCENTS — ceux qui t'intéressent quand quelque chose vient de casser — sont à la FIN. `head` montrerait le démarrage du service il y a des semaines. Réflexe de débogage : `tail -f` pour voir ce qui se passe MAINTENANT.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('tail') === 0 && c.indexOf('syslog') >= 0; }); }
       },
       {
@@ -1810,6 +1821,8 @@ var QUESTS = [
         steps: ["`cat /var/log/auth.log | grep Failed`", "Ou plus direct : `grep Failed /var/log/auth.log`"],
         expected: "Failed password for invalid user admin from 203.0.113.5\nFailed password for invalid user root from 203.0.113.5",
         diagram: "cat fichier ──┐\n              ├─→ grep Failed ──→ écran\n              │\n         (sortie)",
+        culture: "Le pipe `|` a été inventé en 1973 par **Doug McIlroy** aux Bell Labs, et il a changé l'informatique pour toujours. Son idée : chaque programme fait UNE chose bien, et écrit sa sortie dans un « tuyau » que le suivant lit en entrée. C'est la **philosophie Unix** en un symbole. `cat log | grep ERROR | sort | uniq -c | sort -rn` — cinq outils simples deviennent un analyseur de logs sur mesure. Aucun n'a été écrit pour les autres, et pourtant ils s'emboîtent.",
+        reflection: "`cat fichier | grep motif` et `grep motif fichier` donnent le même résultat. Lequel est « mieux » ?\n👉 `grep motif fichier` — on évite le `cat` inutile (les puristes appellent ça un *useless use of cat*). grep sait lire un fichier directement. Le pipe avec `cat` ne se justifie que quand la source n'est PAS un fichier (ex : `ps aux | grep nginx`, où la sortie de ps n'est pas un fichier). Petit détail de style qui trahit l'expérience.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('|') >= 0 && c.indexOf('grep') >= 0 && c.indexOf('Failed') >= 0; }) || s.history.some(function(c) { return /^grep\s+Failed/.test(c) && c.indexOf('auth') >= 0; }); }
       },
       {
@@ -1820,6 +1833,8 @@ var QUESTS = [
         mission: "Compte le nombre de lignes contenant 'Failed' dans auth.log.",
         steps: ["`grep Failed /var/log/auth.log | wc -l`", "Le chiffre te dit combien d'attaques"],
         expected: "$ grep Failed /var/log/auth.log | wc -l\n2",
+        culture: "`wc` (word count) compte lignes (`-l`), mots (`-w`) ou octets (`-c`). Seul il est banal ; en **bout de pipe**, il devient un compteur universel : `ls | wc -l` = nombre de fichiers, `grep -c` ou `... | wc -l` = nombre d'occurrences, `who | wc -l` = nombre d'utilisateurs connectés. Transformer une liste en un CHIFFRE est une opération si fréquente que `wc -l` est l'un des maillons de pipe les plus tapés au monde.",
+        reflection: "Comment compter le nombre de fichiers dans le dossier courant ?\n👉 `ls | wc -l` — `ls` liste (un fichier par ligne quand la sortie est un pipe), `wc -l` compte les lignes. Attention subtile : ça ne compte pas les fichiers cachés (il faudrait `ls -a`), et compte `.`/`..` avec `-a`. Pour un décompte précis, les pros utilisent `find . -maxdepth 1 -type f | wc -l`.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('wc') >= 0 && c.indexOf('|') >= 0; }); }
       },
       {
@@ -1830,6 +1845,8 @@ var QUESTS = [
         mission: "Écris la sortie de `grep ERROR /var/log/syslog` dans ~/erreurs.txt.",
         steps: ["`grep ERROR /var/log/syslog > ~/erreurs.txt`", "Vérifie : `cat ~/erreurs.txt`"],
         expected: "$ cat ~/erreurs.txt\nApr 28 12:06:01 dojo CRON[2105]: ERROR backup failed",
+        culture: "`>` et `>>` manipulent les **flux standards** d'Unix. Toute commande a trois canaux : l'entrée (stdin), la sortie (stdout) et les erreurs (stderr). `>` redirige stdout vers un fichier en **écrasant**, `>>` en **ajoutant** à la fin. Piège classique : `>` détruit le contenu existant SANS confirmation. Pour capturer aussi les erreurs : `2>` (stderr) ou `&>` (les deux). Ces symboles sont la plomberie invisible de tous les scripts.",
+        reflection: "Quelle est la différence dangereuse entre `commande > fichier` et `commande >> fichier` ?\n👉 `>` **écrase** : si `fichier` contenait déjà des données, elles sont perdues à jamais. `>>` **ajoute** à la fin sans rien détruire. Erreur de débutant fatale : `cat a > a` (rediriger un fichier sur lui-même) le vide instantanément. Règle : `>` pour créer/remplacer, `>>` pour accumuler (logs, rapports incrémentaux).",
         check: function(s) { var h = getNode('/home/user'); return !!(h && h.children && h.children['erreurs.txt']); }
       }
     ]
