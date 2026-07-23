@@ -1,0 +1,4247 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Le Dojo · Linux v3 BUILD-1205</title>
+
+<script>
+window.addEventListener('error', function(e) {
+  document.body.innerHTML = '<div style="color:#c8341c;background:#f5f0e1;padding:24px;font-family:monospace;min-height:100vh;font-size:13px;line-height:1.6">' +
+    '<h2 style="margin-bottom:12px">⚠️ Erreur capturée</h2>' +
+    '<div><b>Message :</b> ' + (e.message || 'inconnu') + '</div>' +
+    '<div><b>Source :</b> ' + (e.filename || '') + ':' + (e.lineno || '?') + '</div>' +
+    '<pre style="white-space:pre-wrap;background:#efe9d4;padding:12px;border-radius:8px;margin-top:12px">' +
+    (e.error && e.error.stack || e.message || 'Pas de stack') + '</pre></div>';
+});
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=Shippori+Mincho:wght@400;500;600;700;800&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.min.css">
+<script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.min.js"></script>
+
+<style>
+  :root {
+    /* ═══════════════════════════════════════════════════════════
+       PALETTE "VOIE DU DOJO" (道) — papier washi + encre sumi + vermillon + or
+       Les noms de variables restent identiques (--bg-deep, --text-1, --magenta…)
+       pour ne rien casser ; seules les valeurs passent en washi.
+       ═══════════════════════════════════════════════════════════ */
+
+    /* Base — papier washi traditionnel (ex-fonds sombres) */
+    --bg-deep: #f5f0e1;      /* washi crème principal (ex #0d1117) */
+    --bg-card: #faf6e9;      /* papier légèrement plus clair (ex #161b22) */
+    --bg-card-2: #fdfaef;    /* surface élevée (ex #1c2128) */
+    --bg-elevated: #efe9d4;  /* surface code / élevée (ex #21262d) */
+    --border: #c8baa0;       /* trait de pinceau moyen (ex #30363d) */
+    --border-light: #e0d6c0; /* trait de pinceau délicat (ex #3a414b) */
+
+    /* Textes — encre sumi (墨) */
+    --text-1: #1a1a1a;       /* encre noire profonde (ex #e6edf3) */
+    --text-2: #3d342a;       /* sumi sépia (ex #8b949e) */
+    --text-3: #7a6e5d;       /* sumi délavé (ex #6e7681) */
+
+    /* Accents — vermillon (sceau hanko) + or antique */
+    --magenta: #c8341c;      /* 朱 vermillon — accent principal (ex #c8341c) */
+    --mint: #1e5a3d;         /* vert thé matcha (ex #00f5d4) */
+    --amber: #c89028;        /* or antique 金 (ex #ffbe0b) */
+    --violet: #1e3a5c;       /* indigo japonais 藍 (ex #8338ec) */
+    --blue: #1e3a5c;         /* indigo (ex #58a6ff) */
+    --green: #1e5a3d;        /* vert matcha (ex #3fb950) */
+    --rose: #962617;         /* vermillon profond (ex #ff5c8a) */
+    --yellow: #c89028;       /* or (ex #d29922) */
+    --red: #8b2c2c;          /* bordeaux (ex #f85149) */
+
+    /* Terminal — reste sombre pour la lisibilité (comme le Dojo Cisco) */
+    --terminal-bg: #1a1a1a;
+    --terminal-text: #e8dfc9;
+
+    /* Ombres — sceau d'encre */
+    --shadow-sm: 0 1px 2px rgba(44, 36, 24, 0.08);
+    --shadow-md: 0 2px 10px rgba(44, 36, 24, 0.10);
+    --shadow-lg: 0 8px 30px rgba(44, 36, 24, 0.18);
+
+    /* Alias sémantiques (compat Dojo Cisco) */
+    --bg-code:        #efe9d4;
+    --border-soft:    #e0d6c0;
+    --border-medium:  #c8baa0;
+    --border-strong:  #a89876;
+    --accent-primary: #c8341c;
+    --accent-primary-hover: #962617;
+    --accent-success: #1e5a3d;
+    --accent-warning: #c89028;
+    --accent-danger:  #8b2c2c;
+    --gold:           #c89028;
+    --gold-light:     #e8c468;
+    --vermilion:      #c8341c;
+    --indigo:         #1e3a5c;
+    --sumi:           #2c2418;
+
+    /* Polices washi */
+    --font-jp:    'Shippori Mincho', 'Yu Mincho', Georgia, serif;
+    --font-serif: 'Cormorant Garamond', Georgia, serif;
+    --font-sans:  'Inter', -apple-system, sans-serif;
+    --font-mono:  'JetBrains Mono', 'Space Mono', monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    height: 100%; overflow: hidden;
+    background: var(--bg-deep); color: var(--text-1);
+    font-family: var(--font-sans);
+  }
+  body {
+    background-image:
+      radial-gradient(circle at 20% 30%, rgba(0,0,0,0.015) 1px, transparent 1px),
+      radial-gradient(circle at 80% 70%, rgba(0,0,0,0.020) 1px, transparent 1px),
+      radial-gradient(circle at 50% 50%, rgba(200,144,40,0.025) 0%, transparent 60%);
+    background-size: 4px 4px, 6px 6px, 100% 100%;
+    display: flex; flex-direction: column;
+  }
+  button { font-family: inherit; }
+
+  /* TOP BAR */
+  .top-bar {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 18px;
+    display: flex; align-items: center; gap: 12px;
+    flex-shrink: 0;
+    animation: slideDown 0.5s ease-out;
+  }
+  @keyframes slideDown {
+    from { transform: translateY(-100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .brand-icon {
+    font-size: 22px;
+    filter: drop-shadow(0 0 8px rgba(200,52,28, 0.5));
+  }
+  .brand-title {
+    font-size: 1rem; font-weight: 700;
+    color: var(--text-1);
+    letter-spacing: -0.3px;
+  }
+  .brand-sub {
+    font-size: 0.6rem; color: var(--text-3);
+    letter-spacing: 1.5px; text-transform: uppercase;
+    font-weight: 600; margin-top: 1px;
+    font-family: var(--font-mono);
+  }
+  .session-pill {
+    margin-left: auto;
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(30,90,61,0.1);
+    border: 1px solid rgba(30,90,61,0.3);
+    color: var(--green);
+    padding: 5px 11px; border-radius: 4px;
+    font-size: 0.65rem; font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .session-pill .dot {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 4px rgba(30,90,61,0.35);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* MAIN LAYOUT */
+  .app-body {
+    flex: 1; display: flex;
+    overflow: hidden; min-height: 0;
+  }
+  @media (max-width: 900px) {
+    .app-body { flex-direction: column; }
+  }
+
+  /* EXO PANEL */
+  .exo-panel {
+    width: 360px;
+    background: var(--bg-card);
+    border-right: 1px solid var(--border);
+    flex-shrink: 0;
+    display: flex; flex-direction: column;
+    position: relative;
+    transition: width 0.3s ease, max-height 0.3s ease;
+  }
+  .exo-panel.collapsed { width: 50px; }
+  .exo-panel.collapsed .exo-content { display: none; }
+  @media (max-width: 900px) {
+    .exo-panel { width: 100% !important; max-height: 60vh;
+      border-right: none; border-bottom: 1px solid var(--border);
+    }
+    .exo-panel.collapsed { max-height: 50px; }
+  }
+  .exo-toggle {
+    position: absolute; top: 10px; right: 8px; z-index: 5;
+    width: 28px; height: 28px;
+    background: rgba(30,58,92,0.2);
+    border: 1px solid rgba(30,58,92,0.4);
+    color: #1e3a5c;
+    border-radius: 7px; cursor: pointer;
+    font-size: 0.8rem; font-weight: 700;
+  }
+  .exo-content {
+    padding: 16px 14px; overflow-y: auto; flex: 1;
+  }
+  .exo-content::-webkit-scrollbar { width: 6px; }
+  .exo-content::-webkit-scrollbar-thumb { background: rgba(30,58,92,0.4); border-radius: 3px; }
+
+  .exo-header {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+  }
+  .exo-header-icon { font-size: 1.3rem; filter: drop-shadow(0 0 8px var(--amber)); }
+  .exo-header-title {
+    font-size: 1rem; font-weight: 800;
+    background: linear-gradient(90deg, var(--amber), var(--magenta));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .progress-wrap { margin-bottom: 12px; }
+  .progress-bar {
+    height: 7px; background: rgba(180,168,208,0.1);
+    border-radius: 4px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--mint), var(--violet), var(--magenta));
+    box-shadow: 0 0 12px rgba(30,90,61,0.6);
+    border-radius: 4px;
+    width: 0%; transition: width 0.8s ease;
+  }
+  .progress-text {
+    font-size: 0.66rem; color: var(--text-2);
+    text-align: center; margin-top: 5px;
+    font-family: var(--font-mono); font-weight: 600;
+  }
+
+  /* RICH ACTIVE EXERCISE CARD */
+  .active-exo {
+    background: var(--bg-card-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0;
+    margin-bottom: 14px;
+    overflow: hidden;
+    animation: cardPop 0.3s ease-out;
+  }
+  @keyframes cardPop {
+    from { transform: scale(0.98); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .active-exo-header {
+    background: var(--bg-elevated);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .active-exo-lab-num {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--blue);
+    letter-spacing: 1.5px;
+    background: rgba(30,58,92,0.1);
+    padding: 3px 9px;
+    border-radius: 4px;
+    border: 1px solid rgba(30,58,92,0.25);
+  }
+  .active-exo-difficulty {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding: 3px 8px;
+    border-radius: 3px;
+  }
+  .active-exo-difficulty.beginner    { background: rgba(30,90,61,0.1); color: var(--green); border: 1px solid rgba(30,90,61,0.3); }
+  .active-exo-difficulty.intermediate{ background: rgba(210,153,34,0.1); color: var(--yellow); border: 1px solid rgba(210,153,34,0.3); }
+  .active-exo-difficulty.advanced    { background: rgba(248,81,73,0.1); color: var(--red); border: 1px solid rgba(248,81,73,0.3); }
+  .active-exo-difficulty.expert      { background: rgba(30,58,92,0.15); color: #1e3a5c; border: 1px solid rgba(30,58,92,0.4); }
+
+  .active-exo-body { padding: 14px; }
+
+  .exo-quest-banner {
+    background: rgba(200,144,40,0.06);
+    border: 1px solid rgba(200,144,40,0.25);
+    color: var(--amber);
+    padding: 5px 9px;
+    border-radius: 3px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 10px;
+    font-family: var(--font-mono);
+    display: inline-block;
+  }
+  .active-exo-title {
+    font-size: 1.05rem; font-weight: 700;
+    color: var(--text-1);
+    margin-bottom: 4px;
+    line-height: 1.3;
+    letter-spacing: -0.3px;
+  }
+  .active-exo-num {
+    font-size: 0.6rem;
+    color: var(--text-3);
+    font-family: var(--font-mono);
+    letter-spacing: 1.5px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+  }
+
+  /* Section blocks - sober */
+  .exo-section {
+    margin: 10px 0;
+    padding: 10px 12px;
+    border-radius: 6px;
+    background: var(--bg-elevated);
+    border-left: 3px solid var(--text-3);
+    font-size: 0.78rem;
+    line-height: 1.55;
+    color: var(--text-1);
+  }
+  .exo-section.context     { border-left-color: var(--blue); }
+  .exo-section.scene       { border-left-color: var(--amber); font-style: italic; color: var(--text-2); }
+  .exo-section.mission     { border-left-color: var(--mint); background: rgba(30,90,61,0.05); font-weight: 600; }
+  .exo-section.steps       { border-left-color: var(--violet); }
+  .exo-section.criteria    { border-left-color: var(--green); background: rgba(30,90,61,0.05); }
+  .exo-section.expected {
+    border-left-color: var(--rose);
+    background: var(--terminal-bg);
+    color: var(--terminal-text);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    white-space: pre-wrap;
+    overflow-x: auto;
+  }
+  .exo-section.diagram {
+    border-left-color: var(--amber);
+    background: var(--bg-code, #efe9d4);
+    color: var(--text-2);
+    border: 1px solid var(--border-light);
+    border-left: 3px solid var(--amber);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    white-space: pre;
+    overflow-x: auto;
+    line-height: 1.4;
+  }
+  .exo-section-label {
+    display: inline-block;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: inherit;
+    opacity: 0.7;
+    margin-bottom: 4px;
+    font-family: var(--font-mono);
+  }
+  .exo-section ol {
+    margin-left: 16px;
+    margin-top: 4px;
+  }
+  .exo-section ol li {
+    margin: 3px 0;
+  }
+
+  .active-exo code {
+    background: rgba(30,90,61,0.15);
+    border: 1px solid rgba(30,90,61,0.35);
+    color: #5dffe0;
+    padding: 1px 6px; border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+  }
+
+  .exo-status {
+    margin-top: 10px; padding: 8px 12px;
+    border-radius: 6px; font-size: 0.78rem;
+    font-weight: 600; text-align: center;
+  }
+  .exo-status.success {
+    background: rgba(30,90,61,0.1);
+    border: 1px solid rgba(30,90,61,0.4);
+    color: var(--green);
+  }
+  .exo-status.fail {
+    background: rgba(248,81,73,0.08);
+    border: 1px solid rgba(248,81,73,0.3);
+    color: var(--red);
+  }
+  /* Test list (linuxzoo-style detailed verification) */
+  .test-list {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px;
+    margin-top: 10px;
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+  }
+  .test-list-title {
+    font-size: 0.62rem;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+    font-weight: 700;
+  }
+  .test-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 4px 0;
+    color: var(--text-2);
+    line-height: 1.4;
+    animation: testFadeIn 0.3s ease-out backwards;
+  }
+  @keyframes testFadeIn {
+    from { transform: translateX(-5px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  .test-item .icon { font-weight: 700; flex-shrink: 0; width: 14px; }
+  .test-item.pass { color: var(--green); }
+  .test-item.fail { color: var(--red); }
+  .test-item.pending { color: var(--text-3); }
+
+  /* Server status panel */
+  .server-status {
+    background: var(--bg-card-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+  }
+  .server-status-title {
+    font-size: 0.62rem;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .status-led {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 4px rgba(30,90,61,0.35);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  .status-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3px 10px;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+  }
+  .status-row {
+    display: flex;
+    justify-content: space-between;
+    color: var(--text-2);
+  }
+  .status-row .label { color: var(--text-3); }
+  .status-row .value { color: var(--text-1); font-weight: 600; }
+  .status-row .value.up { color: var(--green); }
+  .status-row .value.down { color: var(--red); }
+  .status-row .value.warn { color: var(--yellow); }
+  .exo-actions { display: flex; gap: 5px; margin-top: 12px; }
+  .neo-btn {
+    background: rgba(180,168,208,0.05);
+    border: 1px solid rgba(180,168,208,0.2);
+    color: #cbd5e1;
+    padding: 8px 12px; border-radius: 7px;
+    font-size: 0.76rem; font-weight: 600;
+    cursor: pointer; flex: 1;
+    transition: transform 0.15s;
+  }
+  .neo-btn:hover { transform: translateY(-1px); }
+  .neo-btn.success {
+    background: rgba(30,90,61,0.1);
+    border-color: rgba(30,90,61,0.4);
+    color: #5dffe0;
+  }
+  .neo-btn.small { padding: 4px 9px; font-size: 0.68rem; flex: 0; }
+
+  /* Quest container */
+  .quest-section {
+    margin-bottom: 14px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: rgba(20,12,36,0.4);
+    border: 1px solid rgba(180,168,208,0.08);
+  }
+  .quest-header {
+    padding: 10px 12px;
+    display: flex; align-items: center; gap: 8px;
+    cursor: pointer;
+    background: rgba(200,52,28,0.06);
+    border-bottom: 1px solid rgba(200,52,28,0.15);
+    user-select: none;
+  }
+  .quest-header:hover {
+    background: rgba(200,52,28,0.1);
+  }
+  .quest-icon {
+    font-size: 1.1rem;
+    filter: none;
+  }
+  .quest-title {
+    flex: 1;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-1);
+    line-height: 1.2;
+  }
+  .quest-meta {
+    font-size: 0.62rem;
+    color: var(--text-3);
+    font-family: var(--font-mono);
+    margin-top: 2px;
+  }
+  .quest-chevron {
+    color: var(--text-3);
+    transition: transform 0.2s;
+    font-size: 0.7rem;
+  }
+  .quest-section.expanded .quest-chevron {
+    transform: rotate(90deg);
+  }
+  .quest-body {
+    display: none;
+    padding: 6px;
+  }
+  .quest-section.expanded .quest-body {
+    display: block;
+  }
+
+  .level-section { margin-bottom: 12px; }
+  .level-header {
+    font-size: 0.6rem; text-transform: uppercase;
+    letter-spacing: 2px; font-weight: 700;
+    padding: 8px 4px;
+    display: flex; align-items: center; gap: 6px;
+    font-family: var(--font-mono);
+  }
+  .level-header.beginner { color: var(--mint); }
+  .level-header.intermediate { color: var(--amber); }
+  .level-header.advanced { color: var(--magenta); }
+  .level-header.expert { color: var(--rose); }
+
+  .exo-card {
+    background: var(--bg-card-2);
+    border: 1px solid var(--border);
+    border-radius: 6px; padding: 8px 12px;
+    margin-bottom: 4px;
+    cursor: pointer; position: relative;
+    transition: all 0.15s ease;
+  }
+  .exo-card:hover {
+    border-color: var(--border-light);
+    background: var(--bg-elevated);
+  }
+  .exo-card.active {
+    background: rgba(30,58,92,0.08);
+    border-color: var(--blue);
+  }
+  .exo-card.completed {
+    background: rgba(30,90,61,0.05);
+    border-color: rgba(30,90,61,0.3);
+  }
+  .exo-card.completed::after {
+    content: '✓'; position: absolute;
+    top: 50%; right: 10px;
+    transform: translateY(-50%);
+    color: var(--green); font-size: 1rem;
+    font-weight: 800;
+  }
+  .exo-card-num {
+    font-size: 0.55rem; color: var(--text-3);
+    font-family: var(--font-mono);
+    font-weight: 700; letter-spacing: 1.5px;
+  }
+  .exo-card-title {
+    font-size: 0.78rem; color: var(--text-1);
+    font-weight: 600; margin-top: 1px;
+    line-height: 1.3; padding-right: 16px;
+  }
+
+  /* FS PANEL */
+  .fs-panel {
+    flex: 1;
+    background: var(--bg-deep);
+    border-right: 1px solid var(--border);
+    overflow: auto;
+    min-height: 240px;
+  }
+  .fs-panel::-webkit-scrollbar { width: 7px; }
+  .fs-panel::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
+  .fs-canvas { padding: 20px 18px; }
+
+  .path-bar {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 9px 12px;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    margin-bottom: 20px;
+    display: flex; align-items: center;
+    gap: 5px; flex-wrap: wrap;
+    position: sticky; top: 0; z-index: 10;
+  }
+  .path-label {
+    color: var(--text-3);
+    font-size: 0.62rem; letter-spacing: 1.5px;
+    text-transform: uppercase; font-weight: 700;
+  }
+  .path-seg {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 9px; border-radius: 4px;
+    background: var(--bg-elevated);
+    color: var(--blue); cursor: pointer;
+    font-weight: 500; font-size: 0.78rem;
+    border: 1px solid var(--border);
+  }
+  .path-seg:hover { border-color: var(--blue); }
+  .path-seg.active {
+    background: linear-gradient(135deg, var(--mint), var(--violet));
+    color: var(--bg-deep); font-weight: 700;
+  }
+  .path-sep { color: var(--text-3); }
+
+  .current-folder {
+    display: flex; flex-direction: column; align-items: center;
+    margin-bottom: 24px;
+  }
+  .current-folder-icon {
+    width: 90px; height: 72px;
+    filter: drop-shadow(0 12px 26px rgba(200,144,40,0.4));
+    animation: float 3s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-7px); }
+  }
+  .current-folder-name {
+    font-family: var(--font-mono);
+    font-size: 1rem; font-weight: 700;
+    color: var(--amber); margin-top: 9px;
+    text-shadow: 0 0 18px rgba(200,144,40,0.4);
+    word-break: break-all; text-align: center;
+  }
+  .current-folder-meta {
+    font-size: 0.66rem; color: var(--text-2);
+    margin-top: 3px;
+    font-family: var(--font-mono);
+  }
+
+  .items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 12px;
+    max-width: 720px; margin: 0 auto;
+  }
+  .empty-folder {
+    grid-column: 1 / -1;
+    text-align: center; padding: 40px 20px;
+    color: var(--text-3); font-style: italic;
+    font-family: var(--font-mono);
+  }
+  .item-card {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 11px 5px; border-radius: 10px;
+    cursor: pointer;
+    background: var(--bg-card-2);
+    border: 1px solid var(--border-light);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
+    animation: itemEnter 0.4s ease-out backwards;
+  }
+  @keyframes itemEnter {
+    from { transform: scale(0.7) translateY(15px); opacity: 0; }
+    to { transform: scale(1) translateY(0); opacity: 1; }
+  }
+  .item-card:hover {
+    transform: translateY(-4px) scale(1.05);
+    background: var(--bg-card);
+    border-color: var(--accent-primary, #c8341c);
+    box-shadow: var(--shadow-md);
+  }
+  .item-card.hidden { opacity: 0.5; }
+  .item-card.highlighted {
+    background: linear-gradient(135deg, rgba(30,90,61,0.25), rgba(30,58,92,0.2));
+    border-color: var(--mint);
+    animation: glow 1.5s ease-in-out infinite;
+  }
+  @keyframes glow {
+    0%, 100% { box-shadow: var(--shadow-md); }
+    50% { box-shadow: var(--shadow-lg); }
+  }
+  .item-icon { width: 44px; height: 36px; margin-bottom: 6px; }
+  .item-name {
+    font-family: var(--font-mono);
+    font-size: 0.7rem; font-weight: 600;
+    text-align: center; word-break: break-word;
+    line-height: 1.3; color: var(--text-1);
+  }
+  .item-card.dir .item-name { color: var(--amber); }
+  .item-card.exec .item-name { color: var(--mint); }
+  .item-perms {
+    font-size: 0.52rem; color: var(--text-3);
+    margin-top: 2px;
+    font-family: var(--font-mono);
+  }
+
+  /* TERMINAL */
+  .term-panel {
+    flex: 1; max-width: 50%;
+    background: var(--terminal-bg);
+    display: flex; flex-direction: column;
+    overflow: hidden; min-height: 220px;
+    border-left: 1px solid var(--border);
+  }
+  @media (max-width: 900px) {
+    .term-panel { max-width: 100%; min-height: 320px; }
+  }
+  .term-head {
+    background: #24211a;
+    padding: 7px 14px;
+    display: flex; align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #3a352a;
+    flex-shrink: 0;
+  }
+  .term-buttons { display: flex; gap: 5px; }
+  .term-buttons span { width: 11px; height: 11px; border-radius: 50%; }
+  .btn-r { background: #ff5f56; }
+  .btn-y { background: #ffbd2e; }
+  .btn-g { background: #27c93f; }
+  .term-title {
+    font-size: 0.72rem; color: var(--terminal-text);
+    font-family: var(--font-mono);
+    display: flex; align-items: center; gap: 5px;
+  }
+  .term-title-dot {
+    color: var(--gold-light, #e8c468);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  #terminal { flex: 1; padding: 6px; overflow: hidden; background: var(--terminal-bg); }
+
+  .cmd-chips {
+    background: #24211a;
+    border-top: 1px solid #3a352a;
+    padding: 8px 11px;
+    display: flex; flex-wrap: wrap; gap: 5px;
+    flex-shrink: 0;
+    max-height: 90px; overflow-y: auto;
+  }
+  .cmd-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 10px;
+    background: rgba(232,196,104,0.10);
+    border: 1px solid rgba(232,196,104,0.3);
+    border-radius: 14px;
+    color: #e8c468;
+    font-family: var(--font-mono);
+    font-size: 0.66rem; font-weight: 500;
+    cursor: pointer; white-space: nowrap;
+  }
+  .cmd-chip:hover {
+    transform: translateY(-2px);
+    background: rgba(232,196,104,0.22);
+  }
+  .cmd-chip-desc { color: #a89876; font-size: 0.58rem; }
+
+  .confetti-piece {
+    position: fixed; top: -20px;
+    width: 9px; height: 14px; border-radius: 2px;
+    pointer-events: none; z-index: 10000;
+    animation: confettiFall 2s ease-out forwards;
+  }
+  @keyframes confettiFall {
+    0% { transform: translate(0, 0) rotate(0); opacity: 1; }
+    100% { transform: translate(var(--tx, 0), 90vh) rotate(720deg); opacity: 0; }
+  }
+
+  .toast {
+    position: fixed; bottom: 100px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(20,12,36,0.95);
+    border: 1px solid var(--mint);
+    color: var(--mint);
+    padding: 9px 16px; border-radius: 8px;
+    font-size: 0.78rem;
+    font-family: var(--font-mono);
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 0.25s, transform 0.25s ease;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* ===== PSEUDO MODAL ===== */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(44,36,24,0.55);
+    backdrop-filter: blur(6px);
+    z-index: 10001;
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+    animation: fadeOverlay 0.3s ease;
+  }
+  @keyframes fadeOverlay {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  .modal-overlay.hidden { display: none; }
+  .modal {
+    background: var(--bg-card-2);
+    border: 1px solid var(--border-medium, #c8baa0);
+    border-radius: 18px;
+    padding: 30px 26px;
+    max-width: 420px;
+    width: 100%;
+    box-shadow: var(--shadow-lg);
+    animation: modalPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes modalPop {
+    from { transform: scale(0.85); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .modal-icon {
+    font-size: 2.5rem;
+    text-align: center;
+    margin-bottom: 12px;
+    animation: wobble 4s ease-in-out infinite;
+  }
+  .modal-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 6px;
+    font-family: var(--font-serif);
+    color: var(--accent-primary, #c8341c);
+  }
+  .modal-sub {
+    text-align: center;
+    color: var(--text-2);
+    font-size: 0.85rem;
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+  .modal-input {
+    width: 100%;
+    background: var(--bg-deep);
+    border: 1px solid var(--border-medium, #c8baa0);
+    color: var(--text-1);
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-family: var(--font-mono);
+    margin-bottom: 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .modal-input:focus {
+    outline: none;
+    border-color: var(--accent-primary, #c8341c);
+    box-shadow: 0 0 0 3px rgba(200,52,28,0.12);
+  }
+  .modal-textarea {
+    min-height: 80px;
+    resize: vertical;
+    font-family: var(--font-sans);
+  }
+  .modal-btn {
+    width: 100%;
+    background: linear-gradient(135deg, var(--magenta), var(--violet));
+    color: white;
+    border: none;
+    padding: 13px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .modal-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(200,52,28,0.4);
+  }
+  .modal-btn.secondary {
+    background: rgba(180,168,208,0.1);
+    color: var(--text-1);
+    border: 1px solid rgba(180,168,208,0.2);
+  }
+  .modal-btns {
+    display: flex; gap: 8px; margin-top: 4px;
+  }
+  .modal-rating {
+    display: flex; justify-content: center; gap: 6px;
+    margin: 14px 0;
+  }
+  .star-btn {
+    background: none;
+    border: 1px solid rgba(180,168,208,0.2);
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    color: var(--text-3);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .star-btn.active, .star-btn:hover {
+    background: rgba(200,144,40,0.15);
+    border-color: var(--amber);
+    color: var(--amber);
+    transform: scale(1.1);
+  }
+
+  /* User badge */
+  .user-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(200,52,28,0.08);
+    border: 1px solid rgba(200,52,28,0.3);
+    color: var(--rose);
+    padding: 5px 11px;
+    border-radius: 100px;
+    font-size: 0.7rem;
+    font-family: var(--font-mono);
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-right: 8px;
+  }
+  .user-badge:hover {
+    background: rgba(200,52,28,0.15);
+    transform: translateY(-1px);
+  }
+
+  .feedback-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(200,144,40,0.08);
+    border: 1px solid rgba(200,144,40,0.3);
+    color: var(--amber);
+    padding: 5px 11px;
+    border-radius: 100px;
+    font-size: 0.7rem;
+    font-family: var(--font-sans);
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-right: 8px;
+  }
+  .feedback-btn:hover {
+    background: rgba(200,144,40,0.15);
+    transform: translateY(-1px);
+  }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <span class="brand-icon">🥋</span>
+  <div>
+    <div class="brand-title">le.dojo</div>
+    <div class="brand-sub">v3 · BUILD-1205 · 80 exos</div>
+  </div>
+  <a href="index.html" style="background:transparent;border:1px solid var(--border);color:var(--text-2);padding:5px 11px;border-radius:4px;font-size:0.7rem;font-family:var(--font-mono);text-decoration:none;margin-right:6px;text-transform:uppercase;letter-spacing:1px">🏠 Accueil</a>
+  <a href="cours.html" style="background:transparent;border:1px solid var(--border);color:var(--text-2);padding:5px 11px;border-radius:4px;font-size:0.7rem;font-family:var(--font-mono);text-decoration:none;margin-right:6px;text-transform:uppercase;letter-spacing:1px">📚 Cours</a>
+  <button class="feedback-btn" id="feedback-btn" onclick="openFeedbackModal()">💬 Avis</button>
+  <span class="user-badge" id="user-badge" onclick="openProfileModal()" style="display:none">
+    <span id="user-pseudo">--</span>
+    <span id="user-progress">0/80</span>
+  </span>
+  <div class="session-pill">
+    <span class="dot"></span> SESSION
+  </div>
+</div>
+
+<div class="app-body">
+  <aside class="exo-panel" id="exo-panel">
+    <button class="exo-toggle" id="exo-toggle">◀</button>
+    <div class="exo-content" id="exo-content">
+      <div class="exo-header">
+        <span class="exo-header-icon">🎯</span>
+        <div class="exo-header-title">Parcours</div>
+      </div>
+
+      <!-- SERVER STATUS PANEL -->
+      <div class="server-status">
+        <div class="server-status-title">
+          <span class="status-led"></span> Server status
+        </div>
+        <div class="status-grid">
+          <div class="status-row"><span class="label">host</span><span class="value" id="srv-host">dojo</span></div>
+          <div class="status-row"><span class="label">ip</span><span class="value" id="srv-ip">192.168.1.42</span></div>
+          <div class="status-row"><span class="label">uptime</span><span class="value" id="srv-uptime">2d 3h</span></div>
+          <div class="status-row"><span class="label">load</span><span class="value" id="srv-load">0.05</span></div>
+          <div class="status-row"><span class="label">ram</span><span class="value" id="srv-ram">4.2/16G</span></div>
+          <div class="status-row"><span class="label">disk</span><span class="value" id="srv-disk">12/50G</span></div>
+          <div class="status-row"><span class="label">nginx</span><span class="value down" id="srv-nginx">stopped</span></div>
+          <div class="status-row"><span class="label">ssh</span><span class="value up" id="srv-ssh">running</span></div>
+        </div>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+        <div class="progress-text" id="progress-text">0 / 0</div>
+      </div>
+      <div id="active-exo-container"></div>
+      <div id="exo-list"></div>
+    </div>
+  </aside>
+
+  <div class="fs-panel">
+    <div class="fs-canvas">
+      <div class="path-bar" id="path-bar">
+        <span class="path-label">📍</span>
+        <span id="path-segments"></span>
+      </div>
+      <div class="current-folder">
+        <div class="current-folder-icon" id="current-folder-icon"></div>
+        <div class="current-folder-name" id="current-folder-name">/</div>
+        <div class="current-folder-meta" id="current-folder-meta">— éléments</div>
+      </div>
+      <div class="items-grid" id="items-grid"></div>
+    </div>
+  </div>
+
+  <div class="term-panel">
+    <div class="term-head">
+      <div class="term-buttons">
+        <span class="btn-r"></span>
+        <span class="btn-y"></span>
+        <span class="btn-g"></span>
+      </div>
+      <div class="term-title">
+        <span class="term-title-dot">●</span> user@dojo
+      </div>
+      <button class="neo-btn small" onclick="termClear()">Vider</button>
+    </div>
+    <div id="terminal"></div>
+    <div class="cmd-chips" id="cmd-chips"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Pseudo modal (shown on first visit) -->
+<div class="modal-overlay hidden" id="pseudo-modal">
+  <div class="modal">
+    <div class="modal-icon">🥋</div>
+    <div class="modal-title">Bienvenue dans le Dojo</div>
+    <div class="modal-sub">
+      Choisis un pseudo pour suivre ta progression.<br>
+      <small>Aucune inscription · Aucun mot de passe</small>
+    </div>
+    <input type="text" class="modal-input" id="pseudo-input" placeholder="Ex : ninjadulinux" maxlength="20" autocomplete="off">
+    <button class="modal-btn" onclick="savePseudo()">Entrer dans le Dojo →</button>
+  </div>
+</div>
+
+<!-- Profile modal (export, reset, change pseudo) -->
+<div class="modal-overlay hidden" id="profile-modal">
+  <div class="modal">
+    <div class="modal-icon">👤</div>
+    <div class="modal-title" id="profile-title">Mon profil</div>
+    <div class="modal-sub" id="profile-stats">--</div>
+
+    <div style="background:rgba(30,90,61,0.05);border:1px solid rgba(30,90,61,0.2);border-radius:10px;padding:12px;margin-bottom:12px">
+      <div style="font-size:0.7rem;color:var(--text-3);margin-bottom:6px;letter-spacing:1.5px;text-transform:uppercase">Pseudo</div>
+      <input type="text" class="modal-input" id="profile-pseudo" maxlength="20" style="margin:0">
+    </div>
+
+    <button class="modal-btn" onclick="exportProgress()" style="margin-bottom:8px;background:linear-gradient(135deg,var(--mint),var(--blue))">📥 Exporter ma progression</button>
+    <div class="modal-btns">
+      <button class="modal-btn secondary" onclick="closeProfileModal()">Fermer</button>
+      <button class="modal-btn" onclick="confirmReset()" style="background:linear-gradient(135deg,#ff5c8a,#c8341c)">🗑️ Reset</button>
+    </div>
+  </div>
+</div>
+
+<!-- Feedback modal -->
+<div class="modal-overlay hidden" id="feedback-modal">
+  <div class="modal">
+    <div class="modal-icon">💬</div>
+    <div class="modal-title">Donne ton avis</div>
+    <div class="modal-sub">Ton retour aide à améliorer Le Dojo</div>
+
+    <div style="font-size:0.78rem;color:var(--text-2);margin-bottom:6px">Note globale</div>
+    <div class="modal-rating" id="rating-stars">
+      <button class="star-btn" data-r="1">1</button>
+      <button class="star-btn" data-r="2">2</button>
+      <button class="star-btn" data-r="3">3</button>
+      <button class="star-btn" data-r="4">4</button>
+      <button class="star-btn" data-r="5">5</button>
+      <button class="star-btn" data-r="6">6</button>
+      <button class="star-btn" data-r="7">7</button>
+      <button class="star-btn" data-r="8">8</button>
+      <button class="star-btn" data-r="9">9</button>
+      <button class="star-btn" data-r="10">10</button>
+    </div>
+
+    <div style="font-size:0.78rem;color:var(--text-2);margin:10px 0 6px">Ce qui m'a plu</div>
+    <textarea class="modal-input modal-textarea" id="feedback-good" placeholder="..."></textarea>
+
+    <div style="font-size:0.78rem;color:var(--text-2);margin:6px 0 6px">Ce qui m'a manqué / à améliorer</div>
+    <textarea class="modal-input modal-textarea" id="feedback-bad" placeholder="..."></textarea>
+
+    <div class="modal-btns">
+      <button class="modal-btn secondary" onclick="closeFeedbackModal()">Annuler</button>
+      <button class="modal-btn" onclick="sendFeedback('clipboard')" style="background:linear-gradient(135deg,var(--mint),var(--blue));flex:1">📋 Copier</button>
+      <button class="modal-btn" onclick="sendFeedback('email')" style="flex:1">✉️ Email</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// VISIBLE EARLY DEBUG — confirms script started executing
+(function() {
+  try {
+    var d = document.getElementById('terminal');
+    if (d) d.innerHTML = '<div style="color:#00f5d4;padding:10px;font-family:monospace;font-size:12px">▶ Script lancé...</div>';
+  } catch(e) {}
+})();
+
+// Wrap everything that follows in a global try/catch so we see ANY error
+try {
+// ===== FS ÉTENDU (avec contexte serveur réaliste) =====
+var fs = JSON.parse(JSON.stringify({
+  '/': { type: 'dir', perms: 'drwxr-xr-x', owner: 'root', children: {
+    bin: { type: 'dir', perms: 'drwxr-xr-x', owner: 'root', children: {
+      bash: { type: 'exec', perms: '-rwxr-xr-x', owner: 'root', size: '1.4M' },
+      ls: { type: 'exec', perms: '-rwxr-xr-x', owner: 'root', size: '142K' },
+      cat: { type: 'exec', perms: '-rwxr-xr-x', owner: 'root', size: '52K' },
+      grep: { type: 'exec', perms: '-rwxr-xr-x', owner: 'root', size: '226K' }
+    }},
+    etc: { type: 'dir', perms: 'drwxr-xr-x', owner: 'root', children: {
+      passwd: { type: 'file', perms: '-rw-r--r--', owner: 'root', size: '2.4K' },
+      shadow: { type: 'file', perms: '-rw-------', owner: 'root', size: '1.2K' },
+      group: { type: 'file', perms: '-rw-r--r--', owner: 'root', size: '950' },
+      sudoers: { type: 'file', perms: '-r--r-----', owner: 'root', size: '755' },
+      hostname: { type: 'file', perms: '-rw-r--r--', owner: 'root', size: '12' },
+      hosts: { type: 'file', perms: '-rw-r--r--', owner: 'root', size: '220' },
+      fstab: { type: 'file', perms: '-rw-r--r--', owner: 'root', size: '720' },
+      crontab: { type: 'file', perms: '-rw-r--r--', owner: 'root', size: '722' },
+      'resolv.conf': { type: 'file', perms: '-rw-r--r--', owner: 'root', size: '88' },
+      'os-release': { type: 'file', perms: '-rw-r--r--', owner: 'root', size: '386' },
+      ssh: { type: 'dir', perms: 'drwxr-xr-x', owner: 'root', children: {
+        sshd_config: { type: 'file', perms: '-rw-------', owner: 'root', size: '3.4K' }
+      }},
+      nginx: { type: 'dir', perms: 'drwxr-xr-x', owner: 'root', children: {
+        'nginx.conf': { type: 'file', perms: '-rw-r--r--', owner: 'root', size: '1.8K' },
+        'sites-available': { type: 'dir', perms: 'drwxr-xr-x', owner: 'root', children: {
+          'default': { type: 'file', perms: '-rw-r--r--', owner: 'root', size: '2.4K' }
+        }},
+        'sites-enabled': { type: 'dir', perms: 'drwxr-xr-x', owner: 'root', children: {} }
+      }},
+      systemd: { type: 'dir', perms: 'drwxr-xr-x', owner: 'root', children: {
+        system: { type: 'dir', perms: 'drwxr-xr-x', owner: 'root', children: {
+          'nginx.service': { type: 'file', perms: '-rw-r--r--', owner: 'root', size: '512' },
+          'ssh.service': { type: 'file', perms: '-rw-r--r--', owner: 'root', size: '480' }
+        }}
+      }},
+      ufw: { type: 'dir', perms: 'drwxr-xr-x', owner: 'root', children: {
+        'ufw.conf': { type: 'file', perms: '-rw-r--r--', owner: 'root', size: '180' }
+      }},
+      network: { type: 'dir', perms: 'drwxr-xr-x', owner: 'root', children: {
+        interfaces: { type: 'file', perms: '-rw-r--r--', owner: 'root', size: '350' }
+      }}
+    }},
+    home: { type: 'dir', perms: 'drwxr-xr-x', owner: 'root', children: {
+      user: { type: 'dir', perms: 'drwxr-xr-x', owner: 'user', children: {
+        Documents: { type: 'dir', perms: 'drwxr-xr-x', owner: 'user', children: {
+          'rapport.txt': { type: 'file', perms: '-rw-r--r--', owner: 'user', size: '2.1K' }
+        }},
+        Downloads: { type: 'dir', perms: 'drwxr-xr-x', owner: 'user', children: {} },
+        Pictures: { type: 'dir', perms: 'drwxr-xr-x', owner: 'user', children: {} },
+        scripts: { type: 'dir', perms: 'drwxr-xr-x', owner: 'user', children: {
+          'install.sh': { type: 'file', perms: '-rw-r--r--', owner: 'user', size: '234' },
+          'backup.sh': { type: 'file', perms: '-rw-r--r--', owner: 'user', size: '512' }
+        }},
+        site: { type: 'dir', perms: 'drwxr-xr-x', owner: 'user', children: {
+          'index.html': { type: 'file', perms: '-rw-r--r--', owner: 'user', size: '612' },
+          'style.css': { type: 'file', perms: '-rw-r--r--', owner: 'user', size: '438' }
+        }},
+        '.bashrc': { type: 'file', perms: '-rw-r--r--', owner: 'user', size: '3.5K' },
+        '.ssh': { type: 'dir', perms: 'drwx------', owner: 'user', children: {
+          'id_rsa': { type: 'file', perms: '-rw-------', owner: 'user', size: '1.7K' },
+          'id_rsa.pub': { type: 'file', perms: '-rw-r--r--', owner: 'user', size: '410' },
+          'authorized_keys': { type: 'file', perms: '-rw-------', owner: 'user', size: '410' }
+        }}
+      }}
+    }},
+    var: { type: 'dir', perms: 'drwxr-xr-x', owner: 'root', children: {
+      log: { type: 'dir', perms: 'drwxrwxr-x', owner: 'root', children: {
+        syslog: { type: 'file', perms: '-rw-r-----', owner: 'root', size: '1.2M' },
+        'auth.log': { type: 'file', perms: '-rw-r-----', owner: 'root', size: '88K' },
+        nginx: { type: 'dir', perms: 'drwxr-xr-x', owner: 'root', children: {
+          'access.log': { type: 'file', perms: '-rw-r-----', owner: 'www-data', size: '24K' },
+          'error.log': { type: 'file', perms: '-rw-r-----', owner: 'www-data', size: '4.2K' }
+        }}
+      }},
+      www: { type: 'dir', perms: 'drwxr-xr-x', owner: 'root', children: {
+        html: { type: 'dir', perms: 'drwxr-xr-x', owner: 'www-data', children: {
+          'index.nginx-debian.html': { type: 'file', perms: '-rw-r--r--', owner: 'www-data', size: '612' }
+        }}
+      }}
+    }},
+    tmp: { type: 'dir', perms: 'drwxrwxrwt', owner: 'root', children: {} },
+    proc: { type: 'dir', perms: 'dr-xr-xr-x', owner: 'root', children: {
+      cpuinfo: { type: 'file', perms: '-r--r--r--', owner: 'root', size: '0' },
+      meminfo: { type: 'file', perms: '-r--r--r--', owner: 'root', size: '0' }
+    }},
+    root: { type: 'dir', perms: 'drwx------', owner: 'root', children: {} }
+  }}
+}));
+
+var cwd = '/home/user';
+var highlighted = null;
+var currentExoIdx = -1;
+var exoStatus = null;
+var completed;
+try {
+  completed = new Set(JSON.parse(localStorage.getItem('dojo_linux_done_v2') || '[]'));
+} catch (e) { completed = new Set(); }
+var cmdHistory = [];
+var expandedQuests = new Set(['fundamentals', 'navigation']);
+
+// État système simulé
+var sysState = {
+  user: 'user',
+  hostname: 'dojo',
+  isRoot: false,
+  services: {
+    nginx: { active: false, enabled: true, pid: null },
+    ssh: { active: true, enabled: true, pid: 743 }
+  },
+  firewall: {
+    enabled: false,
+    rules: []
+  },
+  processes: [
+    { pid: 1, user: 'root', cmd: '/sbin/init', cpu: 0.0, mem: 0.4 },
+    { pid: 743, user: 'root', cmd: '/usr/sbin/sshd', cpu: 0.0, mem: 0.2 },
+    { pid: 1024, user: 'user', cmd: '-bash', cpu: 0.0, mem: 0.1 },
+    { pid: 1056, user: 'user', cmd: 'top', cpu: 0.5, mem: 0.3 }
+  ]
+};
+
+var FILE_CONTENTS = {
+  passwd: 'root:x:0:0:root:/root:/bin/bash\ndaemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin\nwww-data:x:33:33:www-data:/var/www:/usr/sbin/nologin\nuser:x:1000:1000:user:/home/user:/bin/bash',
+  shadow: '(accès refusé sans privilèges root)',
+  group: 'root:x:0:\nsudo:x:27:user\nwww-data:x:33:\nuser:x:1000:',
+  sudoers: '# /etc/sudoers\nroot ALL=(ALL:ALL) ALL\n%sudo ALL=(ALL:ALL) ALL\nuser ALL=(ALL) NOPASSWD: /bin/systemctl',
+  hostname: 'dojo',
+  hosts: '127.0.0.1   localhost\n127.0.1.1   dojo\n::1         ip6-localhost ip6-loopback',
+  fstab: '# /etc/fstab\nUUID=abc-123  /        ext4    defaults     0 1\nUUID=def-456  /boot    ext4    defaults     0 2\ntmpfs         /tmp     tmpfs   defaults     0 0',
+  crontab: '# /etc/crontab\n# m h dom mon dow user  command\n17 *  * * *   root  cd / && run-parts --report /etc/cron.hourly\n25 6  * * *   root  test -x /usr/sbin/anacron || /etc/cron.daily\n0  4  * * 0   root  /home/user/scripts/backup.sh',
+  'resolv.conf': 'nameserver 8.8.8.8\nnameserver 1.1.1.1\nsearch lan',
+  'os-release': 'NAME="Ubuntu"\nVERSION="22.04.3 LTS (Jammy Jellyfish)"\nID=ubuntu\nID_LIKE=debian\nPRETTY_NAME="Ubuntu 22.04.3 LTS"\nVERSION_ID="22.04"',
+  'sshd_config': '# /etc/ssh/sshd_config\nPort 22\nPermitRootLogin no\nPasswordAuthentication yes\nPubkeyAuthentication yes\nAuthorizedKeysFile .ssh/authorized_keys',
+  'nginx.conf': 'user www-data;\nworker_processes auto;\npid /run/nginx.pid;\n\nevents {\n    worker_connections 768;\n}\n\nhttp {\n    include /etc/nginx/sites-enabled/*;\n    sendfile on;\n}',
+  'default': 'server {\n    listen 80 default_server;\n    root /var/www/html;\n    index index.html;\n    server_name _;\n    location / {\n        try_files $uri $uri/ =404;\n    }\n}',
+  'nginx.service': '[Unit]\nDescription=A high performance web server\nAfter=network.target\n\n[Service]\nType=forking\nExecStart=/usr/sbin/nginx\nExecReload=/usr/sbin/nginx -s reload\n\n[Install]\nWantedBy=multi-user.target',
+  'ssh.service': '[Unit]\nDescription=OpenBSD Secure Shell server\nAfter=network.target\n\n[Service]\nExecStart=/usr/sbin/sshd -D\n\n[Install]\nWantedBy=multi-user.target',
+  'ufw.conf': 'ENABLED=no\nLOGLEVEL=low',
+  'interfaces': 'auto lo\niface lo inet loopback\n\nauto eth0\niface eth0 inet dhcp',
+  '.bashrc': '# ~/.bashrc\nexport PATH=$PATH:$HOME/scripts\nalias ll="ls -la"\nalias gs="git status"',
+  'install.sh': '#!/bin/bash\necho "Installation en cours..."\necho "Tout est prêt !"',
+  'backup.sh': '#!/bin/bash\n# Sauvegarde quotidienne\nDATE=$(date +%Y%m%d)\ntar -czf /tmp/backup-$DATE.tar.gz /home/user',
+  'rapport.txt': 'Rapport mensuel\n================\n\nObjectifs atteints : 95%\nRecommandations : continuer sur cette voie',
+  'index.html': '<!DOCTYPE html>\n<html>\n<head><title>Mon site</title></head>\n<body><h1>Bienvenue !</h1></body>\n</html>',
+  'style.css': 'body { font-family: sans-serif; background: #efe9d4; color: #fff; }',
+  'index.nginx-debian.html': '<!DOCTYPE html>\n<html><body>\n<h1>Welcome to nginx!</h1>\n<p>If you see this page, the nginx web server is successfully installed.</p>\n</body></html>',
+  syslog: 'Apr 28 12:00:01 dojo systemd[1]: Started Daily apt activities.\nApr 28 12:01:23 dojo kernel: [12345.67] CPU0 ready\nApr 28 12:05:44 dojo CRON[2105]: starting backup.sh\nApr 28 12:06:01 dojo CRON[2105]: ERROR backup failed: disk full\nApr 28 12:10:11 dojo systemd[1]: Started Session 12.',
+  'auth.log': 'Apr 28 11:50:01 dojo sshd[645]: Accepted publickey for user from 192.168.1.10\nApr 28 11:55:32 dojo sudo: user : TTY=pts/0 ; PWD=/home/user ; COMMAND=/usr/bin/apt update\nApr 28 12:01:12 dojo sshd[789]: Failed password for invalid user admin from 203.0.113.5\nApr 28 12:01:18 dojo sshd[789]: Failed password for invalid user root from 203.0.113.5\nApr 28 12:02:01 dojo sshd[790]: Connection closed by 203.0.113.5',
+  'access.log': '127.0.0.1 - - [28/Apr/2026:12:00:01 +0000] "GET / HTTP/1.1" 200 612\n192.168.1.5 - - [28/Apr/2026:12:01:43 +0000] "GET /style.css HTTP/1.1" 200 438\n203.0.113.5 - - [28/Apr/2026:12:02:11 +0000] "GET /admin HTTP/1.1" 404 153',
+  'error.log': '2026/04/28 12:02:11 [error] 1234#0: *1 open() "/var/www/html/admin" failed (2: No such file or directory)\n2026/04/28 12:05:44 [warn] 1234#0: *2 client closed connection',
+  'id_rsa': '-----BEGIN OPENSSH PRIVATE KEY-----\n(clé privée — NE PARTAGEZ JAMAIS)\n-----END OPENSSH PRIVATE KEY-----',
+  'id_rsa.pub': 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC7vbqajD... user@dojo',
+  'authorized_keys': 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC7vbqajD... user@laptop',
+  cpuinfo: 'processor : 0\nmodel name : Intel(R) Core(TM) i7-9700K @ 3.60GHz\ncpu MHz : 3600.000\ncache size : 12288 KB\ncpu cores : 8',
+  meminfo: 'MemTotal:     16384000 kB\nMemFree:       8192000 kB\nMemAvailable: 12288000 kB\nBuffers:        524288 kB\nCached:        2097152 kB'
+};
+
+// ===== EXERCICES (50+, structurés en quêtes) =====
+// Format riche : context, scene, mission, steps[], expected, diagram
+var QUESTS = [
+  {
+    id: 'fundamentals',
+    icon: '🌱',
+    title: 'Les fondations',
+    color: '#00f5d4',
+    desc: 'Premiers pas dans le terminal',
+    exos: [
+      {
+        level: 'beginner',
+        title: 'Où suis-je ?',
+        context: "Quand tu ouvres un terminal, tu es 'quelque part' dans le système — comme dans un explorateur de fichiers. Le terminal ne te montre pas ce dossier en gros, mais tu peux toujours demander où tu es.",
+        scene: "Tu viens d'ouvrir un terminal. Avant toute action, tu veux savoir dans quel dossier tu te trouves.",
+        mission: "Affiche ton emplacement actuel.",
+        steps: ["Tape simplement la commande `pwd`", "Lis le chemin renvoyé"],
+        expected: "$ pwd\n/home/user",
+        diagram: "  /\n  ├── etc/\n  ├── var/\n  └── home/\n      └── user/  ← TU ES ICI",
+        check: function(s) { return s.history.indexOf('pwd') >= 0; }
+      },
+      {
+        level: 'beginner',
+        title: 'Ouvrir les yeux',
+        context: "ls (list) affiche le contenu du dossier courant. C'est la commande la plus utilisée de Linux. Sans options, elle montre les fichiers et dossiers visibles, sans détails.",
+        scene: "Tu es dans ton home. Tu veux voir ce qu'il contient.",
+        mission: "Liste les fichiers et dossiers du répertoire courant.",
+        steps: ["Tape `ls`", "Observe les couleurs : bleu = dossier, vert = exécutable"],
+        expected: "$ ls\nDocuments  Downloads  Pictures  scripts  site",
+        check: function(s) { return s.history.some(function(c) { return c === 'ls' || c.indexOf('ls ') === 0; }); }
+      },
+      {
+        level: 'beginner',
+        title: 'Voir les détails cachés',
+        context: "L'option -l (long) ajoute permissions, propriétaire, taille et date. -a (all) inclut les fichiers cachés (qui commencent par un point). On les combine en `-la`.",
+        scene: "Tu veux comprendre les permissions de tes fichiers et voir si des fichiers cachés existent.",
+        mission: "Liste TOUT le contenu (y compris caché) avec les détails.",
+        steps: ["Tape `ls -la`", "Repère le `.bashrc` (caché)", "Note les permissions à gauche : `-rw-r--r--`"],
+        expected: "drwxr-xr-x  user  4096  Documents/\n-rw-r--r--  user  3584  .bashrc",
+        diagram: "Permissions :\n  d r w x r - x r - x\n  │ └─┬─┘ └─┬─┘ └─┬─┘\n  │  user  group autres\n  └─ d=dir, -=fichier",
+        check: function(s) { return s.history.some(function(c) { return /^ls\s+(-la|-al|-l\s+-a|-a\s+-l)/.test(c); }); }
+      }
+    ]
+  },
+  {
+    id: 'navigation',
+    icon: '🧭',
+    title: 'Navigation',
+    color: '#3a86ff',
+    desc: 'Se déplacer dans l\'arborescence',
+    exos: [
+      {
+        level: 'beginner',
+        title: 'Aller à la racine',
+        context: "Linux organise tout en arbre depuis `/`. Pas de C: ou D:, juste un seul point de départ. Tous les fichiers, disques montés, périphériques sont sous `/`.",
+        scene: "Tu veux explorer le sommet du système.",
+        mission: "Navigue jusqu'au dossier racine.",
+        steps: ["Tape `cd /`", "Vérifie avec `pwd`", "Liste avec `ls` pour voir l'organisation"],
+        expected: "$ cd /\n$ pwd\n/\n$ ls\nbin  etc  home  proc  root  tmp  var",
+        check: function(s) { return s.cwd === '/'; }
+      },
+      {
+        level: 'beginner',
+        title: 'Au cœur de la config',
+        context: "/etc est LE dossier des fichiers de configuration système. Presque tout est configurable via des fichiers texte ici : utilisateurs, services, réseau, etc.",
+        scene: "Tu veux voir où Linux range ses paramètres.",
+        mission: "Va dans /etc et liste son contenu.",
+        steps: ["`cd /etc`", "`ls` pour voir les centaines de fichiers de config"],
+        expected: "$ cd /etc\n$ ls\nhostname  hosts  nginx/  passwd  ssh/  systemd/",
+        check: function(s) { return s.cwd === '/etc'; }
+      },
+      {
+        level: 'beginner',
+        title: 'Le retour à la maison',
+        context: "Le caractère `~` (tilde) est un raccourci pour ton dossier personnel /home/user. Tu peux aussi taper `cd` tout court — par défaut, ça te ramène chez toi.",
+        scene: "Après avoir exploré, tu veux rentrer.",
+        mission: "Reviens dans ton dossier personnel.",
+        steps: ["Tape `cd ~` ou simplement `cd`", "Vérifie avec `pwd`"],
+        expected: "$ cd ~\n$ pwd\n/home/user",
+        check: function(s) { return s.cwd === '/home/user' && s.history.some(function(c) { return c === 'cd' || c === 'cd ~' || c === 'cd /home/user'; }); }
+      },
+      {
+        level: 'beginner',
+        title: 'Remonter d\'un cran',
+        context: "Le double point `..` représente le dossier parent. Indispensable pour remonter sans connaître le chemin exact.",
+        scene: "Tu es dans /home/user/Documents et tu veux remonter dans /home/user.",
+        mission: "Remonte d'un niveau dans l'arborescence.",
+        steps: ["D'abord va dans Documents : `cd Documents`", "Puis remonte : `cd ..`", "Vérifie : `pwd`"],
+        expected: "$ cd ..\n$ pwd\n/home/user",
+        check: function(s) { return s.history.some(function(c) { return c.trim() === 'cd ..'; }); }
+      },
+      {
+        level: 'intermediate',
+        title: 'Chemin absolu vs relatif',
+        context: "Un chemin absolu commence par `/` (depuis la racine). Un chemin relatif part du dossier courant. Les deux marchent, mais l'absolu est sans ambiguïté.",
+        scene: "Tu veux aller directement dans /home/user/Documents sans étape intermédiaire.",
+        mission: "Utilise un chemin absolu pour aller dans Documents.",
+        steps: ["Tape `cd /home/user/Documents` (le chemin complet)", "Tu y arrives en une seule commande"],
+        expected: "$ cd /home/user/Documents\n$ pwd\n/home/user/Documents",
+        check: function(s) { return s.cwd === '/home/user/Documents'; }
+      },
+      {
+        level: 'intermediate',
+        title: 'L\'arbre complet',
+        context: "tree affiche la structure d'un dossier en arbre visuel. Pratique pour comprendre l'organisation d'un projet.",
+        scene: "Tu veux voir l'organisation de /etc d'un coup d'œil.",
+        mission: "Affiche l'arborescence de /etc.",
+        steps: ["`tree /etc`", "Note les sous-dossiers : ssh/, nginx/, systemd/"],
+        expected: "/etc\n├── nginx/\n│   ├── nginx.conf\n│   └── sites-enabled/\n├── ssh/\n│   └── sshd_config\n└── ...",
+        check: function(s) { return s.history.some(function(c) { return c.indexOf('tree') === 0 && (c.indexOf('/etc') >= 0 || s.cwd === '/etc'); }); }
+      }
+    ]
+  },
+  {
+    id: 'files',
+    icon: '📄',
+    title: 'Fichiers & dossiers',
+    color: '#ffbe0b',
+    desc: 'Lire, créer, copier, déplacer',
+    exos: [
+      {
+        level: 'intermediate',
+        title: 'Ouvrir un fichier texte',
+        context: "cat (concatenate) affiche le contenu d'un fichier dans le terminal. Idéal pour les fichiers courts. Pour les longs, on préfère `less` ou `head`/`tail`.",
+        scene: "Tu veux voir la liste des utilisateurs Linux.",
+        mission: "Affiche le contenu de /etc/passwd.",
+        steps: ["`cat /etc/passwd`", "Chaque ligne = un utilisateur", "Format : `user:x:UID:GID:nom:home:shell`"],
+        expected: "root:x:0:0:root:/root:/bin/bash\nuser:x:1000:1000:user:/home/user:/bin/bash",
+        check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('passwd') >= 0; }); }
+      },
+      {
+        level: 'intermediate',
+        title: 'Créer un dossier',
+        context: "mkdir (make directory) crée un nouveau dossier. Avec `-p`, il crée aussi les parents si nécessaires.",
+        scene: "Tu démarres un nouveau projet et tu veux le ranger.",
+        mission: "Crée un dossier `projets` dans ton home.",
+        steps: ["Va dans ton home : `cd ~`", "Crée le dossier : `mkdir projets`", "Vérifie : `ls`"],
+        expected: "$ mkdir projets\n$ ls\nDocuments  Downloads  projets  scripts",
+        check: function(s) { var h = getNode('/home/user'); return !!(h && h.children && h.children.projets && h.children.projets.type === 'dir'); }
+      },
+      {
+        level: 'intermediate',
+        title: 'Créer un fichier vide',
+        context: "touch crée un fichier vide. C'est aussi utilisé pour mettre à jour la date d'un fichier existant.",
+        scene: "Tu veux préparer un fichier de notes pour plus tard.",
+        mission: "Crée `notes.txt` dans ton home.",
+        steps: ["`cd ~`", "`touch notes.txt`", "`ls` pour confirmer"],
+        expected: "$ touch notes.txt\n$ ls\nnotes.txt  ...",
+        check: function(s) { var h = getNode('/home/user'); return !!(h && h.children && h.children['notes.txt']); }
+      },
+      {
+        level: 'intermediate',
+        title: 'Copier — sauvegarder avant modif',
+        context: "cp (copy) duplique un fichier. Règle d'or : avant de modifier un fichier de config, on en fait toujours une copie de sauvegarde.",
+        scene: "Tu vas modifier rapport.txt mais tu veux garder l'original.",
+        mission: "Copie rapport.txt en rapport_backup.txt dans Documents.",
+        steps: ["`cd ~/Documents`", "`cp rapport.txt rapport_backup.txt`", "`ls` : tu as les deux"],
+        expected: "$ cp rapport.txt rapport_backup.txt\n$ ls\nrapport.txt  rapport_backup.txt",
+        check: function(s) { var d = getNode('/home/user/Documents'); return !!(d && d.children && d.children['rapport_backup.txt']); }
+      },
+      {
+        level: 'intermediate',
+        title: 'Renommer (mv)',
+        context: "mv (move) sert à déplacer ET à renommer. Il n'existe pas de commande `rename` standard.",
+        scene: "Tu veux que `notes.txt` devienne `todo.txt`.",
+        mission: "Renomme notes.txt en todo.txt dans ton home.",
+        steps: ["`cd ~`", "`mv notes.txt todo.txt`", "`ls` : plus de notes.txt, mais todo.txt apparaît"],
+        expected: "$ mv notes.txt todo.txt\n$ ls\ntodo.txt  Documents  ...",
+        check: function(s) { var h = getNode('/home/user'); return !!(h && h.children && h.children['todo.txt'] && !h.children['notes.txt']); }
+      },
+      {
+        level: 'advanced',
+        title: 'Structure de projet',
+        context: "Un projet bien organisé a des sous-dossiers conventionnels : `src/` (sources), `docs/` (documentation), `tests/`, etc.",
+        scene: "Tu démarres un projet de zéro.",
+        mission: "Crée ~/monprojet avec deux sous-dossiers : src et docs.",
+        steps: ["`cd ~`", "`mkdir monprojet`", "`cd monprojet`", "`mkdir src docs` (les deux d'un coup)", "`tree`"],
+        expected: "monprojet/\n├── docs/\n└── src/",
+        check: function(s) { var p = getNode('/home/user/monprojet'); return !!(p && p.children && p.children.src && p.children.docs); }
+      },
+      {
+        level: 'advanced',
+        title: 'README pour ton projet',
+        context: "Un README est un fichier markdown qui décrit ton projet. C'est le premier truc que les gens lisent.",
+        scene: "Ton projet a besoin d'une carte d'identité.",
+        mission: "Crée README.md dans ~/monprojet.",
+        steps: ["`cd ~/monprojet`", "`touch README.md`", "Plus tard tu pourras éditer son contenu"],
+        expected: "$ ls\ndocs  README.md  src",
+        check: function(s) { var p = getNode('/home/user/monprojet'); return !!(p && p.children && p.children['README.md']); }
+      },
+      {
+        level: 'advanced',
+        title: 'Suppression récursive',
+        context: "rm (remove) supprime fichiers et dossiers. ATTENTION : pas de corbeille en CLI ! `-r` (recursive) supprime un dossier et tout son contenu. À manier avec précaution.",
+        scene: "Le projet d'essai n'est plus utile.",
+        mission: "Supprime ~/monprojet entièrement.",
+        steps: ["`cd ~`", "`rm -r monprojet`", "Vérifie : `ls` (plus de monprojet)"],
+        expected: "$ rm -r monprojet\n$ ls\nDocuments  Downloads  ...",
+        diagram: "⚠️ rm -rf /  est l'erreur de carrière classique\n   (efface tout le système). Soyez prudents.",
+        check: function(s) { var h = getNode('/home/user'); return !!(h && h.children && !h.children.monprojet); }
+      }
+    ]
+  },
+  {
+    id: 'users',
+    icon: '👤',
+    title: 'Utilisateurs & permissions',
+    color: '#8338ec',
+    desc: 'Qui peut quoi ?',
+    exos: [
+      {
+        level: 'intermediate',
+        title: 'Qui suis-je ?',
+        context: "whoami affiche ton nom d'utilisateur. id donne plus de détails : UID, GID, groupes.",
+        scene: "Tu te demandes quel utilisateur exécute ta session.",
+        mission: "Affiche ton identité avec `whoami`.",
+        steps: ["Tape `whoami`", "Pour plus d'infos : `id`"],
+        expected: "$ whoami\nuser\n$ id\nuid=1000(user) gid=1000(user) groups=1000(user),27(sudo)",
+        check: function(s) { return s.history.indexOf('whoami') >= 0; }
+      },
+      {
+        level: 'intermediate',
+        title: 'Identité complète',
+        context: "id affiche UID (numéro utilisateur), GID (groupe principal) et tous les groupes secondaires. Le groupe `sudo` autorise les commandes administrateur.",
+        scene: "Tu veux savoir si tu es membre du groupe sudo.",
+        mission: "Affiche ton ID complet avec `id`.",
+        steps: ["Tape `id`", "Cherche `sudo` dans la liste des groupes"],
+        expected: "uid=1000(user) gid=1000(user) groups=1000(user),27(sudo)",
+        check: function(s) { return s.history.indexOf('id') >= 0 || s.history.some(function(c) { return c === 'id'; }); }
+      },
+      {
+        level: 'advanced',
+        title: 'Lire les permissions',
+        context: "Les permissions Linux sont 9 caractères : 3 pour le propriétaire (u), 3 pour le groupe (g), 3 pour les autres (o). r=lire, w=écrire, x=exécuter.",
+        scene: "Tu veux comprendre les permissions de ton install.sh.",
+        mission: "Affiche les permissions des fichiers de ~/scripts.",
+        steps: ["`cd ~/scripts`", "`ls -l`", "Lis `-rw-r--r--` : propriétaire peut lire/écrire, groupe et autres seulement lire"],
+        expected: "-rw-r--r--  user  user  234  install.sh\n-rw-r--r--  user  user  512  backup.sh",
+        diagram: "  -rwxr-xr-x\n  │└┬┘└┬┘└┬┘\n  │ u  g  o\n  └ type fichier",
+        check: function(s) { return s.cwd === '/home/user/scripts' && s.history.some(function(c) { return /^ls\s+-l/.test(c); }); }
+      },
+      {
+        level: 'advanced',
+        title: 'Rendre exécutable (chmod)',
+        context: "Par défaut un script créé n'est pas exécutable. chmod +x ajoute le droit d'exécution. C'est obligatoire pour pouvoir lancer un script avec ./script.sh.",
+        scene: "Ton install.sh est là mais ne se lance pas. Permission denied.",
+        mission: "Ajoute le droit d'exécution à install.sh.",
+        steps: ["`cd ~/scripts`", "`chmod +x install.sh`", "Vérifie : `ls -l` — un x apparaît"],
+        expected: "Avant : -rw-r--r--  install.sh\nAprès : -rwxr-xr-x  install.sh",
+        check: function(s) { var f = getNode('/home/user/scripts/install.sh'); return !!(f && f.perms && f.perms.indexOf('x') > 0); }
+      },
+      {
+        level: 'advanced',
+        title: 'Permissions numériques',
+        context: "chmod accepte aussi des nombres : r=4, w=2, x=1. On les additionne. Ex : 755 = 7(rwx) 5(r-x) 5(r-x). Très utilisé en sysadmin.",
+        scene: "Tu veux donner des permissions strictes à backup.sh : seul le propriétaire peut tout faire (700).",
+        mission: "Applique chmod 700 à backup.sh.",
+        steps: ["`cd ~/scripts`", "`chmod 700 backup.sh`", "Vérifie avec `ls -l`"],
+        expected: "-rwx------  backup.sh",
+        diagram: "Tableau magique :\n  7=rwx  6=rw-  5=r-x\n  4=r--  2=-w-  1=--x\n  0=---",
+        check: function(s) { var f = getNode('/home/user/scripts/backup.sh'); return !!(f && f.perms === '-rwx------'); }
+      },
+      {
+        level: 'expert',
+        title: 'Changer le propriétaire (chown)',
+        context: "chown (change owner) change le propriétaire d'un fichier. Réservé à root. Format : `chown user:group fichier`. Très utile en hébergement web pour donner des fichiers à www-data.",
+        scene: "Tu veux donner ~/site/index.html au serveur web (www-data).",
+        mission: "Change le propriétaire de ~/site/index.html en www-data.",
+        steps: ["Cette commande nécessite sudo en vrai", "Ici : `sudo chown www-data:www-data ~/site/index.html`", "Vérifie avec `ls -l ~/site`"],
+        expected: "Avant : -rw-r--r--  user       index.html\nAprès : -rw-r--r--  www-data   index.html",
+        check: function(s) { var f = getNode('/home/user/site/index.html'); return !!(f && f.owner === 'www-data'); }
+      }
+    ]
+  },
+  {
+    id: 'processes',
+    icon: '⚙️',
+    title: 'Processus système',
+    color: '#ff5c8a',
+    desc: 'Voir ce qui tourne',
+    exos: [
+      {
+        level: 'intermediate',
+        title: 'Lister les processus',
+        context: "ps (process status) liste les processus en cours. `ps aux` est la forme la plus utilisée : tous les processus, pour tous les utilisateurs, avec détails.",
+        scene: "Tu veux voir tout ce qui tourne sur ta machine.",
+        mission: "Liste tous les processus avec `ps aux`.",
+        steps: ["Tape `ps aux`", "Repère PID 1 (init/systemd) et ton shell bash"],
+        expected: "USER  PID  CPU  MEM  COMMAND\nroot    1  0.0  0.4  /sbin/init\nroot  743  0.0  0.2  /usr/sbin/sshd\nuser 1024  0.0  0.1  -bash",
+        check: function(s) { return s.history.some(function(c) { return /^ps(\s|$)/.test(c); }); }
+      },
+      {
+        level: 'intermediate',
+        title: 'Top des consommateurs',
+        context: "top affiche les processus en temps réel, triés par utilisation CPU/RAM. Quitter avec `q`. C'est l'équivalent du gestionnaire de tâches Windows.",
+        scene: "Ta machine est lente. Tu veux voir qui mange le CPU.",
+        mission: "Lance `top` (affiche les processus, puis quitte avec q ou Ctrl+C).",
+        steps: ["`top`", "Observe le tri par CPU", "Quitte avec `q`"],
+        expected: "PID  USER  %CPU  %MEM  COMMAND\n1056  user  0.5   0.3   top\n   1  root  0.0   0.4   init",
+        check: function(s) { return s.history.indexOf('top') >= 0; }
+      },
+      {
+        level: 'advanced',
+        title: 'Tuer un processus',
+        context: "kill envoie un signal à un processus. `kill PID` envoie SIGTERM (arrêt propre). `kill -9 PID` envoie SIGKILL (forcé). On trouve le PID avec ps.",
+        scene: "Un processus est figé. Tu dois le tuer.",
+        mission: "Tue le processus avec PID 1056.",
+        steps: ["Identifie d'abord avec `ps aux`", "`kill 1056`", "Vérifie : il a disparu de `ps aux`"],
+        expected: "$ kill 1056\n$ ps aux | grep 1056\n(rien : il est mort)",
+        check: function(s) { return s.history.some(function(c) { return /^kill\s+1056/.test(c); }); }
+      }
+    ]
+  },
+  {
+    id: 'pipes',
+    icon: '🔗',
+    title: 'Recherche & filtrage',
+    color: '#3a86ff',
+    desc: 'grep, pipes et redirections',
+    exos: [
+      {
+        level: 'intermediate',
+        title: 'Premières lignes',
+        context: "head affiche les premières lignes d'un fichier (10 par défaut). Avec `-n 5` on en demande 5. tail fait pareil pour les dernières lignes.",
+        scene: "Un fichier de log fait 50 000 lignes. Tu veux juste un aperçu du début.",
+        mission: "Affiche les 5 premières lignes de /var/log/syslog.",
+        steps: ["`head -n 5 /var/log/syslog`", "Lis ce qui est affiché"],
+        expected: "Apr 28 12:00:01 dojo systemd[1]: Started...\nApr 28 12:01:23 dojo kernel: ...",
+        check: function(s) { return s.history.some(function(c) { return c.indexOf('head') === 0 && c.indexOf('syslog') >= 0; }); }
+      },
+      {
+        level: 'intermediate',
+        title: 'Dernières lignes (logs)',
+        context: "tail affiche la fin d'un fichier. INDISPENSABLE pour les logs : les nouvelles entrées sont à la fin. `tail -f` suit en temps réel (follow).",
+        scene: "Tu veux voir les derniers événements système.",
+        mission: "Affiche les 5 dernières lignes de /var/log/syslog.",
+        steps: ["`tail -n 5 /var/log/syslog`", "Tu vois les événements les plus récents"],
+        expected: "Apr 28 12:10:11 dojo systemd[1]: Started Session 12.",
+        check: function(s) { return s.history.some(function(c) { return c.indexOf('tail') === 0 && c.indexOf('syslog') >= 0; }); }
+      },
+      {
+        level: 'advanced',
+        title: 'Chercher un mot (grep)',
+        context: "grep cherche un motif dans un fichier ou une sortie. C'est l'outil de recherche universel en CLI. `grep ERROR fichier.log` montre toutes les lignes contenant ERROR.",
+        scene: "Tu veux savoir s'il y a des erreurs dans le syslog.",
+        mission: "Cherche les lignes contenant ERROR dans /var/log/syslog.",
+        steps: ["`grep ERROR /var/log/syslog`", "Tu vois uniquement les lignes pertinentes"],
+        expected: "Apr 28 12:06:01 dojo CRON[2105]: ERROR backup failed: disk full",
+        check: function(s) { return s.history.some(function(c) { return /^grep\s+\S+\s+/.test(c) && c.indexOf('syslog') >= 0; }); }
+      },
+      {
+        level: 'advanced',
+        title: 'Pipe — chaîner les commandes',
+        context: "Le pipe `|` envoie la sortie d'une commande à l'entrée d'une autre. C'est LA puissance de Linux : on combine de petits outils. Ex : `ps aux | grep nginx` = liste les processus nginx.",
+        scene: "Tu veux trouver les tentatives de connexion échouées dans auth.log.",
+        mission: "Affiche /var/log/auth.log et garde uniquement les lignes 'Failed'.",
+        steps: ["`cat /var/log/auth.log | grep Failed`", "Ou plus direct : `grep Failed /var/log/auth.log`"],
+        expected: "Failed password for invalid user admin from 203.0.113.5\nFailed password for invalid user root from 203.0.113.5",
+        diagram: "cat fichier ──┐\n              ├─→ grep Failed ──→ écran\n              │\n         (sortie)",
+        check: function(s) { return s.history.some(function(c) { return c.indexOf('|') >= 0 && c.indexOf('grep') >= 0 && c.indexOf('Failed') >= 0; }) || s.history.some(function(c) { return /^grep\s+Failed/.test(c) && c.indexOf('auth') >= 0; }); }
+      },
+      {
+        level: 'advanced',
+        title: 'Compter (wc)',
+        context: "wc (word count) compte lignes (-l), mots (-w) ou caractères (-c). Combiné avec un pipe, on compte des résultats : `grep ERROR file | wc -l` = nombre d'erreurs.",
+        scene: "Tu veux savoir combien de tentatives ratées il y a eu.",
+        mission: "Compte le nombre de lignes contenant 'Failed' dans auth.log.",
+        steps: ["`grep Failed /var/log/auth.log | wc -l`", "Le chiffre te dit combien d'attaques"],
+        expected: "$ grep Failed /var/log/auth.log | wc -l\n2",
+        check: function(s) { return s.history.some(function(c) { return c.indexOf('wc') >= 0 && c.indexOf('|') >= 0; }); }
+      },
+      {
+        level: 'expert',
+        title: 'Redirection vers fichier',
+        context: "L'opérateur `>` envoie la sortie vers un fichier (écrase). `>>` ajoute à la fin. Très utilisé pour générer des rapports automatiques.",
+        scene: "Tu veux sauvegarder les erreurs du syslog dans un fichier.",
+        mission: "Écris la sortie de `grep ERROR /var/log/syslog` dans ~/erreurs.txt.",
+        steps: ["`grep ERROR /var/log/syslog > ~/erreurs.txt`", "Vérifie : `cat ~/erreurs.txt`"],
+        expected: "$ cat ~/erreurs.txt\nApr 28 12:06:01 dojo CRON[2105]: ERROR backup failed",
+        check: function(s) { var h = getNode('/home/user'); return !!(h && h.children && h.children['erreurs.txt']); }
+      }
+    ]
+  },
+  {
+    id: 'services',
+    icon: '🛠️',
+    title: 'Services & systemd',
+    color: '#00f5d4',
+    desc: 'Démarrer, arrêter, gérer',
+    exos: [
+      {
+        level: 'advanced',
+        title: 'État d\'un service',
+        context: "systemd est l'init system de Linux moderne. systemctl est l'outil pour le piloter : démarrer, arrêter, activer au boot. `systemctl status nom` montre l'état d'un service.",
+        scene: "Tu veux savoir si nginx tourne.",
+        mission: "Vérifie l'état du service nginx.",
+        steps: ["`systemctl status nginx`", "Cherche `active (running)` ou `inactive (dead)`"],
+        expected: "● nginx.service - A high performance web server\n   Loaded: loaded\n   Active: inactive (dead)",
+        check: function(s) { return s.history.some(function(c) { return c.indexOf('systemctl') >= 0 && c.indexOf('status') >= 0 && c.indexOf('nginx') >= 0; }); }
+      },
+      {
+        level: 'advanced',
+        title: 'Démarrer un service',
+        context: "`systemctl start service` démarre un service immédiatement. Pour qu'il démarre au boot, il faut aussi `systemctl enable`.",
+        scene: "nginx est arrêté. Tu veux le lancer.",
+        mission: "Démarre le service nginx.",
+        steps: ["`sudo systemctl start nginx`", "Vérifie : `systemctl status nginx`", "Tu devrais voir `active (running)`"],
+        expected: "$ sudo systemctl start nginx\n$ systemctl status nginx\n● Active: active (running)",
+        check: function(s) { return sysState.services.nginx.active === true; }
+      },
+      {
+        level: 'advanced',
+        title: 'Activer au démarrage',
+        context: "`systemctl enable` rend un service automatique au boot. `disable` le désactive. Différent de start/stop qui sont immédiats.",
+        scene: "Tu veux que nginx démarre tout seul à chaque reboot.",
+        mission: "Active nginx au démarrage du système.",
+        steps: ["`sudo systemctl enable nginx`", "Le service est marqué pour démarrer au boot"],
+        expected: "$ sudo systemctl enable nginx\nCreated symlink /etc/systemd/system/multi-user.target.wants/nginx.service",
+        check: function(s) { return s.history.some(function(c) { return c.indexOf('systemctl') >= 0 && c.indexOf('enable') >= 0 && c.indexOf('nginx') >= 0; }); }
+      },
+      {
+        level: 'expert',
+        title: 'Lire un fichier .service',
+        context: "Les services systemd sont définis dans /etc/systemd/system/*.service. Format texte simple : ExecStart, After, etc.",
+        scene: "Tu veux comprendre comment nginx est lancé.",
+        mission: "Affiche /etc/systemd/system/nginx.service.",
+        steps: ["`cat /etc/systemd/system/nginx.service`", "Note la ligne `ExecStart=`"],
+        expected: "[Unit]\nDescription=A high performance web server\n[Service]\nExecStart=/usr/sbin/nginx",
+        check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('nginx.service') >= 0; }); }
+      }
+    ]
+  },
+  {
+    id: 'webserver',
+    icon: '🌐',
+    title: 'Quête : déployer un site web',
+    color: '#ffbe0b',
+    desc: 'De zéro au site en ligne',
+    isQuest: true,
+    exos: [
+      {
+        level: 'advanced',
+        title: '①  Vérifier nginx installé',
+        context: "Avant de déployer un site, on vérifie que le serveur web est présent. nginx est généralement dans /usr/sbin/nginx, et sa config principale dans /etc/nginx/.",
+        scene: "🎬 Mission : déployer ton site sur le serveur. Étape 1 : reconnaissance.",
+        mission: "Va dans /etc/nginx et liste son contenu.",
+        steps: ["`cd /etc/nginx`", "`ls`", "Tu dois voir nginx.conf, sites-available/, sites-enabled/"],
+        expected: "$ ls\nnginx.conf  sites-available  sites-enabled",
+        check: function(s) { return s.cwd === '/etc/nginx' && s.history.some(function(c) { return c === 'ls' || c.indexOf('ls ') === 0; }); }
+      },
+      {
+        level: 'advanced',
+        title: '②  Lire la config nginx',
+        context: "/etc/nginx/nginx.conf est le fichier principal. Il définit l'utilisateur (www-data), les workers et inclut tous les sites de sites-enabled/.",
+        scene: "🎬 Étape 2 : comprendre la config en place.",
+        mission: "Affiche /etc/nginx/nginx.conf.",
+        steps: ["`cat /etc/nginx/nginx.conf`", "Note la ligne `include /etc/nginx/sites-enabled/*;`"],
+        expected: "user www-data;\nhttp {\n    include /etc/nginx/sites-enabled/*;\n}",
+        check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('nginx.conf') >= 0; }); }
+      },
+      {
+        level: 'advanced',
+        title: '③  Le dossier des sites',
+        context: "/var/www/html est le dossier par défaut où nginx sert les pages. Tout fichier index.html ici sera affiché à la racine du site.",
+        scene: "🎬 Étape 3 : repérer où nginx sert ses fichiers.",
+        mission: "Va dans /var/www/html et liste son contenu.",
+        steps: ["`cd /var/www/html`", "`ls`", "Note le fichier d'accueil par défaut"],
+        expected: "$ ls\nindex.nginx-debian.html",
+        check: function(s) { return s.cwd === '/var/www/html'; }
+      },
+      {
+        level: 'expert',
+        title: '④  Copier ton site en place',
+        context: "Tu vas copier ton index.html depuis ~/site vers /var/www/html. En vrai, ça nécessite sudo car /var/www appartient à root.",
+        scene: "🎬 Étape 4 : déployer ton site.",
+        mission: "Copie ~/site/index.html vers /var/www/html.",
+        steps: ["`cd /var/www/html`", "`sudo cp ~/site/index.html .`", "Le `.` = dossier courant", "`ls`"],
+        expected: "$ ls\nindex.html  index.nginx-debian.html",
+        check: function(s) { var d = getNode('/var/www/html'); return !!(d && d.children && d.children['index.html']); }
+      },
+      {
+        level: 'expert',
+        title: '⑤  Démarrer nginx',
+        context: "Maintenant que le site est en place, on démarre nginx pour qu'il commence à servir les requêtes HTTP.",
+        scene: "🎬 Étape 5 : allumer le serveur.",
+        mission: "Démarre le service nginx.",
+        steps: ["`sudo systemctl start nginx`", "`systemctl status nginx`", "Tu dois voir `active (running)`"],
+        expected: "● nginx.service\n   Active: active (running)",
+        check: function(s) { return sysState.services.nginx.active === true; }
+      },
+      {
+        level: 'expert',
+        title: '⑥  Suivre les logs en direct',
+        context: "Une fois en ligne, on surveille les requêtes en temps réel via /var/log/nginx/access.log. C'est ainsi qu'on voit qui visite le site.",
+        scene: "🎬 Étape 6 : observer les visites.",
+        mission: "Affiche les dernières lignes de /var/log/nginx/access.log.",
+        steps: ["`tail /var/log/nginx/access.log`", "Chaque ligne = une requête HTTP", "Format : IP - - [date] \"GET / HTTP/1.1\" 200"],
+        expected: "127.0.0.1 - - [28/Apr/2026:12:00:01] \"GET / HTTP/1.1\" 200 612",
+        check: function(s) { return s.history.some(function(c) { return c.indexOf('tail') >= 0 && c.indexOf('access.log') >= 0; }); }
+      }
+    ]
+  },
+  {
+    id: 'security',
+    icon: '🛡️',
+    title: 'Sécurité & hardening',
+    color: '#c8341c',
+    desc: 'Protéger le système',
+    exos: [
+      {
+        level: 'expert',
+        title: 'État du pare-feu',
+        context: "ufw (Uncomplicated Firewall) est le pare-feu simplifié d'Ubuntu. `ufw status` montre s'il est actif et les règles en place.",
+        scene: "Tu veux vérifier si la machine est protégée.",
+        mission: "Vérifie l'état du pare-feu avec ufw.",
+        steps: ["`sudo ufw status`", "Si `inactive` : aucune protection", "Si `active` : règles affichées"],
+        expected: "$ sudo ufw status\nStatus: inactive",
+        check: function(s) { return s.history.some(function(c) { return c.indexOf('ufw') >= 0 && c.indexOf('status') >= 0; }); }
+      },
+      {
+        level: 'expert',
+        title: 'Activer le pare-feu',
+        context: "ATTENTION : avant d'activer ufw sur un serveur distant, autorise SSH (port 22) sinon tu te coupes l'accès. Toujours `ufw allow 22` avant `ufw enable`.",
+        scene: "Tu veux activer le pare-feu sans te bloquer.",
+        mission: "Autorise SSH puis active le pare-feu.",
+        steps: ["`sudo ufw allow 22`", "`sudo ufw enable`", "`sudo ufw status` pour confirmer"],
+        expected: "$ sudo ufw allow 22\nRule added\n$ sudo ufw enable\nFirewall is active",
+        check: function(s) { return sysState.firewall.enabled === true && sysState.firewall.rules.indexOf(22) >= 0; }
+      },
+      {
+        level: 'expert',
+        title: 'Détecter les attaques SSH',
+        context: "Les serveurs Internet subissent des tentatives d'intrusion permanentes. Les Failed password dans /var/log/auth.log sont les attaques en cours.",
+        scene: "Tu veux compter les attaques SSH du jour.",
+        mission: "Compte les lignes 'Failed' dans /var/log/auth.log.",
+        steps: ["`grep Failed /var/log/auth.log | wc -l`", "Le chiffre = nombre d'attaques"],
+        expected: "$ grep Failed /var/log/auth.log | wc -l\n2",
+        check: function(s) { return s.history.some(function(c) { return c.indexOf('grep') >= 0 && c.indexOf('Failed') >= 0 && (c.indexOf('|') >= 0 || c.indexOf('wc') >= 0); }); }
+      },
+      {
+        level: 'expert',
+        title: 'Audit du sshd_config',
+        context: "/etc/ssh/sshd_config contrôle SSH. Bonnes pratiques : PermitRootLogin no, PasswordAuthentication non (clés uniquement), Port différent de 22.",
+        scene: "Tu veux auditer la config SSH.",
+        mission: "Affiche /etc/ssh/sshd_config et vérifie PermitRootLogin.",
+        steps: ["`cat /etc/ssh/sshd_config`", "Cherche la ligne PermitRootLogin", "Doit être `no` pour sécurité"],
+        expected: "Port 22\nPermitRootLogin no\nPasswordAuthentication yes",
+        check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('sshd_config') >= 0; }); }
+      },
+      {
+        level: 'expert',
+        title: 'Voir les sudoers',
+        context: "/etc/sudoers liste qui peut utiliser sudo. À ne JAMAIS éditer avec un éditeur classique (utiliser visudo). Lecture pour audit OK.",
+        scene: "Tu audites les privilèges sudo.",
+        mission: "Affiche /etc/sudoers.",
+        steps: ["`sudo cat /etc/sudoers`", "Note les lignes %sudo et user"],
+        expected: "root ALL=(ALL:ALL) ALL\n%sudo ALL=(ALL:ALL) ALL",
+        check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('sudoers') >= 0; }); }
+      }
+    ]
+  },
+  {
+    id: 'system',
+    icon: '💾',
+    title: 'Système & disque',
+    color: '#1e3a5c',
+    desc: 'Espace, mémoire, infos',
+    exos: [
+      {
+        level: 'advanced',
+        title: 'Espace disque (df)',
+        context: "df (disk free) affiche l'espace utilisé/libre par filesystem monté. `-h` (human) donne des unités lisibles (Go, Mo).",
+        scene: "Tu veux savoir s'il reste de la place sur le disque.",
+        mission: "Affiche l'espace disque avec df -h.",
+        steps: ["`df -h`", "Lis les colonnes : Size, Used, Avail, Use%"],
+        expected: "Filesystem  Size  Used  Avail  Use%  Mounted\n/dev/sda1   50G   12G   36G    25%   /\ntmpfs       2G    0     2G     0%    /tmp",
+        check: function(s) { return s.history.some(function(c) { return c.indexOf('df') === 0; }); }
+      },
+      {
+        level: 'advanced',
+        title: 'Taille d\'un dossier (du)',
+        context: "du (disk usage) calcule la taille d'un dossier. `-sh` (sum + human) = taille totale lisible.",
+        scene: "Tu veux savoir combien pèse ton home.",
+        mission: "Affiche la taille de ton home.",
+        steps: ["`du -sh ~`", "Le résultat est la taille totale (récursive)"],
+        expected: "$ du -sh ~\n128M  /home/user",
+        check: function(s) { return s.history.some(function(c) { return c.indexOf('du') === 0; }); }
+      },
+      {
+        level: 'advanced',
+        title: 'Infos CPU',
+        context: "/proc est un filesystem virtuel : ses fichiers ne sont pas réels, ils exposent l'état du noyau. /proc/cpuinfo donne les détails du processeur.",
+        scene: "Tu veux connaître ton CPU.",
+        mission: "Affiche /proc/cpuinfo.",
+        steps: ["`cat /proc/cpuinfo`", "Lis le model name et cpu cores"],
+        expected: "model name : Intel(R) Core(TM) i7-9700K\ncpu cores : 8",
+        check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('cpuinfo') >= 0; }); }
+      },
+      {
+        level: 'advanced',
+        title: 'Infos mémoire',
+        context: "/proc/meminfo donne tout sur la RAM. MemAvailable est plus utile que MemFree (inclut les buffers/cache récupérables).",
+        scene: "Tu veux savoir combien de RAM est disponible.",
+        mission: "Affiche /proc/meminfo.",
+        steps: ["`cat /proc/meminfo`", "Lis MemTotal et MemAvailable"],
+        expected: "MemTotal:     16384000 kB\nMemAvailable: 12288000 kB",
+        check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('meminfo') >= 0; }); }
+      },
+      {
+        level: 'advanced',
+        title: 'Version du système',
+        context: "/etc/os-release contient le nom et la version de la distribution. Universel : marche sur Ubuntu, Debian, CentOS, etc.",
+        scene: "Tu veux savoir sur quelle distrib tu es.",
+        mission: "Affiche /etc/os-release.",
+        steps: ["`cat /etc/os-release`", "Lis NAME et VERSION"],
+        expected: "NAME=\"Ubuntu\"\nVERSION=\"22.04.3 LTS\"",
+        check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('os-release') >= 0; }); }
+      }
+    ]
+  },
+  {
+    id: 'network',
+    icon: '📡',
+    title: 'Réseau & SSH',
+    color: '#3a86ff',
+    desc: 'Configuration et accès distant',
+    exos: [
+      {
+        level: 'advanced',
+        title: 'Config réseau',
+        context: "/etc/network/interfaces (Debian/Ubuntu) configure les interfaces. `auto eth0` = active au boot. `dhcp` = IP automatique. `static` = IP fixe.",
+        scene: "Tu veux comprendre comment la machine récupère son IP.",
+        mission: "Affiche /etc/network/interfaces.",
+        steps: ["`cat /etc/network/interfaces`", "Repère eth0 et son mode (dhcp/static)"],
+        expected: "auto lo\niface lo inet loopback\n\nauto eth0\niface eth0 inet dhcp",
+        check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('interfaces') >= 0; }); }
+      },
+      {
+        level: 'advanced',
+        title: 'Serveurs DNS',
+        context: "/etc/resolv.conf liste les serveurs DNS utilisés. 8.8.8.8 = Google DNS, 1.1.1.1 = Cloudflare. Modification souvent écrasée par NetworkManager.",
+        scene: "Tu veux voir quels serveurs DNS sont utilisés.",
+        mission: "Affiche /etc/resolv.conf.",
+        steps: ["`cat /etc/resolv.conf`", "Lis les lignes nameserver"],
+        expected: "nameserver 8.8.8.8\nnameserver 1.1.1.1",
+        check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('resolv.conf') >= 0; }); }
+      },
+      {
+        level: 'expert',
+        title: 'Clé SSH publique',
+        context: "Pour se connecter en SSH sans mot de passe, on copie sa clé publique (~/.ssh/id_rsa.pub) sur le serveur. Le `.pub` peut être partagé sans risque ; le `id_rsa` (privé) JAMAIS.",
+        scene: "Tu veux configurer un accès SSH par clé.",
+        mission: "Affiche ta clé SSH publique.",
+        steps: ["`cat ~/.ssh/id_rsa.pub`", "Cette ligne est ce qu'on partage avec le serveur"],
+        expected: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC7vbqajD... user@dojo",
+        check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('id_rsa.pub') >= 0; }); }
+      },
+      {
+        level: 'expert',
+        title: 'Authorized keys',
+        context: "Sur un serveur, ~/.ssh/authorized_keys contient les clés publiques autorisées à se connecter. Une ligne par clé. Doit avoir permissions 600.",
+        scene: "Tu audites quelles clés ont accès à ton compte.",
+        mission: "Affiche ~/.ssh/authorized_keys.",
+        steps: ["`cat ~/.ssh/authorized_keys`", "Chaque ligne = un appareil autorisé"],
+        expected: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC7vbqajD... user@laptop",
+        check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('authorized_keys') >= 0; }); }
+      }
+    ]
+  },
+  {
+    id: 'cron',
+    icon: '⏰',
+    title: 'Planification (cron)',
+    color: '#00f5d4',
+    desc: 'Tâches automatiques',
+    exos: [
+      {
+        level: 'expert',
+        title: 'Lire le crontab système',
+        context: "cron exécute des tâches à heures régulières. /etc/crontab est le crontab système. Format : `minute heure jour mois jour-semaine user commande`.",
+        scene: "Tu veux savoir ce qui s'exécute automatiquement la nuit.",
+        mission: "Affiche /etc/crontab.",
+        steps: ["`cat /etc/crontab`", "Décode le format : '0 4 * * 0' = dim 4h00"],
+        expected: "# m h dom mon dow user  command\n0 4 * * 0   root  /home/user/scripts/backup.sh",
+        diagram: "Format cron :\n  *  *  *  *  *\n  │  │  │  │  │\n  │  │  │  │  └─ jour semaine (0-7)\n  │  │  │  └──── mois (1-12)\n  │  │  └─────── jour du mois\n  │  └────────── heure (0-23)\n  └───────────── minute (0-59)",
+        check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('crontab') >= 0; }); }
+      },
+      {
+        level: 'expert',
+        title: 'Le script de backup',
+        context: "Les scripts cron sont du shell classique. Le shebang `#!/bin/bash` indique l'interpréteur. `tar -czf` crée une archive compressée gzip.",
+        scene: "Tu veux comprendre ce que fait le backup planifié.",
+        mission: "Affiche ~/scripts/backup.sh.",
+        steps: ["`cat ~/scripts/backup.sh`", "Lis chaque ligne : DATE puis tar"],
+        expected: "#!/bin/bash\nDATE=$(date +%Y%m%d)\ntar -czf /tmp/backup-$DATE.tar.gz /home/user",
+        check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('backup.sh') >= 0; }); }
+      }
+    ]
+  }  ,
+  {
+    id: 'usermgmt',
+    icon: '👥',
+    title: 'Gestion des utilisateurs',
+    color: '#1e3a5c',
+    desc: 'Créer, modifier, supprimer des comptes',
+    exos: [
+      {
+        level: 'advanced',
+        title: 'Lister les comptes système',
+        context: "/etc/passwd contient un compte par ligne. Format : nom:x:UID:GID:description:home:shell. Les UIDs <1000 sont système, >=1000 sont humains.",
+        scene: "Tu hérites d'un serveur. Tu veux voir tous les comptes existants.",
+        mission: "Affiche /etc/passwd et identifie les comptes humains.",
+        steps: ["`cat /etc/passwd`", "Repère les lignes avec UID >= 1000 (vrais utilisateurs)", "Note ceux avec /usr/sbin/nologin (services)"],
+        expected: "root:x:0:0:root:/root:/bin/bash\nwww-data:x:33:33:www-data:/var/www:/usr/sbin/nologin\nuser:x:1000:1000:user:/home/user:/bin/bash",
+        check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('passwd') >= 0; }); }
+      },
+      {
+        level: 'expert',
+        title: 'Créer un utilisateur',
+        context: "useradd crée un compte. -m crée le home directory. -s définit le shell. -G ajoute aux groupes secondaires. Toujours suivi de passwd pour fixer le mot de passe.",
+        scene: "Un nouveau collègue arrive. Tu dois lui créer un compte 'alice' avec home et bash.",
+        mission: "Crée l'utilisateur alice avec son home directory.",
+        steps: ["`sudo useradd -m -s /bin/bash alice`", "`-m` crée /home/alice", "`-s /bin/bash` définit le shell", "Vérifie : `cat /etc/passwd | grep alice`"],
+        expected: "$ sudo useradd -m -s /bin/bash alice\n$ grep alice /etc/passwd\nalice:x:1001:1001::/home/alice:/bin/bash",
+        diagram: "useradd options :\n  -m  →  crée /home/<name>\n  -s  →  shell par défaut\n  -G  →  groupes additionnels\n  -u  →  UID forcé",
+        check: function(s) { return !!getNode('/home/alice'); }
+      },
+      {
+        level: 'expert',
+        title: 'Définir un mot de passe',
+        context: "passwd permet de changer un mot de passe. Sans argument = le tien. Avec un nom = celui d'un autre (root only). Le mot de passe est haché dans /etc/shadow (jamais en clair).",
+        scene: "Alice a son compte mais pas de mot de passe — elle ne peut pas se connecter.",
+        mission: "Définis le mot de passe d'alice.",
+        steps: ["`sudo passwd alice`", "On te demande le nouveau mot de passe (deux fois)", "Le hash est stocké dans /etc/shadow"],
+        expected: "$ sudo passwd alice\nNouveau mot de passe : ********\nRetapez : ********\npasswd: mot de passe mis à jour",
+        check: function(s) { return s.history.some(function(c) { return /^(sudo\s+)?passwd\s+\w+/.test(c); }); }
+      },
+      {
+        level: 'expert',
+        title: 'Lister les groupes',
+        context: "/etc/group liste les groupes. Format : nom:x:GID:membres. Le groupe 'sudo' est crucial — ses membres peuvent utiliser sudo.",
+        scene: "Tu veux savoir qui peut faire sudo.",
+        mission: "Affiche /etc/group.",
+        steps: ["`cat /etc/group`", "Repère la ligne `sudo:x:27:`", "Les noms après le dernier `:` sont les membres"],
+        expected: "root:x:0:\nsudo:x:27:user\nwww-data:x:33:\nuser:x:1000:",
+        check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('group') >= 0; }); }
+      },
+      {
+        level: 'expert',
+        title: 'Ajouter aux sudoers',
+        context: "Pour donner les privilèges sudo, on ajoute l'utilisateur au groupe sudo avec usermod -aG. ATTENTION : sans -a (append), -G remplace TOUS les groupes secondaires.",
+        scene: "Alice a besoin des droits sudo pour son travail.",
+        mission: "Ajoute alice au groupe sudo.",
+        steps: ["`sudo usermod -aG sudo alice`", "`-a` = append (ajouter)", "`-G sudo` = au groupe sudo", "Vérifie : `groups alice`"],
+        expected: "$ sudo usermod -aG sudo alice\n$ groups alice\nalice : alice sudo",
+        diagram: "Piège classique :\n  ❌ usermod -G sudo alice\n     → écrase tous les autres groupes\n  ✅ usermod -aG sudo alice\n     → ajoute (append) au groupe sudo",
+        check: function(s) { return s.history.some(function(c) { return /usermod.*-aG.*sudo/.test(c); }); }
+      },
+      {
+        level: 'expert',
+        title: 'Créer un groupe',
+        context: "groupadd crée un groupe. Utile pour gérer des permissions partagées (ex: équipe dev qui doit accéder à /var/www).",
+        scene: "Tu veux un groupe 'devs' pour partager des fichiers.",
+        mission: "Crée le groupe 'devs'.",
+        steps: ["`sudo groupadd devs`", "Vérifie : `cat /etc/group | grep devs`"],
+        expected: "$ sudo groupadd devs\n$ grep devs /etc/group\ndevs:x:1001:",
+        check: function(s) { return s.history.some(function(c) { return /^(sudo\s+)?groupadd\s+\w+/.test(c); }); }
+      },
+      {
+        level: 'expert',
+        title: 'Supprimer un utilisateur',
+        context: "userdel supprime un compte. Sans option : garde le home. Avec -r : supprime aussi /home/<user> ET les mails. À utiliser avec précaution.",
+        scene: "Alice quitte la société. Tu dois supprimer son compte ET ses fichiers.",
+        mission: "Supprime alice avec son home directory.",
+        steps: ["`sudo userdel -r alice`", "`-r` = remove home et mail", "Vérifie : `ls /home`"],
+        expected: "$ sudo userdel -r alice\n$ ls /home\nuser",
+        check: function(s) { return !getNode('/home/alice') && s.history.some(function(c) { return /userdel/.test(c); }); }
+      }
+    ]
+  },
+  {
+    id: 'editors',
+    icon: '✏️',
+    title: 'Éditeurs en ligne (nano/vim)',
+    color: '#3a86ff',
+    desc: 'Modifier des fichiers en CLI',
+    exos: [
+      {
+        level: 'intermediate',
+        title: 'nano — l\'éditeur simple',
+        context: "nano est l'éditeur facile pour débuter. Il affiche les raccourcis en bas. ^X = quitter (Ctrl+X), ^O = enregistrer (write Out). Le ^ représente Ctrl.",
+        scene: "Tu dois modifier un fichier de config rapidement.",
+        mission: "Ouvre ~/notes.txt avec nano (simulation : tape la commande).",
+        steps: ["Crée d'abord le fichier : `touch notes.txt`", "Puis : `nano notes.txt`", "Pour quitter : Ctrl+X", "Pour enregistrer : Ctrl+O puis Entrée"],
+        expected: "(éditeur ouvert)\n^G Aide   ^O Écrire\n^X Quitter ^W Chercher\n^K Couper  ^U Coller",
+        diagram: "Raccourcis nano :\n  Ctrl+X  →  Quitter\n  Ctrl+O  →  Enregistrer (write Out)\n  Ctrl+W  →  Rechercher (Where)\n  Ctrl+K  →  Couper la ligne\n  Ctrl+U  →  Coller",
+        check: function(s) { return s.history.some(function(c) { return c.indexOf('nano') === 0; }); }
+      },
+      {
+        level: 'advanced',
+        title: 'vim — les modes',
+        context: "vim est plus puissant mais déroutant : il a 3 modes. NORMAL (navigation, défaut), INSERT (saisie, touche `i`), COMMAND (commandes ex: `:w` save, `:q` quit). Pour quitter sans sauver : `:q!`. Pour sauver et quitter : `:wq` ou `ZZ`.",
+        scene: "Sur un serveur minimal, seul vim est dispo. Tu dois t'en sortir.",
+        mission: "Ouvre /etc/hostname avec vim (simulation).",
+        steps: ["`vim /etc/hostname`", "Tu démarres en mode NORMAL", "Pour modifier : tape `i` (insert)", "Pour sortir d'insert : Échap", "Pour quitter : `:q` (ou `:q!` sans sauver)"],
+        expected: "(vim ouvert)\n~\n~\n~\n\"hostname\" 1L, 5C\n-- INSERT --  (après `i`)",
+        diagram: "Cycle vim :\n         ┌──────────┐\n   `i`  →│  INSERT  │ Esc → NORMAL\n         └──────────┘\n  ┌─────────┐\n  │ NORMAL  │ ←── démarrage\n  └────┬────┘\n       │  `:`\n       ↓\n   ┌─────────┐\n   │ COMMAND │  → :w :q :wq :q!\n   └─────────┘",
+        check: function(s) { return s.history.some(function(c) { return c.indexOf('vim') === 0 || c.indexOf('vi ') === 0; }); }
+      },
+      {
+        level: 'advanced',
+        title: 'vim — recherche',
+        context: "En mode NORMAL : `/motif` cherche en avant, `?motif` en arrière, `n` répète, `N` répète en sens inverse. Indispensable dans les gros fichiers.",
+        scene: "Tu cherches une ligne précise dans /etc/ssh/sshd_config.",
+        mission: "Ouvre sshd_config et cherche 'PermitRootLogin' (simulation).",
+        steps: ["`vim /etc/ssh/sshd_config`", "En mode NORMAL, tape `/PermitRootLogin`", "Entrée pour valider", "`n` pour le résultat suivant"],
+        expected: "(vim) Ligne 32 :\nPermitRootLogin no",
+        check: function(s) { return s.history.some(function(c) { return c.indexOf('vim') === 0 && c.indexOf('sshd_config') >= 0; }); }
+      },
+      {
+        level: 'advanced',
+        title: 'echo + redirection = créer un fichier',
+        context: "Sans éditeur, on peut écrire dans un fichier directement avec `echo \"texte\" > fichier`. Le `>` écrase, `>>` ajoute. Pratique pour automatiser.",
+        scene: "Tu veux créer un fichier README.md avec une ligne.",
+        mission: "Crée ~/README.md contenant 'Mon projet'.",
+        steps: ["`cd ~`", "`echo \"Mon projet\" > README.md`", "Vérifie : `cat README.md`"],
+        expected: "$ echo \"Mon projet\" > README.md\n$ cat README.md\nMon projet",
+        check: function(s) { var h = getNode('/home/user'); return !!(h && h.children && h.children['README.md']); }
+      }
+    ]
+  },
+  {
+    id: 'bashscript',
+    icon: '📜',
+    title: 'Scripting Bash',
+    color: '#ffbe0b',
+    desc: 'Automatiser avec des scripts',
+    exos: [
+      {
+        level: 'advanced',
+        title: 'Variables d\'environnement',
+        context: "env affiche toutes les variables d'environnement. PATH, HOME, USER, PWD sont les plus utilisées. `echo $VAR` affiche une variable précise.",
+        scene: "Tu veux voir ta configuration shell.",
+        mission: "Affiche la variable HOME avec echo.",
+        steps: ["`echo $HOME`", "Tu obtiens /home/user", "Essaie aussi : `echo $USER`, `echo $PATH`"],
+        expected: "$ echo $HOME\n/home/user\n$ echo $USER\nuser",
+        check: function(s) { return s.history.some(function(c) { return /echo\s+\$\w+/.test(c); }); }
+      },
+      {
+        level: 'advanced',
+        title: 'Le shebang #!',
+        context: "Tout script doit commencer par `#!/bin/bash` (shebang) — ça dit au système quel interpréteur utiliser. Sans lui, le script est juste un fichier texte.",
+        scene: "Tu prépares un nouveau script.",
+        mission: "Affiche le contenu de ~/scripts/install.sh.",
+        steps: ["`cat ~/scripts/install.sh`", "Note la première ligne `#!/bin/bash`", "C'est ce qui rend ce fichier exécutable comme script bash"],
+        expected: "#!/bin/bash\necho \"Installation en cours...\"\necho \"Tout est prêt !\"",
+        diagram: "Anatomie d'un script :\n  #!/bin/bash      ← shebang (obligatoire)\n  # commentaire    ← optionnel\n  VARIABLE=\"valeur\" ← définition\n  echo $VARIABLE    ← utilisation",
+        check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('install.sh') >= 0; }); }
+      },
+      {
+        level: 'expert',
+        title: 'Lancer un script',
+        context: "Pour exécuter un script : 1) `bash script.sh` (lance avec bash explicitement, pas besoin de chmod) 2) `./script.sh` (nécessite chmod +x).",
+        scene: "Tu veux exécuter install.sh.",
+        mission: "Rends install.sh exécutable puis lance-le avec ./",
+        steps: ["`cd ~/scripts`", "`chmod +x install.sh`", "`./install.sh`", "Tu vois la sortie des echo"],
+        expected: "$ chmod +x install.sh\n$ ./install.sh\nInstallation en cours...\nTout est prêt !",
+        check: function(s) { var f = getNode('/home/user/scripts/install.sh'); return !!(f && f.perms && f.perms.indexOf('x') > 0) && s.history.some(function(c) { return c.indexOf('./install.sh') >= 0 || c.indexOf('install.sh') >= 0; }); }
+      },
+      {
+        level: 'expert',
+        title: 'Code de retour ($?)',
+        context: "Chaque commande retourne un code : 0 = succès, autre = erreur. La variable `$?` contient le code de la dernière commande. Utilisé dans les conditions.",
+        scene: "Tu veux savoir si ta dernière commande a réussi.",
+        mission: "Lance `ls /` puis affiche $?.",
+        steps: ["`ls /`", "`echo $?`", "Si tout va bien, tu vois `0`", "Essaie aussi `ls /nexistepas` puis `echo $?` → 2"],
+        expected: "$ ls /\nbin etc home...\n$ echo $?\n0",
+        check: function(s) { return s.history.some(function(c) { return c.trim() === 'echo $?'; }); }
+      },
+      {
+        level: 'expert',
+        title: 'Substitution de commande',
+        context: "`$(commande)` remplace par le résultat de la commande. Utilisé pour mettre la sortie d'une commande dans une variable. Ex : `DATE=$(date)`.",
+        scene: "Tu veux afficher la date dans un message.",
+        mission: "Affiche 'Aujourd'hui : <date>' avec substitution.",
+        steps: ["`echo \"Aujourd'hui : $(date)\"`", "Le $(date) est exécuté en premier", "Le résultat remplace dans la chaîne"],
+        expected: "$ echo \"Aujourd'hui : $(date)\"\nAujourd'hui : Tue May 5 10:30:00 UTC 2026",
+        check: function(s) { return s.history.some(function(c) { return /\$\(.*\)/.test(c); }); }
+      }
+    ]
+  },
+  {
+    id: 'monitoring',
+    icon: '📊',
+    title: 'Monitoring système',
+    color: '#00f5d4',
+    desc: 'Surveiller charge, RAM, disque',
+    exos: [
+      {
+        level: 'intermediate',
+        title: 'Mémoire avec free',
+        context: "free affiche la mémoire RAM et swap. -h pour human-readable. Comprends : `total`, `used`, `free`, `buff/cache` (réutilisable), `available` (vraiment dispo).",
+        scene: "Tu veux savoir si la machine swap.",
+        mission: "Affiche la mémoire avec `free -h`.",
+        steps: ["`free -h`", "Lis MemTotal, used, available", "Si swap used > 0, la RAM est saturée"],
+        expected: "        total   used   free   shared  buff/cache  available\nMem:     16G   4.2G   3.8G   200M    8.0G        11G\nSwap:    2G    0      2G",
+        diagram: "Lire free :\n  used      = utilisé\n  free      = inutilisé\n  available = ce que tu peux\n              vraiment allouer\n              (used+cache récupérable)",
+        check: function(s) { return s.history.some(function(c) { return c.indexOf('free') === 0; }); }
+      },
+      {
+        level: 'intermediate',
+        title: 'Charge système (uptime)',
+        context: "uptime affiche : depuis quand la machine tourne, nombre d'utilisateurs connectés, et la load average (1min, 5min, 15min). Une load > nb_cpus = surcharge.",
+        scene: "Tu te connectes en SSH. Tu veux un état rapide.",
+        mission: "Affiche uptime.",
+        steps: ["`uptime`", "Lis la load average à droite", "Si load > 8 sur un 8-cores, la machine rame"],
+        expected: "$ uptime\n10:30:42 up 2 days, 3:14, 1 user, load average: 0.05, 0.10, 0.08",
+        check: function(s) { return s.history.some(function(c) { return c.trim() === 'uptime'; }); }
+      },
+      {
+        level: 'advanced',
+        title: 'Qui est connecté (w / who)',
+        context: "`who` liste les utilisateurs connectés. `w` ajoute ce qu'ils font. `last` montre l'historique des connexions (utile pour audit sécurité).",
+        scene: "Audit : qui est sur le serveur en ce moment ?",
+        mission: "Affiche les utilisateurs connectés avec `w`.",
+        steps: ["`w`", "Première ligne = uptime", "Lignes suivantes = sessions actives", "Colonne WHAT = commande en cours"],
+        expected: "10:30:42 up 2 days, load 0.05\nUSER  TTY   FROM           LOGIN@   IDLE  WHAT\nuser  pts/0 192.168.1.10   09:00    1m    bash",
+        check: function(s) { return s.history.some(function(c) { return c.trim() === 'w' || c.trim() === 'who'; }); }
+      },
+      {
+        level: 'advanced',
+        title: 'Historique des connexions',
+        context: "last lit /var/log/wtmp et liste les connexions passées. Très utile pour les audits : qui s'est connecté quand, depuis où, combien de temps.",
+        scene: "Tu enquêtes sur une intrusion potentielle.",
+        mission: "Affiche les dernières connexions avec `last`.",
+        steps: ["`last`", "Lis user, terminal, IP source, durée", "Cherche des IPs inconnues"],
+        expected: "user   pts/0  192.168.1.10  Tue May 5 09:00 still logged in\nuser   pts/0  192.168.1.10  Mon May 4 14:00 - 17:30 (3:30)",
+        check: function(s) { return s.history.some(function(c) { return c.trim() === 'last'; }); }
+      },
+      {
+        level: 'advanced',
+        title: 'htop — top en couleur',
+        context: "htop est top en plus visuel : barres CPU/RAM par cœur, processus colorés, navigation flèches. Quitte avec F10 ou q.",
+        scene: "Tu cherches un processus qui consomme.",
+        mission: "Lance htop (simulation).",
+        steps: ["`htop`", "Observe les barres CPU en haut", "Liste de processus triable (F6)", "Tuer (F9), rechercher (F3)"],
+        expected: "  CPU[||||||||  20%]  Tasks: 142, 3 running\n  Mem[||||||  4.2G/16G]\n  PID USER  CPU% MEM%  Command\n 1234 user   2.1  0.5  htop",
+        check: function(s) { return s.history.some(function(c) { return c.indexOf('htop') === 0; }); }
+      },
+      {
+        level: 'expert',
+        title: 'Stats virtuelles (vmstat)',
+        context: "vmstat affiche stats CPU/RAM/IO/swap toutes les N secondes. `vmstat 2` rafraîchit toutes les 2s. Colonnes clés : r (run queue), us (user CPU), sy (system), wa (wait IO).",
+        scene: "Le serveur est lent. Tu veux voir si c'est CPU ou disque.",
+        mission: "Lance vmstat.",
+        steps: ["`vmstat`", "Lis colonnes us, sy, wa", "wa élevé = disque saturé", "us élevé = CPU saturé"],
+        expected: "procs  memory      swap    io     system     cpu\n r b   free  buff cache  si so  bi bo  in cs   us sy id wa\n 1 0   3.8G  120M 8.0G   0  0   2  3   25 130   1  0 99  0",
+        check: function(s) { return s.history.some(function(c) { return c.indexOf('vmstat') === 0; }); }
+      }
+    ]
+  }
+
+];
+
+// Aplatir en EXERCISES (avec idx global)
+var EXERCISES = [];
+QUESTS.forEach(function(quest) {
+  quest.exos.forEach(function(ex) {
+    ex.questId = quest.id;
+    ex.questTitle = quest.title;
+    EXERCISES.push(ex);
+  });
+});
+
+
+// ===== HELPERS =====
+function getNode(path) {
+  if (!path || path === '/') return fs['/'];
+  var parts = path.split('/').filter(function(p) { return p; });
+  var node = fs['/'];
+  for (var i = 0; i < parts.length; i++) {
+    if (!node.children || !node.children[parts[i]]) return null;
+    node = node.children[parts[i]];
+  }
+  return node;
+}
+function normalizePath(p) {
+  var parts = p.split('/').filter(function(s) { return s.length > 0; });
+  var stack = [];
+  for (var i = 0; i < parts.length; i++) {
+    if (parts[i] === '.') continue;
+    if (parts[i] === '..') stack.pop();
+    else stack.push(parts[i]);
+  }
+  return '/' + stack.join('/');
+}
+function resolvePath(input) {
+  if (!input) return cwd;
+  if (input === '~') return '/home/user';
+  if (input.indexOf('~/') === 0) input = '/home/user/' + input.slice(2);
+  if (input.charAt(0) === '/') return normalizePath(input);
+  return normalizePath(cwd + '/' + input);
+}
+function shortPath(p) {
+  if (p === '/home/user') return '~';
+  if (p.indexOf('/home/user/') === 0) return '~' + p.slice('/home/user'.length);
+  return p;
+}
+function escapeHtml(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+function formatTextWithCode(text) {
+  return escapeHtml(text).replace(/`([^`]+)`/g, '<code>$1</code>');
+}
+function newlineToBr(s) { return s.replace(/\n/g, '<br>'); }
+
+// ===== ICONS =====
+var ICON_FOLDER = '<svg viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><defs><linearGradient id="fc" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#ffbe0b"/><stop offset="100%" stop-color="#fb5607"/></linearGradient></defs><path d="M5 20 L5 72 Q5 76 9 76 L91 76 Q95 76 95 72 L95 20 Z" fill="#7a3a00"/><path d="M5 20 L5 14 Q5 10 9 10 L35 10 L42 18 L91 18 Q95 18 95 22 L95 26 Z" fill="#ffbe0b"/><path d="M5 26 L5 72 Q5 76 9 76 L91 76 Q95 76 95 72 L95 26 Z" fill="url(#fc)"/></svg>';
+var ICON_FOLDER_OPEN = '<svg viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><defs><linearGradient id="fo" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#ffbe0b"/><stop offset="100%" stop-color="#fb5607"/></linearGradient></defs><path d="M5 20 L5 70 Q5 74 9 74 L91 74 Q95 74 95 70 L95 20 Z" fill="#7a3a00"/><path d="M5 20 L5 14 Q5 10 9 10 L35 10 L42 18 L91 18 Q95 18 95 22 L95 24 Z" fill="#fb5607"/><path d="M10 30 L90 30 L95 70 Q95 74 91 74 L9 74 Q5 74 5 70 Z" fill="url(#fo)"/></svg>';
+var ICON_FILE = '<svg viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><defs><linearGradient id="fl" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#f5f0ff"/><stop offset="100%" stop-color="#b4a8d0"/></linearGradient></defs><path d="M18 8 L70 8 L86 24 L86 72 Q86 76 82 76 L18 76 Q14 76 14 72 L14 12 Q14 8 18 8 Z" fill="url(#fl)" stroke="#6c5b8e" stroke-width="0.6"/><path d="M70 8 L70 24 L86 24 Z" fill="#8a7ba8"/><line x1="22" y1="34" x2="78" y2="34" stroke="#6c5b8e" stroke-width="1"/><line x1="22" y1="42" x2="74" y2="42" stroke="#8a7ba8" stroke-width="0.8"/><line x1="22" y1="50" x2="78" y2="50" stroke="#8a7ba8" stroke-width="0.8"/></svg>';
+var ICON_EXEC = '<svg viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><rect x="14" y="10" width="72" height="60" rx="4" fill="#f5f0e1" stroke="#00f5d4" stroke-width="0.8"/><rect x="14" y="10" width="72" height="8" rx="4" fill="#00f5d4" opacity="0.85"/><text x="50" y="50" font-family="monospace" font-size="16" fill="#00f5d4" text-anchor="middle" font-weight="bold">$_</text></svg>';
+
+function getIconFor(item) {
+  if (item.type === 'dir') return ICON_FOLDER;
+  if (item.type === 'exec') return ICON_EXEC;
+  return ICON_FILE;
+}
+
+// ===== RENDER FS =====
+function renderFs() {
+  var segs = document.getElementById('path-segments');
+  segs.innerHTML = '';
+  var rootSeg = document.createElement('span');
+  rootSeg.className = 'path-seg' + (cwd === '/' ? ' active' : '');
+  rootSeg.textContent = '/';
+  rootSeg.onclick = function() { navigateTo('/'); };
+  segs.appendChild(rootSeg);
+
+  if (cwd !== '/') {
+    var parts = cwd.split('/').filter(function(p) { return p; });
+    var cum = '';
+    parts.forEach(function(p, i) {
+      cum += '/' + p;
+      var sep = document.createElement('span');
+      sep.className = 'path-sep'; sep.textContent = '/';
+      segs.appendChild(sep);
+      var seg = document.createElement('span');
+      seg.className = 'path-seg' + (i === parts.length - 1 ? ' active' : '');
+      seg.textContent = p;
+      var target = cum;
+      seg.onclick = function() { navigateTo(target); };
+      segs.appendChild(seg);
+    });
+  }
+
+  document.getElementById('current-folder-icon').innerHTML = ICON_FOLDER_OPEN;
+  document.getElementById('current-folder-name').textContent = cwd;
+  var node = getNode(cwd);
+  var entries = (node && node.children) ? Object.keys(node.children).map(function(k) { return [k, node.children[k]]; }) : [];
+  document.getElementById('current-folder-meta').textContent = entries.length + ' élément' + (entries.length > 1 ? 's' : '');
+
+  var grid = document.getElementById('items-grid');
+  grid.innerHTML = '';
+  if (entries.length === 0) {
+    var empty = document.createElement('div');
+    empty.className = 'empty-folder';
+    empty.textContent = '📭 dossier vide';
+    grid.appendChild(empty);
+    return;
+  }
+  entries.sort(function(a, b) {
+    if (a[1].type === 'dir' && b[1].type !== 'dir') return -1;
+    if (a[1].type !== 'dir' && b[1].type === 'dir') return 1;
+    return a[0].localeCompare(b[0]);
+  });
+  entries.forEach(function(pair, i) {
+    var name = pair[0], item = pair[1];
+    var card = document.createElement('div');
+    var cls = 'item-card ' + item.type;
+    if (name.charAt(0) === '.') cls += ' hidden';
+    if (highlighted === name) cls += ' highlighted';
+    card.className = cls;
+    card.style.animationDelay = (i * 0.04) + 's';
+    card.innerHTML =
+      '<div class="item-icon">' + getIconFor(item) + '</div>' +
+      '<div class="item-name">' + escapeHtml(name) + '</div>' +
+      '<div class="item-perms">' + escapeHtml(item.perms || '') + '</div>';
+    if (item.type === 'dir') {
+      card.onclick = function() {
+        var newPath = normalizePath(cwd + '/' + name);
+        if (term) {
+          term.writeln('');
+          term.write(C.brGreen + 'user@dojo' + C.reset + ':' + C.brBlue + shortPath(cwd) + C.reset + '$ cd ' + name);
+          term.writeln('');
+          buffer = '';
+        }
+        cwd = newPath;
+        renderFs();
+        if (term) writePrompt();
+      };
+    } else {
+      card.onclick = function() {
+        showToast(item.type + ' • ' + (item.perms || '') + ' • ' + (item.size || '0'));
+      };
+    }
+    grid.appendChild(card);
+  });
+  if (highlighted) setTimeout(function() { highlighted = null; }, 2500);
+}
+
+function navigateTo(path) {
+  cwd = path;
+  if (term) {
+    term.writeln('');
+    buffer = '';
+    writePrompt();
+  }
+  renderFs();
+}
+
+// ===== EXERCISES UI =====
+function renderExercises() {
+  var list = document.getElementById('exo-list');
+  var html = '';
+
+  QUESTS.forEach(function(quest) {
+    var doneInQuest = 0;
+    quest.exos.forEach(function(ex) {
+      var idx = EXERCISES.indexOf(ex);
+      if (completed.has(idx)) doneInQuest++;
+    });
+    var isExpanded = expandedQuests.has(quest.id);
+    html += '<div class="quest-section' + (isExpanded ? ' expanded' : '') + '" data-qid="' + quest.id + '">';
+    html += '<div class="quest-header" data-qid="' + quest.id + '">';
+    html += '<span class="quest-icon" style="color:' + quest.color + '">' + quest.icon + '</span>';
+    html += '<div style="flex:1">';
+    html += '<div class="quest-title">' + escapeHtml(quest.title) + '</div>';
+    html += '<div class="quest-meta">' + doneInQuest + '/' + quest.exos.length + ' · ' + escapeHtml(quest.desc) + '</div>';
+    html += '</div>';
+    html += '<span class="quest-chevron">▶</span>';
+    html += '</div>';
+    html += '<div class="quest-body">';
+    quest.exos.forEach(function(ex) {
+      var idx = EXERCISES.indexOf(ex);
+      var cls = 'exo-card' + (idx === currentExoIdx ? ' active' : '') + (completed.has(idx) ? ' completed' : '');
+      html += '<div class="' + cls + '" data-idx="' + idx + '">';
+      var num = String(idx + 1);
+      if (num.length === 1) num = '0' + num;
+      html += '<div class="exo-card-num">EXO ' + num + ' · ' + ex.level.toUpperCase().slice(0, 4) + '</div>';
+      html += '<div class="exo-card-title">' + escapeHtml(ex.title) + '</div>';
+      html += '</div>';
+    });
+    html += '</div></div>';
+  });
+
+  list.innerHTML = html;
+
+  // Bind quest header clicks
+  Array.prototype.forEach.call(list.querySelectorAll('.quest-header'), function(h) {
+    h.onclick = function() {
+      var qid = h.dataset.qid;
+      if (expandedQuests.has(qid)) expandedQuests.delete(qid);
+      else expandedQuests.add(qid);
+      renderExercises();
+    };
+  });
+  // Bind exo card clicks
+  Array.prototype.forEach.call(list.querySelectorAll('.exo-card'), function(card) {
+    card.onclick = function(e) {
+      e.stopPropagation();
+      loadExercise(parseInt(card.dataset.idx, 10));
+    };
+  });
+
+  var total = EXERCISES.length;
+  var done = completed.size;
+  var pct = total > 0 ? (done / total * 100) : 0;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-text').textContent = done + ' / ' + total + ' complétés';
+
+  renderActiveExo();
+}
+
+function renderActiveExo() {
+  var container = document.getElementById('active-exo-container');
+  if (currentExoIdx < 0) { container.innerHTML = ''; return; }
+  var ex = EXERCISES[currentExoIdx];
+
+  var num = String(currentExoIdx + 1);
+  if (num.length === 1) num = '0' + num;
+  var total = String(EXERCISES.length);
+
+  var html = '<div class="active-exo">';
+
+  // HEADER : LAB N/80 + difficulty
+  html += '<div class="active-exo-header">';
+  html += '<span class="active-exo-lab-num">LAB ' + num + ' / ' + total + '</span>';
+  html += '<span class="active-exo-difficulty ' + ex.level + '">' + ex.level + '</span>';
+  html += '</div>';
+
+  // BODY
+  html += '<div class="active-exo-body">';
+
+  if (ex.questTitle) {
+    html += '<div class="exo-quest-banner">' + escapeHtml(ex.questTitle) + '</div>';
+  }
+  html += '<div class="active-exo-title">' + escapeHtml(ex.title) + '</div>';
+
+  if (ex.context) {
+    html += '<div class="exo-section context">';
+    html += '<span class="exo-section-label">📖 Contexte</span>';
+    html += formatTextWithCode(ex.context);
+    html += '</div>';
+  }
+  if (ex.scene) {
+    html += '<div class="exo-section scene">';
+    html += '<span class="exo-section-label">🎬 Situation</span>';
+    html += formatTextWithCode(ex.scene);
+    html += '</div>';
+  }
+  html += '<div class="exo-section mission">';
+  html += '<span class="exo-section-label">🎯 Objectif</span>';
+  html += formatTextWithCode(ex.mission || '');
+  html += '</div>';
+  if (ex.steps && ex.steps.length) {
+    html += '<div class="exo-section steps">';
+    html += '<span class="exo-section-label">💡 Étapes guidées</span>';
+    html += '<ol>';
+    ex.steps.forEach(function(step) {
+      html += '<li>' + formatTextWithCode(step) + '</li>';
+    });
+    html += '</ol>';
+    html += '</div>';
+  }
+  if (ex.expected) {
+    html += '<div class="exo-section expected">';
+    html += '<span class="exo-section-label">🖥️ Sortie attendue</span>';
+    html += escapeHtml(ex.expected);
+    html += '</div>';
+  }
+  if (ex.diagram) {
+    html += '<div class="exo-section diagram">';
+    html += '<span class="exo-section-label">📐 Schéma</span>';
+    html += escapeHtml(ex.diagram);
+    html += '</div>';
+  }
+
+  // CRITERIA section (linuxzoo style: how it will be tested)
+  html += '<div class="exo-section criteria">';
+  html += '<span class="exo-section-label">✓ Critères de validation</span>';
+  html += buildCriteriaText(ex);
+  html += '</div>';
+
+  // TEST RESULTS (shown after a check)
+  html += '<div id="test-results-container"></div>';
+
+  // ACTIONS
+  html += '<div class="exo-actions">';
+  html += '<button class="neo-btn success" onclick="checkExercise()">▶ Lancer les tests</button>';
+  html += '<button class="neo-btn" onclick="skipExercise()">→ Passer</button>';
+  html += '</div>';
+  html += '</div>'; // body
+  html += '</div>'; // active-exo
+  container.innerHTML = html;
+}
+
+// Build human-readable criteria description from each exercise
+function buildCriteriaText(ex) {
+  // Use a "criteria" field if available, else infer from existing data
+  if (ex.criteria) {
+    var html = '<ul style="margin-left:18px;margin-top:4px">';
+    ex.criteria.forEach(function(c) { html += '<li>' + escapeHtml(c) + '</li>'; });
+    html += '</ul>';
+    return html;
+  }
+  // Default: show what will be tested
+  return '<div style="font-size:0.74rem;color:var(--text-2);margin-top:4px">' +
+    'Le système vérifiera que tu as exécuté la commande correctement et que l\'état du système correspond à l\'objectif. Clique <strong>« Lancer les tests »</strong> pour voir le résultat détaillé.' +
+    '</div>';
+}
+
+function loadExercise(idx) {
+  if (idx < 0 || idx >= EXERCISES.length) return;
+  currentExoIdx = idx;
+  exoStatus = null;
+  // Auto-expand the quest containing this exercise
+  var ex = EXERCISES[idx];
+  if (ex.questId) expandedQuests.add(ex.questId);
+  renderExercises();
+  // Scroll active card into view
+  setTimeout(function() {
+    var activeCard = document.querySelector('.exo-card.active');
+    if (activeCard) {
+      try { activeCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) {}
+    }
+  }, 100);
+  showToast('📝 Exercice ' + (idx + 1) + ' chargé');
+}
+
+function checkExercise() {
+  if (currentExoIdx < 0) return;
+  var ex = EXERCISES[currentExoIdx];
+  var state = { cwd: cwd, history: cmdHistory };
+  var passed = false;
+  try { passed = ex.check(state); } catch (e) { console.error(e); }
+  exoStatus = passed ? 'success' : 'fail';
+
+  // Show detailed test results in the test list
+  showTestResults(ex, state, passed);
+
+  if (passed) {
+    completed.add(currentExoIdx);
+    try {
+      var arr = [];
+      completed.forEach(function(v) { arr.push(v); });
+      localStorage.setItem('dojo_linux_done_v2', JSON.stringify(arr));
+    } catch (e) {}
+    triggerConfetti();
+    setTimeout(function() {
+      if (currentExoIdx < EXERCISES.length - 1) loadExercise(currentExoIdx + 1);
+    }, 3500);
+  }
+  renderExercises();
+  updateServerStatus();
+}
+
+function showTestResults(ex, state, passed) {
+  var container = document.getElementById('test-results-container');
+  if (!container) return;
+
+  // Build a list of tests (inferred from the exercise data)
+  var tests = buildTestList(ex, state, passed);
+
+  var html = '<div class="test-list">';
+  html += '<div class="test-list-title">Résultats des tests</div>';
+  tests.forEach(function(t, i) {
+    html += '<div class="test-item ' + t.status + '" style="animation-delay:' + (i * 0.05) + 's">';
+    html += '<span class="icon">' + (t.status === 'pass' ? '✓' : t.status === 'fail' ? '✗' : '·') + '</span>';
+    html += '<span>' + escapeHtml(t.label) + '</span>';
+    html += '</div>';
+  });
+  html += '</div>';
+
+  if (passed) {
+    html += '<div class="exo-status success" style="margin-top:8px">✓ Lab validé · prochain lab dans 3s</div>';
+  } else {
+    html += '<div class="exo-status fail" style="margin-top:8px">✗ Tests échoués · relis les étapes guidées</div>';
+  }
+  container.innerHTML = html;
+}
+
+function updateServerStatus() {
+  var setText = function(id, txt, cls) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = txt;
+    if (cls !== undefined) {
+      el.className = 'value ' + cls;
+    }
+  };
+  if (sysState.services.nginx.active) {
+    setText('srv-nginx', 'running', 'up');
+  } else {
+    setText('srv-nginx', 'stopped', 'down');
+  }
+  if (sysState.services.ssh && sysState.services.ssh.active) {
+    setText('srv-ssh', 'running', 'up');
+  } else {
+    setText('srv-ssh', 'stopped', 'down');
+  }
+  var load = (Math.random() * 0.2 + 0.05).toFixed(2);
+  setText('srv-load', load);
+  var ramUsed = (4.0 + Math.random() * 0.5).toFixed(1);
+  setText('srv-ram', ramUsed + '/16G');
+}
+
+function buildTestList(ex, state, passed) {
+  var tests = [];
+  if (state.history.length > 0) {
+    tests.push({ status: 'pass', label: 'Au moins une commande a été exécutée (' + state.history.length + ')' });
+  } else {
+    tests.push({ status: 'fail', label: 'Aucune commande exécutée pour le moment' });
+  }
+  if (ex.hint || ex.steps) {
+    var stepsText = (ex.steps || []).join(' ') + ' ' + (ex.hint || '');
+    var cmdMatch = stepsText.match(/`([a-z][\w\-]*)/g);
+    if (cmdMatch && cmdMatch.length > 0) {
+      var firstCmd = cmdMatch[0].replace(/`/g, '');
+      var used = state.history.some(function(c) { return c.indexOf(firstCmd) === 0; });
+      tests.push({
+        status: used ? 'pass' : 'fail',
+        label: 'Commande \"' + firstCmd + '\" utilisée'
+      });
+    }
+  }
+  tests.push({
+    status: passed ? 'pass' : 'fail',
+    label: passed ? 'Objectif atteint : ' + ex.title : 'Objectif non atteint : ' + ex.title
+  });
+  return tests;
+}
+
+function skipExercise() {
+  if (currentExoIdx < EXERCISES.length - 1) loadExercise(currentExoIdx + 1);
+}
+
+function triggerConfetti() {
+  var colors = ['#c8341c', '#00f5d4', '#ffbe0b', '#8338ec', '#3a86ff'];
+  for (var i = 0; i < 50; i++) {
+    var piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = (Math.random() * 100) + '%';
+    var color = colors[i % colors.length];
+    piece.style.background = color;
+    piece.style.animationDelay = (Math.random() * 0.3) + 's';
+    piece.style.animationDuration = (1.5 + Math.random()) + 's';
+    piece.style.setProperty('--tx', ((Math.random() - 0.5) * 200) + 'px');
+    piece.style.boxShadow = '0 0 8px ' + color;
+    document.body.appendChild(piece);
+    (function(p) { setTimeout(function() { p.remove(); }, 3000); })(piece);
+  }
+}
+
+var _toastTimer;
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(function() { t.classList.remove('show'); }, 2200);
+}
+
+document.getElementById('exo-toggle').onclick = function() {
+  var p = document.getElementById('exo-panel');
+  p.classList.toggle('collapsed');
+  document.getElementById('exo-toggle').textContent = p.classList.contains('collapsed') ? '▶' : '◀';
+};
+
+// ===== TERMINAL =====
+var term = null;
+var buffer = '';
+var hist = [];
+var historyIdx = -1;
+
+var C = {
+  reset: '\x1b[0m', bold: '\x1b[1m', dim: '\x1b[2m',
+  red: '\x1b[31m', green: '\x1b[32m', yellow: '\x1b[33m',
+  blue: '\x1b[34m', magenta: '\x1b[35m', cyan: '\x1b[36m',
+  brRed: '\x1b[91m', brGreen: '\x1b[92m', brYellow: '\x1b[93m',
+  brBlue: '\x1b[94m', brMagenta: '\x1b[95m', brCyan: '\x1b[96m',
+  gray: '\x1b[90m'
+};
+
+function writePrompt() {
+  if (!term) return;
+  var prompt = sysState.isRoot ? C.brRed + 'root@dojo' : C.brGreen + 'user@dojo';
+  var sym = sysState.isRoot ? '#' : '$';
+  term.write(prompt + C.reset + ':' + C.brBlue + shortPath(cwd) + C.reset + sym + ' ');
+}
+
+function showWelcome() {
+  term.writeln('');
+  term.writeln(C.brMagenta + '  🥋  LE DOJO · Linux Visuel' + C.reset);
+  term.writeln(C.dim + '  Apprentissage interactif — Ubuntu 22.04 (simulé)' + C.reset);
+  term.writeln('');
+  term.writeln(C.dim + '  ' + EXERCISES.length + ' exercices · ' + QUESTS.length + ' quêtes' + C.reset);
+  term.writeln(C.dim + '  Tapez ' + C.brYellow + 'help' + C.dim + ' pour les commandes' + C.reset);
+  term.writeln('');
+  writePrompt();
+}
+
+function termClear() {
+  if (!term) return;
+  term.clear();
+  writePrompt();
+  term.write(buffer);
+}
+
+// Parse simple : sépare par | pour pipes, par > pour redirection
+function parseAndExecute(cmd) {
+  cmd = cmd.trim();
+  if (!cmd) { writePrompt(); return; }
+
+  hist.unshift(cmd);
+  if (hist.length > 50) hist.pop();
+  historyIdx = -1;
+  cmdHistory.push(cmd);
+  if (cmdHistory.length > 200) cmdHistory.shift();
+
+  // Capture output to a string
+  var output = '';
+  var oldWrite = term.writeln;
+  var oldWriteNoNl = term.write;
+  var capturing = false;
+
+  function captureOutput(fn) {
+    var lines = [];
+    var buf = '';
+    var realWriteln = term.writeln.bind(term);
+    var realWrite = term.write.bind(term);
+    term.writeln = function(s) { lines.push(stripAnsi(s || '')); };
+    term.write = function(s) { buf += stripAnsi(s || ''); };
+    try { fn(); } finally {
+      term.writeln = realWriteln;
+      term.write = realWrite;
+    }
+    if (buf) lines.push(buf);
+    return lines.join('\n');
+  }
+
+  // Detect redirection > or >>
+  var redirMatch = cmd.match(/^(.+?)\s*(>>?)\s*(\S+)\s*$/);
+  if (redirMatch) {
+    var leftCmd = redirMatch[1].trim();
+    var redirOp = redirMatch[2];
+    var dstFile = redirMatch[3];
+    var captured = captureOutput(function() { runCommandChain(leftCmd); });
+    var dstPath = resolvePath(dstFile);
+    var parentPath = dstPath.split('/').slice(0, -1).join('/') || '/';
+    var fileName = dstPath.split('/').pop();
+    var parent = getNode(parentPath);
+    if (!parent || !parent.children) {
+      term.writeln(C.red + 'redirection: dossier introuvable' + C.reset);
+    } else {
+      var existing = parent.children[fileName];
+      if (redirOp === '>>' && existing) {
+        // Append (we don't store actual content, just register the file)
+        // Update size
+        existing.size = (parseInt(existing.size, 10) || 0) + captured.length + '';
+      } else {
+        parent.children[fileName] = {
+          type: 'file', perms: '-rw-r--r--', owner: sysState.user,
+          size: captured.length + ''
+        };
+        // Store content for later cat
+        FILE_CONTENTS[fileName] = captured;
+      }
+      highlighted = fileName;
+      renderFs();
+    }
+    writePrompt();
+    return;
+  }
+
+  runCommandChain(cmd);
+  writePrompt();
+}
+
+function stripAnsi(s) {
+  return String(s).replace(/\x1b\[[0-9;]*m/g, '');
+}
+
+function runCommandChain(cmd) {
+  // Handle pipes
+  if (cmd.indexOf('|') >= 0) {
+    var parts = cmd.split('|').map(function(p) { return p.trim(); });
+    var pipeInput = '';
+    for (var i = 0; i < parts.length; i++) {
+      var isLast = i === parts.length - 1;
+      if (i === 0) {
+        pipeInput = captureCmd(parts[i]);
+      } else if (isLast) {
+        runCmdWithInput(parts[i], pipeInput);
+      } else {
+        pipeInput = captureCmdWithInput(parts[i], pipeInput);
+      }
+    }
+    return;
+  }
+  runSingleCommand(cmd);
+}
+
+function captureCmd(cmd) {
+  var lines = [];
+  var realWriteln = term.writeln.bind(term);
+  var realWrite = term.write.bind(term);
+  var buf = '';
+  term.writeln = function(s) { lines.push(stripAnsi(s || '')); };
+  term.write = function(s) { buf += stripAnsi(s || ''); };
+  try { runSingleCommand(cmd); } finally {
+    term.writeln = realWriteln;
+    term.write = realWrite;
+  }
+  if (buf) lines.push(buf);
+  return lines.join('\n');
+}
+function captureCmdWithInput(cmd, input) {
+  var lines = [];
+  var realWriteln = term.writeln.bind(term);
+  var realWrite = term.write.bind(term);
+  term.writeln = function(s) { lines.push(stripAnsi(s || '')); };
+  term.write = function(s) {};
+  try { runCmdWithInput(cmd, input); } finally {
+    term.writeln = realWriteln;
+    term.write = realWrite;
+  }
+  return lines.join('\n');
+}
+function runCmdWithInput(cmd, input) {
+  var parts = cmd.split(/\s+/);
+  var c = parts[0];
+  var args = parts.slice(1);
+  if (c === 'grep') {
+    var pattern = args[0];
+    if (!pattern) { term.writeln(C.red + 'grep: pattern manquant' + C.reset); return; }
+    input.split('\n').forEach(function(line) {
+      if (line.indexOf(pattern) >= 0) term.writeln(line);
+    });
+    return;
+  }
+  if (c === 'wc') {
+    var lines = input.split('\n').filter(function(l) { return l.length > 0; });
+    if (args.indexOf('-l') >= 0) term.writeln(lines.length + '');
+    else if (args.indexOf('-w') >= 0) term.writeln(input.split(/\s+/).filter(function(w) { return w; }).length + '');
+    else term.writeln(lines.length + ' ' + input.split(/\s+/).filter(function(w) { return w; }).length + ' ' + input.length);
+    return;
+  }
+  if (c === 'head') {
+    var n = 10;
+    var iN = args.indexOf('-n');
+    if (iN >= 0 && args[iN + 1]) n = parseInt(args[iN + 1], 10);
+    input.split('\n').slice(0, n).forEach(function(l) { term.writeln(l); });
+    return;
+  }
+  if (c === 'tail') {
+    var n2 = 10;
+    var iN2 = args.indexOf('-n');
+    if (iN2 >= 0 && args[iN2 + 1]) n2 = parseInt(args[iN2 + 1], 10);
+    var ls = input.split('\n');
+    ls.slice(Math.max(0, ls.length - n2)).forEach(function(l) { term.writeln(l); });
+    return;
+  }
+  if (c === 'sort') {
+    input.split('\n').sort().forEach(function(l) { term.writeln(l); });
+    return;
+  }
+  // Fallback : just print input
+  term.writeln(input);
+}
+
+function runSingleCommand(cmd) {
+  var trimmed = cmd.trim();
+  if (!trimmed) return;
+  var sudo = false;
+  if (trimmed.indexOf('sudo ') === 0) {
+    sudo = true;
+    trimmed = trimmed.slice(5).trim();
+  }
+  var parts = trimmed.split(/\s+/);
+  var command = parts[0];
+  var args = parts.slice(1);
+
+  switch (command) {
+    case 'pwd': term.writeln(cwd); break;
+    case 'ls': cmdLs(args); break;
+    case 'cd': cmdCd(args); break;
+    case 'cat': cmdCat(args); break;
+    case 'mkdir': cmdMkdir(args); break;
+    case 'touch': cmdTouch(args); break;
+    case 'rm': cmdRm(args); break;
+    case 'cp': cmdCp(args); break;
+    case 'mv': cmdMv(args); break;
+    case 'tree': cmdTree(args); break;
+    case 'echo': cmdEcho(args); break;
+    case 'whoami': term.writeln(sysState.user); break;
+    case 'id': cmdId(); break;
+    case 'hostname': term.writeln(sysState.hostname); break;
+    case 'date': term.writeln(new Date().toString()); break;
+    case 'clear': case 'cls': term.clear(); return;
+    case 'history': hist.slice(0, 20).forEach(function(h, i) { term.writeln('  ' + (i+1) + '  ' + h); }); break;
+    case 'help': case '?': cmdHelp(); break;
+    case 'chmod': cmdChmod(args); break;
+    case 'chown': cmdChown(args, sudo); break;
+    case 'ps': cmdPs(args); break;
+    case 'top': cmdTop(); break;
+    case 'kill': cmdKill(args); break;
+    case 'grep': cmdGrep(args); break;
+    case 'head': cmdHead(args); break;
+    case 'tail': cmdTail(args); break;
+    case 'wc': cmdWc(args); break;
+    case 'find': cmdFind(args); break;
+    case 'df': cmdDf(args); break;
+    case 'du': cmdDu(args); break;
+    case 'systemctl': cmdSystemctl(args, sudo); break;
+    case 'ufw': cmdUfw(args, sudo); break;
+    case 'ip': case 'ifconfig': cmdIfconfig(); break;
+    case 'man': term.writeln(C.dim + '(man pages non disponibles ici, tape help)' + C.reset); break;
+    case 'apt': cmdApt(args, sudo); break;
+    case 'useradd': cmdUseradd(args, sudo); break;
+    case 'userdel': cmdUserdel(args, sudo); break;
+    case 'usermod': cmdUsermod(args, sudo); break;
+    case 'passwd': cmdPasswd(args, sudo); break;
+    case 'groupadd': cmdGroupadd(args, sudo); break;
+    case 'groups': cmdGroups(args); break;
+    case 'free': cmdFree(args); break;
+    case 'uptime': cmdUptime(); break;
+    case 'w': cmdW(); break;
+    case 'who': cmdWho(); break;
+    case 'last': cmdLast(); break;
+    case 'htop': cmdHtop(); break;
+    case 'vmstat': cmdVmstat(args); break;
+    case 'nano': cmdNano(args); break;
+    case 'vim': case 'vi': cmdVim(args); break;
+    case 'env': cmdEnv(); break;
+    case 'su': sysState.isRoot = true; term.writeln('Mot de passe : (validé)'); break;
+    case 'exit': sysState.isRoot = false; break;
+    default:
+      // Lancement d'un script local : ./xxx
+      if (command.indexOf('./') === 0) {
+        var fname = command.slice(2);
+        var node = getNode(cwd);
+        if (node && node.children && node.children[fname]) {
+          if (node.children[fname].perms && node.children[fname].perms.indexOf('x') > 0) {
+            term.writeln(C.brGreen + 'Exécution de ' + fname + '...' + C.reset);
+            var content = FILE_CONTENTS[fname] || '';
+            content.split('\n').forEach(function(line) {
+              if (line.indexOf('echo ') === 0) {
+                term.writeln(line.slice(5).replace(/^["']|["']$/g, ''));
+              }
+            });
+          } else {
+            term.writeln(C.red + 'bash: ./' + fname + ': Permission denied' + C.reset);
+            term.writeln(C.dim + 'Astuce : `chmod +x ' + fname + '` pour rendre exécutable' + C.reset);
+          }
+        } else {
+          term.writeln(C.red + 'bash: ' + command + ': introuvable' + C.reset);
+        }
+      } else {
+        term.writeln(C.red + command + ': commande introuvable' + C.reset);
+        term.writeln(C.dim + 'Tapez ' + C.brYellow + 'help' + C.dim + ' pour la liste' + C.reset);
+      }
+  }
+}
+
+function cmdLs(args) {
+  var showAll = args.some(function(a) { return /^-.*a/.test(a); });
+  var longFmt = args.some(function(a) { return /^-.*l/.test(a); });
+  var nonFlag = args.filter(function(a) { return a.charAt(0) !== '-'; });
+  var target = nonFlag.length ? nonFlag[nonFlag.length - 1] : cwd;
+  var path = resolvePath(target);
+  var node = getNode(path);
+  if (!node) { term.writeln(C.red + 'ls: ' + target + ': introuvable' + C.reset); return; }
+  if (node.type !== 'dir') { term.writeln(target); return; }
+  var entries = Object.keys(node.children || {}).map(function(k) { return [k, node.children[k]]; });
+  if (!showAll) entries = entries.filter(function(e) { return e[0].charAt(0) !== '.'; });
+  entries.sort(function(a, b) {
+    if (a[1].type === 'dir' && b[1].type !== 'dir') return -1;
+    if (a[1].type !== 'dir' && b[1].type === 'dir') return 1;
+    return a[0].localeCompare(b[0]);
+  });
+  if (longFmt) {
+    term.writeln('total ' + entries.length);
+    entries.forEach(function(e) {
+      var n = e[0], it = e[1];
+      var cn = it.type === 'dir' ? C.brBlue + n + '/' :
+               it.type === 'exec' ? C.brGreen + n + '*' : n;
+      var sz = (it.size || '0');
+      var pad = '       '.slice(Math.min(sz.length, 7)); if (pad === undefined) pad = '';
+      term.writeln(C.dim + (it.perms || '-rw-r--r--') + C.reset + ' ' + (it.owner || 'user') + '  ' + sz + '  ' + cn + C.reset);
+    });
+  } else {
+    var items = entries.map(function(e) {
+      var n = e[0], it = e[1];
+      if (it.type === 'dir') return C.brBlue + n + '/' + C.reset;
+      if (it.type === 'exec') return C.brGreen + n + '*' + C.reset;
+      return n;
+    });
+    term.writeln(items.join('  '));
+  }
+}
+
+function cmdCd(args) {
+  if (!args.length || args[0] === '~') { cwd = '/home/user'; renderFs(); return; }
+  var newPath = resolvePath(args[0]);
+  var node = getNode(newPath);
+  if (!node) { term.writeln(C.red + 'cd: ' + args[0] + ': introuvable' + C.reset); return; }
+  if (node.type !== 'dir') { term.writeln(C.red + 'cd: ' + args[0] + ': pas un dossier' + C.reset); return; }
+  cwd = newPath;
+  renderFs();
+}
+
+function cmdCat(args) {
+  if (!args.length) { term.writeln(C.red + 'cat: opérande manquante' + C.reset); return; }
+  args.forEach(function(arg) {
+    var node = getNode(resolvePath(arg));
+    if (!node) { term.writeln(C.red + 'cat: ' + arg + ': introuvable' + C.reset); return; }
+    if (node.type === 'dir') { term.writeln(C.red + 'cat: ' + arg + ': est un dossier' + C.reset); return; }
+    var fileName = arg.split('/').pop();
+    var content = FILE_CONTENTS[fileName] || '(contenu binaire ou vide)';
+    content.split('\n').forEach(function(l) { term.writeln(l); });
+    highlighted = fileName;
+  });
+  renderFs();
+}
+
+function cmdMkdir(args) {
+  if (!args.length) { term.writeln(C.red + 'mkdir: opérande manquante' + C.reset); return; }
+  var node = getNode(cwd);
+  if (!node || !node.children) return;
+  args.forEach(function(name) {
+    if (name.charAt(0) === '-') return;
+    if (node.children[name]) {
+      term.writeln(C.red + 'mkdir: ' + name + ': existe déjà' + C.reset);
+    } else {
+      node.children[name] = { type: 'dir', perms: 'drwxr-xr-x', owner: sysState.user, children: {} };
+    }
+  });
+  highlighted = args[args.length - 1];
+  renderFs();
+}
+
+function cmdTouch(args) {
+  if (!args.length) { term.writeln(C.red + 'touch: opérande manquante' + C.reset); return; }
+  var node = getNode(cwd);
+  if (!node || !node.children) return;
+  args.forEach(function(name) {
+    if (name.charAt(0) === '-') return;
+    if (!node.children[name]) {
+      node.children[name] = { type: 'file', perms: '-rw-r--r--', owner: sysState.user, size: '0' };
+    }
+  });
+  highlighted = args[0];
+  renderFs();
+}
+
+function cmdRm(args) {
+  var force = args.some(function(a) { return /^-.*[rR]/.test(a); });
+  var nonFlag = args.filter(function(a) { return a.charAt(0) !== '-'; });
+  if (!nonFlag.length) { term.writeln(C.red + 'rm: opérande manquante' + C.reset); return; }
+  nonFlag.forEach(function(target) {
+    var node = getNode(cwd);
+    if (!node || !node.children || !node.children[target]) {
+      term.writeln(C.red + 'rm: ' + target + ': introuvable' + C.reset); return;
+    }
+    if (node.children[target].type === 'dir' && !force) {
+      term.writeln(C.red + 'rm: ' + target + ': dossier (utilisez -r)' + C.reset); return;
+    }
+    delete node.children[target];
+  });
+  renderFs();
+}
+
+function cmdCp(args) {
+  if (args.length < 2) { term.writeln(C.red + 'cp: opérandes manquantes' + C.reset); return; }
+  var src = args[0], dst = args[args.length - 1];
+  var srcPath = resolvePath(src);
+  var srcNode = getNode(srcPath);
+  if (!srcNode) { term.writeln(C.red + 'cp: ' + src + ': introuvable' + C.reset); return; }
+  // Determine dest
+  var dstPath = resolvePath(dst);
+  var dstNode = getNode(dstPath);
+  if (dstNode && dstNode.type === 'dir') {
+    // copy into dir, keep src name
+    var srcName = srcPath.split('/').pop();
+    dstNode.children[srcName] = JSON.parse(JSON.stringify(srcNode));
+    highlighted = srcName;
+  } else {
+    var parentPath = dstPath.split('/').slice(0, -1).join('/') || '/';
+    var fileName = dstPath.split('/').pop();
+    var parent = getNode(parentPath);
+    if (!parent || !parent.children) {
+      term.writeln(C.red + 'cp: dossier de destination introuvable' + C.reset); return;
+    }
+    parent.children[fileName] = JSON.parse(JSON.stringify(srcNode));
+    highlighted = fileName;
+  }
+  renderFs();
+}
+
+function cmdMv(args) {
+  if (args.length < 2) { term.writeln(C.red + 'mv: opérandes manquantes' + C.reset); return; }
+  var src = args[0], dst = args[args.length - 1];
+  var srcPath = resolvePath(src);
+  var srcParentPath = srcPath.split('/').slice(0, -1).join('/') || '/';
+  var srcName = srcPath.split('/').pop();
+  var srcParent = getNode(srcParentPath);
+  if (!srcParent || !srcParent.children || !srcParent.children[srcName]) {
+    term.writeln(C.red + 'mv: ' + src + ': introuvable' + C.reset); return;
+  }
+  var dstPath = resolvePath(dst);
+  var dstNode = getNode(dstPath);
+  if (dstNode && dstNode.type === 'dir') {
+    dstNode.children[srcName] = srcParent.children[srcName];
+    delete srcParent.children[srcName];
+    highlighted = srcName;
+  } else {
+    var dstParentPath = dstPath.split('/').slice(0, -1).join('/') || '/';
+    var dstName = dstPath.split('/').pop();
+    var dstParent = getNode(dstParentPath);
+    if (!dstParent || !dstParent.children) {
+      term.writeln(C.red + 'mv: destination introuvable' + C.reset); return;
+    }
+    dstParent.children[dstName] = srcParent.children[srcName];
+    delete srcParent.children[srcName];
+    highlighted = dstName;
+  }
+  renderFs();
+}
+
+function cmdTree(args) {
+  var startPath = args[0] ? resolvePath(args[0]) : cwd;
+  var startNode = getNode(startPath);
+  if (!startNode) { term.writeln(C.red + 'tree: introuvable' + C.reset); return; }
+  term.writeln(C.brBlue + startPath + C.reset);
+  var dirs = 0, files = 0;
+  function walk(node, prefix, depth) {
+    if (depth > 3 || !node.children) return;
+    var ents = Object.keys(node.children).filter(function(n) { return n.charAt(0) !== '.'; }).map(function(k) { return [k, node.children[k]]; });
+    ents.forEach(function(e, i) {
+      var name = e[0], item = e[1];
+      var isLast = i === ents.length - 1;
+      var branch = isLast ? '└── ' : '├── ';
+      var cont = isLast ? '    ' : '│   ';
+      var cn;
+      if (item.type === 'dir') { cn = C.brBlue + name + C.reset; dirs++; }
+      else if (item.type === 'exec') { cn = C.brGreen + name + C.reset; files++; }
+      else { cn = name; files++; }
+      term.writeln(prefix + branch + cn);
+      if (item.type === 'dir') walk(item, prefix + cont, depth + 1);
+    });
+  }
+  walk(startNode, '', 0);
+  term.writeln('');
+  term.writeln(dirs + ' dossiers, ' + files + ' fichiers');
+}
+
+function cmdId() {
+  if (sysState.user === 'user') {
+    term.writeln('uid=1000(user) gid=1000(user) groups=1000(user),27(sudo)');
+  } else {
+    term.writeln('uid=0(root) gid=0(root) groups=0(root)');
+  }
+}
+
+function cmdChmod(args) {
+  if (args.length < 2) { term.writeln(C.red + 'chmod: usage: chmod MODE FICHIER' + C.reset); return; }
+  var mode = args[0];
+  var target = args[1];
+  var node = getNode(resolvePath(target));
+  if (!node) { term.writeln(C.red + 'chmod: ' + target + ': introuvable' + C.reset); return; }
+
+  var currentPerms = node.perms || '-rw-r--r--';
+  var typeChar = currentPerms.charAt(0);
+
+  // Parse symbolic: +x, -x, +rwx, etc.
+  if (/^[+-=][rwx]+$/.test(mode)) {
+    var op = mode.charAt(0);
+    var add = mode.slice(1);
+    // Apply to all 3 sets
+    var perms = currentPerms.slice(1).split('');
+    for (var i = 0; i < 9; i++) {
+      var letter = ['r','w','x'][i % 3];
+      if (add.indexOf(letter) >= 0) {
+        if (op === '+') perms[i] = letter;
+        else if (op === '-') perms[i] = '-';
+      }
+    }
+    node.perms = typeChar + perms.join('');
+    if (mode.indexOf('x') >= 0 && op === '+') {
+      node.type = 'exec';
+    }
+  } else if (/^[0-7]{3,4}$/.test(mode)) {
+    // Numeric mode
+    var nums = mode.length === 4 ? mode.slice(1) : mode;
+    var newPerms = typeChar;
+    for (var n = 0; n < 3; n++) {
+      var d = parseInt(nums[n], 10);
+      newPerms += (d & 4) ? 'r' : '-';
+      newPerms += (d & 2) ? 'w' : '-';
+      newPerms += (d & 1) ? 'x' : '-';
+    }
+    node.perms = newPerms;
+    // Determine if exec
+    if (newPerms.indexOf('x') > 0 && node.type === 'file') node.type = 'exec';
+    else if (newPerms.indexOf('x') === -1 && node.type === 'exec') node.type = 'file';
+  } else {
+    term.writeln(C.red + 'chmod: mode invalide: ' + mode + C.reset);
+    return;
+  }
+  highlighted = target.split('/').pop();
+  renderFs();
+}
+
+function cmdChown(args, sudo) {
+  if (args.length < 2) { term.writeln(C.red + 'chown: usage: chown USER:GROUP FICHIER' + C.reset); return; }
+  if (!sudo && !sysState.isRoot) {
+    term.writeln(C.red + 'chown: opération non permise (utilisez sudo)' + C.reset);
+    return;
+  }
+  var ownership = args[0];
+  var target = args[1];
+  var node = getNode(resolvePath(target));
+  if (!node) { term.writeln(C.red + 'chown: ' + target + ': introuvable' + C.reset); return; }
+  var newOwner = ownership.split(':')[0];
+  node.owner = newOwner;
+  highlighted = target.split('/').pop();
+  renderFs();
+}
+
+function cmdPs(args) {
+  var showAll = args.some(function(a) { return a.indexOf('a') >= 0; });
+  term.writeln(C.dim + 'USER       PID  %CPU  %MEM  COMMAND' + C.reset);
+  sysState.processes.forEach(function(p) {
+    if (!showAll && p.user !== sysState.user) return;
+    var line = (p.user + '       ').slice(0, 10) + ' ' +
+               (p.pid + '     ').slice(0, 5) + ' ' +
+               (p.cpu.toFixed(1) + '   ').slice(0, 5) + ' ' +
+               (p.mem.toFixed(1) + '   ').slice(0, 5) + ' ' +
+               p.cmd;
+    term.writeln(line);
+  });
+  // Add nginx if active
+  if (sysState.services.nginx.active) {
+    term.writeln('www-data   ' + (sysState.services.nginx.pid || 2000) + '  0.1   1.2   nginx: worker process');
+  }
+}
+
+function cmdTop() {
+  term.writeln(C.dim + 'top - ' + new Date().toTimeString().split(' ')[0] + ' up 2 days,  3:14,  1 user' + C.reset);
+  term.writeln(C.dim + 'Tasks: ' + sysState.processes.length + ' total,   1 running,   ' + (sysState.processes.length - 1) + ' sleeping' + C.reset);
+  term.writeln(C.dim + '%Cpu(s):  0.5 us,  0.2 sy,  99.3 id' + C.reset);
+  term.writeln(C.dim + 'MiB Mem :  16384.0 total,   8000.0 free,   4500.0 used' + C.reset);
+  term.writeln('');
+  term.writeln(C.bold + '  PID USER       %CPU %MEM  COMMAND' + C.reset);
+  sysState.processes.slice().sort(function(a,b){return b.cpu-a.cpu;}).forEach(function(p) {
+    term.writeln(' ' + (p.pid + '     ').slice(0, 5) + ' ' +
+                 (p.user + '       ').slice(0, 10) + ' ' +
+                 (p.cpu.toFixed(1) + '   ').slice(0, 4) + ' ' +
+                 (p.mem.toFixed(1) + '   ').slice(0, 4) + '  ' + p.cmd);
+  });
+  term.writeln('');
+  term.writeln(C.dim + '(appuyez sur q pour quitter — quitté automatiquement)' + C.reset);
+}
+
+function cmdKill(args) {
+  if (!args.length) { term.writeln(C.red + 'kill: PID requis' + C.reset); return; }
+  var force = args.indexOf('-9') >= 0;
+  var pid = parseInt(args[args.length - 1], 10);
+  var found = false;
+  sysState.processes = sysState.processes.filter(function(p) {
+    if (p.pid === pid) { found = true; return false; }
+    return true;
+  });
+  if (!found) {
+    term.writeln(C.red + 'kill: (' + pid + '): processus introuvable' + C.reset);
+  }
+}
+
+function cmdGrep(args) {
+  if (args.length < 1) { term.writeln(C.red + 'grep: pattern requis' + C.reset); return; }
+  var pattern = args[0];
+  var files = args.slice(1).filter(function(a) { return a.charAt(0) !== '-'; });
+  if (!files.length) { term.writeln(C.red + 'grep: fichier manquant' + C.reset); return; }
+  files.forEach(function(file) {
+    var node = getNode(resolvePath(file));
+    if (!node) { term.writeln(C.red + 'grep: ' + file + ': introuvable' + C.reset); return; }
+    var fname = file.split('/').pop();
+    var content = FILE_CONTENTS[fname] || '';
+    content.split('\n').forEach(function(line) {
+      if (line.indexOf(pattern) >= 0) {
+        var hl = line.replace(new RegExp(pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), C.brRed + pattern + C.reset);
+        term.writeln(hl);
+      }
+    });
+  });
+}
+
+function cmdHead(args) {
+  var n = 10;
+  var iN = args.indexOf('-n');
+  if (iN >= 0 && args[iN + 1]) n = parseInt(args[iN + 1], 10);
+  var files = args.filter(function(a, i) {
+    return a.charAt(0) !== '-' && (iN < 0 || i !== iN + 1);
+  });
+  if (!files.length) { term.writeln(C.red + 'head: fichier manquant' + C.reset); return; }
+  var file = files[files.length - 1];
+  var node = getNode(resolvePath(file));
+  if (!node) { term.writeln(C.red + 'head: ' + file + ': introuvable' + C.reset); return; }
+  var fname = file.split('/').pop();
+  var content = FILE_CONTENTS[fname] || '';
+  content.split('\n').slice(0, n).forEach(function(l) { term.writeln(l); });
+}
+
+function cmdTail(args) {
+  var n = 10;
+  var iN = args.indexOf('-n');
+  if (iN >= 0 && args[iN + 1]) n = parseInt(args[iN + 1], 10);
+  var files = args.filter(function(a, i) {
+    return a.charAt(0) !== '-' && (iN < 0 || i !== iN + 1);
+  });
+  if (!files.length) { term.writeln(C.red + 'tail: fichier manquant' + C.reset); return; }
+  var file = files[files.length - 1];
+  var node = getNode(resolvePath(file));
+  if (!node) { term.writeln(C.red + 'tail: ' + file + ': introuvable' + C.reset); return; }
+  var fname = file.split('/').pop();
+  var content = FILE_CONTENTS[fname] || '';
+  var lines = content.split('\n');
+  lines.slice(Math.max(0, lines.length - n)).forEach(function(l) { term.writeln(l); });
+}
+
+function cmdWc(args) {
+  var lOnly = args.indexOf('-l') >= 0;
+  var wOnly = args.indexOf('-w') >= 0;
+  var files = args.filter(function(a) { return a.charAt(0) !== '-'; });
+  if (!files.length) { term.writeln(C.red + 'wc: fichier manquant' + C.reset); return; }
+  var file = files[0];
+  var node = getNode(resolvePath(file));
+  if (!node) { term.writeln(C.red + 'wc: ' + file + ': introuvable' + C.reset); return; }
+  var fname = file.split('/').pop();
+  var content = FILE_CONTENTS[fname] || '';
+  var lines = content.split('\n').length;
+  var words = content.split(/\s+/).filter(function(w) { return w; }).length;
+  var chars = content.length;
+  if (lOnly) term.writeln(lines + ' ' + file);
+  else if (wOnly) term.writeln(words + ' ' + file);
+  else term.writeln(lines + ' ' + words + ' ' + chars + ' ' + file);
+}
+
+function cmdFind(args) {
+  var startPath = args[0] && args[0].charAt(0) !== '-' ? resolvePath(args[0]) : cwd;
+  var nameIdx = args.indexOf('-name');
+  var pattern = (nameIdx >= 0 && args[nameIdx + 1]) ? args[nameIdx + 1].replace(/['"]/g, '') : null;
+  var startNode = getNode(startPath);
+  if (!startNode) { term.writeln(C.red + 'find: introuvable' + C.reset); return; }
+  function walk(node, path) {
+    if (!node) return;
+    if (!pattern || matchesGlob(path.split('/').pop(), pattern)) term.writeln(path);
+    if (node.children) {
+      Object.keys(node.children).forEach(function(k) {
+        walk(node.children[k], path + '/' + k);
+      });
+    }
+  }
+  walk(startNode, startPath === '/' ? '' : startPath);
+  if (startPath === '/') term.writeln('/');
+}
+
+function matchesGlob(name, pattern) {
+  var re = new RegExp('^' + pattern.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*').replace(/\?/g, '.') + '$');
+  return re.test(name);
+}
+
+function cmdDf(args) {
+  var human = args.indexOf('-h') >= 0;
+  term.writeln(C.dim + 'Filesystem      Size  Used Avail Use%  Mounted on' + C.reset);
+  if (human) {
+    term.writeln('/dev/sda1        50G   12G   36G  25%   /');
+    term.writeln('tmpfs           2.0G    0  2.0G   0%   /tmp');
+    term.writeln('/dev/sda2       512M   84M  428M  17%   /boot');
+  } else {
+    term.writeln('/dev/sda1   52428800 12582912 37748736 25% /');
+    term.writeln('tmpfs        2097152        0  2097152  0% /tmp');
+  }
+}
+
+function cmdDu(args) {
+  var sum = args.indexOf('-s') >= 0 || args.indexOf('-sh') >= 0;
+  var human = args.indexOf('-h') >= 0 || args.indexOf('-sh') >= 0;
+  var nonFlag = args.filter(function(a) { return a.charAt(0) !== '-'; });
+  var target = nonFlag.length ? nonFlag[0] : cwd;
+  var path = resolvePath(target);
+  // simulate
+  var sz = human ? '128M' : '128456';
+  if (sum) term.writeln(sz + '  ' + target);
+  else {
+    term.writeln('45M  ' + target + '/Documents');
+    term.writeln('72M  ' + target + '/Pictures');
+    term.writeln(sz + '  ' + target);
+  }
+}
+
+function cmdSystemctl(args, sudo) {
+  if (!args.length) { term.writeln(C.red + 'systemctl: action requise' + C.reset); return; }
+  var action = args[0];
+  var service = args[1] ? args[1].replace(/\.service$/, '') : null;
+
+  if (action === 'status' && service) {
+    var s = sysState.services[service];
+    if (!s) {
+      term.writeln(C.red + 'Unit ' + service + '.service could not be found.' + C.reset);
+      return;
+    }
+    var dotColor = s.active ? C.brGreen : C.brRed;
+    term.writeln(dotColor + '● ' + service + '.service' + C.reset + ' - ' + (service === 'nginx' ? 'A high performance web server' : 'OpenSSH server'));
+    term.writeln('     Loaded: loaded (/etc/systemd/system/' + service + '.service; ' + (s.enabled ? 'enabled' : 'disabled') + ')');
+    term.writeln('     Active: ' + (s.active ? C.brGreen + 'active (running)' + C.reset : C.brRed + 'inactive (dead)' + C.reset));
+    if (s.active && s.pid) term.writeln('   Main PID: ' + s.pid);
+  } else if (action === 'start' && service) {
+    if (!sudo) { term.writeln(C.red + 'systemctl: opération non permise (utilisez sudo)' + C.reset); return; }
+    if (sysState.services[service]) {
+      sysState.services[service].active = true;
+      sysState.services[service].pid = 2000 + Math.floor(Math.random() * 1000);
+    }
+  } else if (action === 'stop' && service) {
+    if (!sudo) { term.writeln(C.red + 'systemctl: opération non permise (utilisez sudo)' + C.reset); return; }
+    if (sysState.services[service]) {
+      sysState.services[service].active = false;
+      sysState.services[service].pid = null;
+    }
+  } else if (action === 'enable' && service) {
+    if (!sudo) { term.writeln(C.red + 'systemctl: opération non permise (utilisez sudo)' + C.reset); return; }
+    if (sysState.services[service]) sysState.services[service].enabled = true;
+    term.writeln('Created symlink /etc/systemd/system/multi-user.target.wants/' + service + '.service');
+  } else if (action === 'disable' && service) {
+    if (!sudo) { term.writeln(C.red + 'systemctl: opération non permise (utilisez sudo)' + C.reset); return; }
+    if (sysState.services[service]) sysState.services[service].enabled = false;
+    term.writeln('Removed /etc/systemd/system/multi-user.target.wants/' + service + '.service');
+  } else if (action === 'restart' && service) {
+    if (!sudo) { term.writeln(C.red + 'systemctl: opération non permise (utilisez sudo)' + C.reset); return; }
+    if (sysState.services[service]) {
+      sysState.services[service].active = true;
+      sysState.services[service].pid = 2000 + Math.floor(Math.random() * 1000);
+    }
+  } else if (action === 'list-units' || action === 'list-unit-files') {
+    Object.keys(sysState.services).forEach(function(s) {
+      var sv = sysState.services[s];
+      term.writeln(s + '.service  ' + (sv.active ? 'active' : 'inactive') + '  ' + (sv.enabled ? 'enabled' : 'disabled'));
+    });
+  } else {
+    term.writeln(C.red + 'systemctl: action inconnue: ' + action + C.reset);
+  }
+}
+
+function cmdUfw(args, sudo) {
+  if (!sudo && !sysState.isRoot && args[0] !== 'status') {
+    term.writeln(C.red + 'ufw: opération non permise (utilisez sudo)' + C.reset);
+    return;
+  }
+  var action = args[0];
+  if (action === 'status') {
+    if (sysState.firewall.enabled) {
+      term.writeln('Status: ' + C.brGreen + 'active' + C.reset);
+      term.writeln('');
+      term.writeln('To             Action      From');
+      term.writeln('--             ------      ----');
+      sysState.firewall.rules.forEach(function(port) {
+        term.writeln(port + '/tcp        ALLOW       Anywhere');
+      });
+    } else {
+      term.writeln('Status: ' + C.dim + 'inactive' + C.reset);
+    }
+  } else if (action === 'enable') {
+    sysState.firewall.enabled = true;
+    term.writeln('Firewall is active and enabled on system startup');
+  } else if (action === 'disable') {
+    sysState.firewall.enabled = false;
+    term.writeln('Firewall stopped and disabled on system startup');
+  } else if (action === 'allow') {
+    var rule = args[1];
+    if (rule) {
+      var port = parseInt(rule, 10);
+      if (port && sysState.firewall.rules.indexOf(port) < 0) sysState.firewall.rules.push(port);
+      term.writeln('Rule added');
+    }
+  } else if (action === 'deny') {
+    term.writeln('Rule added (deny)');
+  } else {
+    term.writeln(C.red + 'ufw: action inconnue: ' + action + C.reset);
+    term.writeln(C.dim + '(actions : status, enable, disable, allow, deny)' + C.reset);
+  }
+}
+
+function cmdIfconfig() {
+  term.writeln('eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500');
+  term.writeln('        inet 192.168.1.42  netmask 255.255.255.0  broadcast 192.168.1.255');
+  term.writeln('        ether 08:00:27:ab:cd:ef  txqueuelen 1000  (Ethernet)');
+  term.writeln('');
+  term.writeln('lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536');
+  term.writeln('        inet 127.0.0.1  netmask 255.0.0.0');
+}
+
+function cmdApt(args, sudo) {
+  if (!sudo) { term.writeln(C.red + 'E: l\'utilisation root est requise. Utilisez sudo.' + C.reset); return; }
+  var action = args[0];
+  if (action === 'update') {
+    term.writeln('Hit:1 http://archive.ubuntu.com/ubuntu jammy InRelease');
+    term.writeln('Get:2 http://archive.ubuntu.com/ubuntu jammy-updates InRelease');
+    term.writeln('Reading package lists... ' + C.brGreen + 'Done' + C.reset);
+  } else if (action === 'install') {
+    term.writeln('Reading package lists... Done');
+    term.writeln('Installing ' + (args[1] || 'package') + '...');
+    term.writeln(C.brGreen + 'Done.' + C.reset);
+  } else {
+    term.writeln(C.dim + 'apt : actions disponibles : update, install, remove, search' + C.reset);
+  }
+}
+
+var lastExitCode = 0;
+
+function cmdEcho(args) {
+  var text = args.join(' ').replace(/^['"]|['"]$/g, '');
+  // $? - last exit code
+  text = text.replace(/\$\?/g, String(lastExitCode));
+  // $(cmd) - command substitution
+  text = text.replace(/\$\(([^)]+)\)/g, function(m, c) {
+    if (c === 'date') return new Date().toString();
+    if (c === 'whoami') return sysState.user;
+    if (c === 'hostname') return sysState.hostname;
+    if (c === 'pwd') return cwd;
+    if (c.indexOf('date +') === 0) {
+      var d = new Date();
+      var fmt = c.slice(7).replace(/['"]/g, '');
+      return fmt
+        .replace(/%Y/g, d.getFullYear())
+        .replace(/%m/g, String(d.getMonth() + 1).padStart ? String(d.getMonth() + 1).padStart(2, '0') : ('0' + (d.getMonth() + 1)).slice(-2))
+        .replace(/%d/g, ('0' + d.getDate()).slice(-2))
+        .replace(/%H/g, ('0' + d.getHours()).slice(-2))
+        .replace(/%M/g, ('0' + d.getMinutes()).slice(-2));
+    }
+    return '';
+  });
+  // $VAR - environment variables
+  text = text.replace(/\$(\w+)/g, function(m, v) {
+    if (v === 'HOME') return '/home/' + sysState.user;
+    if (v === 'USER' || v === 'USERNAME') return sysState.user;
+    if (v === 'PWD') return cwd;
+    if (v === 'SHELL') return '/bin/bash';
+    if (v === 'PATH') return '/usr/local/sbin:/usr/local/bin:/usr/bin:/bin';
+    if (v === 'LANG') return 'fr_FR.UTF-8';
+    if (v === 'HOSTNAME') return sysState.hostname;
+    return '';
+  });
+  // Replace ~ with home
+  text = text.replace(/~/g, '/home/' + sysState.user);
+  term.writeln(text);
+}
+
+function cmdUseradd(args, sudo) {
+  if (!sudo && !sysState.isRoot) { term.writeln(C.red + 'useradd: requires root (utilisez sudo)' + C.reset); return; }
+  var name = args[args.length - 1];
+  if (!name || name.charAt(0) === '-') { term.writeln(C.red + 'useradd: nom utilisateur manquant' + C.reset); return; }
+  var hasM = args.indexOf('-m') >= 0;
+  var sIdx = args.indexOf('-s');
+  var shell = sIdx >= 0 && args[sIdx + 1] ? args[sIdx + 1] : '/bin/sh';
+  // Add to /etc/passwd content
+  var pw = FILE_CONTENTS['passwd'] || '';
+  if (pw.indexOf('\n' + name + ':') < 0 && pw.indexOf(name + ':') !== 0) {
+    FILE_CONTENTS['passwd'] = pw + '\n' + name + ':x:1001:1001::/home/' + name + ':' + shell;
+  }
+  if (hasM) {
+    var homeNode = getNode('/home');
+    if (homeNode && !homeNode.children[name]) {
+      homeNode.children[name] = { type: 'dir', perms: 'drwxr-xr-x', owner: name, children: {} };
+      highlighted = name;
+    }
+  }
+  // Add to /etc/group
+  var gp = FILE_CONTENTS['group'] || '';
+  if (gp.indexOf('\n' + name + ':') < 0) {
+    FILE_CONTENTS['group'] = gp + '\n' + name + ':x:1001:';
+  }
+  renderFs();
+}
+
+function cmdUserdel(args, sudo) {
+  if (!sudo && !sysState.isRoot) { term.writeln(C.red + 'userdel: requires root' + C.reset); return; }
+  var force = args.indexOf('-r') >= 0;
+  var name = args[args.length - 1];
+  if (!name || name.charAt(0) === '-') { term.writeln(C.red + 'userdel: nom utilisateur manquant' + C.reset); return; }
+  // Remove from /etc/passwd
+  var pw = FILE_CONTENTS['passwd'] || '';
+  FILE_CONTENTS['passwd'] = pw.split('\n').filter(function(l) { return l.indexOf(name + ':') !== 0; }).join('\n');
+  // Remove from /etc/group
+  var gp = FILE_CONTENTS['group'] || '';
+  FILE_CONTENTS['group'] = gp.split('\n').filter(function(l) { return l.indexOf(name + ':') !== 0; }).join('\n');
+  if (force) {
+    var homeNode = getNode('/home');
+    if (homeNode && homeNode.children && homeNode.children[name]) {
+      delete homeNode.children[name];
+    }
+  }
+  renderFs();
+}
+
+function cmdUsermod(args, sudo) {
+  if (!sudo && !sysState.isRoot) { term.writeln(C.red + 'usermod: requires root' + C.reset); return; }
+  var aG = args.indexOf('-aG') >= 0 || args.indexOf('-Ga') >= 0;
+  var G = args.indexOf('-G');
+  if (G >= 0 || aG) {
+    // Just simulate success
+    var groupName = G >= 0 ? args[G + 1] : (args.indexOf('-aG') >= 0 ? args[args.indexOf('-aG') + 1] : null);
+    var userName = args[args.length - 1];
+    if (groupName && userName) {
+      // Update /etc/group : add userName to that group's member list
+      var gp = FILE_CONTENTS['group'] || '';
+      var lines = gp.split('\n');
+      var found = false;
+      for (var i = 0; i < lines.length; i++) {
+        if (lines[i].indexOf(groupName + ':') === 0) {
+          var parts = lines[i].split(':');
+          var members = (parts[3] || '').split(',').filter(function(m) { return m; });
+          if (members.indexOf(userName) < 0) members.push(userName);
+          parts[3] = members.join(',');
+          lines[i] = parts.join(':');
+          found = true;
+          break;
+        }
+      }
+      FILE_CONTENTS['group'] = lines.join('\n');
+    }
+  }
+}
+
+function cmdPasswd(args, sudo) {
+  var target = args[0] && args[0].charAt(0) !== '-' ? args[0] : sysState.user;
+  if (target !== sysState.user && !sudo && !sysState.isRoot) {
+    term.writeln(C.red + 'passwd: opération non permise' + C.reset);
+    return;
+  }
+  term.writeln('Nouveau mot de passe : ' + C.dim + '********' + C.reset);
+  term.writeln('Retapez le mot de passe : ' + C.dim + '********' + C.reset);
+  term.writeln('passwd: mot de passe mis à jour');
+}
+
+function cmdGroupadd(args, sudo) {
+  if (!sudo && !sysState.isRoot) { term.writeln(C.red + 'groupadd: requires root' + C.reset); return; }
+  var name = args[args.length - 1];
+  if (!name) { term.writeln(C.red + 'groupadd: nom requis' + C.reset); return; }
+  var gp = FILE_CONTENTS['group'] || '';
+  if (gp.indexOf('\n' + name + ':') < 0 && gp.indexOf(name + ':') !== 0) {
+    FILE_CONTENTS['group'] = gp + '\n' + name + ':x:1001:';
+  }
+}
+
+function cmdGroups(args) {
+  var name = args[0] || sysState.user;
+  // Read /etc/group
+  var gp = FILE_CONTENTS['group'] || '';
+  var lines = gp.split('\n');
+  var groups = [];
+  lines.forEach(function(l) {
+    var parts = l.split(':');
+    if (parts.length >= 4) {
+      var members = (parts[3] || '').split(',');
+      if (members.indexOf(name) >= 0 || parts[0] === name) {
+        groups.push(parts[0]);
+      }
+    }
+  });
+  term.writeln(name + ' : ' + (groups.join(' ') || name));
+}
+
+function cmdFree(args) {
+  var human = args.indexOf('-h') >= 0;
+  if (human) {
+    term.writeln(C.dim + '              total       used       free     shared  buff/cache   available' + C.reset);
+    term.writeln('Mem:          16Gi       4.2Gi      3.8Gi       200Mi      8.0Gi        11Gi');
+    term.writeln('Swap:         2.0Gi         0B      2.0Gi');
+  } else {
+    term.writeln(C.dim + '              total       used       free' + C.reset);
+    term.writeln('Mem:       16384000    4300000    3900000');
+    term.writeln('Swap:       2097152          0    2097152');
+  }
+}
+
+function cmdUptime() {
+  var t = new Date().toTimeString().split(' ')[0];
+  term.writeln(' ' + t + ' up 2 days,  3:14,  1 user,  load average: 0.05, 0.10, 0.08');
+}
+
+function cmdW() {
+  cmdUptime();
+  term.writeln(C.dim + 'USER     TTY      FROM             LOGIN@   IDLE   WHAT' + C.reset);
+  term.writeln(sysState.user + '     pts/0    192.168.1.10     09:00    1m     bash');
+}
+
+function cmdWho() {
+  term.writeln(sysState.user + '     pts/0        2026-05-05 09:00 (192.168.1.10)');
+}
+
+function cmdLast() {
+  term.writeln(sysState.user + '   pts/0    192.168.1.10     ' + new Date().toDateString() + ' 09:00   still logged in');
+  term.writeln(sysState.user + '   pts/0    192.168.1.10     Mon May 4 14:00 - 17:30  (03:30)');
+  term.writeln(sysState.user + '   pts/0    192.168.1.10     Sun May 3 10:00 - 12:15  (02:15)');
+  term.writeln('reboot   system boot 5.15.0-58-generic   Fri May 1 06:00   still running');
+  term.writeln('');
+  term.writeln('wtmp begins Fri May 1 06:00:00 2026');
+}
+
+function cmdHtop() {
+  term.writeln(C.brGreen + '  1[||||||||  20%]' + C.reset + '   ' + C.brBlue + 'Tasks: ' + sysState.processes.length + ', 1 running' + C.reset);
+  term.writeln(C.brGreen + '  2[||      8%]' + C.reset + '   ' + C.brBlue + 'Load: 0.05 0.10 0.08' + C.reset);
+  term.writeln(C.brGreen + '  Mem[||||||  4.2G/16G]' + C.reset);
+  term.writeln(C.brGreen + '  Swp[          0/2.0G]' + C.reset);
+  term.writeln('');
+  term.writeln(C.bold + '  PID USER       PRI NI  CPU%  MEM%  COMMAND' + C.reset);
+  sysState.processes.slice().sort(function(a,b){return b.cpu-a.cpu;}).forEach(function(p) {
+    term.writeln(' ' + (p.pid + '     ').slice(0, 5) + ' ' +
+                 (p.user + '         ').slice(0, 10) + '  20  0   ' +
+                 (p.cpu.toFixed(1) + '   ').slice(0, 4) + '  ' +
+                 (p.mem.toFixed(1) + '   ').slice(0, 4) + '  ' + p.cmd);
+  });
+  term.writeln('');
+  term.writeln(C.brYellow + 'F1Help F2Setup F3Search F4Filter F5Tree F6SortBy F9Kill F10Quit' + C.reset);
+}
+
+function cmdVmstat(args) {
+  term.writeln(C.dim + 'procs ----------memory---------- ---swap-- -----io---- -system-- ------cpu-----' + C.reset);
+  term.writeln(C.dim + ' r  b   swpd   free   buff  cache  si   so   bi   bo   in   cs us sy id wa st' + C.reset);
+  term.writeln(' 1  0      0  3.8G   120M   8.0G    0    0    2    3   25  130  1  0 99  0  0');
+}
+
+function cmdNano(args) {
+  var fname = args[0];
+  if (!fname) { term.writeln(C.dim + '(nano: ouvrir un fichier requis)' + C.reset); return; }
+  var path = resolvePath(fname);
+  var node = getNode(path);
+  term.writeln(C.brYellow + '╔══════════════════════════════════════════════════════════════════╗' + C.reset);
+  term.writeln(C.brYellow + '║ GNU nano 6.2                       ' + (fname + '                              ').slice(0,26) + ' ║' + C.reset);
+  term.writeln(C.brYellow + '╠══════════════════════════════════════════════════════════════════╣' + C.reset);
+  if (node && node.type !== 'dir') {
+    var content = FILE_CONTENTS[fname.split('/').pop()] || '';
+    var lines = content.split('\n').slice(0, 5);
+    lines.forEach(function(l) { term.writeln(C.brYellow + '║' + C.reset + ' ' + (l + '                                                                  ').slice(0, 64) + C.brYellow + ' ║' + C.reset); });
+  } else {
+    term.writeln(C.brYellow + '║' + C.reset + C.dim + ' (nouveau fichier)                                                ' + C.brYellow + '║' + C.reset);
+  }
+  term.writeln(C.brYellow + '╚══════════════════════════════════════════════════════════════════╝' + C.reset);
+  term.writeln(C.dim + '^G Aide   ^O Écrire   ^X Quitter   ^W Chercher   ^K Couper' + C.reset);
+  term.writeln(C.dim + '(simulation : aucune édition réelle ici, mais sur un vrai système tu serais en train d\'éditer)' + C.reset);
+}
+
+function cmdVim(args) {
+  var fname = args[0];
+  if (!fname) {
+    term.writeln(C.dim + '~' + C.reset);
+    term.writeln(C.dim + '~                 VIM - Vi IMproved' + C.reset);
+    term.writeln(C.dim + '~                 version 8.2' + C.reset);
+    term.writeln(C.dim + '~        type :q<Enter>          to exit' + C.reset);
+    term.writeln(C.dim + '~        type :help<Enter>       for help' + C.reset);
+    term.writeln('"" --No lines in buffer--                            0,0-1   All');
+    return;
+  }
+  var path = resolvePath(fname);
+  var node = getNode(path);
+  if (node && node.type !== 'dir') {
+    var content = FILE_CONTENTS[fname.split('/').pop()] || '';
+    var lines = content.split('\n');
+    lines.slice(0, 10).forEach(function(l, i) { term.writeln(C.dim + ((i+1) + '   ').slice(0, 4) + C.reset + l); });
+    term.writeln('');
+    term.writeln('"' + fname + '" ' + lines.length + 'L, ' + content.length + 'C                              1,1   All');
+  } else {
+    term.writeln(C.dim + '~' + C.reset);
+    term.writeln(C.dim + '"' + fname + '" [Nouveau fichier]' + C.reset);
+  }
+  term.writeln(C.dim + '(simulation vim — modes : NORMAL → i pour INSERT, Esc → NORMAL, :q quit)' + C.reset);
+}
+
+function cmdEnv() {
+  term.writeln('SHELL=/bin/bash');
+  term.writeln('USER=' + sysState.user);
+  term.writeln('HOME=/home/' + sysState.user);
+  term.writeln('PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin');
+  term.writeln('PWD=' + cwd);
+  term.writeln('LANG=fr_FR.UTF-8');
+  term.writeln('TERM=xterm-256color');
+}
+
+function cmdHelp() {
+  term.writeln('');
+  term.writeln(C.brMagenta + C.bold + '═══ Commandes disponibles ═══' + C.reset);
+  var sections = [
+    ['NAVIGATION', [['pwd', 'chemin courant'], ['ls [-la]', 'liste'], ['cd <path>', 'change dossier'], ['tree [path]', 'arborescence']]],
+    ['FICHIERS', [['cat <file>', 'affiche'], ['mkdir <name>', 'crée dossier'], ['touch <file>', 'crée fichier'], ['rm [-r] <name>', 'supprime'], ['cp/mv', 'copie/déplace'], ['find [-name]', 'recherche']]],
+    ['LECTURE', [['head/tail [-n]', 'début/fin'], ['grep <pat> <f>', 'recherche'], ['wc [-l|-w]', 'compte'], ['less <file>', 'paginer']]],
+    ['PERMISSIONS', [['chmod [+x|755]', 'permissions'], ['chown user:grp', 'propriétaire'], ['whoami / id', 'identité'], ['sudo cmd', 'privilèges']]],
+    ['PROCESSUS', [['ps [aux]', 'liste'], ['top', 'temps réel'], ['kill <PID>', 'tue']]],
+    ['SERVICES', [['systemctl status', 'état service'], ['systemctl start/stop', 'gérer'], ['systemctl enable', 'au boot']]],
+    ['SYSTÈME', [['df -h / du -sh', 'disque'], ['ufw status', 'pare-feu'], ['ifconfig / ip', 'réseau'], ['date / hostname', 'infos']]],
+    ['DIVERS', [['echo / clear', ''], ['history', 'historique'], ['help', 'cette aide']]]
+  ];
+  sections.forEach(function(sec) {
+    term.writeln('');
+    term.writeln(C.brYellow + sec[0] + C.reset);
+    sec[1].forEach(function(c) {
+      var pad = '                  '.slice(c[0].length);
+      term.writeln('  ' + C.brCyan + c[0] + C.reset + pad + C.gray + c[1] + C.reset);
+    });
+  });
+  term.writeln('');
+  term.writeln(C.dim + 'Pipes (|), redirection (>, >>) supportés' + C.reset);
+  term.writeln('');
+}
+
+function renderCmdChips() {
+  var chips = [
+    { c: 'pwd', d: '?' }, { c: 'ls -la', d: 'détails' },
+    { c: 'cd ~', d: 'home' }, { c: 'cd /etc', d: 'config' },
+    { c: 'cat /etc/passwd', d: 'users' },
+    { c: 'ps aux', d: 'process' }, { c: 'top', d: 'live' },
+    { c: 'systemctl status nginx', d: 'service' },
+    { c: 'grep ERROR /var/log/syslog', d: 'erreurs' },
+    { c: 'tail /var/log/auth.log', d: 'auth' },
+    { c: 'df -h', d: 'disque' }, { c: 'sudo ufw status', d: 'firewall' },
+    { c: 'whoami', d: 'moi' }, { c: 'help', d: 'aide' }
+  ];
+  var container = document.getElementById('cmd-chips');
+  container.innerHTML = '';
+  chips.forEach(function(chip) {
+    var btn = document.createElement('button');
+    btn.className = 'cmd-chip';
+    btn.innerHTML = '<span>' + escapeHtml(chip.c) + '</span><span class="cmd-chip-desc">' + escapeHtml(chip.d) + '</span>';
+    (function(c) {
+      btn.onclick = function() {
+        if (!term) return;
+        while (buffer.length > 0) { term.write('\b \b'); buffer = buffer.slice(0, -1); }
+        buffer = c;
+        term.write(c);
+        term.focus();
+      };
+    })(chip.c);
+    container.appendChild(btn);
+  });
+}
+
+function handleTermInput(data) {
+  var code = data.charCodeAt(0);
+  if (data === '\r') {
+    term.writeln('');
+    parseAndExecute(buffer);
+    buffer = '';
+    return;
+  }
+  if (code === 127 || code === 8) {
+    if (buffer.length > 0) {
+      buffer = buffer.slice(0, -1);
+      term.write('\b \b');
+    }
+    return;
+  }
+  if (data === '\x1b[A') {
+    if (historyIdx < hist.length - 1) {
+      historyIdx++;
+      while (buffer.length > 0) { term.write('\b \b'); buffer = buffer.slice(0, -1); }
+      buffer = hist[historyIdx];
+      term.write(buffer);
+    }
+    return;
+  }
+  if (data === '\x1b[B') {
+    if (historyIdx > 0) {
+      historyIdx--;
+      while (buffer.length > 0) { term.write('\b \b'); buffer = buffer.slice(0, -1); }
+      buffer = hist[historyIdx];
+      term.write(buffer);
+    } else if (historyIdx === 0) {
+      historyIdx = -1;
+      while (buffer.length > 0) { term.write('\b \b'); buffer = buffer.slice(0, -1); }
+    }
+    return;
+  }
+  if (data === '\t') {
+    var p = buffer.split(/\s+/);
+    var last = p[p.length - 1];
+    var node = getNode(cwd);
+    if (!node || !node.children) return;
+    var matches = Object.keys(node.children).filter(function(n) { return n.indexOf(last) === 0; });
+    if (matches.length === 1) {
+      var c = matches[0].slice(last.length);
+      buffer += c;
+      term.write(c);
+    } else if (matches.length > 1) {
+      term.writeln('');
+      term.writeln(matches.join('  '));
+      writePrompt();
+      term.write(buffer);
+    }
+    return;
+  }
+  if (code === 3) { term.writeln('^C'); buffer = ''; writePrompt(); return; }
+  if (code >= 32 && code < 127) {
+    buffer += data;
+    term.write(data);
+  }
+}
+
+// ===== USER PROFILE & FEEDBACK =====
+var userPseudo = null;
+try { userPseudo = localStorage.getItem('dojo_pseudo') || null; } catch (e) {}
+
+var FEEDBACK_EMAIL = 'fativanka@gmail.com'; // ← À REMPLACER PAR VOTRE EMAIL
+var feedbackRating = 0;
+
+function savePseudo() {
+  var input = document.getElementById('pseudo-input');
+  var val = (input.value || '').trim();
+  if (!val) {
+    input.style.borderColor = 'var(--magenta)';
+    input.focus();
+    return;
+  }
+  userPseudo = val;
+  try { localStorage.setItem('dojo_pseudo', val); } catch (e) {}
+  document.getElementById('pseudo-modal').classList.add('hidden');
+  updateUserBadge();
+  showToast('🥋 Bienvenue ' + val + ' !');
+}
+
+function showPseudoModal() {
+  var m = document.getElementById('pseudo-modal');
+  m.classList.remove('hidden');
+  setTimeout(function() {
+    var inp = document.getElementById('pseudo-input');
+    if (inp) {
+      inp.value = userPseudo || '';
+      inp.focus();
+    }
+  }, 100);
+}
+
+function updateUserBadge() {
+  var badge = document.getElementById('user-badge');
+  if (!badge) return;
+  if (userPseudo) {
+    badge.style.display = 'inline-flex';
+    document.getElementById('user-pseudo').textContent = userPseudo;
+    var done = completed.size;
+    var total = EXERCISES.length;
+    document.getElementById('user-progress').textContent = done + '/' + total;
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function openProfileModal() {
+  var m = document.getElementById('profile-modal');
+  m.classList.remove('hidden');
+  document.getElementById('profile-title').textContent = '👤 ' + (userPseudo || 'Profil');
+  var done = completed.size, total = EXERCISES.length;
+  var pct = total > 0 ? Math.round(done / total * 100) : 0;
+  document.getElementById('profile-stats').innerHTML =
+    '<strong>' + done + ' / ' + total + '</strong> exercices complétés (' + pct + '%)';
+  document.getElementById('profile-pseudo').value = userPseudo || '';
+}
+function closeProfileModal() {
+  // Save new pseudo if changed
+  var newPseudo = (document.getElementById('profile-pseudo').value || '').trim();
+  if (newPseudo && newPseudo !== userPseudo) {
+    userPseudo = newPseudo;
+    try { localStorage.setItem('dojo_pseudo', newPseudo); } catch (e) {}
+    updateUserBadge();
+    showToast('Pseudo mis à jour : ' + newPseudo);
+  }
+  document.getElementById('profile-modal').classList.add('hidden');
+}
+
+function exportProgress() {
+  var done = [];
+  completed.forEach(function(v) { done.push(v); });
+  var data = {
+    pseudo: userPseudo || 'anonyme',
+    date: new Date().toISOString(),
+    completed: done,
+    total: EXERCISES.length,
+    percent: Math.round(done.length / EXERCISES.length * 100),
+    completedTitles: done.map(function(i) { return EXERCISES[i] ? EXERCISES[i].title : 'unknown'; })
+  };
+  var json = JSON.stringify(data, null, 2);
+  var blob = new Blob([json], { type: 'application/json' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'dojo-' + (userPseudo || 'progression') + '-' + new Date().toISOString().split('T')[0] + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('📥 Progression exportée');
+}
+
+function confirmReset() {
+  if (!confirm('Reset complet : tu vas perdre toute ta progression. Continuer ?')) return;
+  completed.clear();
+  try { localStorage.removeItem('dojo_linux_done_v2'); } catch (e) {}
+  currentExoIdx = -1;
+  closeProfileModal();
+  renderExercises();
+  updateUserBadge();
+  showToast('🗑️ Progression remise à zéro');
+}
+
+function openFeedbackModal() {
+  document.getElementById('feedback-modal').classList.remove('hidden');
+  feedbackRating = 0;
+  document.querySelectorAll('#rating-stars .star-btn').forEach(function(b) {
+    b.classList.remove('active');
+  });
+}
+function closeFeedbackModal() {
+  document.getElementById('feedback-modal').classList.add('hidden');
+}
+
+function bindFeedbackStars() {
+  document.querySelectorAll('#rating-stars .star-btn').forEach(function(b) {
+    b.onclick = function() {
+      var r = parseInt(b.dataset.r, 10);
+      feedbackRating = r;
+      document.querySelectorAll('#rating-stars .star-btn').forEach(function(bb) {
+        var br = parseInt(bb.dataset.r, 10);
+        if (br <= r) bb.classList.add('active');
+        else bb.classList.remove('active');
+      });
+    };
+  });
+}
+
+function buildFeedbackText() {
+  var good = (document.getElementById('feedback-good').value || '').trim();
+  var bad = (document.getElementById('feedback-bad').value || '').trim();
+  var done = completed.size;
+  var total = EXERCISES.length;
+  var lines = [
+    '=== Avis sur Le Dojo du Networking - Linux ===',
+    '',
+    'Pseudo : ' + (userPseudo || 'anonyme'),
+    'Note : ' + (feedbackRating || '?') + ' / 10',
+    'Progression : ' + done + ' / ' + total + ' exos',
+    'Date : ' + new Date().toLocaleString('fr-FR'),
+    '',
+    '--- Ce qui a plu ---',
+    good || '(non renseigné)',
+    '',
+    '--- À améliorer ---',
+    bad || '(non renseigné)',
+    ''
+  ];
+  return lines.join('\n');
+}
+
+function sendFeedback(method) {
+  if (feedbackRating === 0) {
+    showToast('⚠️ Mets une note d\'abord');
+    return;
+  }
+  var text = buildFeedbackText();
+  if (method === 'clipboard') {
+    var ok = false;
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function() {
+          showToast('📋 Avis copié dans le presse-papier !');
+          closeFeedbackModal();
+        }).catch(function() { fallbackCopy(text); });
+        return;
+      }
+    } catch (e) {}
+    fallbackCopy(text);
+  } else if (method === 'email') {
+    var subject = encodeURIComponent('Avis Dojo Linux - ' + (userPseudo || 'anonyme'));
+    var body = encodeURIComponent(text);
+    window.location.href = 'mailto:' + FEEDBACK_EMAIL + '?subject=' + subject + '&body=' + body;
+    showToast('✉️ Ouverture de votre app email...');
+    closeFeedbackModal();
+  }
+}
+
+function fallbackCopy(text) {
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.left = '-9999px';
+  document.body.appendChild(ta);
+  ta.select();
+  try {
+    document.execCommand('copy');
+    showToast('📋 Avis copié !');
+    closeFeedbackModal();
+  } catch (e) {
+    showToast('⚠️ Copie manuelle requise');
+  }
+  document.body.removeChild(ta);
+}
+
+// Hook into renderExercises to update the badge whenever progress changes
+var _origRenderExercises = renderExercises;
+renderExercises = function() {
+  _origRenderExercises();
+  updateUserBadge();
+};
+
+function init() {
+  if (typeof Terminal === 'undefined' || typeof FitAddon === 'undefined') {
+    document.body.innerHTML = '<div style="color:#c8341c;padding:24px;font-family:monospace;background:#f5f0e1;min-height:100vh"><h2>xterm.js non chargé</h2><p>Vérifiez votre connexion.</p></div>';
+    return;
+  }
+  term = new Terminal({
+    cursorBlink: true,
+    cursorStyle: 'bar',
+    fontSize: 13,
+    fontFamily: '"JetBrains Mono", "Space Mono", monospace',
+    scrollback: 5000,
+    convertEol: true,
+    theme: {
+      background: '#1a1a1a',
+      foreground: '#e8dfc9',
+      cursor: '#c89028',
+      black: '#2c2418', red: '#e06c5a', green: '#7cae7a',
+      yellow: '#e8c468', blue: '#6f9dc4', magenta: '#c88fa8',
+      cyan: '#7cbfb0', white: '#e8dfc9',
+      brightBlack: '#7a6e5d', brightRed: '#e8836f', brightGreen: '#93c491',
+      brightYellow: '#f0d488', brightBlue: '#8fb4d4', brightMagenta: '#d4a8bf',
+      brightCyan: '#93cfc0', brightWhite: '#f5f0e1'
+    }
+  });
+  var fit = new FitAddon.FitAddon();
+  term.loadAddon(fit);
+  term.open(document.getElementById('terminal'));
+  setTimeout(function() { try { fit.fit(); } catch (e) {} }, 100);
+
+  showWelcome();
+  term.onData(handleTermInput);
+  document.getElementById('terminal').addEventListener('click', function() { term.focus(); });
+
+  var rt;
+  window.addEventListener('resize', function() {
+    clearTimeout(rt);
+    rt = setTimeout(function() { try { fit.fit(); } catch (e) {} }, 100);
+  });
+
+  renderFs();
+  renderExercises();
+  renderCmdChips();
+  bindFeedbackStars();
+  updateServerStatus();
+  // Live server status refresh every 5s
+  setInterval(updateServerStatus, 5000);
+
+  // Show pseudo modal if first visit
+  if (!userPseudo) {
+    setTimeout(showPseudoModal, 600);
+  } else {
+    updateUserBadge();
+  }
+
+  // Handle Enter key on pseudo input
+  var pseudoInput = document.getElementById('pseudo-input');
+  if (pseudoInput) {
+    pseudoInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') savePseudo();
+    });
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(init, 50);
+  });
+} else {
+  setTimeout(init, 50);
+}
+
+} catch (globalErr) {
+  document.body.innerHTML = '<div style="color:#c8341c;background:#f5f0e1;padding:24px;font-family:monospace;min-height:100vh;font-size:13px;line-height:1.6">' +
+    '<h2 style="margin-bottom:12px">⚠️ Erreur fatale au chargement</h2>' +
+    '<div><b>Message :</b> ' + (globalErr.message || 'inconnu') + '</div>' +
+    '<pre style="white-space:pre-wrap;background:#efe9d4;padding:12px;border-radius:8px;margin-top:12px">' +
+    (globalErr.stack || globalErr.message || 'Pas de stack') + '</pre></div>';
+}
+
+</script>
+</body>
+</html>
