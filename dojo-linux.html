@@ -1440,6 +1440,8 @@ var QUESTS = [
         mission: "Navigue jusqu'au dossier racine.",
         steps: ["Tape `cd /`", "Vérifie avec `pwd`", "Liste avec `ls` pour voir l'organisation"],
         expected: "$ cd /\n$ pwd\n/\n$ ls\nbin  etc  home  proc  root  tmp  var",
+        culture: "Cette organisation en arbre unique depuis `/` porte un nom : le **FHS** (Filesystem Hierarchy Standard). Chaque dossier a un rôle précis, standardisé sur TOUS les Unix : `/bin` = programmes essentiels, `/etc` = configuration, `/home` = dossiers des utilisateurs, `/var` = données variables (logs, bases), `/proc` = un faux système de fichiers qui expose l'état du noyau en temps réel. Comprendre le FHS, c'est pouvoir se repérer sur N'IMPORTE quelle machine Linux, même une que tu découvres.",
+        reflection: "Pourquoi Unix n'a-t-il pas de lettres de lecteur (C:, D:) comme Windows ?\n👉 Parce qu'Unix unifie TOUT sous une seule racine `/`. Un deuxième disque, une clé USB, un partage réseau : tout est 'monté' dans un dossier de l'arbre existant (ex : `/mnt/usb`). Résultat : un seul espace de noms cohérent, où un chemin comme `/home/user/fichier` a toujours un sens, peu importe le disque physique derrière.",
         check: function(s) { return s.cwd === '/'; }
       },
       {
@@ -1586,6 +1588,8 @@ var QUESTS = [
         steps: ["`cd ~`", "`rm -r monprojet`", "Vérifie : `ls` (plus de monprojet)"],
         expected: "$ rm -r monprojet\n$ ls\nDocuments  Downloads  ...",
         diagram: "⚠️ rm -rf /  est l'erreur de carrière classique\n   (efface tout le système). Soyez prudents.",
+        culture: "Le `-f` de `rm -rf` signifie **force** : il supprime sans jamais demander confirmation. Combiné à `-r` (récursif) et à un mauvais chemin, il a effacé des entreprises entières. En 2017, un ingénieur de **GitLab** a lancé un `rm -rf` sur le mauvais serveur de production et a effacé 300 Go de base de données live. La légende Unix veut qu'on ne tape JAMAIS `rm -rf` sans relire trois fois le chemin. Certains admins créent même un alias `rm -i` (interactif) pour se forcer à confirmer.",
+        reflection: "Pourquoi Unix ne met-il pas de corbeille par défaut, contrairement à Windows ou macOS ?\n👉 Philosophie de confiance et de performance : Unix suppose que **tu sais ce que tu fais**. Une corbeille consommerait de l'espace disque et compliquerait les scripts automatiques. La contrepartie : la suppression est définitive, donc la prudence est ta seule corbeille. D'où l'importance de `cp` pour sauvegarder AVANT.",
         check: function(s) { var h = getNode('/home/user'); return !!(h && h.children && !h.children.monprojet); }
       }
     ]
@@ -1653,6 +1657,8 @@ var QUESTS = [
         steps: ["`cd ~/scripts`", "`chmod 700 backup.sh`", "Vérifie avec `ls -l`"],
         expected: "-rwx------  backup.sh",
         diagram: "Tableau magique :\n  7=rwx  6=rw-  5=r-x\n  4=r--  2=-w-  1=--x\n  0=---",
+        culture: "Ces nombres sont de l'**octal** (base 8) : chaque chiffre code 3 bits de permission. `r=4, w=2, x=1` sont les valeurs des trois bits, et on les additionne. `7 = 4+2+1 = rwx`, `5 = 4+0+1 = r-x`, `6 = 4+2+0 = rw-`. Ce système vient directement des premiers Unix de 1971 et n'a jamais changé — un `chmod 755` tapé aujourd'hui est identique à celui de Ken Thompson il y a 50 ans. C'est l'une des interfaces les plus stables de l'informatique.",
+        reflection: "Quand utiliser `chmod 700` plutôt que `chmod 755` sur un script ?\n👉 `700` (rwx------) = **seul le propriétaire** peut lire, écrire, exécuter. Parfait pour un script contenant des secrets (mots de passe, clés). `755` (rwxr-xr-x) laisse les autres LIRE et EXÉCUTER — utile pour un outil partagé, dangereux pour un script sensible. Règle : le minimum de droits nécessaire, jamais plus.",
         check: function(s) { var f = getNode('/home/user/scripts/backup.sh'); return !!(f && f.perms === '-rwx------'); }
       },
       {
@@ -1708,6 +1714,8 @@ var QUESTS = [
         mission: "Tue le processus avec PID 1056.",
         steps: ["Identifie d'abord avec `ps aux`", "`kill 1056`", "Vérifie : il a disparu de `ps aux`"],
         expected: "$ kill 1056\n$ ps aux | grep 1056\n(rien : il est mort)",
+        culture: "`kill` porte mal son nom : il n'\"tue\" pas, il **envoie un signal**. `kill PID` envoie SIGTERM (15) — une demande polie : « range tes affaires et arrête-toi ». Le processus peut sauver ses données avant de partir. `kill -9` envoie SIGKILL — le noyau abat le processus **instantanément**, sans qu'il puisse rien nettoyer (fichiers temporaires, connexions ouvertes restent en plan). C'est pour ça que `-9` est le dernier recours : brutal et potentiellement salissant.",
+        reflection: "Pourquoi ne pas toujours utiliser `kill -9` directement, puisque c'est plus sûr de tuer d'un coup ?\n👉 Parce que SIGKILL ne laisse **aucune chance** au processus de se terminer proprement : une base de données peut corrompre ses fichiers, un éditeur perdre ton travail non sauvegardé. On essaie TOUJOURS `kill` (SIGTERM) d'abord, on attend quelques secondes, et seulement s'il refuse de mourir on passe à `kill -9`.",
         check: function(s) { return s.history.some(function(c) { return /^kill\s+1056/.test(c); }); }
       }
     ]
@@ -1753,6 +1761,8 @@ var QUESTS = [
         mission: "Cherche les lignes contenant ERROR dans /var/log/syslog.",
         steps: ["`grep ERROR /var/log/syslog`", "Tu vois uniquement les lignes pertinentes"],
         expected: "Apr 28 12:06:01 dojo CRON[2105]: ERROR backup failed: disk full",
+        culture: "`grep` est un acronyme merveilleusement obscur : **g/re/p**, pour *Global Regular Expression Print* — une commande de l'éditeur `ed` des années 70 que Ken Thompson a transformée en outil autonome. Le mot est devenu un **verbe** dans le jargon informatique : « je vais grep les logs ». Sa force cachée : il comprend les **expressions régulières**, un mini-langage de motifs. `grep -i` ignore la casse, `grep -r` cherche récursivement dans une arborescence, `grep -v` inverse (montre ce qui NE correspond PAS).",
+        reflection: "Comment ne montrer que le NOMBRE de lignes contenant ERROR, sans les afficher toutes ?\n👉 Deux façons : `grep -c ERROR fichier` compte directement, ou `grep ERROR fichier | wc -l` enchaîne grep et wc via un pipe. La seconde révèle la philosophie Unix : de petits outils qu'on combine. C'est exactement ce que tu feras au Défi de cette catégorie.",
         check: function(s) { return s.history.some(function(c) { return /^grep\s+\S+\s+/.test(c) && c.indexOf('syslog') >= 0; }); }
       },
       {
