@@ -1872,6 +1872,8 @@ var QUESTS = [
         mission: "Vérifie l'état du service nginx.",
         steps: ["`systemctl status nginx`", "Cherche `active (running)` ou `inactive (dead)`"],
         expected: "● nginx.service - A high performance web server\n   Loaded: loaded\n   Active: inactive (dead)",
+        culture: "**systemd** est arrivé vers 2010 et a déclenché l'une des plus grandes guerres de religion de l'histoire de Linux. Avant lui, chaque service était lancé par des scripts shell (`/etc/init.d/`). systemd a tout unifié : démarrage parallèle (plus rapide au boot), gestion des dépendances, logs centralisés (`journalctl`). Ses détracteurs lui reprochent de faire « trop de choses » contre la philosophie Unix. Aimé ou détesté, il équipe aujourd'hui la quasi-totalité des distributions.",
+        reflection: "Dans `systemctl status`, quelle différence entre `Loaded` et `Active` ?\n👉 **Loaded** = systemd connaît le service (son fichier `.service` est lu et valide). **Active** = son état réel : `active (running)` s'il tourne, `inactive (dead)` s'il est arrêté, `failed` s'il a planté. Un service peut être *loaded* mais *inactive* (connu mais éteint). `status` est TOUJOURS ton premier réflexe quand « ça ne marche pas ».",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('systemctl') >= 0 && c.indexOf('status') >= 0 && c.indexOf('nginx') >= 0; }); }
       },
       {
@@ -1892,6 +1894,8 @@ var QUESTS = [
         mission: "Active nginx au démarrage du système.",
         steps: ["`sudo systemctl enable nginx`", "Le service est marqué pour démarrer au boot"],
         expected: "$ sudo systemctl enable nginx\nCreated symlink /etc/systemd/system/multi-user.target.wants/nginx.service",
+        culture: "La distinction `start` / `enable` est LE piège n°1 de l'administration de services. `start` = « démarre MAINTENANT » (état immédiat, perdu au reboot). `enable` = « démarre à CHAQUE boot » (persistant, mais ne lance rien maintenant). Techniquement, `enable` crée juste un **lien symbolique** (le message le montre) qui dit à systemd de lancer le service au prochain démarrage. Les deux sont indépendants — d'où le réflexe `enable --now` qui fait les deux d'un coup.",
+        reflection: "Tu fais `systemctl enable nginx` mais nginx ne répond toujours pas. Pourquoi ?\n👉 Parce que `enable` ne DÉMARRE pas le service — il le programme juste pour le prochain boot. Tant que tu ne fais pas `systemctl start nginx` (ou que tu ne redémarres pas la machine), il reste éteint. Le combo gagnant : `systemctl enable --now nginx` (active au boot ET démarre maintenant), ou les deux commandes séparément.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('systemctl') >= 0 && c.indexOf('enable') >= 0 && c.indexOf('nginx') >= 0; }); }
       },
       {
@@ -2013,6 +2017,8 @@ var QUESTS = [
         mission: "Autorise SSH puis active le pare-feu.",
         steps: ["`sudo ufw allow 22`", "`sudo ufw enable`", "`sudo ufw status` pour confirmer"],
         expected: "$ sudo ufw allow 22\nRule added\n$ sudo ufw enable\nFirewall is active",
+        culture: "Autoriser le port 22 AVANT d'activer le pare-feu est l'une des règles de survie les plus importantes de l'admin distant. Le scénario cauchemar : tu es connecté en SSH sur un serveur à l'autre bout du monde, tu tapes `ufw enable` sans avoir autorisé SSH → le pare-feu **coupe ta propre connexion** et tu es verrouillé dehors, sans moyen de revenir. Des milliers d'admins ont vécu ce moment de panique. `ufw` te met même en garde par un avertissement. La règle : `allow 22` d'abord, TOUJOURS.",
+        reflection: "Pourquoi la philosophie « tout bloquer, puis ouvrir le minimum » est-elle plus sûre que l'inverse ?\n👉 Parce qu'un pare-feu en **liste blanche** (deny par défaut, allow ciblé) ne laisse passer QUE ce que tu as explicitement autorisé. Tout nouveau service, tout port oublié reste fermé par défaut — donc protégé. L'approche inverse (tout ouvert, fermer les risques) t'oblige à connaître et bloquer CHAQUE menace, une par une : impossible. Le refus par défaut est le fondement de toute sécurité réseau.",
         check: function(s) { return sysState.firewall.enabled === true && sysState.firewall.rules.indexOf(22) >= 0; }
       },
       {
@@ -2033,6 +2039,8 @@ var QUESTS = [
         mission: "Affiche /etc/ssh/sshd_config et vérifie PermitRootLogin.",
         steps: ["`cat /etc/ssh/sshd_config`", "Cherche la ligne PermitRootLogin", "Doit être `no` pour sécurité"],
         expected: "Port 22\nPermitRootLogin no\nPasswordAuthentication yes",
+        culture: "`PermitRootLogin no` est le premier durcissement de tout serveur exposé. Pourquoi ? Parce que « root » existe sur TOUTES les machines Unix : un attaquant connaît déjà la moitié de l'identifiant, il ne lui reste que le mot de passe à deviner. En interdisant la connexion root directe, on l'oblige à trouver AUSSI un nom d'utilisateur valide — la difficulté explose. Combiné à `PasswordAuthentication no` (clés SSH uniquement), le serveur devient quasi-impénétrable par force brute.",
+        reflection: "Après avoir modifié `sshd_config`, quelle commande faut-il lancer pour que le changement prenne effet ?\n👉 `sudo systemctl restart ssh` (ou `reload`) — SSH ne relit sa config qu'au redémarrage du service. Piège mortel : garde TOUJOURS ta session SSH actuelle ouverte pendant que tu testes une nouvelle connexion dans un second terminal. Si tu t'es verrouillé dehors, la session déjà ouverte est ta seule porte de secours.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('sshd_config') >= 0; }); }
       },
       {
@@ -2043,6 +2051,8 @@ var QUESTS = [
         mission: "Affiche /etc/sudoers.",
         steps: ["`sudo cat /etc/sudoers`", "Note les lignes %sudo et user"],
         expected: "root ALL=(ALL:ALL) ALL\n%sudo ALL=(ALL:ALL) ALL",
+        culture: "Le fichier `/etc/sudoers` est si critique qu'on ne l'édite JAMAIS directement — on utilise `visudo`, qui **vérifie la syntaxe avant d'enregistrer**. La raison : une seule faute de frappe dans ce fichier peut casser `sudo` pour tout le monde, y compris toi — et tu ne pourras plus le réparer, puisque le réparer demande... sudo. `visudo` refuse de sauver un fichier invalide, t'évitant ce piège fatal. La ligne `%sudo ALL=(ALL:ALL) ALL` dit : « tout membre du groupe sudo peut tout faire ».",
+        reflection: "Que signifie le `%` devant `%sudo` dans le fichier sudoers ?\n👉 Le `%` désigne un **groupe**, pas un utilisateur. `%sudo` = « tous les membres du groupe sudo ». Sans le `%`, `sudo` serait interprété comme un nom d'utilisateur. Cette distinction permet de gérer les privilèges par groupe (ajouter un admin = le mettre dans le groupe sudo) plutôt que d'éditer sudoers pour chaque personne. Plus simple, plus sûr.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('sudoers') >= 0; }); }
       }
     ]
