@@ -1465,6 +1465,8 @@ var QUESTS = [
         mission: "Va dans /etc et liste son contenu.",
         steps: ["`cd /etc`", "`ls` pour voir les centaines de fichiers de config"],
         expected: "$ cd /etc\n$ ls\nhostname  hosts  nginx/  passwd  ssh/  systemd/",
+        culture: "`/etc` est le cœur battant de la configuration Unix. Son nom vient de *et cetera* — à l'origine, un fourre-tout pour ce qui n'allait nulle part ailleurs ! Aujourd'hui c'est devenu LE dossier des réglages système, et sa règle d'or fait la force de Linux : **tout est configurable via de simples fichiers texte**. Pas de base de registre opaque comme sous Windows — tu peux lire, versionner (git !), copier et comprendre chaque paramètre avec un éditeur.",
+        reflection: "Pourquoi la config système est-elle en fichiers texte plutôt qu'en base de données binaire ?\n👉 Transparence et robustesse. Un fichier texte se lit avec `cat`, se corrige avec `nano`, se sauvegarde avec `cp`, se compare avec `diff`, se versionne avec `git`. Si une base binaire se corrompt, tu es bloqué ; un fichier texte, tu le répares à la main. C'est un pilier de la philosophie Unix.",
         check: function(s) { return s.cwd === '/etc'; }
       },
       {
@@ -1475,6 +1477,7 @@ var QUESTS = [
         mission: "Reviens dans ton dossier personnel.",
         steps: ["Tape `cd ~` ou simplement `cd`", "Vérifie avec `pwd`"],
         expected: "$ cd ~\n$ pwd\n/home/user",
+        reflection: "Quelle est la différence entre `cd ~`, `cd` tout court, et `cd /home/user` ?\n👉 Les trois t'amènent chez toi ! `~` est un raccourci que le shell remplace par le chemin de ton home. `cd` sans argument fait pareil par défaut. `cd /home/user` est le chemin absolu explicite. Bonus : `~bob` désigne le home de l'utilisateur bob, et `cd -` te ramène au dossier PRÉCÉDENT (comme le bouton retour).",
         check: function(s) { return s.cwd === '/home/user' && s.history.some(function(c) { return c === 'cd' || c === 'cd ~' || c === 'cd /home/user'; }); }
       },
       {
@@ -1485,6 +1488,8 @@ var QUESTS = [
         mission: "Remonte d'un niveau dans l'arborescence.",
         steps: ["D'abord va dans Documents : `cd Documents`", "Puis remonte : `cd ..`", "Vérifie : `pwd`"],
         expected: "$ cd ..\n$ pwd\n/home/user",
+        culture: "`.` et `..` sont deux entrées **réelles** présentes dans CHAQUE dossier Unix (tu les vois avec `ls -a`). `.` pointe sur le dossier lui-même, `..` sur son parent. Ce ne sont pas de la magie du shell : ce sont de vrais liens inscrits dans le système de fichiers depuis 1971. C'est pour ça que `./script.sh` lance un script « ici » et que `cd ../..` remonte de deux crans.",
+        reflection: "Comment remonter de DEUX niveaux d'un coup, par exemple de `/a/b/c` vers `/a` ?\n👉 `cd ../..` — on enchaîne les `..` séparés par des `/`. Chaque `..` remonte d'un cran. `cd ../../..` remonterait de trois. C'est plus rapide que trois `cd ..` successifs, et ça marche aussi dans les chemins : `cat ../config.txt` lit un fichier dans le dossier parent.",
         check: function(s) { return s.history.some(function(c) { return c.trim() === 'cd ..'; }); }
       },
       {
@@ -1495,6 +1500,8 @@ var QUESTS = [
         mission: "Utilise un chemin absolu pour aller dans Documents.",
         steps: ["Tape `cd /home/user/Documents` (le chemin complet)", "Tu y arrives en une seule commande"],
         expected: "$ cd /home/user/Documents\n$ pwd\n/home/user/Documents",
+        culture: "La distinction **absolu / relatif** est l'une des plus importantes de toute l'informatique, pas seulement d'Unix. Un chemin absolu (`/home/user/Documents`) est une adresse complète, valable de partout. Un chemin relatif (`Documents`, `../scripts`) dépend d'où tu te trouves. La même logique gouverne les URLs web, les imports de code, les liens dans un document. La maîtriser ici, c'est la maîtriser partout.",
+        reflection: "Dans un script automatisé (lancé par cron par exemple), faut-il utiliser des chemins absolus ou relatifs, et pourquoi ?\n👉 **Absolus, toujours.** Un script ne sait jamais depuis quel dossier il sera lancé. `cd /home/user/Documents` marche à coup sûr ; `cd Documents` échoue si le dossier courant n'est pas le bon. Les chemins relatifs sont pratiques au clavier, les absolus sont sûrs dans le code. Règle de survie du sysadmin.",
         check: function(s) { return s.cwd === '/home/user/Documents'; }
       },
       {
@@ -1505,6 +1512,8 @@ var QUESTS = [
         mission: "Affiche l'arborescence de /etc.",
         steps: ["`tree /etc`", "Note les sous-dossiers : ssh/, nginx/, systemd/"],
         expected: "/etc\n├── nginx/\n│   ├── nginx.conf\n│   └── sites-enabled/\n├── ssh/\n│   └── sshd_config\n└── ...",
+        culture: "`tree` n'est PAS installé par défaut sur beaucoup de systèmes — c'est souvent la première chose qu'un admin installe (`apt install tree`). Les jolis caractères `├──` et `└──` qui dessinent les branches sont des caractères **Unicode de dessin de boîte**, hérités des vieux terminaux capables d'afficher des lignes. Astuce : `tree -L 2` limite la profondeur à 2 niveaux, `tree -d` ne montre que les dossiers.",
+        reflection: "Si `tree` n'est pas disponible, comment voir la structure d'un dossier et de ses sous-dossiers ?\n👉 `ls -R` (récursif) liste le dossier ET tous ses sous-dossiers, niveau par niveau. Moins joli que `tree` (pas d'arbre visuel), mais présent partout. Autre option puissante : `find . -type d` liste tous les dossiers en profondeur. Connaître les alternatives « toujours dispo » distingue le pro du débutant.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('tree') === 0 && (c.indexOf('/etc') >= 0 || s.cwd === '/etc'); }); }
       }
     ]
@@ -1530,6 +1539,8 @@ var QUESTS = [
         mission: "Affiche le contenu de /etc/passwd.",
         steps: ["`cat /etc/passwd`", "Chaque ligne = un utilisateur", "Format : `user:x:UID:GID:nom:home:shell`"],
         expected: "root:x:0:0:root:/root:/bin/bash\nuser:x:1000:1000:user:/home/user:/bin/bash",
+        culture: "`cat` veut dire **conCATéner** : sa vraie fonction est de coller plusieurs fichiers bout à bout (`cat a.txt b.txt > tout.txt`). Mais 99% du temps on l'utilise avec UN seul fichier, juste pour l'afficher — un détournement si universel qu'on oublie son vrai nom. Le fichier `/etc/passwd`, lui, malgré son nom, ne contient AUCUN mot de passe depuis les années 90 : le `x` en 2ᵉ champ renvoie vers `/etc/shadow`, lisible seulement par root.",
+        reflection: "Pour un fichier de 10 000 lignes, pourquoi `cat` est-il une mauvaise idée, et que faire à la place ?\n👉 `cat` déverse TOUT d'un coup — 10 000 lignes défilent et tu ne vois que la fin. Mieux : `less fichier` (navigation page par page, `/` pour chercher, `q` pour quitter), ou `head`/`tail` pour le début/la fin. `cat` est fait pour les fichiers courts ou pour enchaîner dans un pipe.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('passwd') >= 0; }); }
       },
       {
@@ -1540,6 +1551,8 @@ var QUESTS = [
         mission: "Crée un dossier `projets` dans ton home.",
         steps: ["Va dans ton home : `cd ~`", "Crée le dossier : `mkdir projets`", "Vérifie : `ls`"],
         expected: "$ mkdir projets\n$ ls\nDocuments  Downloads  projets  scripts",
+        culture: "L'option la plus précieuse de `mkdir` est `-p` (parents) : `mkdir -p a/b/c/d` crée toute la chaîne de dossiers d'un coup, même si `a`, `b`, `c` n'existaient pas. Sans `-p`, `mkdir a/b/c` échoue si `a` n'existe pas encore. Bonus : `-p` ne râle pas si le dossier existe déjà — indispensable dans les scripts, où on ne veut pas d'erreur si le dossier est déjà là.",
+        reflection: "Comment créer d'un seul coup l'arborescence `projet/src/main` alors qu'aucun de ces dossiers n'existe ?\n👉 `mkdir -p projet/src/main`. Le `-p` crée récursivement tous les parents manquants. Sans lui, il faudrait trois commandes séparées (`mkdir projet`, `mkdir projet/src`, `mkdir projet/src/main`). C'est LE réflexe pour monter une structure de projet en une ligne.",
         check: function(s) { var h = getNode('/home/user'); return !!(h && h.children && h.children.projets && h.children.projets.type === 'dir'); }
       },
       {
@@ -1550,6 +1563,8 @@ var QUESTS = [
         mission: "Crée `notes.txt` dans ton home.",
         steps: ["`cd ~`", "`touch notes.txt`", "`ls` pour confirmer"],
         expected: "$ touch notes.txt\n$ ls\nnotes.txt  ...",
+        culture: "`touch` a deux visages. Sur un fichier **inexistant**, il le crée, vide. Sur un fichier **existant**, il ne touche pas au contenu mais met à jour son horodatage (date de dernière modification) à maintenant — d'où son nom. Ce second usage est étonnamment utile : forcer un système de build à recompiler un fichier, ou réinitialiser des timestamps. Un outil minuscule au double emploi.",
+        reflection: "Que se passe-t-il si tu fais `touch` sur un fichier qui contient déjà du texte ?\n👉 **Rien n'est effacé** : le contenu reste intact, seule la date de modification passe à maintenant. C'est une différence cruciale avec `echo \"\" > fichier` qui, lui, ÉCRASE le contenu. `touch` est sûr sur un fichier existant ; la redirection `>` est destructrice.",
         check: function(s) { var h = getNode('/home/user'); return !!(h && h.children && h.children['notes.txt']); }
       },
       {
@@ -1560,6 +1575,8 @@ var QUESTS = [
         mission: "Copie rapport.txt en rapport_backup.txt dans Documents.",
         steps: ["`cd ~/Documents`", "`cp rapport.txt rapport_backup.txt`", "`ls` : tu as les deux"],
         expected: "$ cp rapport.txt rapport_backup.txt\n$ ls\nrapport.txt  rapport_backup.txt",
+        culture: "Copier un fichier de config en `.bak` avant de le modifier est LE réflexe qui distingue le pro. La convention `.bak` (backup) n'a rien d'officiel — c'est juste une habitude universelle. Pour copier un dossier entier, il faut `cp -r` (récursif), comme pour `rm`. Astuce d'expert : `cp fichier{,.bak}` — le shell développe les accolades en `cp fichier fichier.bak`, un raccourci que tout admin chevronné utilise.",
+        reflection: "Tu vas modifier `/etc/ssh/sshd_config`, un fichier critique. Quel est ton tout premier geste ?\n👉 `sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak`. AVANT toute modification. Si ta config casse SSH et te déconnecte du serveur distant, cette copie est ta seule bouée de sauvetage. « Copier avant de modifier » n'est pas de la prudence excessive — c'est le minimum vital du métier.",
         check: function(s) { var d = getNode('/home/user/Documents'); return !!(d && d.children && d.children['rapport_backup.txt']); }
       },
       {
@@ -1570,6 +1587,8 @@ var QUESTS = [
         mission: "Renomme notes.txt en todo.txt dans ton home.",
         steps: ["`cd ~`", "`mv notes.txt todo.txt`", "`ls` : plus de notes.txt, mais todo.txt apparaît"],
         expected: "$ mv notes.txt todo.txt\n$ ls\ntodo.txt  Documents  ...",
+        culture: "Pourquoi une seule commande `mv` pour déplacer ET renommer ? Parce qu'en Unix, ce sont la **même opération** : un nom de fichier n'est qu'une étiquette pointant vers des données. Renommer `notes.txt` en `todo.txt`, c'est juste changer l'étiquette (au même endroit). Le déplacer dans `Documents/`, c'est changer l'étiquette (à un autre endroit). D'où l'absence de commande `rename` séparée — `mv` fait déjà tout.",
+        reflection: "`mv rapport.txt archives/` et `mv rapport.txt vieux.txt` : pourquoi le même verbe fait-il deux choses différentes ?\n👉 `mv` regarde sa destination. Si c'est un **dossier existant** (`archives/`), il déplace le fichier dedans en gardant son nom. Si c'est un **nom qui n'existe pas** (`vieux.txt`), il renomme. Attention au piège : si la destination est un fichier existant, `mv` l'ÉCRASE sans prévenir. Comme `cp`, `mv` est silencieusement destructeur.",
         check: function(s) { var h = getNode('/home/user'); return !!(h && h.children && h.children['todo.txt'] && !h.children['notes.txt']); }
       },
       {
