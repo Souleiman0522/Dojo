@@ -1413,6 +1413,8 @@ var QUESTS = [
         mission: "Liste les fichiers et dossiers du répertoire courant.",
         steps: ["Tape `ls`", "Observe les couleurs : bleu = dossier, vert = exécutable"],
         expected: "$ ls\nDocuments  Downloads  Pictures  scripts  site",
+        culture: "`ls` (abréviation de *list*) est probablement la commande la plus tapée de l'histoire d'Unix. Elle existe depuis la toute première version en 1971. Les **couleurs** que tu vois (bleu = dossier, vert = exécutable, cyan = lien) ne sont PAS dans `ls` d'origine : elles viennent d'une option `--color` ajoutée bien plus tard, activée par défaut sur les distributions modernes via un alias dans ton `.bashrc`.",
+        reflection: "Pourquoi `ls` seul ne montre-t-il pas les fichiers comme `.bashrc` ?\n👉 Convention historique : tout fichier dont le nom commence par `.` est considéré « caché ». Ça vient d'un accident — les premiers `ls` masquaient `.` et `..` (les raccourcis du dossier courant et parent), et le code masquait tout ce qui commençait par un point. La convention est restée : on y range les configs pour ne pas encombrer la vue.",
         check: function(s) { return s.history.some(function(c) { return c === 'ls' || c.indexOf('ls ') === 0; }); }
       },
       {
@@ -1424,6 +1426,8 @@ var QUESTS = [
         steps: ["Tape `ls -la`", "Repère le `.bashrc` (caché)", "Note les permissions à gauche : `-rw-r--r--`"],
         expected: "drwxr-xr-x  user  4096  Documents/\n-rw-r--r--  user  3584  .bashrc",
         diagram: "Permissions :\n  d r w x r - x r - x\n  │ └─┬─┘ └─┬─┘ └─┬─┘\n  │  user  group autres\n  └─ d=dir, -=fichier",
+        culture: "`ls -la` combine deux options : `-l` (long, une ligne détaillée par fichier) et `-a` (all, y compris les cachés). On peut coller les options : `-la` = `-l -a`. Le format long révèle les **10 caractères de permissions**, le propriétaire, le groupe, la taille et la date — toute la carte d'identité d'un fichier. C'est LA commande de diagnostic quand quelque chose ne marche pas : « qui a le droit de toucher ce fichier ? ».",
+        reflection: "Dans `-rw-r--r--`, comment savoir d'un coup d'œil si c'est un dossier ou un fichier ?\n👉 Le **tout premier caractère** : `-` = fichier ordinaire, `d` = dossier (directory), `l` = lien symbolique, `c`/`b` = périphérique. Les 9 caractères suivants sont les 3 triplets de permissions (propriétaire, groupe, autres). Lire cette ligne est un réflexe qu'on acquiert en quelques jours et qu'on garde à vie.",
         check: function(s) { return s.history.some(function(c) { return /^ls\s+(-la|-al|-l\s+-a|-a\s+-l)/.test(c); }); }
       }
     ]
@@ -1703,6 +1707,8 @@ var QUESTS = [
         mission: "Liste tous les processus avec `ps aux`.",
         steps: ["Tape `ps aux`", "Repère PID 1 (init/systemd) et ton shell bash"],
         expected: "USER  PID  CPU  MEM  COMMAND\nroot    1  0.0  0.4  /sbin/init\nroot  743  0.0  0.2  /usr/sbin/sshd\nuser 1024  0.0  0.1  -bash",
+        culture: "Le `aux` de `ps aux` est une curiosité : ce sont des options **sans tiret** (syntaxe BSD, l'ancêtre d'Unix de Berkeley), alors que le Linux moderne utilise plutôt `ps -ef` (syntaxe System V). `a` = tous les utilisateurs, `u` = format détaillé, `x` = y compris les processus sans terminal. Les deux syntaxes coexistent encore aujourd'hui — un vestige de la guerre des Unix des années 80.",
+        reflection: "Que représente le processus de **PID 1**, toujours présent en haut de la liste ?\n👉 C'est le tout premier processus lancé au démarrage, l'ancêtre de tous les autres : `init` ou, sur les systèmes modernes, `systemd`. Il ne meurt jamais tant que la machine tourne, et **adopte** tous les processus orphelins. Si PID 1 s'arrête, le système s'éteint. C'est la racine de l'arbre des processus.",
         check: function(s) { return s.history.some(function(c) { return /^ps(\s|$)/.test(c); }); }
       },
       {
@@ -1713,6 +1719,8 @@ var QUESTS = [
         mission: "Lance `top` (affiche les processus, puis quitte avec q ou Ctrl+C).",
         steps: ["`top`", "Observe le tri par CPU", "Quitte avec `q`"],
         expected: "PID  USER  %CPU  %MEM  COMMAND\n1056  user  0.5   0.3   top\n   1  root  0.0   0.4   init",
+        culture: "`top` (pour *table of processes*) date de 1984 et rafraîchit son affichage toutes les 3 secondes. Sa ligne la plus importante est le **load average** en haut : trois nombres = la charge moyenne sur 1, 5 et 15 minutes. Astuce d'expert : une charge de `1.00` sur une machine à 1 cœur = 100% occupé ; sur 4 cœurs, `4.00` = plein. Comparer la charge au nombre de cœurs (`nproc`) dit instantanément si la machine souffre.",
+        reflection: "Beaucoup de débutants ouvrent `top` et... ne savent plus comment en sortir. Quelle touche ?\n👉 La touche `q` (quit). `top` tourne en continu (comme vim, il « capture » ton terminal), donc `Ctrl+C` marche aussi. C'est le même piège que vim : les outils interactifs plein écran demandent une touche précise pour rendre la main. `q` est la convention quasi-universelle sous Unix.",
         check: function(s) { return s.history.indexOf('top') >= 0; }
       },
       {
@@ -2145,6 +2153,8 @@ var QUESTS = [
         steps: ["`cat /etc/crontab`", "Décode le format : '0 4 * * 0' = dim 4h00"],
         expected: "# m h dom mon dow user  command\n0 4 * * 0   root  /home/user/scripts/backup.sh",
         diagram: "Format cron :\n  *  *  *  *  *\n  │  │  │  │  │\n  │  │  │  │  └─ jour semaine (0-7)\n  │  │  │  └──── mois (1-12)\n  │  │  └─────── jour du mois\n  │  └────────── heure (0-23)\n  └───────────── minute (0-59)",
+        culture: "Le nom **cron** vient du grec *chronos* (le temps). Le démon `cron` tourne en permanence depuis les premiers Unix (1975) et se réveille chaque minute pour vérifier s'il y a une tâche à lancer. Subtilité célèbre : le champ `jour-du-mois` ET le champ `jour-de-semaine` sont en **OU** logique, pas ET — `0 0 13 * 5` se déclenche le 13 du mois OU chaque vendredi, pas « le vendredi 13 ». Un piège qui a surpris des générations d'admins.",
+        reflection: "Que signifie l'horaire cron `*/15 * * * *` ?\n👉 « Toutes les 15 minutes ». Le `*/15` dans le champ minute veut dire « chaque multiple de 15 » (0, 15, 30, 45). Le `*` dans les autres champs = « chaque ». Autres exemples : `0 * * * *` = chaque heure pile ; `0 0 * * *` = chaque jour à minuit ; `0 9 * * 1` = chaque lundi à 9h.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('crontab') >= 0; }); }
       },
       {
@@ -2155,6 +2165,8 @@ var QUESTS = [
         mission: "Affiche ~/scripts/backup.sh.",
         steps: ["`cat ~/scripts/backup.sh`", "Lis chaque ligne : DATE puis tar"],
         expected: "#!/bin/bash\nDATE=$(date +%Y%m%d)\ntar -czf /tmp/backup-$DATE.tar.gz /home/user",
+        culture: "La syntaxe `DATE=$(date +%Y%m%d)` s'appelle une **substitution de commande** : `$(...)` exécute la commande à l'intérieur et remplace le tout par son résultat. Ici, `date +%Y%m%d` produit `20260315`, stocké dans la variable `DATE`. Résultat : chaque sauvegarde a un nom horodaté unique (`backup-20260315.tar.gz`), sans jamais écraser la précédente. C'est le motif de base de tout script de backup professionnel.",
+        reflection: "Pourquoi ce script utilise-t-il des **chemins absolus** (`/tmp/...`, `/home/user`) plutôt que relatifs ?\n👉 Parce qu'il est lancé par cron, dans un environnement minimal où le « dossier courant » n'est pas celui que tu crois. Un chemin relatif comme `backup.tar.gz` finirait Dieu sait où (souvent `/` ou le home de root). Règle d'or des scripts automatisés : **toujours des chemins absolus**, jamais de suppositions sur le répertoire courant.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('backup.sh') >= 0; }); }
       }
     ]
