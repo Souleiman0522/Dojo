@@ -1046,7 +1046,7 @@ window.addEventListener('error', function(e) {
   <span class="brand-icon">🥋</span>
   <div>
     <div class="brand-title">le.dojo</div>
-    <div class="brand-sub">v3 · BUILD-1205 · 80 exos</div>
+    <div class="brand-sub">v3 · BUILD-1205 · 89 exos</div>
   </div>
   <a href="index.html" style="background:transparent;border:1px solid var(--border);color:var(--text-2);padding:5px 11px;border-radius:4px;font-size:0.7rem;font-family:var(--font-mono);text-decoration:none;margin-right:6px;text-transform:uppercase;letter-spacing:1px">🏠 Accueil</a>
   <a href="cours.html" style="background:transparent;border:1px solid var(--border);color:var(--text-2);padding:5px 11px;border-radius:4px;font-size:0.7rem;font-family:var(--font-mono);text-decoration:none;margin-right:6px;text-transform:uppercase;letter-spacing:1px">📚 Cours</a>
@@ -1328,7 +1328,16 @@ var sysState = {
     { pid: 743, user: 'root', cmd: '/usr/sbin/sshd', cpu: 0.0, mem: 0.2 },
     { pid: 1024, user: 'user', cmd: '-bash', cpu: 0.0, mem: 0.1 },
     { pid: 1056, user: 'user', cmd: 'top', cpu: 0.5, mem: 0.3 }
-  ]
+  ],
+  git: {
+    initialized: false,
+    branch: 'main',
+    staged: [],      // fichiers ajoutés à l'index (git add)
+    committed: [],   // fichiers déjà commités
+    commits: [],     // liste des commits { hash, msg }
+    branches: ['main']
+  },
+  archives: {}       // { 'nom.tar.gz': [fichiers] } créés par tar
 };
 
 var FILE_CONTENTS = {
@@ -2411,6 +2420,157 @@ var QUESTS = [
         check: function(s) { return s.history.some(function(c) { return c.indexOf('vmstat') === 0; }); }
       }
     ]
+  },
+  {
+    id: 'git',
+    icon: '🔀',
+    title: 'Git — le versioning',
+    color: '#962617',
+    desc: 'Suivre et sauvegarder son code',
+    story: "Le Sensei pose un carnet devant toi. \"Chaque page est une version de ton travail. Tu peux revenir en arrière, comparer, reprendre une idée abandonnée. **Git, c'est ce carnet pour ton code.**\"\n\nIl devient sérieux : \"Un développeur sans Git, c'est un funambule sans filet. Une mauvaise manip, et des jours de travail s'envolent. Avec Git, chaque `commit` est un point de sauvegarde éternel. Tu vas apprendre le cycle sacré : **modifier → ajouter → commiter.** Le geste que tu répéteras toute ta carrière.\"",
+    mentor: "Le cycle de vie d'un fichier dans Git :\n\n① `git init` transforme un dossier ordinaire en dépôt Git (crée le dossier caché `.git`).\n② Trois zones : le **répertoire de travail** (tes fichiers), l'**index/staging** (`git add`), et le **dépôt** (`git commit`). Un fichier voyage de l'une à l'autre.\n③ Le cycle : tu modifies, tu `git add fichier` (prépare), tu `git commit -m \"message\"` (grave dans l'histoire). `git status` te dit toujours où en sont tes fichiers.\n④ Règle d'or du message de commit : décris le POURQUOI, pas le comment. \"Corrige le crash au démarrage\", pas \"modif ligne 42\".",
+    challenge: {
+      title: "Le premier commit",
+      desc: "Versionne un projet de zéro. **① Initialise un dépôt** (`git init`), **② vérifie l'état** (`git status` → fichiers non suivis), **③ ajoute un fichier à l'index** (`git add`), **④ grave ton premier commit** avec un message clair (`git commit -m \"...\"`), **⑤ relis l'historique** (`git log`). Cinq commandes, le cycle complet du versioning."
+    },
+    exos: [
+      {
+        level: 'beginner',
+        title: 'Initialiser un dépôt',
+        context: "`git init` crée un dépôt Git dans le dossier courant. Ça ajoute un dossier caché `.git/` qui contiendra tout l'historique. Le dossier lui-même ne change pas d'apparence.",
+        scene: "Tu démarres un nouveau projet et tu veux suivre son évolution dès le début.",
+        mission: "Initialise un dépôt Git dans le dossier courant.",
+        steps: ["Tape `git init`", "Git confirme la création du dépôt"],
+        expected: "$ git init\nInitialized empty Git repository in /home/user/.git/",
+        diagram: "  dossier ordinaire  ──git init──▶  dépôt Git\n                                    └── .git/ (historique)",
+        culture: "Git a été créé en **2005 par Linus Torvalds** — le père de Linux lui-même — en à peine deux semaines, quand l'outil propriétaire qui gérait le code du noyau Linux est devenu payant. Furieux, Linus a écrit son propre système, distribué et ultra-rapide. Le nom ? En argot britannique, *git* veut dire \"sale type\" — Linus a plaisanté : \"je nomme tous mes projets d'après moi.\" Aujourd'hui Git gère la quasi-totalité du code de la planète.",
+        reflection: "Que se passe-t-il concrètement quand tu tapes `git init` dans un dossier ?\n👉 Git crée un sous-dossier caché `.git/` qui contient TOUTE la mécanique : l'historique, les branches, la config. Tes fichiers ne bougent pas. Si tu supprimes `.git/`, le dossier redevient ordinaire et tout l'historique est perdu — c'est là qu'il vit.",
+        check: function(s) { return sysState.git.initialized; }
+      },
+      {
+        level: 'beginner',
+        title: "Vérifier l'état (status)",
+        context: "`git status` est ta boussole : il montre quels fichiers sont suivis, modifiés, prêts à commiter (staged) ou non suivis (untracked). C'est la commande que tu tapes le plus souvent.",
+        scene: "Tu as créé des fichiers mais tu ne sais plus lesquels Git connaît.",
+        mission: "Affiche l'état du dépôt.",
+        steps: ["`git status`", "Repère les 'Untracked files' en rouge"],
+        expected: "On branch main\n\nUntracked files:\n\tnotes.txt\n\nnothing added to commit but untracked files present",
+        culture: "Le vocabulaire de Git décrit un voyage : un fichier **untracked** (inconnu) devient **staged** (`git add`, préparé dans l'index) puis **committed** (gravé). L'index — aussi appelé *staging area* — est l'idée géniale de Git : il te laisse choisir EXACTEMENT ce qui entre dans un commit, fichier par fichier, ligne par ligne. Tu peux modifier 10 fichiers et n'en commiter que 3.",
+        reflection: "Pourquoi taper `git status` avant chaque `git add` et chaque `git commit` ?\n👉 Parce que c'est ta seule fenêtre sur l'état réel. Elle t'évite de commiter un fichier par erreur, d'oublier un fichier important, ou de croire qu'un changement est sauvé alors qu'il ne l'est pas. Les pros la tapent par réflexe, des dizaines de fois par jour.",
+        check: function(s) { return sysState.git.initialized && s.history.some(function(c) { return c.indexOf('git status') === 0; }); }
+      },
+      {
+        level: 'intermediate',
+        title: "Ajouter à l'index (add)",
+        context: "`git add fichier` place un fichier dans l'index (staging), prêt à être commité. `git add .` ajoute tout le dossier. C'est l'étape de préparation avant de graver.",
+        scene: "Ton fichier notes.txt est prêt. Tu veux l'inclure dans le prochain commit.",
+        mission: "Ajoute notes.txt à l'index.",
+        steps: ["`git add notes.txt`", "Vérifie avec `git status` : il passe en vert (staged)"],
+        expected: "$ git add notes.txt\n$ git status\nChanges to be committed:\n\tnew file:   notes.txt",
+        check: function(s) { return sysState.git.staged.length > 0 || sysState.git.committed.length > 0; }
+      },
+      {
+        level: 'intermediate',
+        title: 'Graver un commit',
+        context: "`git commit -m \"message\"` enregistre définitivement les fichiers de l'index dans l'historique. Le `-m` fournit le message qui décrit le changement. Sans message, Git refuse.",
+        scene: "Ton fichier est dans l'index. Il est temps de le graver dans l'histoire.",
+        mission: "Crée un commit avec un message clair.",
+        steps: ["`git commit -m \"Ajoute mes notes\"`", "Git renvoie un identifiant de commit (hash)"],
+        expected: "[main a1b2c3d] Ajoute mes notes\n 1 file(s) changed",
+        culture: "Chaque commit reçoit un **hash SHA-1** (ex : `a1b2c3d`) : une empreinte unique de 40 caractères calculée à partir du contenu, de l'auteur, de la date ET du commit précédent. Cet enchaînement rend l'historique **infalsifiable** : changer un vieux commit changerait tous les hashes suivants. C'est la même idée que la blockchain — inventée par Git dix ans avant le Bitcoin.",
+        reflection: "Pourquoi Git impose-t-il un message à chaque commit ?\n👉 Parce que l'historique se lit comme un journal de bord. Dans six mois, `git log` doit te raconter l'histoire du projet : ce qui a changé et POURQUOI. Un bon message (\"Corrige la fuite mémoire au démarrage\") vaut de l'or ; un mauvais (\"maj\", \"fix\", \"truc\") rend l'historique inutile.",
+        check: function(s) { return sysState.git.commits.length > 0; }
+      },
+      {
+        level: 'advanced',
+        title: "Relire l'histoire (log)",
+        context: "`git log` affiche l'historique des commits, du plus récent au plus ancien : hash, auteur, date, message. C'est la mémoire du projet.",
+        scene: "Tu veux voir tous les commits déjà réalisés.",
+        mission: "Affiche l'historique des commits.",
+        steps: ["`git log`", "Chaque bloc = un commit avec son hash et son message"],
+        expected: "commit a1b2c3d...\nAuthor: user <user@dojo>\nDate:   ...\n\n    Ajoute mes notes",
+        check: function(s) { return sysState.git.commits.length > 0 && s.history.some(function(c) { return c.indexOf('git log') === 0; }); }
+      }
+    ]
+  },
+  {
+    id: 'editors',
+    icon: '✍️',
+    title: 'Éditeurs — vim & nano',
+    color: '#1e5a3d',
+    desc: 'Modifier des fichiers en terminal',
+    story: "\"Un jour, sans interface graphique, sur un serveur distant à 3h du matin, tu devras modifier un fichier de config\", prévient le Sensei. \"Pas de Notepad, pas de VS Code. Juste toi et un éditeur en terminal. Si tu ne sais pas en sortir, tu es piégé.\"\n\nIl sourit : \"Il existe deux écoles. **nano**, doux et bienveillant, affiche ses raccourcis en bas. **vim**, austère et redoutablement puissant, ne pardonne rien mais décuple qui le maîtrise. Commence par savoir ENTRER, ÉCRIRE, et surtout SORTIR. Le reste viendra.\"",
+    mentor: "Survivre dans les éditeurs terminal :\n\n① **nano** est le plus simple : `nano fichier`, tu tapes directement, `Ctrl+O` pour sauver (Write Out), `Ctrl+X` pour quitter. Les raccourcis sont affichés en bas — aucune surprise.\n② **vim** a deux modes qui déroutent tout débutant : le mode **Normal** (les touches sont des commandes) et le mode **Insertion** (tu tapes du texte). On entre en insertion avec `i`, on en sort avec `Échap`.\n③ La commande de survie vim : `:wq` = **w**rite + **q**uit (sauver et quitter). `:q!` = quitter SANS sauver (force). Grave ces deux-là.\n④ La blague culte : \"Comment générer une chaîne aléatoire ? Mettre un débutant devant vim et lui dire de quitter.\"",
+    challenge: {
+      title: "Entrer et sortir vivant",
+      desc: "Prouve que vim ne te fait plus peur. **① Ouvre un fichier avec `nano`**, **② ouvre-en un avec `vim`**, **③ passe en mode insertion** (`i`), **④ ressors du mode** (`Échap`), **⑤ sauve et quitte** (`:wq`). Réflexion : quelle commande te sort de vim SANS sauver tes modifications, en cas d'erreur ?"
+    },
+    exos: [
+      {
+        level: 'beginner',
+        title: 'Ouvrir avec nano',
+        context: "nano est l'éditeur le plus accessible. `nano fichier.txt` l'ouvre (le crée s'il n'existe pas). Les raccourcis apparaissent en bas : ^O = sauver, ^X = quitter (le ^ signifie Ctrl).",
+        scene: "Tu veux éditer un fichier de config simplement, sans prise de tête.",
+        mission: "Ouvre un fichier avec nano.",
+        steps: ["`nano notes.txt`", "Observe la barre de raccourcis en bas", "^O sauve, ^X quitte"],
+        expected: "  GNU nano 6.2      notes.txt\n\n  [ texte ici ]\n\n^O Écrire  ^X Quitter  ^W Chercher",
+        culture: "nano est né en 1999 comme un clone libre de **pico**, l'éditeur du logiciel mail Pine. Sa philosophie : **zéro courbe d'apprentissage**. Tout est affiché à l'écran, rien à mémoriser. C'est pour ça qu'il est l'éditeur par défaut de nombreuses distributions Linux et le premier réflexe des débutants — et de beaucoup de pros pressés pour une modif rapide.",
+        reflection: "Sur la barre du bas de nano, que signifie le symbole `^` (ex : `^X`) ?\n👉 Le `^` représente la touche **Ctrl**. Donc `^X` = Ctrl+X (quitter), `^O` = Ctrl+O (sauver). Cette notation vient des vieux terminaux où Ctrl générait des 'caractères de contrôle'. nano l'affiche en permanence pour que tu n'aies jamais à deviner.",
+        check: function(s) { return s.history.some(function(c) { return c.indexOf('nano') === 0; }); }
+      },
+      {
+        level: 'intermediate',
+        title: 'Survivre dans vim',
+        context: "vim est modal : au départ tu es en mode Normal (les touches sont des commandes, pas du texte !). `i` entre en Insertion pour taper. `Échap` revient en Normal. `:wq` sauve et quitte. `:q!` quitte sans sauver.",
+        scene: "Le seul éditeur dispo sur ce serveur est vim. Tu dois t'en sortir.",
+        mission: "Ouvre un fichier avec vim.",
+        steps: ["`vim config.txt`", "`i` pour écrire", "`Échap` pour arrêter d'écrire", "`:wq` pour sauver et quitter"],
+        expected: "  ~ config.txt\n  ~\n  -- INSERTION --\n  :wq",
+        diagram: "  Mode NORMAL ──i──▶ Mode INSERTION\n       ▲                  │\n       └──── Échap ────────┘\n  (:wq sauve+quitte, :q! quitte sans sauver)",
+        culture: "vim (**Vi IMproved**) descend de `vi`, écrit en 1976 par Bill Joy. Son système à deux modes déroute mais permet d'éditer à la vitesse de la pensée sans jamais quitter le clavier : `dd` supprime une ligne, `yy` la copie, `p` la colle, `/mot` cherche. Des développeurs l'utilisent depuis 40 ans et refusent d'en changer. Sa réputation : \"impossible à quitter\" — la question \"how to exit vim\" a été vue des millions de fois sur Stack Overflow.",
+        reflection: "Tu as ouvert vim par erreur et modifié un fichier important. Comment sortir SANS sauver tes bêtises ?\n👉 `Échap` (pour revenir en mode Normal si tu tapais), puis `:q!` — le `!` force la sortie en jetant les modifications. Si tu voulais garder : `:wq`. Ces deux commandes sont le minimum vital de survie vim.",
+        check: function(s) { return s.history.some(function(c) { return c.indexOf('vim') === 0 || c.indexOf('vi ') === 0; }); }
+      }
+    ]
+  },
+  {
+    id: 'archives',
+    icon: '📦',
+    title: 'Archives & compression',
+    color: '#c89028',
+    desc: 'tar, gzip — empaqueter et compresser',
+    story: "\"Un jour tu devras déplacer 10 000 fichiers d'un serveur à un autre\", dit le Sensei. \"Les envoyer un par un ? Une folie. On les **empaquette** en un seul fichier, on le **compresse** pour qu'il pèse moins, on l'envoie, on le **dépaquette** à l'arrivée. C'est le geste des sauvegardes, des déploiements, des transferts.\"\n\nIl brandit un fichier `.tar.gz` : \"Ceci est l'archive reine d'Unix. `tar` empaquette, `gzip` compresse. Ensemble, ils font le célèbre *tarball*. Maîtrise ses trois lettres magiques — `czf` pour créer, `xzf` pour extraire — et tu manipuleras des montagnes de fichiers d'un geste.\"",
+    mentor: "L'art d'empaqueter avec tar :\n\n① `tar` (Tape ARchive) regroupe plusieurs fichiers en UN seul `.tar`. Il ne compresse pas tout seul — c'est `gzip` qui réduit la taille, d'où le `.tar.gz` (empaqueté PUIS compressé).\n② Les 3 lettres à graver : **c**reate, e**x**tract, lis**t**. Toujours suivies de `z` (gzip) et `f` (fichier). Donc :\n   `tar -czf save.tar.gz dossier/` → crée l'archive\n   `tar -xzf save.tar.gz` → extrait\n   `tar -tzf save.tar.gz` → liste le contenu sans extraire\n③ Moyen mnémotechnique : **c**réer / e**x**traire, et `zf` = **z**ippé dans un **f**ichier.\n④ Piège classique : oublier le `f` — tar cherche alors une bande magnétique (héritage de 1979 !) et se bloque.",
+    challenge: {
+      title: "Le grand déménagement",
+      desc: "Sauvegarde et restaure un dossier. **① Crée une archive compressée** d'un dossier avec `tar -czf sauvegarde.tar.gz ...`, **② liste son contenu** sans l'extraire (`tar -tzf`), **③ extrais-la** (`tar -xzf`). Réflexion : pourquoi le format s'appelle `.tar.gz` en deux extensions plutôt qu'une seule ?"
+    },
+    exos: [
+      {
+        level: 'intermediate',
+        title: 'Créer une archive compressée',
+        context: "`tar -czf archive.tar.gz fichiers` crée une archive compressée. c=create, z=gzip (compression), f=fichier de sortie. C'est LE geste de sauvegarde Unix.",
+        scene: "Tu veux sauvegarder ton dossier Documents en un seul fichier compressé.",
+        mission: "Crée une archive compressée nommée backup.tar.gz de tes documents.",
+        steps: ["`tar -czf backup.tar.gz Documents`", "Un seul fichier contient tout le dossier, compressé"],
+        expected: "$ tar -czf backup.tar.gz Documents\nArchive créée : backup.tar.gz",
+        diagram: "  Documents/ ──tar -czf──▶ backup.tar.gz\n  (plusieurs fichiers)      (un seul, compressé)",
+        culture: "`tar` signifie **Tape ARchive** : il a été créé en 1979 pour écrire des fichiers sur des **bandes magnétiques**, où il fallait tout mettre bout à bout en un flux continu. Les bandes ont disparu, mais tar est resté — c'est pourquoi il n'a pas de compression native (les bandes ne compressaient pas). On lui adjoint `gzip` (1992) pour ça. Un demi-siècle plus tard, chaque sauvegarde Linux passe encore par cet outil vénérable.",
+        reflection: "Pourquoi met-on `f` en dernier dans `-czf` (juste avant le nom de l'archive) ?\n👉 Parce que `f` (file) attend le nom du fichier de sortie JUSTE après lui. `tar -czf backup.tar.gz` : le `f` \"pointe\" sur `backup.tar.gz`. Si tu oublies le `f`, tar croit que tu veux écrire sur une bande magnétique et se bloque — l'erreur de débutant classique.",
+        check: function(s) { return Object.keys(sysState.archives).length > 0 || s.history.some(function(c) { return /tar\s+-c/.test(c); }); }
+      },
+      {
+        level: 'advanced',
+        title: 'Extraire une archive',
+        context: "`tar -xzf archive.tar.gz` extrait le contenu. x=extract. On récupère les fichiers d'origine. `tar -tzf` (t=list) montre le contenu SANS extraire — pratique pour vérifier avant.",
+        scene: "Tu as reçu une archive backup.tar.gz et tu veux récupérer les fichiers.",
+        mission: "Extrais l'archive backup.tar.gz.",
+        steps: ["Vérifie d'abord : `tar -tzf backup.tar.gz`", "Puis extrais : `tar -xzf backup.tar.gz`"],
+        expected: "$ tar -xzf backup.tar.gz\nExtraction de backup.tar.gz...\n  Documents",
+        reflection: "Avant d'extraire une archive reçue d'un inconnu, quelle commande taper d'abord, et pourquoi ?\n👉 `tar -tzf archive.tar.gz` liste le contenu SANS rien écrire. Ça te protège des archives piégées qui écrasent des fichiers système (une archive peut contenir des chemins absolus comme `/etc/passwd`). Vérifier avant d'extraire = réflexe de sécurité.",
+        check: function(s) { return s.history.some(function(c) { return /tar\s+-[xt]/.test(c); }); }
+      }
+    ]
   }
 
 ];
@@ -3177,6 +3337,9 @@ function runSingleCommand(cmd) {
     case 'ip': case 'ifconfig': cmdIfconfig(); break;
     case 'man': term.writeln(C.dim + '(man pages non disponibles ici, tape help)' + C.reset); break;
     case 'apt': cmdApt(args, sudo); break;
+    case 'git': cmdGit(args); break;
+    case 'tar': cmdTar(args); break;
+    case 'gzip': cmdGzip(args); break;
     case 'useradd': cmdUseradd(args, sudo); break;
     case 'userdel': cmdUserdel(args, sudo); break;
     case 'usermod': cmdUsermod(args, sudo); break;
@@ -3221,6 +3384,165 @@ function runSingleCommand(cmd) {
         term.writeln(C.dim + 'Tapez ' + C.brYellow + 'help' + C.dim + ' pour la liste' + C.reset);
       }
   }
+}
+
+// ===== GIT (simulé) =====
+function cmdGit(args) {
+  var g = sysState.git;
+  var sub = args[0];
+  if (!sub) {
+    term.writeln(C.dim + "usage: git <commande> [args]  (init, status, add, commit, log, branch, checkout)" + C.reset);
+    return;
+  }
+  if (sub === 'init') {
+    if (g.initialized) { term.writeln(C.yellow + "Dépôt Git déjà initialisé dans ce dossier" + C.reset); return; }
+    g.initialized = true;
+    term.writeln(C.brGreen + "Initialized empty Git repository in " + cwd + "/.git/" + C.reset);
+    return;
+  }
+  if (!g.initialized) {
+    term.writeln(C.red + "fatal: not a git repository (or any of the parent directories): .git" + C.reset);
+    term.writeln(C.dim + "Astuce : commence par `git init`" + C.reset);
+    return;
+  }
+  if (sub === 'status') {
+    term.writeln("On branch " + C.brGreen + g.branch + C.reset);
+    if (!g.commits.length) term.writeln(C.dim + "No commits yet" + C.reset);
+    if (g.staged.length) {
+      term.writeln("");
+      term.writeln("Changes to be committed:");
+      term.writeln(C.dim + '  (use "git restore --staged <file>..." to unstage)' + C.reset);
+      g.staged.forEach(function(f) { term.writeln(C.brGreen + "\tnew file:   " + f + C.reset); });
+    }
+    // fichiers du cwd non suivis
+    var node = getNode(cwd);
+    var untracked = [];
+    if (node && node.children) {
+      Object.keys(node.children).forEach(function(k) {
+        if (k.charAt(0) === '.') return;
+        if (node.children[k].type !== 'file' && node.children[k].type !== 'exec') return;
+        if (g.staged.indexOf(k) < 0 && g.committed.indexOf(k) < 0) untracked.push(k);
+      });
+    }
+    if (untracked.length) {
+      term.writeln("");
+      term.writeln("Untracked files:");
+      term.writeln(C.dim + '  (use "git add <file>..." to include in what will be committed)' + C.reset);
+      untracked.forEach(function(f) { term.writeln(C.red + "\t" + f + C.reset); });
+    }
+    if (!g.staged.length && !untracked.length) {
+      term.writeln("");
+      term.writeln("nothing to commit, working tree clean");
+    }
+    return;
+  }
+  if (sub === 'add') {
+    var target = args[1];
+    if (!target) { term.writeln(C.red + "Nothing specified, nothing added." + C.reset); return; }
+    var node = getNode(cwd);
+    if (target === '.' || target === '-A' || target === '*') {
+      if (node && node.children) {
+        Object.keys(node.children).forEach(function(k) {
+          if (k.charAt(0) === '.') return;
+          if (g.staged.indexOf(k) < 0 && g.committed.indexOf(k) < 0) g.staged.push(k);
+        });
+      }
+      term.writeln(C.dim + "Fichiers ajoutés à l'index." + C.reset);
+      return;
+    }
+    if (node && node.children && node.children[target]) {
+      if (g.staged.indexOf(target) < 0) g.staged.push(target);
+      term.writeln(C.dim + "'" + target + "' ajouté à l'index." + C.reset);
+    } else {
+      term.writeln(C.red + "fatal: pathspec '" + target + "' did not match any files" + C.reset);
+    }
+    return;
+  }
+  if (sub === 'commit') {
+    var mi = args.indexOf('-m');
+    if (mi < 0 || !args[mi + 1]) {
+      term.writeln(C.red + "Aborting commit: message manquant. Utilise git commit -m \"message\"" + C.reset);
+      return;
+    }
+    if (!g.staged.length) {
+      term.writeln("On branch " + g.branch);
+      term.writeln("nothing to commit, working tree clean");
+      return;
+    }
+    var msg = args.slice(mi + 1).join(' ').replace(/^["']|["']$/g, '');
+    var hash = Math.random().toString(16).slice(2, 9);
+    g.commits.push({ hash: hash, msg: msg });
+    var n = g.staged.length;
+    g.staged.forEach(function(f) { if (g.committed.indexOf(f) < 0) g.committed.push(f); });
+    g.staged = [];
+    term.writeln("[" + g.branch + " " + hash + "] " + msg);
+    term.writeln(C.dim + " " + n + " file(s) changed" + C.reset);
+    return;
+  }
+  if (sub === 'log') {
+    if (!g.commits.length) { term.writeln(C.dim + "Aucun commit pour l'instant." + C.reset); return; }
+    g.commits.slice().reverse().forEach(function(c) {
+      term.writeln(C.brYellow + "commit " + c.hash + c.hash + c.hash.slice(0,5) + C.reset);
+      term.writeln("Author: user <user@dojo>");
+      term.writeln("Date:   " + new Date().toDateString());
+      term.writeln("");
+      term.writeln("    " + c.msg);
+      term.writeln("");
+    });
+    return;
+  }
+  if (sub === 'branch') {
+    var name = args[1];
+    if (!name) {
+      g.branches.forEach(function(b) {
+        term.writeln((b === g.branch ? C.brGreen + "* " + b : "  " + b) + C.reset);
+      });
+      return;
+    }
+    if (g.branches.indexOf(name) < 0) g.branches.push(name);
+    term.writeln(C.dim + "Branche '" + name + "' créée." + C.reset);
+    return;
+  }
+  if (sub === 'checkout') {
+    var b2 = args[args.length - 1];
+    var isNew = args.indexOf('-b') >= 0;
+    if (isNew && g.branches.indexOf(b2) < 0) g.branches.push(b2);
+    if (g.branches.indexOf(b2) >= 0) { g.branch = b2; term.writeln("Switched to branch '" + b2 + "'"); }
+    else term.writeln(C.red + "error: pathspec '" + b2 + "' did not match" + C.reset);
+    return;
+  }
+  term.writeln(C.dim + "git: '" + sub + "' — commande simulée non gérée (init/status/add/commit/log/branch/checkout)" + C.reset);
+}
+
+// ===== TAR / GZIP (simulé) =====
+function cmdTar(args) {
+  var flags = (args[0] && args[0].charAt(0) === '-') ? args[0] : (args[0] || '');
+  var create = /c/.test(flags), extract = /x/.test(flags), list = /t/.test(flags), gz = /z/.test(flags);
+  var fi = args.indexOf('-f') >= 0 ? args.indexOf('-f') + 1 : null;
+  var archive = fi ? args[fi] : args[1];
+  if (create) {
+    var files = args.slice((fi ? fi + 1 : 2));
+    sysState.archives[archive] = files;
+    term.writeln(C.dim + "Archive créée : " + C.reset + C.brGreen + archive + C.reset + C.dim + " (" + files.length + " élément(s))" + C.reset);
+    return;
+  }
+  if (list) {
+    var a = sysState.archives[archive];
+    if (a) a.forEach(function(f) { term.writeln(f); });
+    else term.writeln(C.red + "tar: " + archive + ": introuvable" + C.reset);
+    return;
+  }
+  if (extract) {
+    term.writeln(C.brGreen + "Extraction de " + archive + "..." + C.reset);
+    var a2 = sysState.archives[archive];
+    if (a2) a2.forEach(function(f) { term.writeln(C.dim + "  " + f + C.reset); });
+    return;
+  }
+  term.writeln(C.dim + "usage: tar -czf archive.tar.gz fichiers…  |  -xzf  |  -tzf" + C.reset);
+}
+function cmdGzip(args) {
+  var f = args[args.length - 1];
+  term.writeln(C.dim + (f || '') + " compressé → " + (f || '') + ".gz" + C.reset);
 }
 
 function cmdLs(args) {
