@@ -2260,6 +2260,8 @@ var QUESTS = [
         steps: ["`sudo useradd -m -s /bin/bash alice`", "`-m` crée /home/alice", "`-s /bin/bash` définit le shell", "Vérifie : `cat /etc/passwd | grep alice`"],
         expected: "$ sudo useradd -m -s /bin/bash alice\n$ grep alice /etc/passwd\nalice:x:1001:1001::/home/alice:/bin/bash",
         diagram: "useradd options :\n  -m  →  crée /home/<name>\n  -s  →  shell par défaut\n  -G  →  groupes additionnels\n  -u  →  UID forcé",
+        culture: "Attention à un piège célèbre : `useradd` (bas niveau, austère) ne crée PAS le home ni ne demande de mot de passe par défaut — d'où le `-m` obligatoire. Son cousin `adduser` (un script Perl convivial, Debian/Ubuntu) fait tout automatiquement et pose les questions de façon interactive. Beaucoup de tutos confondent les deux. Règle : `adduser` pour la main, `useradd` (précis, scriptable) pour l'automatisation.",
+        reflection: "Après `useradd -m alice`, Alice ne peut toujours pas se connecter. Que manque-t-il ?\n👉 Un **mot de passe** (ou une clé SSH). `useradd` crée le compte mais le laisse *verrouillé* — sans mot de passe, aucune connexion possible. Il faut `sudo passwd alice` pour lui en définir un. C'est un cycle en deux temps : créer le compte, PUIS l'activer avec un mot de passe. Oublier la seconde étape est l'erreur n°1 de la création de comptes.",
         check: function(s) { return !!getNode('/home/alice'); }
       },
       {
@@ -2291,6 +2293,8 @@ var QUESTS = [
         steps: ["`sudo usermod -aG sudo alice`", "`-a` = append (ajouter)", "`-G sudo` = au groupe sudo", "Vérifie : `groups alice`"],
         expected: "$ sudo usermod -aG sudo alice\n$ groups alice\nalice : alice sudo",
         diagram: "Piège classique :\n  ❌ usermod -G sudo alice\n     → écrase tous les autres groupes\n  ✅ usermod -aG sudo alice\n     → ajoute (append) au groupe sudo",
+        culture: "Le `-a` (append) de `usermod -aG` a causé plus de catastrophes que n'importe quelle autre option. Sans `-a`, `usermod -G sudo alice` **REMPLACE** tous les groupes secondaires d'alice par le seul groupe `sudo` — elle perd d'un coup son appartenance à tous les autres (docker, www-data, dev...). Le résultat : des accès qui disparaissent mystérieusement, des services qui cassent. La règle gravée dans le marbre : `usermod -aG`, jamais `usermod -G` seul. Le `a` est vital.",
+        reflection: "Un développeur ajouté au groupe `docker` avec `usermod -aG` ne peut toujours pas lancer Docker. Pourquoi ?\n👉 Parce que l'appartenance à un groupe n'est chargée qu'à l'**ouverture de session**. Alice doit se **déconnecter et se reconnecter** (ou lancer `newgrp docker`) pour que son shell prenne en compte le nouveau groupe. Piège fréquent : « je l'ai bien ajouté au groupe mais ça ne marche pas » — il fallait juste rouvrir la session.",
         check: function(s) { return s.history.some(function(c) { return /usermod.*-aG.*sudo/.test(c); }); }
       },
       {
@@ -2311,6 +2315,8 @@ var QUESTS = [
         mission: "Supprime alice avec son home directory.",
         steps: ["`sudo userdel -r alice`", "`-r` = remove home et mail", "Vérifie : `ls /home`"],
         expected: "$ sudo userdel -r alice\n$ ls /home\nuser",
+        culture: "Supprimer un compte à un départ est une obligation de sécurité (un compte oublié = une porte ouverte), mais le `-r` (remove home) est à double tranchant. Il efface `/home/alice` ET les mails — parfois des données que l'entreprise doit ARCHIVER légalement. La bonne pratique en production n'est souvent pas de supprimer mais de **désactiver** (`usermod -L alice` verrouille le compte, ou `usermod -s /usr/sbin/nologin` interdit la connexion) : l'accès est coupé, mais les fichiers restent récupérables.",
+        reflection: "Faut-il toujours utiliser `userdel -r` quand un employé part ?\n👉 Pas forcément. Le `-r` détruit ses fichiers **définitivement** — or l'entreprise doit parfois les conserver (obligations légales, passation à un successeur). Souvent on **désactive** d'abord le compte (`usermod -L`), on archive le home, et on ne supprime qu'après. Couper l'accès immédiatement : oui. Détruire les données dans la foulée : à réfléchir. La révocation d'accès et la suppression de données sont deux décisions distinctes.",
         check: function(s) { return !getNode('/home/alice') && s.history.some(function(c) { return /userdel/.test(c); }); }
       }
     ]
@@ -2397,6 +2403,8 @@ var QUESTS = [
         mission: "Affiche la variable HOME avec echo.",
         steps: ["`echo $HOME`", "Tu obtiens /home/user", "Essaie aussi : `echo $USER`, `echo $PATH`"],
         expected: "$ echo $HOME\n/home/user\n$ echo $USER\nuser",
+        culture: "La variable d'environnement la plus importante est `$PATH` : la **liste des dossiers** où le shell cherche les commandes. Quand tu tapes `ls`, le shell parcourt les dossiers de `$PATH` (`/usr/bin`, `/bin`...) jusqu'à trouver le programme `ls`. C'est pourquoi un script local doit être lancé avec `./script` — sans le `./`, le shell ne le trouve pas, car le dossier courant n'est (volontairement, par sécurité) PAS dans le PATH. Le fameux « command not found » veut souvent dire « pas dans le PATH ».",
+        reflection: "Pourquoi doit-on écrire `./mon_script.sh` avec le `./`, alors que `ls` ou `cat` se tapent sans rien ?\n👉 Parce que `ls` et `cat` sont dans un dossier du `$PATH` (le shell sait où les trouver), mais ton script est dans le dossier courant, qui n'est PAS dans le PATH par sécurité. Le `./` dit explicitement « le script est ICI, dans le dossier courant ». Sans lui, le shell chercherait dans le PATH, ne trouverait rien, et répondrait « command not found ». Une protection contre les scripts malveillants déguisés en commandes courantes.",
         check: function(s) { return s.history.some(function(c) { return /echo\s+\$\w+/.test(c); }); }
       },
       {
@@ -2408,6 +2416,8 @@ var QUESTS = [
         steps: ["`cat ~/scripts/install.sh`", "Note la première ligne `#!/bin/bash`", "C'est ce qui rend ce fichier exécutable comme script bash"],
         expected: "#!/bin/bash\necho \"Installation en cours...\"\necho \"Tout est prêt !\"",
         diagram: "Anatomie d'un script :\n  #!/bin/bash      ← shebang (obligatoire)\n  # commentaire    ← optionnel\n  VARIABLE=\"valeur\" ← définition\n  echo $VARIABLE    ← utilisation",
+        culture: "Le **shebang** `#!/bin/bash` (parfois appelé *hashbang*) est magique : les deux premiers octets `#!` sont reconnus par le noyau Linux lui-même. Quand tu lances `./script`, le noyau lit ces deux caractères, puis le chemin qui suit, et dit « lance CET interpréteur avec ce fichier ». C'est pour ça qu'un même mécanisme fait tourner des scripts bash (`#!/bin/bash`), Python (`#!/usr/bin/python3`), ou n'importe quoi d'autre. Une convention de 1980 gravée dans le cœur du système.",
+        reflection: "Que se passe-t-il si tu oublies la ligne `#!/bin/bash` en haut d'un script que tu lances avec `./script.sh` ?\n👉 Sans shebang, le noyau ne sait pas quel interpréteur utiliser. Selon le contexte, il tente ton shell courant par défaut (souvent ça marche par chance), ou échoue avec « exec format error ». Le comportement devient imprévisible d'une machine à l'autre. Le shebang garantit que ton script s'exécute TOUJOURS avec le bon interpréteur, partout. C'est la première ligne, jamais optionnelle.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('install.sh') >= 0; }); }
       },
       {
@@ -2428,6 +2438,8 @@ var QUESTS = [
         mission: "Lance `ls /` puis affiche $?.",
         steps: ["`ls /`", "`echo $?`", "Si tout va bien, tu vois `0`", "Essaie aussi `ls /nexistepas` puis `echo $?` → 2"],
         expected: "$ ls /\nbin etc home...\n$ echo $?\n0",
+        culture: "La convention **0 = succès, non-zéro = échec** semble contre-intuitive (0 c'est « faux » d'habitude !), mais elle est géniale : il n'y a qu'UNE façon de réussir (code 0), mais MILLE façons d'échouer (code 1, 2, 127...). Chaque code non-nul décrit un type d'erreur précis. Cette convention permet d'enchaîner intelligemment : `commande1 && commande2` ne lance la 2ᵉ QUE si la 1ʳᵉ a réussi (code 0), et `||` lance l'alternative en cas d'échec. C'est le fondement de toute logique de script robuste.",
+        reflection: "Comment lancer une deuxième commande UNIQUEMENT si la première a réussi, en une seule ligne ?\n👉 `commande1 && commande2` — le `&&` exécute la 2ᵉ seulement si la 1ʳᵉ a renvoyé le code 0 (succès). Exemple classique : `cd /var/www && rm *.tmp` — on ne supprime QUE si le `cd` a réussi (sinon on effacerait dans le mauvais dossier !). L'inverse, `||`, lance une alternative en cas d'échec : `ping -c1 serveur || echo \"serveur DOWN\"`. Ces deux opérateurs sont la logique de base des scripts.",
         check: function(s) { return s.history.some(function(c) { return c.trim() === 'echo $?'; }); }
       },
       {
