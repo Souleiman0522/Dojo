@@ -1079,6 +1079,19 @@ window.addEventListener('error', function(e) {
   @media (max-width: 900px) {
     .term-panel { height: 45vh; min-height: 300px; }
   }
+  /* ===== Terminal à droite (préférence utilisateur) ===== */
+  .app-body.term-right { flex-direction: row; }
+  .app-body.term-right .term-panel {
+    width: 42%; max-width: 42%; height: auto;
+    border-top: none; border-left: 1px solid var(--border);
+  }
+  @media (max-width: 900px) {
+    .app-body.term-right { flex-direction: column; }
+    .app-body.term-right .term-panel {
+      width: 100%; max-width: 100%; height: 45vh;
+      border-left: none; border-top: 1px solid var(--border);
+    }
+  }
   .term-head {
     background: #24211a;
     padding: 7px 14px;
@@ -1433,10 +1446,12 @@ window.addEventListener('error', function(e) {
       <div class="term-title">
         <span class="term-title-dot">●</span> user@dojo
       </div>
-      <button class="neo-btn small" onclick="termClear()">Vider</button>
+      <div style="display:flex;gap:6px;align-items:center">
+        <button class="neo-btn small" onclick="toggleTermPosition()" id="term-pos-btn" title="Déplacer le terminal">⬒ À droite</button>
+        <button class="neo-btn small" onclick="termClear()">Vider</button>
+      </div>
     </div>
     <div id="terminal"></div>
-    <div class="cmd-chips" id="cmd-chips"></div>
   </div>
 </div>
 
@@ -4853,6 +4868,31 @@ function cmdHelp() {
   term.writeln('');
 }
 
+function toggleTermPosition() {
+  var ab = document.querySelector('.app-body');
+  if (!ab) return;
+  var right = ab.classList.toggle('term-right');
+  try { localStorage.setItem('dojo_term_pos', right ? 'right' : 'bottom'); } catch (e) {}
+  updateTermPosBtn();
+  // Ré-ajuste le terminal à sa nouvelle taille (après le reflow)
+  setTimeout(function() { try { window.dispatchEvent(new Event('resize')); } catch (e) {} }, 60);
+  setTimeout(function() { try { window.dispatchEvent(new Event('resize')); } catch (e) {} }, 350);
+}
+function updateTermPosBtn() {
+  var btn = document.getElementById('term-pos-btn');
+  if (!btn) return;
+  var right = document.querySelector('.app-body').classList.contains('term-right');
+  btn.innerHTML = right ? '⬓ En bas' : '⬒ À droite';
+  btn.title = right ? 'Mettre le terminal en bas' : 'Mettre le terminal à droite';
+}
+function applyTermPosition() {
+  var pref = null;
+  try { pref = localStorage.getItem('dojo_term_pos'); } catch (e) {}
+  var ab = document.querySelector('.app-body');
+  if (ab && pref === 'right') ab.classList.add('term-right');
+  updateTermPosBtn();
+}
+
 function renderCmdChips() {
   var chips = [
     { c: 'pwd', d: '?' }, { c: 'ls -la', d: 'détails' },
@@ -4866,6 +4906,7 @@ function renderCmdChips() {
     { c: 'whoami', d: 'moi' }, { c: 'help', d: 'aide' }
   ];
   var container = document.getElementById('cmd-chips');
+  if (!container) return;
   container.innerHTML = '';
   chips.forEach(function(chip) {
     var btn = document.createElement('button');
@@ -5247,7 +5288,7 @@ function init() {
 
   renderFs();
   renderExercises();
-  renderCmdChips();
+  applyTermPosition();
   bindFeedbackStars();
   updateServerStatus();
   // Live server status refresh every 5s
