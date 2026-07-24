@@ -548,13 +548,13 @@ window.addEventListener('error', function(e) {
 
   /* Section blocks - sober */
   .exo-section {
-    margin: 10px 0;
-    padding: 10px 12px;
+    margin: 11px 0;
+    padding: 11px 13px;
     border-radius: 6px;
     background: var(--bg-elevated);
     border-left: 3px solid var(--text-3);
-    font-size: 0.78rem;
-    line-height: 1.55;
+    font-size: 0.94rem;
+    line-height: 1.68;
     color: var(--text-1);
   }
   .exo-section.context     { border-left-color: var(--blue); }
@@ -627,37 +627,56 @@ window.addEventListener('error', function(e) {
 
   /* ═══ RÉCIT + MENTOR (en tête de catégorie) ═══ */
   .quest-story {
-    margin: 4px 0 10px;
-    padding: 12px 14px;
+    margin: 4px 0 12px;
+    padding: 14px 16px;
     background: var(--bg-elevated);
     border: 1px solid var(--border-light);
     border-left: 3px solid var(--vermilion, #c8341c);
     border-radius: 6px;
-    font-size: 0.78rem;
-    line-height: 1.6;
-    color: var(--text-2);
+    font-size: 1rem;
+    line-height: 1.72;
+    color: #241a10;
     font-family: var(--font-serif);
-    font-size: 0.92rem;
   }
   .quest-story-label, .quest-mentor-label {
-    display: block;
-    font-size: 0.58rem; font-weight: 700;
+    display: flex; align-items: center; gap: 6px;
+    font-size: 0.62rem; font-weight: 700;
     letter-spacing: 1.5px; text-transform: uppercase;
     color: var(--vermilion, #c8341c);
-    margin-bottom: 6px;
+    margin-bottom: 9px;
     font-family: var(--font-mono);
-    opacity: 0.85;
+    opacity: 0.9;
+    cursor: pointer; user-select: none;
+  }
+  .quest-story-label:hover, .quest-mentor-label:hover { opacity: 1; }
+  .narr-chev { font-size: 0.72em; transition: transform 0.2s ease; display: inline-block; }
+  .quest-story.collapsed .quest-story-body,
+  .quest-mentor.collapsed .quest-mentor-body { display: none; }
+  .quest-story.collapsed .narr-chev,
+  .quest-mentor.collapsed .narr-chev { transform: rotate(-90deg); }
+  .quest-story-label .narr-read {
+    margin-left: auto; font-size: 0.9em; font-weight: 600;
+    letter-spacing: 0.5px; text-transform: none;
+    color: var(--text-3); opacity: 0.85;
+  }
+  .quest-story-cap {
+    float: left;
+    font-family: var(--font-jp), var(--font-serif), serif;
+    font-size: 2.6rem; line-height: 0.82;
+    color: var(--vermilion, #c8341c);
+    font-weight: 700; opacity: 0.92;
+    margin: 4px 13px 0 0;
   }
   .quest-mentor {
     margin: 0 0 12px;
-    padding: 12px 14px;
+    padding: 14px 16px;
     background: rgba(30,58,92,0.05);
     border: 1px solid var(--border-light);
     border-left: 3px solid var(--indigo, #1e3a5c);
     border-radius: 6px;
-    font-size: 0.78rem;
-    line-height: 1.6;
-    color: var(--text-2);
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: #241a10;
   }
   .quest-mentor-label { color: var(--indigo, #1e3a5c); }
 
@@ -687,8 +706,8 @@ window.addEventListener('error', function(e) {
     margin-bottom: 5px;
   }
   .quest-challenge-body {
-    font-size: 0.78rem; line-height: 1.55;
-    color: var(--text-2);
+    font-size: 0.92rem; line-height: 1.66;
+    color: #241a10;
   }
 
   .exo-status {
@@ -1644,6 +1663,16 @@ try {
 } catch (e) { completed = new Set(); }
 var cmdHistory = [];
 var expandedQuests = new Set(['fundamentals', 'navigation']);
+var collapsedNarrative = {}; // clés 'story:<qid>' / 'mentor:<qid>' -> true si replié
+
+// Numéral kanji pour la lettrine du récit (chapitres 1-18)
+function kanjiNum(n) {
+  var d = ['', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
+  if (n >= 1 && n <= 9) return d[n];
+  if (n === 10) return '十';
+  if (n >= 11 && n <= 19) return '十' + d[n - 10];
+  return String(n);
+}
 
 // État système simulé
 var sysState = {
@@ -3219,15 +3248,22 @@ function renderExercises() {
     html += '</div>';
     html += '<div class="quest-body">';
     if (quest.story) {
-      html += '<div class="quest-story">';
-      html += '<span class="quest-story-label">📖 Le récit</span>';
+      var sCol = collapsedNarrative['story:' + quest.id];
+      html += '<div class="quest-story' + (sCol ? ' collapsed' : '') + '">';
+      html += '<span class="quest-story-label narr-toggle" data-narr="story:' + quest.id + '"><span class="narr-chev">▼</span> 📖 Le récit' + (sCol ? '<span class="narr-read">lu ✓</span>' : '') + '</span>';
+      html += '<div class="quest-story-body">';
+      if (quest.chapter) html += '<span class="quest-story-cap">' + kanjiNum(quest.chapter) + '</span>';
       html += formatTextWithCode(quest.story);
+      html += '</div>';
       html += '</div>';
     }
     if (quest.mentor) {
-      html += '<div class="quest-mentor">';
-      html += '<span class="quest-mentor-label">🧙 Le Sensei</span>';
+      var mCol = collapsedNarrative['mentor:' + quest.id];
+      html += '<div class="quest-mentor' + (mCol ? ' collapsed' : '') + '">';
+      html += '<span class="quest-mentor-label narr-toggle" data-narr="mentor:' + quest.id + '"><span class="narr-chev">▼</span> 🧙 Le Sensei</span>';
+      html += '<div class="quest-mentor-body">';
       html += formatTextWithCode(quest.mentor);
+      html += '</div>';
       html += '</div>';
     }
     quest.exos.forEach(function(ex) {
@@ -3258,6 +3294,16 @@ function renderExercises() {
       var qid = h.dataset.qid;
       if (expandedQuests.has(qid)) expandedQuests.delete(qid);
       else expandedQuests.add(qid);
+      renderExercises();
+    };
+  });
+  // Bind récit / Sensei collapse toggles
+  Array.prototype.forEach.call(list.querySelectorAll('.narr-toggle'), function(t) {
+    t.onclick = function(e) {
+      e.stopPropagation();
+      var key = t.dataset.narr;
+      if (collapsedNarrative[key]) delete collapsedNarrative[key];
+      else collapsedNarrative[key] = true;
       renderExercises();
     };
   });
@@ -3394,7 +3440,11 @@ function loadExercise(idx) {
   exoStatus = null;
   // Auto-expand the quest containing this exercise
   var ex = EXERCISES[idx];
-  if (ex.questId) expandedQuests.add(ex.questId);
+  if (ex.questId) {
+    expandedQuests.add(ex.questId);
+    // Le récit est « lu » : on le replie pour libérer de la place
+    collapsedNarrative['story:' + ex.questId] = true;
+  }
   renderExercises();
   // Scroll active card into view
   setTimeout(function() {
