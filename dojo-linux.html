@@ -928,7 +928,21 @@ window.addEventListener('error', function(e) {
     border-right: 1px solid var(--border);
     overflow: auto;
     min-height: 240px;
+    transition: opacity 0.6s ease, filter 0.6s ease;
   }
+  /* L'explorateur "dort" tant que l'élève n'a pas tapé de commande */
+  .fs-panel.fs-dormant { opacity: 0.4; filter: grayscale(0.55); }
+  .fs-wake-hint {
+    display: none;
+    margin: 10px 0 0;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--text-3);
+    animation: wakePulse 1.8s ease-in-out infinite;
+  }
+  .fs-panel.fs-dormant .fs-wake-hint { display: block; }
+  @keyframes wakePulse { 0%,100% { opacity: 0.4; } 50% { opacity: 0.9; } }
   .fs-panel::-webkit-scrollbar { width: 7px; }
   .fs-panel::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
   .fs-canvas { padding: 20px 18px; }
@@ -1404,6 +1418,7 @@ window.addEventListener('error', function(e) {
         </div>
       </div>
       <div class="items-grid" id="items-grid"></div>
+      <div class="fs-wake-hint">▷ tape une commande dans le terminal (<span style="color:var(--amber)">ls</span>, <span style="color:var(--amber)">cd</span>…) pour explorer</div>
     </div>
   </div>
   </div><!-- /work-row -->
@@ -3374,6 +3389,16 @@ function loadExercise(idx) {
     }
   }, 100);
   showToast('📝 Exercice ' + (idx + 1) + ' chargé');
+  dimExplorer(); // le monde "dort" jusqu'à la première commande
+}
+
+function dimExplorer() {
+  var fp = document.querySelector('.fs-panel');
+  if (fp) fp.classList.add('fs-dormant');
+}
+function wakeExplorer() {
+  var fp = document.querySelector('.fs-panel');
+  if (fp) fp.classList.remove('fs-dormant');
 }
 
 function checkExercise() {
@@ -3632,6 +3657,7 @@ function stripAnsi(s) {
 }
 
 function runCommandChain(cmd) {
+  wakeExplorer(); // le terminal éveille le monde
   // Handle pipes
   if (cmd.indexOf('|') >= 0) {
     var parts = cmd.split('|').map(function(p) { return p.trim(); });
