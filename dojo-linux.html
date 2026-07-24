@@ -448,7 +448,16 @@ window.addEventListener('error', function(e) {
     -webkit-background-clip: text; background-clip: text;
     -webkit-text-fill-color: transparent;
   }
-  .progress-wrap { margin-bottom: 12px; }
+  .progress-wrap { margin-bottom: 4px; }
+  .progress-label {
+    font-size: 0.62rem; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--text-3);
+    font-family: var(--font-mono); margin-bottom: 7px;
+  }
+  .panel-sep {
+    height: 1px; background: var(--border);
+    margin: 14px 0; opacity: 0.65;
+  }
   .progress-bar {
     height: 7px; background: rgba(180,168,208,0.1);
     border-radius: 4px; overflow: hidden;
@@ -767,7 +776,7 @@ window.addEventListener('error', function(e) {
     border: 1px solid var(--border);
     border-radius: 6px;
     padding: 10px 12px;
-    margin-bottom: 12px;
+    margin-bottom: 4px;
   }
   .server-status-title {
     font-size: 0.62rem;
@@ -780,7 +789,13 @@ window.addEventListener('error', function(e) {
     display: flex;
     align-items: center;
     gap: 6px;
+    cursor: pointer;
+    user-select: none;
   }
+  .server-status .narr-chev { font-size: 0.72em; transition: transform 0.2s ease; }
+  .server-status.collapsed .status-grid { display: none; }
+  .server-status.collapsed .server-status-title { margin-bottom: 0; }
+  .server-status.collapsed .narr-chev { transform: rotate(-90deg); }
   .status-led {
     width: 6px; height: 6px;
     border-radius: 50%;
@@ -1410,10 +1425,25 @@ window.addEventListener('error', function(e) {
         <div class="exo-header-title">Parcours</div>
       </div>
 
-      <!-- SERVER STATUS PANEL -->
-      <div class="server-status">
-        <div class="server-status-title">
+      <!-- PROGRESSION (mise en avant) -->
+      <div class="progress-wrap">
+        <div class="progress-label">Progression</div>
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+        <div class="progress-text" id="progress-text">0 / 0</div>
+      </div>
+
+      <div class="panel-sep"></div>
+
+      <div id="active-exo-container"></div>
+      <div id="exo-list"></div>
+
+      <div class="panel-sep"></div>
+
+      <!-- SERVER STATUS (compact, repliable, discret) -->
+      <div class="server-status collapsed" id="server-status">
+        <div class="server-status-title" id="server-status-toggle">
           <span class="status-led"></span> Server status
+          <span class="narr-chev" style="margin-left:auto">▼</span>
         </div>
         <div class="status-grid">
           <div class="status-row"><span class="label">host</span><span class="value" id="srv-host">dojo</span></div>
@@ -1426,13 +1456,6 @@ window.addEventListener('error', function(e) {
           <div class="status-row"><span class="label">ssh</span><span class="value up" id="srv-ssh">running</span></div>
         </div>
       </div>
-
-      <div class="progress-wrap">
-        <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
-        <div class="progress-text" id="progress-text">0 / 0</div>
-      </div>
-      <div id="active-exo-container"></div>
-      <div id="exo-list"></div>
     </div>
   </aside>
 
@@ -5339,6 +5362,12 @@ function init() {
   renderFs();
   renderExercises();
   applyTermPosition();
+  var ssToggle = document.getElementById('server-status-toggle');
+  if (ssToggle) {
+    ssToggle.onclick = function() {
+      document.getElementById('server-status').classList.toggle('collapsed');
+    };
+  }
   bindFeedbackStars();
   updateServerStatus();
   // Live server status refresh every 5s
