@@ -3248,11 +3248,13 @@ function writePrompt() {
 
 function showWelcome() {
   term.writeln('');
-  term.writeln(C.brMagenta + '  🥋  LE DOJO · Linux Visuel' + C.reset);
-  term.writeln(C.dim + '  Apprentissage interactif — Ubuntu 22.04 (simulé)' + C.reset);
+  term.writeln('  ' + C.brMagenta + C.bold + '道場' + C.reset + '   ' + C.brYellow + C.bold + 'DOJO DU LINUX' + C.reset);
+  term.writeln('  ' + C.dim + '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━' + C.reset);
+  term.writeln('  ' + C.dim + 'コマンドは力なり · La commande est puissance' + C.reset);
   term.writeln('');
-  term.writeln(C.dim + '  ' + EXERCISES.length + ' exercices · ' + QUESTS.length + ' quêtes' + C.reset);
-  term.writeln(C.dim + '  Tapez ' + C.brYellow + 'help' + C.dim + ' pour les commandes' + C.reset);
+  term.writeln('  ' + C.dim + 'Apprentissage interactif — Ubuntu 22.04 (simulé)' + C.reset);
+  term.writeln('  ' + C.dim + EXERCISES.length + ' exercices · ' + QUESTS.length + ' quêtes · 18 chapitres' + C.reset);
+  term.writeln('  ' + C.dim + 'Tapez ' + C.brYellow + 'help' + C.dim + ' pour les commandes' + C.reset);
   term.writeln('');
   writePrompt();
 }
