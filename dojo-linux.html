@@ -407,7 +407,7 @@ window.addEventListener('error', function(e) {
 
   /* EXO PANEL */
   .exo-panel {
-    width: 360px;
+    width: 300px;
     background: var(--bg-card);
     border-right: 1px solid var(--border);
     flex-shrink: 0;
@@ -940,7 +940,7 @@ window.addEventListener('error', function(e) {
     padding: 9px 12px;
     font-family: var(--font-mono);
     font-size: 0.82rem;
-    margin-bottom: 20px;
+    margin-bottom: 14px;
     display: flex; align-items: center;
     gap: 5px; flex-wrap: wrap;
     position: sticky; top: 0; z-index: 10;
@@ -966,36 +966,41 @@ window.addEventListener('error', function(e) {
   .path-sep { color: var(--text-3); }
 
   .current-folder {
-    display: flex; flex-direction: column; align-items: center;
-    margin-bottom: 24px;
+    display: flex; align-items: center; gap: 13px;
+    padding-bottom: 14px; margin-bottom: 16px;
+    border-bottom: 1px solid var(--border);
   }
   .current-folder-icon {
-    width: 90px; height: 72px;
-    filter: drop-shadow(0 12px 26px rgba(200,144,40,0.4));
-    animation: float 3s ease-in-out infinite;
+    width: 42px; height: 34px; flex-shrink: 0;
+    filter: drop-shadow(0 5px 12px rgba(200,144,40,0.28));
   }
   @keyframes float {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-7px); }
   }
+  .current-folder-text {
+    display: flex; flex-direction: column; min-width: 0;
+  }
   .current-folder-name {
     font-family: var(--font-mono);
-    font-size: 1rem; font-weight: 700;
-    color: var(--amber); margin-top: 9px;
-    text-shadow: 0 0 18px rgba(200,144,40,0.4);
-    word-break: break-all; text-align: center;
+    font-size: 1.1rem; font-weight: 700;
+    color: var(--amber);
+    text-shadow: 0 0 14px rgba(200,144,40,0.25);
+    word-break: break-all; text-align: left;
+    line-height: 1.2;
   }
   .current-folder-meta {
-    font-size: 0.66rem; color: var(--text-2);
-    margin-top: 3px;
+    font-size: 0.7rem; color: var(--text-2);
+    margin-top: 3px; text-align: left;
     font-family: var(--font-mono);
   }
+  .current-folder-meta .folder-role { color: var(--amber); font-weight: 600; }
 
   .items-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 12px;
-    max-width: 720px; margin: 0 auto;
+    grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+    gap: 10px;
+    max-width: 100%; margin: 0;
   }
   .empty-folder {
     grid-column: 1 / -1;
@@ -1393,8 +1398,10 @@ window.addEventListener('error', function(e) {
       </div>
       <div class="current-folder">
         <div class="current-folder-icon" id="current-folder-icon"></div>
-        <div class="current-folder-name" id="current-folder-name">/</div>
-        <div class="current-folder-meta" id="current-folder-meta">— éléments</div>
+        <div class="current-folder-text">
+          <div class="current-folder-name" id="current-folder-name">/</div>
+          <div class="current-folder-meta" id="current-folder-meta">— éléments</div>
+        </div>
       </div>
       <div class="items-grid" id="items-grid"></div>
     </div>
@@ -3046,6 +3053,24 @@ function getIconFor(item) {
 }
 
 // ===== RENDER FS =====
+var FOLDER_ROLES = {
+  '/': 'Racine du système',
+  '/home': 'Dossiers des utilisateurs',
+  '/home/user': '🏠 Home du disciple',
+  '/root': 'Home du super-utilisateur',
+  '/etc': 'Configuration du système',
+  '/var': 'Données variables',
+  '/var/www': 'Racine du serveur web',
+  '/var/log': 'Journaux système',
+  '/tmp': 'Fichiers temporaires',
+  '/bin': 'Programmes essentiels',
+  '/usr': 'Programmes des utilisateurs',
+  '/opt': 'Logiciels optionnels'
+};
+function folderRole(p) {
+  return FOLDER_ROLES[p] || null;
+}
+
 function renderFs() {
   var segs = document.getElementById('path-segments');
   segs.innerHTML = '';
@@ -3076,7 +3101,10 @@ function renderFs() {
   document.getElementById('current-folder-name').textContent = cwd;
   var node = getNode(cwd);
   var entries = (node && node.children) ? Object.keys(node.children).map(function(k) { return [k, node.children[k]]; }) : [];
-  document.getElementById('current-folder-meta').textContent = entries.length + ' élément' + (entries.length > 1 ? 's' : '');
+  var count = entries.length + ' élément' + (entries.length > 1 ? 's' : '');
+  var role = folderRole(cwd);
+  document.getElementById('current-folder-meta').innerHTML =
+    (role ? '<span class="folder-role">' + escapeHtml(role) + '</span> · ' : '') + count;
 
   var grid = document.getElementById('items-grid');
   grid.innerHTML = '';
@@ -3982,6 +4010,8 @@ function cmdLs(args) {
     });
     term.writeln(items.join('  '));
   }
+  // Le terminal pilote « le monde » : lister le dossier courant ré-anime l'explorateur
+  if (path === cwd) renderFs();
 }
 
 function cmdCd(args) {
