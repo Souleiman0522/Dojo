@@ -156,7 +156,7 @@ window.addEventListener('error', function(e) {
     font-family: var(--font-mono);
   }
   .session-pill {
-    margin-left: auto;
+    margin-left: 8px;
     display: inline-flex; align-items: center; gap: 6px;
     background: rgba(30,90,61,0.1);
     border: 1px solid rgba(30,90,61,0.3);
@@ -1083,9 +1083,7 @@ window.addEventListener('error', function(e) {
     <div class="brand-title">le.dojo</div>
     <div class="brand-sub">v3 · BUILD-1205 · 87 exos</div>
   </div>
-  <a href="index.html" style="background:transparent;border:1px solid var(--border);color:var(--text-2);padding:5px 11px;border-radius:4px;font-size:0.7rem;font-family:var(--font-mono);text-decoration:none;margin-right:6px;text-transform:uppercase;letter-spacing:1px">🏠 Accueil</a>
-  <a href="cours.html" style="background:transparent;border:1px solid var(--border);color:var(--text-2);padding:5px 11px;border-radius:4px;font-size:0.7rem;font-family:var(--font-mono);text-decoration:none;margin-right:6px;text-transform:uppercase;letter-spacing:1px">📚 Cours</a>
-  <button class="feedback-btn" id="feedback-btn" onclick="openFeedbackModal()">💬 Avis</button>
+  <button class="feedback-btn" id="feedback-btn" onclick="openFeedbackModal()" style="margin-left:auto">💬 Avis</button>
   <span class="user-badge" id="user-badge" onclick="openProfileModal()" style="display:none">
     <span id="user-pseudo">--</span>
     <span id="user-progress">0/80</span>
