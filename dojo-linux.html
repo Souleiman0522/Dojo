@@ -397,12 +397,46 @@ window.addEventListener('error', function(e) {
     flex: 1; display: flex; flex-direction: column;
     overflow: hidden; min-height: 0;
   }
-  .work-row {
+  /* Zone principale (à gauche du terminal) : Chapitres | Colonne centrale */
+  .main-zone {
     flex: 1; display: flex;
-    overflow: hidden; min-height: 0;
+    overflow: hidden; min-width: 0; min-height: 0;
+  }
+  /* Colonne centrale : Texte (haut) + Explorateur (bas) */
+  .center-column {
+    flex: 1; display: flex; flex-direction: column;
+    overflow: hidden; min-width: 0; min-height: 0;
+  }
+  /* Panneau central : récit + consignes */
+  .content-panel {
+    flex: 1; overflow-y: auto; min-height: 0;
+    background: var(--bg-card);
+    padding: 16px 18px;
+  }
+  .content-panel .active-exo { margin: 0; box-shadow: none; border: none; background: transparent; }
+  .content-empty {
+    color: var(--text-3); font-size: 0.9rem; line-height: 1.6;
+    text-align: center; padding: 40px 20px; font-family: var(--font-serif);
+  }
+  .content-chapter-title {
+    font-family: var(--font-serif);
+    font-size: 1.35rem; font-weight: 700;
+    color: var(--text-1);
+    margin: 2px 0 14px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--border);
+  }
+  .quest-section.current > .quest-header {
+    background: rgba(200,144,40,0.12);
+    border-radius: 6px;
   }
   @media (max-width: 900px) {
-    .work-row { flex-direction: column; overflow: auto; }
+    html, body { height: auto; overflow-y: auto; }
+    .app-body, .app-body.term-right { height: auto; overflow: visible; flex-direction: column; }
+    .main-zone { flex-direction: column; overflow: visible; height: auto; }
+    .center-column { flex: none; overflow: visible; height: auto; }
+    .content-panel { flex: none; height: auto; min-height: auto; overflow: visible; }
+    .exo-content { overflow: visible; }
   }
 
   /* EXO PANEL */
@@ -957,12 +991,16 @@ window.addEventListener('error', function(e) {
 
   /* FS PANEL */
   .fs-panel {
-    flex: 1;
+    flex: none;
+    height: 33vh;
     background: var(--bg-deep);
-    border-right: 1px solid var(--border);
+    border-top: 1px solid var(--border);
     overflow: auto;
-    min-height: 240px;
+    min-height: 170px;
     transition: opacity 0.6s ease, filter 0.6s ease;
+  }
+  @media (max-width: 900px) {
+    .fs-panel { height: auto; min-height: 240px; }
   }
   /* L'explorateur "dort" tant que l'élève n'a pas tapé de commande */
   .fs-panel.fs-dormant { opacity: 0.4; filter: grayscale(0.55); }
@@ -1121,8 +1159,9 @@ window.addEventListener('error', function(e) {
   }
   @media (max-width: 900px) {
     .app-body.term-right { flex-direction: column; }
-    .app-body.term-right .term-panel {
-      width: 100%; max-width: 100%; height: 45vh;
+    .app-body.term-right .term-panel,
+    .term-panel {
+      width: 100%; max-width: 100%; height: 72vh; min-height: 380px;
       border-left: none; border-top: 1px solid var(--border);
     }
   }
@@ -1416,67 +1455,73 @@ window.addEventListener('error', function(e) {
 </div>
 
 <div class="app-body">
-  <div class="work-row">
-  <aside class="exo-panel" id="exo-panel">
-    <button class="exo-toggle" id="exo-toggle">◀</button>
-    <div class="exo-content" id="exo-content">
-      <div class="exo-header">
-        <span class="exo-header-icon">🎯</span>
-        <div class="exo-header-title">Parcours</div>
+  <div class="main-zone">
+    <aside class="exo-panel" id="exo-panel">
+      <button class="exo-toggle" id="exo-toggle">◀</button>
+      <div class="exo-content" id="exo-content">
+        <div class="exo-header">
+          <span class="exo-header-icon">🎯</span>
+          <div class="exo-header-title">Parcours</div>
+        </div>
+
+        <!-- PROGRESSION (mise en avant) -->
+        <div class="progress-wrap">
+          <div class="progress-label">Progression</div>
+          <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+          <div class="progress-text" id="progress-text">0 / 0</div>
+        </div>
+
+        <div class="panel-sep"></div>
+
+        <div id="exo-list"></div>
+
+        <div class="panel-sep"></div>
+
+        <!-- SERVER STATUS (compact, repliable, discret) -->
+        <div class="server-status collapsed" id="server-status">
+          <div class="server-status-title" id="server-status-toggle">
+            <span class="status-led"></span> Server status
+            <span class="narr-chev" style="margin-left:auto">▼</span>
+          </div>
+          <div class="status-grid">
+            <div class="status-row"><span class="label">host</span><span class="value" id="srv-host">dojo</span></div>
+            <div class="status-row"><span class="label">ip</span><span class="value" id="srv-ip">192.168.1.42</span></div>
+            <div class="status-row"><span class="label">uptime</span><span class="value" id="srv-uptime">2d 3h</span></div>
+            <div class="status-row"><span class="label">load</span><span class="value" id="srv-load">0.05</span></div>
+            <div class="status-row"><span class="label">ram</span><span class="value" id="srv-ram">4.2/16G</span></div>
+            <div class="status-row"><span class="label">disk</span><span class="value" id="srv-disk">12/50G</span></div>
+            <div class="status-row"><span class="label">nginx</span><span class="value down" id="srv-nginx">stopped</span></div>
+            <div class="status-row"><span class="label">ssh</span><span class="value up" id="srv-ssh">running</span></div>
+          </div>
+        </div>
       </div>
+    </aside>
 
-      <!-- PROGRESSION (mise en avant) -->
-      <div class="progress-wrap">
-        <div class="progress-label">Progression</div>
-        <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
-        <div class="progress-text" id="progress-text">0 / 0</div>
-      </div>
-
-      <div class="panel-sep"></div>
-
+    <div class="center-column">
+    <section class="content-panel" id="content-panel">
       <div id="active-exo-container"></div>
-      <div id="exo-list"></div>
+      <div id="content-narrative"></div>
+    </section>
 
-      <div class="panel-sep"></div>
-
-      <!-- SERVER STATUS (compact, repliable, discret) -->
-      <div class="server-status collapsed" id="server-status">
-        <div class="server-status-title" id="server-status-toggle">
-          <span class="status-led"></span> Server status
-          <span class="narr-chev" style="margin-left:auto">▼</span>
+    <div class="fs-panel">
+      <div class="fs-canvas">
+        <div class="path-bar" id="path-bar">
+          <span class="path-label">📍</span>
+          <span id="path-segments"></span>
         </div>
-        <div class="status-grid">
-          <div class="status-row"><span class="label">host</span><span class="value" id="srv-host">dojo</span></div>
-          <div class="status-row"><span class="label">ip</span><span class="value" id="srv-ip">192.168.1.42</span></div>
-          <div class="status-row"><span class="label">uptime</span><span class="value" id="srv-uptime">2d 3h</span></div>
-          <div class="status-row"><span class="label">load</span><span class="value" id="srv-load">0.05</span></div>
-          <div class="status-row"><span class="label">ram</span><span class="value" id="srv-ram">4.2/16G</span></div>
-          <div class="status-row"><span class="label">disk</span><span class="value" id="srv-disk">12/50G</span></div>
-          <div class="status-row"><span class="label">nginx</span><span class="value down" id="srv-nginx">stopped</span></div>
-          <div class="status-row"><span class="label">ssh</span><span class="value up" id="srv-ssh">running</span></div>
+        <div class="current-folder">
+          <div class="current-folder-icon" id="current-folder-icon"></div>
+          <div class="current-folder-text">
+            <div class="current-folder-name" id="current-folder-name">/</div>
+            <div class="current-folder-meta" id="current-folder-meta">— éléments</div>
+          </div>
         </div>
+        <div class="items-grid" id="items-grid"></div>
+        <div class="fs-wake-hint">▷ tape une commande dans le terminal (<span style="color:var(--amber)">ls</span>, <span style="color:var(--amber)">cd</span>…) pour explorer</div>
       </div>
     </div>
-  </aside>
-
-  <div class="fs-panel">
-    <div class="fs-canvas">
-      <div class="path-bar" id="path-bar">
-        <span class="path-label">📍</span>
-        <span id="path-segments"></span>
-      </div>
-      <div class="current-folder">
-        <div class="current-folder-icon" id="current-folder-icon"></div>
-        <div class="current-folder-text">
-          <div class="current-folder-name" id="current-folder-name">/</div>
-          <div class="current-folder-meta" id="current-folder-meta">— éléments</div>
-        </div>
-      </div>
-      <div class="items-grid" id="items-grid"></div>
-      <div class="fs-wake-hint">▷ tape une commande dans le terminal (<span style="color:var(--amber)">ls</span>, <span style="color:var(--amber)">cd</span>…) pour explorer</div>
-    </div>
-  </div>
-  </div><!-- /work-row -->
+    </div><!-- /center-column -->
+  </div><!-- /main-zone -->
 
   <div class="term-panel">
     <div class="term-head">
@@ -1687,6 +1732,7 @@ try {
 var cmdHistory = [];
 var expandedQuests = new Set(['fundamentals', 'navigation']);
 var collapsedNarrative = {}; // clés 'story:<qid>' / 'mentor:<qid>' -> true si replié
+var currentQuestId = 'fundamentals'; // chapitre dont le récit s'affiche au centre
 
 // Numéral kanji pour la lettrine du récit (chapitres 1-18)
 function kanjiNum(n) {
@@ -3252,6 +3298,7 @@ function renderExercises() {
   var list = document.getElementById('exo-list');
   var html = '';
 
+  // ── Navigation (gauche) : titres de chapitres + cartes d'exercices ──
   QUESTS.forEach(function(quest) {
     var doneInQuest = 0;
     quest.exos.forEach(function(ex) {
@@ -3259,7 +3306,8 @@ function renderExercises() {
       if (completed.has(idx)) doneInQuest++;
     });
     var isExpanded = expandedQuests.has(quest.id);
-    html += '<div class="quest-section' + (isExpanded ? ' expanded' : '') + '" data-qid="' + quest.id + '">';
+    var isCurrent = quest.id === currentQuestId;
+    html += '<div class="quest-section' + (isExpanded ? ' expanded' : '') + (isCurrent ? ' current' : '') + '" data-qid="' + quest.id + '">';
     html += '<div class="quest-header" data-qid="' + quest.id + '">';
     html += '<span class="quest-icon" style="color:' + quest.color + '">' + quest.icon + '</span>';
     html += '<div style="flex:1">';
@@ -3270,25 +3318,6 @@ function renderExercises() {
     html += '<span class="quest-chevron">▶</span>';
     html += '</div>';
     html += '<div class="quest-body">';
-    if (quest.story) {
-      var sCol = collapsedNarrative['story:' + quest.id];
-      html += '<div class="quest-story' + (sCol ? ' collapsed' : '') + '">';
-      html += '<span class="quest-story-label narr-toggle" data-narr="story:' + quest.id + '"><span class="narr-chev">▼</span> 📖 Le récit' + (sCol ? '<span class="narr-read">lu ✓</span>' : '') + '</span>';
-      html += '<div class="quest-story-body">';
-      if (quest.chapter) html += '<span class="quest-story-cap">' + kanjiNum(quest.chapter) + '</span>';
-      html += formatTextWithCode(quest.story);
-      html += '</div>';
-      html += '</div>';
-    }
-    if (quest.mentor) {
-      var mCol = collapsedNarrative['mentor:' + quest.id];
-      html += '<div class="quest-mentor' + (mCol ? ' collapsed' : '') + '">';
-      html += '<span class="quest-mentor-label narr-toggle" data-narr="mentor:' + quest.id + '"><span class="narr-chev">▼</span> 🧙 Le Sensei</span>';
-      html += '<div class="quest-mentor-body">';
-      html += formatTextWithCode(quest.mentor);
-      html += '</div>';
-      html += '</div>';
-    }
     quest.exos.forEach(function(ex) {
       var idx = EXERCISES.indexOf(ex);
       var cls = 'exo-card' + (idx === currentExoIdx ? ' active' : '') + (completed.has(idx) ? ' completed' : '');
@@ -3299,35 +3328,20 @@ function renderExercises() {
       html += '<div class="exo-card-title">' + escapeHtml(ex.title) + '</div>';
       html += '</div>';
     });
-    if (quest.challenge) {
-      html += '<div class="quest-challenge">';
-      html += '<div class="quest-challenge-head"><span class="quest-challenge-icon">⚔️</span> Le Défi du Sensei</div>';
-      html += '<div class="quest-challenge-title">' + escapeHtml(quest.challenge.title) + '</div>';
-      html += '<div class="quest-challenge-body">' + formatTextWithCode(quest.challenge.desc) + '</div>';
-      html += '</div>';
-    }
     html += '</div></div>';
   });
 
   list.innerHTML = html;
 
-  // Bind quest header clicks
+  // Bind quest header clicks : sélectionne le chapitre (récit au centre) + déplie la nav
   Array.prototype.forEach.call(list.querySelectorAll('.quest-header'), function(h) {
     h.onclick = function() {
       var qid = h.dataset.qid;
       if (expandedQuests.has(qid)) expandedQuests.delete(qid);
       else expandedQuests.add(qid);
+      currentQuestId = qid;
       renderExercises();
-    };
-  });
-  // Bind récit / Sensei collapse toggles
-  Array.prototype.forEach.call(list.querySelectorAll('.narr-toggle'), function(t) {
-    t.onclick = function(e) {
-      e.stopPropagation();
-      var key = t.dataset.narr;
-      if (collapsedNarrative[key]) delete collapsedNarrative[key];
-      else collapsedNarrative[key] = true;
-      renderExercises();
+      renderChapterNarrative(qid);
     };
   });
   // Bind exo card clicks
@@ -3344,7 +3358,55 @@ function renderExercises() {
   document.getElementById('progress-fill').style.width = pct + '%';
   document.getElementById('progress-text').textContent = done + ' / ' + total + ' complétés';
 
+  renderChapterNarrative(currentQuestId);
   renderActiveExo();
+}
+
+// ── Récit / Sensei / Défi du chapitre courant (colonne centrale) ──
+function renderChapterNarrative(qid) {
+  var el = document.getElementById('content-narrative');
+  if (!el) return;
+  var quest = null;
+  for (var i = 0; i < QUESTS.length; i++) { if (QUESTS[i].id === qid) { quest = QUESTS[i]; break; } }
+  if (!quest) {
+    el.innerHTML = '<div class="content-empty">← Choisis un chapitre à gauche pour lire son récit, puis un exercice.</div>';
+    return;
+  }
+  var html = '';
+  var chapPrefix = quest.chapter ? '<span class="quest-chapter">Ch ' + quest.chapter + '</span> ' : '';
+  html += '<div class="content-chapter-title">' + chapPrefix + escapeHtml(quest.title) + '</div>';
+  if (quest.story) {
+    var sCol = collapsedNarrative['story:' + quest.id];
+    html += '<div class="quest-story' + (sCol ? ' collapsed' : '') + '">';
+    html += '<span class="quest-story-label narr-toggle" data-narr="story:' + quest.id + '"><span class="narr-chev">▼</span> 📖 Le récit' + (sCol ? '<span class="narr-read">lu ✓</span>' : '') + '</span>';
+    html += '<div class="quest-story-body">';
+    if (quest.chapter) html += '<span class="quest-story-cap">' + kanjiNum(quest.chapter) + '</span>';
+    html += formatTextWithCode(quest.story);
+    html += '</div></div>';
+  }
+  if (quest.mentor) {
+    var mCol = collapsedNarrative['mentor:' + quest.id];
+    html += '<div class="quest-mentor' + (mCol ? ' collapsed' : '') + '">';
+    html += '<span class="quest-mentor-label narr-toggle" data-narr="mentor:' + quest.id + '"><span class="narr-chev">▼</span> 🧙 Le Sensei</span>';
+    html += '<div class="quest-mentor-body">' + formatTextWithCode(quest.mentor) + '</div></div>';
+  }
+  if (quest.challenge) {
+    html += '<div class="quest-challenge">';
+    html += '<div class="quest-challenge-head"><span class="quest-challenge-icon">⚔️</span> Le Défi du Sensei</div>';
+    html += '<div class="quest-challenge-title">' + escapeHtml(quest.challenge.title) + '</div>';
+    html += '<div class="quest-challenge-body">' + formatTextWithCode(quest.challenge.desc) + '</div>';
+    html += '</div>';
+  }
+  el.innerHTML = html;
+  Array.prototype.forEach.call(el.querySelectorAll('.narr-toggle'), function(t) {
+    t.onclick = function(e) {
+      e.stopPropagation();
+      var key = t.dataset.narr;
+      if (collapsedNarrative[key]) delete collapsedNarrative[key];
+      else collapsedNarrative[key] = true;
+      renderChapterNarrative(qid);
+    };
+  });
 }
 
 function renderActiveExo() {
@@ -3465,12 +3527,15 @@ function loadExercise(idx) {
   var ex = EXERCISES[idx];
   if (ex.questId) {
     expandedQuests.add(ex.questId);
+    currentQuestId = ex.questId; // le récit de ce chapitre s'affiche au centre
     // Le récit est « lu » : on le replie pour libérer de la place
     collapsedNarrative['story:' + ex.questId] = true;
   }
   renderExercises();
-  // Scroll active card into view
+  // Ramène le panneau central en haut pour voir les consignes
   setTimeout(function() {
+    var cp = document.getElementById('content-panel');
+    if (cp) cp.scrollTop = 0;
     var activeCard = document.querySelector('.exo-card.active');
     if (activeCard) {
       try { activeCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) {}
@@ -4962,7 +5027,8 @@ function applyTermPosition() {
   var pref = null;
   try { pref = localStorage.getItem('dojo_term_pos'); } catch (e) {}
   var ab = document.querySelector('.app-body');
-  if (ab && pref === 'right') ab.classList.add('term-right');
+  // Par défaut le terminal est à droite ; seul un choix explicite 'bottom' le met en bas
+  if (ab && pref !== 'bottom') ab.classList.add('term-right');
   updateTermPosBtn();
 }
 
