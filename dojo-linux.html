@@ -1151,6 +1151,23 @@ window.addEventListener('error', function(e) {
   @media (max-width: 900px) {
     .term-panel { height: 45vh; min-height: 300px; }
   }
+  /* ===== Poignée de redimensionnement du terminal ===== */
+  .term-resizer {
+    flex: none; width: 8px; cursor: col-resize;
+    background: var(--border);
+    position: relative; z-index: 5;
+    transition: background 0.15s;
+  }
+  .term-resizer:hover, .term-resizer.dragging { background: var(--gold, #c89028); }
+  .term-resizer::after {
+    content: ''; position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 3px; height: 40px; border-radius: 3px;
+    background: rgba(60,50,30,0.35);
+  }
+  .term-resizer:hover::after { background: rgba(255,255,255,0.6); }
+  @media (max-width: 900px) { .term-resizer { display: none; } }
+
   /* ===== Terminal à droite (préférence utilisateur) ===== */
   .app-body.term-right { flex-direction: row; }
   .app-body.term-right .term-panel {
@@ -1523,6 +1540,8 @@ window.addEventListener('error', function(e) {
     </div><!-- /center-column -->
   </div><!-- /main-zone -->
 
+  <div class="term-resizer" id="term-resizer" title="Glisse pour agrandir / réduire le terminal"></div>
+
   <div class="term-panel">
     <div class="term-head">
       <div class="term-buttons">
@@ -1533,10 +1552,7 @@ window.addEventListener('error', function(e) {
       <div class="term-title">
         <span class="term-title-dot">●</span> user@dojo
       </div>
-      <div style="display:flex;gap:6px;align-items:center">
-        <button class="neo-btn small" onclick="toggleTermPosition()" id="term-pos-btn" title="Déplacer le terminal">⬒ À droite</button>
-        <button class="neo-btn small" onclick="termClear()">Vider</button>
-      </div>
+      <button class="neo-btn small" onclick="termClear()">Vider</button>
     </div>
     <div id="terminal"></div>
   </div>
@@ -5024,12 +5040,52 @@ function updateTermPosBtn() {
   btn.title = right ? 'Mettre le terminal en bas' : 'Mettre le terminal à droite';
 }
 function applyTermPosition() {
-  var pref = null;
-  try { pref = localStorage.getItem('dojo_term_pos'); } catch (e) {}
   var ab = document.querySelector('.app-body');
-  // Par défaut le terminal est à droite ; seul un choix explicite 'bottom' le met en bas
-  if (ab && pref !== 'bottom') ab.classList.add('term-right');
-  updateTermPosBtn();
+  if (ab) ab.classList.add('term-right'); // le terminal est toujours à droite
+  // Restaure la largeur choisie par l'utilisateur
+  var tp = document.querySelector('.term-panel');
+  var w = null;
+  try { w = localStorage.getItem('dojo_term_w'); } catch (e) {}
+  if (tp && w) { tp.style.width = w; tp.style.maxWidth = w; }
+  initTermResizer();
+}
+
+function initTermResizer() {
+  var resizer = document.getElementById('term-resizer');
+  var tp = document.querySelector('.term-panel');
+  var ab = document.querySelector('.app-body');
+  if (!resizer || !tp || !ab || resizer._bound) return;
+  resizer._bound = true;
+  var dragging = false;
+  function onMove(clientX) {
+    var rect = ab.getBoundingClientRect();
+    var w = rect.right - clientX;
+    var min = 280, max = rect.width * 0.78;
+    w = Math.max(min, Math.min(max, w));
+    tp.style.width = w + 'px';
+    tp.style.maxWidth = w + 'px';
+  }
+  function stop() {
+    if (!dragging) return;
+    dragging = false;
+    resizer.classList.remove('dragging');
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+    try { localStorage.setItem('dojo_term_w', tp.style.width); } catch (e) {}
+    try { window.dispatchEvent(new Event('resize')); } catch (e) {}
+  }
+  resizer.addEventListener('mousedown', function(e) {
+    dragging = true; resizer.classList.add('dragging');
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    e.preventDefault();
+  });
+  window.addEventListener('mousemove', function(e) { if (dragging) onMove(e.clientX); });
+  window.addEventListener('mouseup', stop);
+  // support tactile
+  resizer.addEventListener('touchstart', function() { dragging = true; resizer.classList.add('dragging'); }, { passive: true });
+  window.addEventListener('touchmove', function(e) { if (dragging && e.touches[0]) onMove(e.touches[0].clientX); }, { passive: true });
+  window.addEventListener('touchend', stop);
 }
 
 function renderCmdChips() {
