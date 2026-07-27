@@ -1450,6 +1450,86 @@ window.addEventListener('error', function(e) {
     background: rgba(200,144,40,0.15);
     transform: translateY(-1px);
   }
+
+  /* ===== Comparatif (plein écran) ===== */
+  .compare-overlay {
+    position: fixed; inset: 0; z-index: 10002;
+    background: rgba(44,36,24,0.55); backdrop-filter: blur(6px);
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: 30px 16px; overflow-y: auto;
+    animation: fadeOverlay 0.3s ease;
+  }
+  .compare-overlay.hidden { display: none; }
+  .compare-sheet {
+    position: relative;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    max-width: 940px; width: 100%;
+    box-shadow: var(--shadow-lg, 0 20px 60px rgba(0,0,0,.3));
+    animation: modalPop 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .compare-close {
+    position: absolute; top: 14px; right: 16px; z-index: 3;
+    width: 34px; height: 34px; border-radius: 50%;
+    background: var(--bg-elevated); border: 1px solid var(--border);
+    color: var(--text-2); font-size: 1.05rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .compare-close:hover { background: rgba(200,52,28,0.12); color: var(--vermilion); }
+  .compare-inner { padding: 40px 34px 44px; }
+
+  .cmp-hero { text-align: center; margin-bottom: 8px; }
+  .cmp-kanji { font-family: var(--font-mono); font-size: clamp(2.4rem,9vw,4rem); color: var(--vermilion); letter-spacing: .12em; opacity: .92; line-height: 1; }
+  .cmp-eyebrow { font-family: var(--font-mono); font-size: .68rem; letter-spacing: .28em; text-transform: uppercase; color: var(--text-3); margin: 16px 0 10px; }
+  .cmp-title { font-family: var(--font-serif); font-weight: 700; font-size: clamp(1.6rem,4.5vw,2.4rem); margin: 0; color: var(--text-1); text-wrap: balance; }
+  .cmp-thesis { font-family: var(--font-serif); font-style: italic; font-size: 1.1rem; color: var(--text-2); max-width: 42ch; margin: 14px auto 0; }
+  .cmp-rule { width: 60px; height: 2px; background: var(--vermilion); margin: 22px auto 0; border-radius: 2px; }
+
+  .cmp-seclabel { font-family: var(--font-mono); font-size: .68rem; letter-spacing: .22em; text-transform: uppercase; color: var(--vermilion); display: flex; align-items: center; gap: 10px; margin: 38px 0 16px; }
+  .cmp-seclabel::after { content:""; flex:1; height:1px; background: var(--border); }
+
+  .cmp-table-scroll { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border-light); }
+  .cmp-table { border-collapse: collapse; width: 100%; min-width: 680px; background: var(--bg-card-2); }
+  .cmp-table th, .cmp-table td { padding: 11px 13px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--border-light); font-size: .82rem; color: var(--text-2); }
+  .cmp-table thead th { font-family: var(--font-mono); font-size: .66rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--text-1); border-bottom: 2px solid var(--text-3); white-space: nowrap; }
+  .cmp-table tbody th { font-family: var(--font-mono); font-weight: 600; font-size: .68rem; letter-spacing: .04em; text-transform: uppercase; color: var(--text-3); white-space: nowrap; }
+  .cmp-table tbody tr:last-child th, .cmp-table tbody tr:last-child td { border-bottom: none; }
+  .cmp-dojo { background: rgba(200,144,40,.10); border-left: 2px solid var(--gold); border-right: 2px solid var(--gold); color: var(--text-1) !important; font-weight: 600; }
+  .cmp-table thead .cmp-dojo { color: var(--gold) !important; border-top: 2px solid var(--gold); border-bottom-color: var(--gold); }
+  .cmp-table tbody tr:last-child .cmp-dojo { border-bottom: 2px solid var(--gold); }
+  .cmp-mark, .cmp-yes { color: var(--green); font-weight: 700; }
+  .cmp-no { color: var(--text-3); opacity: .75; }
+  .cmp-caption { font-size: .72rem; color: var(--text-3); margin-top: 10px; }
+
+  .cmp-panels { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .cmp-panel { background: var(--bg-card-2); border: 1px solid var(--border-light); border-radius: 10px; padding: 18px 18px 20px; }
+  .cmp-panel.win { border-top: 3px solid var(--green); }
+  .cmp-panel.gap { border-top: 3px solid var(--vermilion); }
+  .cmp-panel h3 { font-family: var(--font-mono); font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; margin: 0 0 12px; }
+  .cmp-panel.win h3 { color: var(--green); }
+  .cmp-panel.gap h3 { color: var(--vermilion); }
+  .cmp-panel ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 11px; }
+  .cmp-panel li { position: relative; padding-left: 18px; font-size: .84rem; color: var(--text-1); }
+  .cmp-panel li::before { content:"›"; position:absolute; left:2px; top:-1px; font-weight:800; }
+  .cmp-panel.win li::before { color: var(--green); }
+  .cmp-panel.gap li::before { color: var(--vermilion); }
+  .cmp-panel li small { display:block; color: var(--text-3); font-size: .78rem; margin-top: 2px; }
+
+  .cmp-verdict { margin-top: 34px; background: var(--bg-card-2); border: 1px solid var(--border-light); border-radius: 12px; padding: 26px; display: grid; grid-template-columns: auto 1fr; gap: 24px; align-items: center; }
+  .cmp-hanko { width: 104px; height: 104px; border: 3px solid var(--vermilion); border-radius: 12px; display: grid; place-content: center; text-align: center; color: var(--vermilion); transform: rotate(-4deg); box-shadow: inset 0 0 0 2px rgba(200,52,28,.22); flex: none; }
+  .cmp-hk { font-family: var(--font-mono); font-size: 2.3rem; line-height: 1; }
+  .cmp-ht { font-family: var(--font-mono); font-size: .54rem; letter-spacing: .16em; text-transform: uppercase; margin-top: 7px; }
+  .cmp-verdict h3 { font-family: var(--font-serif); font-weight: 700; font-size: 1.35rem; margin: 0 0 8px; color: var(--text-1); }
+  .cmp-verdict p { margin: 0; color: var(--text-2); font-size: .9rem; }
+  .cmp-verdict p + p { margin-top: 10px; }
+
+  @media (max-width: 720px) {
+    .cmp-panels { grid-template-columns: 1fr; }
+    .cmp-verdict { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+    .compare-inner { padding: 30px 18px 34px; }
+  }
 </style>
 </head>
 <body>
@@ -1461,6 +1541,7 @@ window.addEventListener('error', function(e) {
     <div class="brand-sub">v3 · BUILD-1205 · 87 exos</div>
   </div>
   <button class="feedback-btn" onclick="showPseudoModal()" style="margin-left:auto">🏠 Accueil</button>
+  <button class="feedback-btn" onclick="openCompare()">⚔️ Comparatif</button>
   <button class="feedback-btn" id="feedback-btn" onclick="openFeedbackModal()">💬 Avis</button>
   <span class="user-badge" id="user-badge" onclick="openProfileModal()" style="display:none">
     <span id="user-pseudo">--</span>
@@ -1559,6 +1640,80 @@ window.addEventListener('error', function(e) {
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- Comparatif (plein écran) -->
+<div class="compare-overlay hidden" id="compare-overlay">
+  <div class="compare-sheet">
+    <button class="compare-close" onclick="closeCompare()" aria-label="Fermer">✕</button>
+    <div class="compare-inner">
+      <div class="cmp-hero">
+        <div class="cmp-kanji" aria-hidden="true">道場比べ</div>
+        <div class="cmp-eyebrow">Comparatif · Le Dojo du Linux</div>
+        <h2 class="cmp-title">Le Dojo face aux autres écoles</h2>
+        <p class="cmp-thesis">Un regard honnête : là où il domine, là où il s'incline, et le créneau qu'il occupe vraiment.</p>
+        <div class="cmp-rule"></div>
+      </div>
+
+      <div class="cmp-seclabel">Le tableau des écoles</div>
+      <div class="cmp-table-scroll">
+        <table class="cmp-table">
+          <thead>
+            <tr>
+              <th>Critère</th>
+              <th class="cmp-dojo">🥋 Le Dojo</th>
+              <th>Linux Survival</th>
+              <th>OverTheWire</th>
+              <th>KodeKloud / Sadservers</th>
+              <th>Codecademy</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><th>Terminal</th><td class="cmp-dojo">Simulé</td><td>Simulé</td><td class="cmp-yes">Réel</td><td class="cmp-yes">Réel</td><td class="cmp-yes">Réel</td></tr>
+            <tr><th>Installation / compte</th><td class="cmp-dojo"><span class="cmp-mark">Aucun</span></td><td>Aucun</td><td>Client SSH</td><td>Compte requis</td><td>Compte requis</td></tr>
+            <tr><th>Hors-ligne</th><td class="cmp-dojo"><span class="cmp-mark">✓</span> un seul fichier</td><td class="cmp-no">✗</td><td class="cmp-no">✗</td><td class="cmp-no">✗</td><td class="cmp-no">✗</td></tr>
+            <tr><th>Pédagogie</th><td class="cmp-dojo">Narrative — Sensei &amp; Kaï</td><td>Tutoriel linéaire</td><td>Énigmes brutes</td><td>Labs pro</td><td>Cours guidé</td></tr>
+            <tr><th>Esthétique</th><td class="cmp-dojo">Washi / dojo, unique</td><td>Basique</td><td>Terminal brut</td><td>Corporate</td><td>Propre</td></tr>
+            <tr><th>Étendue</th><td class="cmp-dojo">18 chapitres, bases → git</td><td>Bases seules</td><td>Sécurité</td><td>DevOps avancé</td><td>Bases CLI</td></tr>
+            <tr><th>Feedback visuel</th><td class="cmp-dojo"><span class="cmp-mark">Explorateur animé</span></td><td class="cmp-no">✗</td><td class="cmp-no">✗</td><td>Partiel</td><td>Partiel</td></tr>
+            <tr><th>Prix</th><td class="cmp-dojo"><span class="cmp-mark">Gratuit</span></td><td>Gratuit</td><td>Gratuit</td><td>Payant</td><td>Freemium</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="cmp-caption">Comparatif indicatif — les plateformes évoluent. « Réel » = vraie machine/conteneur ; « Simulé » = terminal reproduit en JavaScript.</div>
+
+      <div class="cmp-seclabel">Le verdict de l'arbitre</div>
+      <div class="cmp-panels">
+        <div class="cmp-panel win">
+          <h3>◈ Ses forces</h3>
+          <ul>
+            <li><b>Zéro friction.</b><small>Un seul fichier HTML : pas de compte, pas d'installation, marche hors-ligne. Aucun concurrent ne fait ça.</small></li>
+            <li><b>La narration.</b><small>Le fil rouge Sensei/Kaï, les lettrines kanji, « le terminal pilote le monde » — une expérience, pas un utilitaire.</small></li>
+            <li><b>Le design.</b><small>Identité washi forte quand les autres sont austères.</small></li>
+            <li><b>La visualisation.</b><small>L'explorateur montre en direct l'effet de chaque commande — idéal pour débuter.</small></li>
+          </ul>
+        </div>
+        <div class="cmp-panel gap">
+          <h3>◈ Ses limites</h3>
+          <ul>
+            <li><b>Terminal simulé, pas réel.</b><small>Chez KodeKloud, Sadservers ou OverTheWire, on a une vraie machine. Le Dojo ne connaît que les commandes prévues.</small></li>
+            <li><b>Validation par motifs.</b><small>Les checks vérifient un schéma, pas un vrai état système.</small></li>
+            <li><b>Pas de comptes cloud.</b><small>Progression locale par appareil : ni synchro, ni certificat, ni classement.</small></li>
+            <li><b>Profondeur.</b><small>Chaque sujet est une belle introduction ; les spécialistes vont plus loin.</small></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="cmp-verdict">
+        <div class="cmp-hanko" aria-hidden="true"><div class="cmp-hk">入門</div><div class="cmp-ht">La porte</div></div>
+        <div>
+          <h3>Le meilleur premier pas vers Linux</h3>
+          <p>Le plus beau, le plus accueillant, le plus « sans barrière » pour un grand débutant ou une salle de classe — un créneau réel et peu occupé, entre l'austère et le pro.</p>
+          <p>Sa seule vraie limite est structurelle : le terminal simulé. Deux voies — <b>assumer le rôle de « Duolingo de Linux »</b>, ou <b>brancher un vrai terminal</b> sur les chapitres avancés.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Pseudo modal (shown on first visit) -->
 <div class="modal-overlay hidden" id="pseudo-modal">
@@ -5352,6 +5507,15 @@ function openFeedbackModal() {
 }
 function closeFeedbackModal() {
   document.getElementById('feedback-modal').classList.add('hidden');
+}
+
+function openCompare() {
+  var el = document.getElementById('compare-overlay');
+  if (el) { el.classList.remove('hidden'); el.scrollTop = 0; }
+}
+function closeCompare() {
+  var el = document.getElementById('compare-overlay');
+  if (el) el.classList.add('hidden');
 }
 
 function bindFeedbackStars() {
