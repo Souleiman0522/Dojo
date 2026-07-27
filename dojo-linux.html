@@ -1540,8 +1540,8 @@ window.addEventListener('error', function(e) {
     <div class="brand-title">le.dojo</div>
     <div class="brand-sub">v3 · BUILD-1205 · 87 exos</div>
   </div>
-  <button class="feedback-btn" onclick="showPseudoModal()" style="margin-left:auto">🏠 Accueil</button>
-  <button class="feedback-btn" onclick="openCompare()">⚔️ Comparatif</button>
+  <a class="feedback-btn" href="accueil.html" style="margin-left:auto;text-decoration:none">🏠 Accueil</a>
+  <a class="feedback-btn" href="comparatif.html" style="text-decoration:none">⚔️ Comparatif</a>
   <button class="feedback-btn" id="feedback-btn" onclick="openFeedbackModal()">💬 Avis</button>
   <span class="user-badge" id="user-badge" onclick="openProfileModal()" style="display:none">
     <span id="user-pseudo">--</span>
@@ -1640,80 +1640,6 @@ window.addEventListener('error', function(e) {
 </div>
 
 <div class="toast" id="toast"></div>
-
-<!-- Comparatif (plein écran) -->
-<div class="compare-overlay hidden" id="compare-overlay">
-  <div class="compare-sheet">
-    <button class="compare-close" onclick="closeCompare()" aria-label="Fermer">✕</button>
-    <div class="compare-inner">
-      <div class="cmp-hero">
-        <div class="cmp-kanji" aria-hidden="true">道場比べ</div>
-        <div class="cmp-eyebrow">Comparatif · Le Dojo du Linux</div>
-        <h2 class="cmp-title">Le Dojo face aux autres écoles</h2>
-        <p class="cmp-thesis">Un regard honnête : là où il domine, là où il s'incline, et le créneau qu'il occupe vraiment.</p>
-        <div class="cmp-rule"></div>
-      </div>
-
-      <div class="cmp-seclabel">Le tableau des écoles</div>
-      <div class="cmp-table-scroll">
-        <table class="cmp-table">
-          <thead>
-            <tr>
-              <th>Critère</th>
-              <th class="cmp-dojo">🥋 Le Dojo</th>
-              <th>Linux Survival</th>
-              <th>OverTheWire</th>
-              <th>KodeKloud / Sadservers</th>
-              <th>Codecademy</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><th>Terminal</th><td class="cmp-dojo">Simulé</td><td>Simulé</td><td class="cmp-yes">Réel</td><td class="cmp-yes">Réel</td><td class="cmp-yes">Réel</td></tr>
-            <tr><th>Installation / compte</th><td class="cmp-dojo"><span class="cmp-mark">Aucun</span></td><td>Aucun</td><td>Client SSH</td><td>Compte requis</td><td>Compte requis</td></tr>
-            <tr><th>Hors-ligne</th><td class="cmp-dojo"><span class="cmp-mark">✓</span> un seul fichier</td><td class="cmp-no">✗</td><td class="cmp-no">✗</td><td class="cmp-no">✗</td><td class="cmp-no">✗</td></tr>
-            <tr><th>Pédagogie</th><td class="cmp-dojo">Narrative — Sensei &amp; Kaï</td><td>Tutoriel linéaire</td><td>Énigmes brutes</td><td>Labs pro</td><td>Cours guidé</td></tr>
-            <tr><th>Esthétique</th><td class="cmp-dojo">Washi / dojo, unique</td><td>Basique</td><td>Terminal brut</td><td>Corporate</td><td>Propre</td></tr>
-            <tr><th>Étendue</th><td class="cmp-dojo">18 chapitres, bases → git</td><td>Bases seules</td><td>Sécurité</td><td>DevOps avancé</td><td>Bases CLI</td></tr>
-            <tr><th>Feedback visuel</th><td class="cmp-dojo"><span class="cmp-mark">Explorateur animé</span></td><td class="cmp-no">✗</td><td class="cmp-no">✗</td><td>Partiel</td><td>Partiel</td></tr>
-            <tr><th>Prix</th><td class="cmp-dojo"><span class="cmp-mark">Gratuit</span></td><td>Gratuit</td><td>Gratuit</td><td>Payant</td><td>Freemium</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="cmp-caption">Comparatif indicatif — les plateformes évoluent. « Réel » = vraie machine/conteneur ; « Simulé » = terminal reproduit en JavaScript.</div>
-
-      <div class="cmp-seclabel">Le verdict de l'arbitre</div>
-      <div class="cmp-panels">
-        <div class="cmp-panel win">
-          <h3>◈ Ses forces</h3>
-          <ul>
-            <li><b>Zéro friction.</b><small>Un seul fichier HTML : pas de compte, pas d'installation, marche hors-ligne. Aucun concurrent ne fait ça.</small></li>
-            <li><b>La narration.</b><small>Le fil rouge Sensei/Kaï, les lettrines kanji, « le terminal pilote le monde » — une expérience, pas un utilitaire.</small></li>
-            <li><b>Le design.</b><small>Identité washi forte quand les autres sont austères.</small></li>
-            <li><b>La visualisation.</b><small>L'explorateur montre en direct l'effet de chaque commande — idéal pour débuter.</small></li>
-          </ul>
-        </div>
-        <div class="cmp-panel gap">
-          <h3>◈ Ses limites</h3>
-          <ul>
-            <li><b>Terminal simulé, pas réel.</b><small>Chez KodeKloud, Sadservers ou OverTheWire, on a une vraie machine. Le Dojo ne connaît que les commandes prévues.</small></li>
-            <li><b>Validation par motifs.</b><small>Les checks vérifient un schéma, pas un vrai état système.</small></li>
-            <li><b>Pas de comptes cloud.</b><small>Progression locale par appareil : ni synchro, ni certificat, ni classement.</small></li>
-            <li><b>Profondeur.</b><small>Chaque sujet est une belle introduction ; les spécialistes vont plus loin.</small></li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="cmp-verdict">
-        <div class="cmp-hanko" aria-hidden="true"><div class="cmp-hk">入門</div><div class="cmp-ht">La porte</div></div>
-        <div>
-          <h3>Le meilleur premier pas vers Linux</h3>
-          <p>Le plus beau, le plus accueillant, le plus « sans barrière » pour un grand débutant ou une salle de classe — un créneau réel et peu occupé, entre l'austère et le pro.</p>
-          <p>Sa seule vraie limite est structurelle : le terminal simulé. Deux voies — <b>assumer le rôle de « Duolingo de Linux »</b>, ou <b>brancher un vrai terminal</b> sur les chapitres avancés.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
 
 <!-- Pseudo modal (shown on first visit) -->
 <div class="modal-overlay hidden" id="pseudo-modal">
@@ -5509,14 +5435,6 @@ function closeFeedbackModal() {
   document.getElementById('feedback-modal').classList.add('hidden');
 }
 
-function openCompare() {
-  var el = document.getElementById('compare-overlay');
-  if (el) { el.classList.remove('hidden'); el.scrollTop = 0; }
-}
-function closeCompare() {
-  var el = document.getElementById('compare-overlay');
-  if (el) el.classList.add('hidden');
-}
 
 function bindFeedbackStars() {
   document.querySelectorAll('#rating-stars .star-btn').forEach(function(b) {
