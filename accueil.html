@@ -276,7 +276,7 @@
 <script>
   // ⚙️ Pour activer la vraie connexion Google, colle ici ton identifiant
   // Google Cloud (OAuth Client ID), puis déclare ton domaine dans la console.
-  var GOOGLE_CLIENT_ID = ''; // ex : '1234567890-abc.apps.googleusercontent.com'
+  var GOOGLE_CLIENT_ID = '234547064653-5m9oicpjn18ci0r0r1pc0445kdl48rjb.apps.googleusercontent.com';
 
   function toast(msg){ var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._t); t._t=setTimeout(function(){t.classList.remove('show');},3200); }
 
@@ -296,20 +296,29 @@
 
   function decodeJwt(t){ try{ return JSON.parse(decodeURIComponent(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')).split('').map(function(c){return '%'+('00'+c.charCodeAt(0).toString(16)).slice(-2);}).join(''))); }catch(e){ return {}; } }
 
-  function handleGoogleCredential(resp){
-    var p = decodeJwt(resp.credential);
-    var pseudo = (p.given_name || (p.email||'').split('@')[0] || 'ninja');
-    saveAndEnter(p.email || '', pseudo);
+  var _tokenClient = null;
+  function _ensureTokenClient(){
+    if(_tokenClient) return _tokenClient;
+    if(!(GOOGLE_CLIENT_ID && window.google && google.accounts && google.accounts.oauth2)) return null;
+    _tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: GOOGLE_CLIENT_ID,
+      scope: 'openid email profile',
+      callback: function(resp){
+        if(resp && resp.access_token){
+          fetch('https://www.googleapis.com/oauth2/v3/userinfo', { headers: { Authorization: 'Bearer ' + resp.access_token } })
+            .then(function(r){ return r.json(); })
+            .then(function(u){ saveAndEnter(u.email || '', (u.given_name || (u.email||'').split('@')[0] || 'ninja')); })
+            .catch(function(){ toast('Connexion Google échouée, réessaie.'); });
+        }
+      }
+    });
+    return _tokenClient;
   }
-
   function googleConnect(){
-    if(GOOGLE_CLIENT_ID && window.google && google.accounts && google.accounts.id){
-      google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: handleGoogleCredential });
-      google.accounts.id.prompt();
-    } else {
-      toast('Connexion Google à activer — utilise ton email pour l’instant.');
-      var e=document.getElementById('email'); if(e) e.scrollIntoView({behavior:'smooth',block:'center'}), setTimeout(function(){e.focus();},400);
-    }
+    var tc = _ensureTokenClient();
+    if(tc){ tc.requestAccessToken(); return; }
+    toast('Connexion Google indisponible ici — ouvre le site en http/https (pas file://), ou utilise ton email.');
+    var e=document.getElementById('email'); if(e){ e.scrollIntoView({behavior:'smooth',block:'center'}); setTimeout(function(){e.focus();},400); }
   }
 </script>
 </body>
