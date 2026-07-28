@@ -4562,6 +4562,8 @@ function cmdCat(args) {
     var fileName = arg.split('/').pop();
     var content = FILE_CONTENTS[fileName] || '(contenu binaire ou vide)';
     content.split('\n').forEach(function(l) { term.writeln(l); });
+    // Décodeur pédagogique : /etc/passwd est cryptique pour un débutant
+    if (fileName === 'passwd') printPasswdLegend();
     // `cat` AFFICHE le fichier mais ne te DÉPLACE PAS : ton dossier courant
     // ne change pas. On ne surligne le fichier dans l'explorateur que s'il
     // est bien dans le dossier affiché ; sinon on l'explique.
@@ -4574,6 +4576,30 @@ function cmdCat(args) {
     }
   });
   renderFs();
+}
+
+// Traduction en clair d'une ligne de /etc/passwd (affiché après le cat)
+function printPasswdLegend() {
+  var g = C.gray, y = C.brYellow, cy = C.brCyan, gr = C.brGreen, r = C.reset, b = C.bold;
+  term.writeln('');
+  term.writeln(g + '  ┌─ ' + r + cy + b + 'Traduction : une ligne = un compte' + r + g + ' ──────────────' + r);
+  term.writeln(g + '  │ ' + r + 'Exemple : ' + y + 'user:x:1000:1000:user:/home/user:/bin/bash' + r);
+  term.writeln(g + '  │' + r);
+  term.writeln(g + '  │ ' + y + 'user' + r + '         ' + g + '→' + r + ' ① le nom du compte');
+  term.writeln(g + '  │ ' + y + 'x' + r + '            ' + g + '→' + r + ' ② mot de passe rangé ailleurs (/etc/shadow), pas ici');
+  term.writeln(g + '  │ ' + y + '1000' + r + '         ' + g + '→' + r + ' ③ son n° unique (UID). ' + gr + '0 = root' + r + ', le chef ; 1000+ = humains');
+  term.writeln(g + '  │ ' + y + '1000' + r + '         ' + g + '→' + r + ' ④ n° de son groupe principal (GID)');
+  term.writeln(g + '  │ ' + y + 'user' + r + '         ' + g + '→' + r + ' ⑤ description / nom complet');
+  term.writeln(g + '  │ ' + y + '/home/user' + r + '   ' + g + '→' + r + ' ⑥ son dossier personnel');
+  term.writeln(g + '  │ ' + y + '/bin/bash' + r + '    ' + g + '→' + r + ' ⑦ programme lancé à la connexion (ici : un shell)');
+  term.writeln(g + '  │' + r);
+  term.writeln(g + '  │ ' + r + b + 'En clair :' + r);
+  term.writeln(g + '  │  • ' + gr + 'root' + r + '                → le super-admin, il peut TOUT faire');
+  term.writeln(g + '  │  • ' + y + 'daemon, www-data' + r + '    → des comptes de services (pas d\'humain)');
+  term.writeln(g + '  │    ' + g + 'nologin' + r + '            = interdits de se connecter (sécurité)');
+  term.writeln(g + '  │  • ' + gr + 'user' + r + '                → toi, un humain (n° 1000)');
+  term.writeln(g + '  └────────────────────────────────────────────────' + r);
+  term.writeln('');
 }
 
 function cmdMkdir(args) {
