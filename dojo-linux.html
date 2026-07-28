@@ -866,10 +866,20 @@ window.addEventListener('error', function(e) {
   }
   .neo-btn:hover { transform: translateY(-1px); }
   .neo-btn.success {
-    background: rgba(30,90,61,0.1);
-    border-color: rgba(30,90,61,0.4);
-    color: #5dffe0;
+    background: var(--green, #1e5a3d);
+    border-color: var(--green, #1e5a3d);
+    color: #ffffff;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(30,90,61,0.28);
   }
+  .neo-btn.success:hover { background: #16492f; border-color: #16492f; }
+  /* Bouton "Passer" (dans le panneau d'exercice, sur fond crème) — lisible */
+  .exo-actions .neo-btn:not(.success) {
+    background: var(--bg-elevated);
+    border-color: var(--border);
+    color: var(--text-2);
+  }
+  .exo-actions .neo-btn:not(.success):hover { border-color: var(--text-3); color: var(--text-1); }
   .neo-btn.small { padding: 4px 9px; font-size: 0.68rem; flex: 0; }
 
   /* Quest container */
