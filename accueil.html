@@ -280,9 +280,23 @@
 
   function toast(msg){ var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._t); t._t=setTimeout(function(){t.classList.remove('show');},3200); }
 
-  function saveAndEnter(email, pseudo){
+  // Collecte des inscriptions vers Google Sheet (Apps Script)
+  var SIGNUP_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwqJGIVYG6W9yKm7czhYl-rYSBvjW1-8riMNuj93QLhXtfR_gxHly-FLvYocYx3qtg/exec';
+  function submitSignup(email, pseudo, methode){
+    if(!SIGNUP_ENDPOINT) return;
+    var payload = JSON.stringify({ date: new Date().toISOString(), email: email||'', pseudo: pseudo||'', methode: methode||'' });
+    try {
+      if(navigator.sendBeacon){
+        navigator.sendBeacon(SIGNUP_ENDPOINT, new Blob([payload], { type: 'text/plain;charset=utf-8' }));
+      } else {
+        fetch(SIGNUP_ENDPOINT, { method:'POST', mode:'no-cors', keepalive:true, headers:{'Content-Type':'text/plain;charset=utf-8'}, body:payload });
+      }
+    } catch(e){}
+  }
+  function saveAndEnter(email, pseudo, methode){
     try { if(email) localStorage.setItem('dojo_email', email);
           if(pseudo) localStorage.setItem('dojo_pseudo', pseudo); } catch(e){}
+    submitSignup(email, pseudo, methode);
     window.location.href = 'dojo-linux.html';
   }
 
@@ -291,7 +305,7 @@
     var pseudo=(document.getElementById('pseudo').value||'').trim();
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ document.getElementById('email').focus(); toast('📧 Entre un email valide'); return; }
     if(!pseudo){ document.getElementById('pseudo').focus(); toast('🥋 Choisis un pseudo'); return; }
-    saveAndEnter(email, pseudo);
+    saveAndEnter(email, pseudo, 'email');
   }
 
   function decodeJwt(t){ try{ return JSON.parse(decodeURIComponent(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')).split('').map(function(c){return '%'+('00'+c.charCodeAt(0).toString(16)).slice(-2);}).join(''))); }catch(e){ return {}; } }
@@ -307,7 +321,7 @@
         if(resp && resp.access_token){
           fetch('https://www.googleapis.com/oauth2/v3/userinfo', { headers: { Authorization: 'Bearer ' + resp.access_token } })
             .then(function(r){ return r.json(); })
-            .then(function(u){ saveAndEnter(u.email || '', (u.given_name || (u.email||'').split('@')[0] || 'ninja')); })
+            .then(function(u){ saveAndEnter(u.email || '', (u.given_name || (u.email||'').split('@')[0] || 'ninja'), 'google'); })
             .catch(function(){ toast('Connexion Google échouée, réessaie.'); });
         }
       }
