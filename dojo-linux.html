@@ -2212,22 +2212,46 @@ var QUESTS = [
       {
         level: 'beginner',
         title: 'Aller à la racine',
-        context: "Linux organise tout en arbre depuis `/`. Pas de C: ou D:, juste un seul point de départ. Tous les fichiers, disques montés, périphériques sont sous `/`.",
-        scene: "Tu veux explorer le sommet du système.",
-        mission: "Navigue jusqu'au dossier racine.",
-        steps: ["Tape `cd /`", "Vérifie avec `pwd`", "Liste avec `ls` pour voir l'organisation"],
+        context: "Sous Linux, TOUS les dossiers et fichiers sont rangés dans un seul grand **arbre**, qui part d'un unique point de départ : la **racine**, notée `/` (une simple barre oblique). Contrairement à Windows et ses lecteurs `C:`, `D:`, il n'y a qu'une seule racine : disques, clés USB, tout se greffe quelque part dans ce même arbre. La commande `cd` (de l'anglais *change directory*, « changer de dossier ») sert à s'y déplacer.",
+        scene: "Tu veux voir le tout premier niveau du système : le sommet de l'arbre.",
+        mission: "Déplace-toi jusqu'au dossier racine `/`.",
+        steps: [
+          "Tape `cd /` — `cd` veut dire « va dans », `/` c'est la racine",
+          "Vérifie que tu y es : `pwd` doit afficher juste `/`",
+          "Regarde ce qui vit à ce niveau : `ls`"
+        ],
         expected: "$ cd /\n$ pwd\n/\n$ ls\nbin  etc  home  proc  root  tmp  var",
         culture: "Cette organisation en arbre unique depuis `/` porte un nom : le **FHS** (Filesystem Hierarchy Standard). Chaque dossier a un rôle précis, standardisé sur TOUS les Unix : `/bin` = programmes essentiels, `/etc` = configuration, `/home` = dossiers des utilisateurs, `/var` = données variables (logs, bases), `/proc` = un faux système de fichiers qui expose l'état du noyau en temps réel. Comprendre le FHS, c'est pouvoir se repérer sur N'IMPORTE quelle machine Linux, même une que tu découvres.",
-        reflection: "Pourquoi Unix n'a-t-il pas de lettres de lecteur (C:, D:) comme Windows ?\n👉 Parce qu'Unix unifie TOUT sous une seule racine `/`. Un deuxième disque, une clé USB, un partage réseau : tout est 'monté' dans un dossier de l'arbre existant (ex : `/mnt/usb`). Résultat : un seul espace de noms cohérent, où un chemin comme `/home/user/fichier` a toujours un sens, peu importe le disque physique derrière.",
+        reflection: "Pourquoi Unix n'a-t-il pas de lettres de lecteur (C:, D:) comme Windows ?\n👉 Parce qu'Unix unifie TOUT sous une seule racine `/`. Un deuxième disque, une clé USB, un partage réseau : tout est « monté » dans un dossier de l'arbre existant (ex : `/mnt/usb`). Résultat : un seul espace de noms cohérent, où un chemin comme `/home/user/fichier` a toujours un sens, peu importe le disque physique derrière.",
         check: function(s) { return s.cwd === '/'; }
       },
       {
         level: 'beginner',
+        title: 'Entrer dans un dossier',
+        context: "Pour **descendre** dans un sous-dossier, on tape `cd` suivi de son nom. Tant que le dossier est juste « sous tes pieds » (dans le dossier où tu es), pas besoin d'écrire son chemin complet : son nom seul suffit. On appelle ça un **chemin relatif** — relatif à ta position actuelle.",
+        scene: "Tu es chez toi (`/home/user`) et tu veux entrer dans ton dossier `Documents`.",
+        mission: "Descends dans le dossier `Documents`.",
+        steps: [
+          "Assure-toi d'être chez toi : `cd ~`",
+          "Entre dans le dossier : `cd Documents` (juste son nom, il est ici)",
+          "Confirme avec `pwd` → `/home/user/Documents`"
+        ],
+        expected: "$ cd Documents\n$ pwd\n/home/user/Documents",
+        culture: "Le clavier a un allié secret ici : la touche **Tab** (tabulation). Tape `cd Doc` puis Tab, et le shell complète tout seul en `cd Documents/`. C'est l'**autocomplétion** : elle t'évite les fautes de frappe et fait gagner un temps fou. Les pros ne tapent presque jamais un nom de dossier en entier — quelques lettres, puis Tab.",
+        reflection: "Pourquoi `cd Documents` marche ici, mais échouerait si tu étais dans `/etc` ?\n👉 Parce que c'est un chemin **relatif** : il cherche un dossier `Documents` DANS le dossier courant. Chez toi il existe ; dans `/etc` il n'existe pas → erreur. Pour que ça marche de partout, il faudrait le chemin **absolu** `/home/user/Documents`.",
+        check: function(s) { return s.cwd === '/home/user/Documents' && s.history.some(function(c) { return /^cd\s+Documents\/?$/.test(c.trim()); }); }
+      },
+      {
+        level: 'beginner',
         title: 'Au cœur de la config',
-        context: "/etc est LE dossier des fichiers de configuration système. Presque tout est configurable via des fichiers texte ici : utilisateurs, services, réseau, etc.",
+        context: "`/etc` (prononce « slash-etc ») est LE dossier où Linux range presque tous ses **réglages** : comptes utilisateurs, services, réseau… Et ce qui fait toute la force d'Unix : ce sont de simples **fichiers texte**, que tu peux lire et modifier. On va s'y rendre avec un chemin absolu (qui commence par `/`), pour y arriver quelle que soit ta position de départ.",
         scene: "Tu veux voir où Linux range ses paramètres.",
-        mission: "Va dans /etc et liste son contenu.",
-        steps: ["`cd /etc`", "`ls` pour voir les centaines de fichiers de config"],
+        mission: "Va dans `/etc` et liste son contenu.",
+        steps: [
+          "Tape `cd /etc` — le `/` au début signifie « depuis la racine »",
+          "Liste le contenu : `ls`",
+          "Tu verras des dizaines de fichiers et dossiers de configuration"
+        ],
         expected: "$ cd /etc\n$ ls\nhostname  hosts  nginx/  passwd  ssh/  systemd/",
         culture: "`/etc` est le cœur battant de la configuration Unix. Son nom vient de *et cetera* — à l'origine, un fourre-tout pour ce qui n'allait nulle part ailleurs ! Aujourd'hui c'est devenu LE dossier des réglages système, et sa règle d'or fait la force de Linux : **tout est configurable via de simples fichiers texte**. Pas de base de registre opaque comme sous Windows — tu peux lire, versionner (git !), copier et comprendre chaque paramètre avec un éditeur.",
         reflection: "Pourquoi la config système est-elle en fichiers texte plutôt qu'en base de données binaire ?\n👉 Transparence et robustesse. Un fichier texte se lit avec `cat`, se corrige avec `nano`, se sauvegarde avec `cp`, se compare avec `diff`, se versionne avec `git`. Si une base binaire se corrompt, tu es bloqué ; un fichier texte, tu le répares à la main. C'est un pilier de la philosophie Unix.",
@@ -2235,35 +2259,47 @@ var QUESTS = [
       },
       {
         level: 'beginner',
-        title: 'Le retour à la maison',
-        context: "Le caractère `~` (tilde) est un raccourci pour ton dossier personnel /home/user. Tu peux aussi taper `cd` tout court — par défaut, ça te ramène chez toi.",
-        scene: "Après avoir exploré, tu veux rentrer.",
-        mission: "Reviens dans ton dossier personnel.",
-        steps: ["Tape `cd ~` ou simplement `cd`", "Vérifie avec `pwd`"],
-        expected: "$ cd ~\n$ pwd\n/home/user",
-        reflection: "Quelle est la différence entre `cd ~`, `cd` tout court, et `cd /home/user` ?\n👉 Les trois t'amènent chez toi ! `~` est un raccourci que le shell remplace par le chemin de ton home. `cd` sans argument fait pareil par défaut. `cd /home/user` est le chemin absolu explicite. Bonus : `~bob` désigne le home de l'utilisateur bob, et `cd -` te ramène au dossier PRÉCÉDENT (comme le bouton retour).",
-        check: function(s) { return s.cwd === '/home/user' && s.history.some(function(c) { return c === 'cd' || c === 'cd ~' || c === 'cd /home/user'; }); }
-      },
-      {
-        level: 'beginner',
         title: 'Remonter d\'un cran',
-        context: "Le double point `..` représente le dossier parent. Indispensable pour remonter sans connaître le chemin exact.",
-        scene: "Tu es dans /home/user/Documents et tu veux remonter dans /home/user.",
-        mission: "Remonte d'un niveau dans l'arborescence.",
-        steps: ["D'abord va dans Documents : `cd Documents`", "Puis remonte : `cd ..`", "Vérifie : `pwd`"],
-        expected: "$ cd ..\n$ pwd\n/home/user",
+        context: "Pour **remonter** vers le dossier parent (celui juste au-dessus de toi), Unix a un raccourci universel : `..` (deux points collés). `cd ..` veut dire « remonte d'un cran », sans avoir à connaître ni taper le nom du dossier parent.",
+        scene: "Tu es descendu dans un sous-dossier et tu veux revenir au niveau du dessus.",
+        mission: "Descends dans `Documents`, puis remonte d'un niveau.",
+        steps: [
+          "D'abord descends : `cd Documents`",
+          "Puis remonte : `cd ..` (les deux points = « le dossier au-dessus »)",
+          "Vérifie que tu es bien remonté : `pwd`"
+        ],
+        expected: "$ cd Documents\n$ cd ..\n$ pwd\n/home/user",
         culture: "`.` et `..` sont deux entrées **réelles** présentes dans CHAQUE dossier Unix (tu les vois avec `ls -a`). `.` pointe sur le dossier lui-même, `..` sur son parent. Ce ne sont pas de la magie du shell : ce sont de vrais liens inscrits dans le système de fichiers depuis 1971. C'est pour ça que `./script.sh` lance un script « ici » et que `cd ../..` remonte de deux crans.",
         reflection: "Comment remonter de DEUX niveaux d'un coup, par exemple de `/a/b/c` vers `/a` ?\n👉 `cd ../..` — on enchaîne les `..` séparés par des `/`. Chaque `..` remonte d'un cran. `cd ../../..` remonterait de trois. C'est plus rapide que trois `cd ..` successifs, et ça marche aussi dans les chemins : `cat ../config.txt` lit un fichier dans le dossier parent.",
         check: function(s) { return s.history.some(function(c) { return c.trim() === 'cd ..'; }); }
       },
       {
+        level: 'beginner',
+        title: 'Le retour à la maison',
+        context: "Où que tu sois dans l'arbre, tu peux rentrer chez toi — dans ton **dossier personnel** `/home/user` — instantanément. Deux façons : `cd ~` (le `~`, appelé *tilde*, est un raccourci pour ton home) ou simplement `cd` tout seul, qui te ramène chez toi par défaut.",
+        scene: "Après avoir exploré le système, tu veux rentrer d'un seul geste.",
+        mission: "Reviens dans ton dossier personnel, où que tu sois.",
+        steps: [
+          "Tape `cd ~` (ou juste `cd`, ça revient au même)",
+          "Vérifie avec `pwd` → `/home/user`"
+        ],
+        expected: "$ cd ~\n$ pwd\n/home/user",
+        culture: "Le `~` (tilde) n'est pas qu'un caprice : dans presque tous les outils Unix, il désigne ton home. `~/Documents` = ton dossier Documents, `~/.bashrc` = ta config perso. Le shell le remplace par le vrai chemin avant d'exécuter la commande. C'est pour ça que les tutos écrivent `~/…` : ça marche pour chaque utilisateur, quel que soit son nom de compte.",
+        reflection: "Quelle est la différence entre `cd ~`, `cd` tout court, et `cd /home/user` ?\n👉 Les trois t'amènent chez toi ! `~` est un raccourci que le shell remplace par le chemin de ton home. `cd` sans argument fait pareil par défaut. `cd /home/user` est le chemin absolu explicite. Bonus : `~bob` désigne le home de l'utilisateur bob, et `cd -` te ramène au dossier PRÉCÉDENT (comme le bouton retour).",
+        check: function(s) { return s.cwd === '/home/user' && s.history.some(function(c) { return c === 'cd' || c === 'cd ~' || c === 'cd /home/user'; }); }
+      },
+      {
         level: 'intermediate',
         title: 'Chemin absolu vs relatif',
-        context: "Un chemin absolu commence par `/` (depuis la racine). Un chemin relatif part du dossier courant. Les deux marchent, mais l'absolu est sans ambiguïté.",
-        scene: "Tu veux aller directement dans /home/user/Documents sans étape intermédiaire.",
-        mission: "Utilise un chemin absolu pour aller dans Documents.",
-        steps: ["Tape `cd /home/user/Documents` (le chemin complet)", "Tu y arrives en une seule commande"],
-        expected: "$ cd /home/user/Documents\n$ pwd\n/home/user/Documents",
+        context: "Deux façons de désigner un dossier, à ne jamais confondre :\n• **Absolu** — commence par `/`, part toujours de la racine. `/home/user/Documents` pointe au même endroit, où que tu sois.\n• **Relatif** — part de ta position actuelle. `Documents` dépend d'où tu te trouves.\nL'absolu est plus long à taper, mais il est **sans ambiguïté**.",
+        scene: "Tu es quelque part au fond du système et tu veux filer droit dans Documents, sans étapes.",
+        mission: "Rejoins `Documents` en une seule commande, avec un chemin absolu.",
+        steps: [
+          "Éloigne-toi d'abord, par ex. `cd /etc`",
+          "Rejoins Documents en UNE commande : `cd /home/user/Documents`",
+          "Constate : ça marche quelle que soit ta position de départ"
+        ],
+        expected: "$ cd /etc\n$ cd /home/user/Documents\n$ pwd\n/home/user/Documents",
         culture: "La distinction **absolu / relatif** est l'une des plus importantes de toute l'informatique, pas seulement d'Unix. Un chemin absolu (`/home/user/Documents`) est une adresse complète, valable de partout. Un chemin relatif (`Documents`, `../scripts`) dépend d'où tu te trouves. La même logique gouverne les URLs web, les imports de code, les liens dans un document. La maîtriser ici, c'est la maîtriser partout.",
         reflection: "Dans un script automatisé (lancé par cron par exemple), faut-il utiliser des chemins absolus ou relatifs, et pourquoi ?\n👉 **Absolus, toujours.** Un script ne sait jamais depuis quel dossier il sera lancé. `cd /home/user/Documents` marche à coup sûr ; `cd Documents` échoue si le dossier courant n'est pas le bon. Les chemins relatifs sont pratiques au clavier, les absolus sont sûrs dans le code. Règle de survie du sysadmin.",
         check: function(s) { return s.cwd === '/home/user/Documents'; }
@@ -2271,14 +2307,35 @@ var QUESTS = [
       {
         level: 'intermediate',
         title: 'L\'arbre complet',
-        context: "tree affiche la structure d'un dossier en arbre visuel. Pratique pour comprendre l'organisation d'un projet.",
-        scene: "Tu veux voir l'organisation de /etc d'un coup d'œil.",
-        mission: "Affiche l'arborescence de /etc.",
-        steps: ["`tree /etc`", "Note les sous-dossiers : ssh/, nginx/, systemd/"],
+        context: "`tree` dessine la structure d'un dossier ET de tous ses sous-dossiers sous forme d'**arbre visuel**, avec des branches (`├──`, `└──`). En un coup d'œil, tu saisis l'organisation complète — bien plus parlant que d'enchaîner des `ls` dossier par dossier.",
+        scene: "Tu veux comprendre l'organisation de `/etc` d'un seul regard.",
+        mission: "Affiche l'arborescence de `/etc`.",
+        steps: [
+          "Tape `tree /etc`",
+          "Suis les branches : chaque décalage vers la droite = un niveau plus profond",
+          "Repère les sous-dossiers : `ssh/`, `nginx/`, `systemd/`"
+        ],
         expected: "/etc\n├── nginx/\n│   ├── nginx.conf\n│   └── sites-enabled/\n├── ssh/\n│   └── sshd_config\n└── ...",
         culture: "`tree` n'est PAS installé par défaut sur beaucoup de systèmes — c'est souvent la première chose qu'un admin installe (`apt install tree`). Les jolis caractères `├──` et `└──` qui dessinent les branches sont des caractères **Unicode de dessin de boîte**, hérités des vieux terminaux capables d'afficher des lignes. Astuce : `tree -L 2` limite la profondeur à 2 niveaux, `tree -d` ne montre que les dossiers.",
         reflection: "Si `tree` n'est pas disponible, comment voir la structure d'un dossier et de ses sous-dossiers ?\n👉 `ls -R` (récursif) liste le dossier ET tous ses sous-dossiers, niveau par niveau. Moins joli que `tree` (pas d'arbre visuel), mais présent partout. Autre option puissante : `find . -type d` liste tous les dossiers en profondeur. Connaître les alternatives « toujours dispo » distingue le pro du débutant.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('tree') === 0 && (c.indexOf('/etc') >= 0 || s.cwd === '/etc'); }); }
+      },
+      {
+        level: 'intermediate',
+        title: 'Mini-défi : la traversée',
+        context: "On assemble tout le chapitre. Naviguer, c'est enchaîner des `cd` sans se perdre, en vérifiant sa position au besoin. Le vrai test : partir en voyage à travers l'arbre et revenir à bon port, seul.",
+        scene: "Le Sensei te trace un itinéraire à faire de mémoire, sans te tromper de branche.",
+        mission: "Fais le voyage : monte à la racine `/`, passe par la config `/etc`, puis rentre chez toi.",
+        steps: [
+          "① `cd /` — grimpe tout en haut de l'arbre",
+          "② `cd /etc` — plonge dans la config (chemin absolu)",
+          "③ `cd ~` — rentre chez toi",
+          "Vérifie à la fin : `pwd` doit afficher `/home/user`"
+        ],
+        expected: "$ cd /\n$ cd /etc\n$ cd ~\n$ pwd\n/home/user",
+        culture: "Ce genre d'enchaînement, tu le feras sans réfléchir en quelques semaines. Les vrais pros vont encore plus vite grâce à `cd -` (retourne au dossier PRÉCÉDENT, comme un bouton « retour ») et à l'autocomplétion avec Tab. Naviguer vite ET sûr dans l'arbre, c'est la fondation de tout le reste.",
+        reflection: "Comment revenir instantanément au dossier où tu étais JUSTE avant, sans retaper son chemin ?\n👉 `cd -` (cd tiret). Le shell garde en mémoire ton dossier précédent et t'y renvoie — parfait pour faire des allers-retours entre deux dossiers éloignés. Combiné à `cd ~` et à Tab, tu navigues sans jamais taper un chemin complet.",
+        check: function(s) { var h = s.history; var toRoot = h.some(function(c) { return c.trim() === 'cd /'; }); var toEtc = h.some(function(c) { return c.trim() === 'cd /etc'; }); return toRoot && toEtc && s.cwd === '/home/user'; }
       }
     ]
   },
