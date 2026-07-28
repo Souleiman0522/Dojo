@@ -2225,7 +2225,7 @@ var QUESTS = [
         context: "cat (concatenate) affiche le contenu d'un fichier dans le terminal. Idéal pour les fichiers courts. Pour les longs, on préfère `less` ou `head`/`tail`.",
         scene: "Tu veux voir la liste des utilisateurs Linux.",
         mission: "Affiche le contenu de /etc/passwd.",
-        steps: ["`cat /etc/passwd`", "Chaque ligne = un utilisateur", "Format : `user:x:UID:GID:nom:home:shell`"],
+        steps: ["Tape `cat /etc/passwd`", "Chaque ligne = un compte ; ses infos sont séparées par des « : »", "Pas de panique si c'est cryptique : le Dojo affiche la **traduction en clair** de chaque champ juste en dessous 👇"],
         expected: "root:x:0:0:root:/root:/bin/bash\nuser:x:1000:1000:user:/home/user:/bin/bash",
         culture: "`cat` veut dire **conCATéner** : sa vraie fonction est de coller plusieurs fichiers bout à bout (`cat a.txt b.txt > tout.txt`). Mais 99% du temps on l'utilise avec UN seul fichier, juste pour l'afficher — un détournement si universel qu'on oublie son vrai nom. Le fichier `/etc/passwd`, lui, malgré son nom, ne contient AUCUN mot de passe depuis les années 90 : le `x` en 2ᵉ champ renvoie vers `/etc/shadow`, lisible seulement par root.",
         reflection: "Pour un fichier de 10 000 lignes, pourquoi `cat` est-il une mauvaise idée, et que faire à la place ?\n👉 `cat` déverse TOUT d'un coup — 10 000 lignes défilent et tu ne vois que la fin. Mieux : `less fichier` (navigation page par page, `/` pour chercher, `q` pour quitter), ou `head`/`tail` pour le début/la fin. `cat` est fait pour les fichiers courts ou pour enchaîner dans un pipe.",
@@ -4562,8 +4562,8 @@ function cmdCat(args) {
     var fileName = arg.split('/').pop();
     var content = FILE_CONTENTS[fileName] || '(contenu binaire ou vide)';
     content.split('\n').forEach(function(l) { term.writeln(l); });
-    // Décodeur pédagogique : /etc/passwd est cryptique pour un débutant
-    if (fileName === 'passwd') printPasswdLegend();
+    // Décodeur pédagogique : traduit « en clair » les fichiers cryptiques
+    printFileLegend(fileName);
     // `cat` AFFICHE le fichier mais ne te DÉPLACE PAS : ton dossier courant
     // ne change pas. On ne surligne le fichier dans l'explorateur que s'il
     // est bien dans le dossier affiché ; sinon on l'explique.
@@ -4578,27 +4578,165 @@ function cmdCat(args) {
   renderFs();
 }
 
-// Traduction en clair d'une ligne de /etc/passwd (affiché après le cat)
-function printPasswdLegend() {
-  var g = C.gray, y = C.brYellow, cy = C.brCyan, gr = C.brGreen, r = C.reset, b = C.bold;
+// ── Décodeurs « en clair » des fichiers système cryptiques ──
+// Affichés automatiquement après un `cat` sur ces fichiers.
+var FILE_LEGENDS = {
+  passwd: {
+    title: 'Traduction : une ligne = un compte',
+    example: 'user:x:1000:1000:user:/home/user:/bin/bash',
+    lines: [
+      ['user', '① le nom du compte'],
+      ['x', '② mot de passe rangé ailleurs (/etc/shadow), pas ici'],
+      ['1000', '③ n° unique (UID). ' + C.brGreen + '0 = root' + C.reset + ', le chef ; 1000+ = humains'],
+      ['1000', '④ n° de son groupe principal (GID)'],
+      ['user', '⑤ description / nom complet'],
+      ['/home/user', '⑥ son dossier personnel'],
+      ['/bin/bash', '⑦ programme lancé à la connexion (un shell)'],
+      '',
+      C.bold + 'En clair :' + C.reset,
+      '• ' + C.brGreen + 'root' + C.reset + ' = le super-admin, il peut TOUT faire',
+      '• ' + C.brYellow + 'daemon, www-data' + C.reset + ' = comptes de services, pas d\'humains',
+      '  ' + C.gray + 'nologin' + C.reset + ' = interdits de se connecter (sécurité)',
+      '• ' + C.brGreen + 'user' + C.reset + ' = toi, un humain (n° 1000)'
+    ]
+  },
+  group: {
+    title: 'Traduction : une ligne = un groupe',
+    example: 'sudo:x:27:user',
+    lines: [
+      ['sudo', '① nom du groupe'],
+      ['x', '② mot de passe du groupe (quasi jamais utilisé)'],
+      ['27', '③ n° du groupe (GID)'],
+      ['user', '④ ses membres (ici : « user » est dans le groupe sudo)'],
+      '',
+      C.bold + 'En clair :' + C.reset + ' être dans le groupe ' + C.brYellow + 'sudo' + C.reset + ' = avoir le droit',
+      "d'utiliser « sudo » et donc de devenir admin."
+    ]
+  },
+  fstab: {
+    title: 'Traduction : quels disques monter au démarrage',
+    example: 'UUID=abc-123  /  ext4  defaults  0 1',
+    lines: [
+      ['UUID=abc-123', '① quel disque/partition (son identifiant unique)'],
+      ['/', "② où le brancher dans l'arbre (point de montage)"],
+      ['ext4', '③ type de système de fichiers'],
+      ['defaults', '④ options de montage (droits, etc.)'],
+      ['0', '⑤ sauvegarde « dump » (0 = non)'],
+      ['1', '⑥ ordre de vérif. au boot (1 = la racine en premier)'],
+      '',
+      C.bold + 'En clair :' + C.reset + ' ce fichier dit à Linux quels disques monter,',
+      'et à quel endroit, à chaque démarrage.'
+    ]
+  },
+  hosts: {
+    title: 'Traduction : annuaire de noms local',
+    example: '127.0.0.1   localhost',
+    lines: [
+      ['127.0.0.1', '① une adresse IP'],
+      ['localhost', '② le nom qui pointe vers cette IP'],
+      '',
+      C.bold + 'En clair :' + C.reset + " avant d'interroger Internet (DNS), Linux",
+      'regarde ici. ' + C.brYellow + '127.0.0.1' + C.reset + ' = ta propre machine (« localhost »).'
+    ]
+  },
+  crontab: {
+    title: 'Traduction : tâches planifiées (quand + quoi)',
+    example: '0  4  * * 0   root  /home/user/scripts/backup.sh',
+    lines: [
+      ['0', '① minute'],
+      ['4', '② heure (4h du matin)'],
+      ['*', '③ jour du mois (* = tous)'],
+      ['*', '④ mois (* = tous)'],
+      ['0', '⑤ jour de la semaine (0 = dimanche)'],
+      ['root', '⑥ qui exécute la tâche'],
+      ['backup.sh', '⑦ la commande à lancer'],
+      '',
+      C.bold + 'En clair :' + C.reset + ' « à 4h00 chaque dimanche, root lance',
+      'backup.sh ». Les 5 premiers champs = QUAND, le reste = QUOI.'
+    ]
+  },
+  'resolv.conf': {
+    title: 'Traduction : à qui demander les adresses (DNS)',
+    lines: [
+      ['nameserver', 'serveur DNS à interroger (ex. 8.8.8.8 = Google)'],
+      ['search', 'suffixe ajouté aux noms courts'],
+      '',
+      C.bold + 'En clair :' + C.reset + ' quand tu tapes « google.com », c\'est ce',
+      'serveur qui traduit le nom en adresse IP.'
+    ]
+  },
+  'os-release': {
+    title: "Traduction : la carte d'identité du système",
+    lines: [
+      ['NAME', 'le nom de la distribution (Ubuntu)'],
+      ['VERSION', 'sa version complète'],
+      ['ID', 'un identifiant court (ubuntu), utile aux scripts'],
+      ['PRETTY_NAME', 'le nom affiché joliment'],
+      '',
+      C.bold + 'En clair :' + C.reset + ' c\'est ce que lisent les programmes pour',
+      'savoir « sur quel Linux tourne-t-on ? ».'
+    ]
+  },
+  'sshd_config': {
+    title: 'Traduction : réglages du serveur SSH',
+    lines: [
+      C.brYellow + 'Port 22' + C.reset + ' → sur quel port SSH écoute (22 = défaut)',
+      C.brYellow + 'PermitRootLogin no' + C.reset + ' → interdit de se connecter',
+      '  directement en root (sécurité)',
+      C.brYellow + 'PasswordAuthentication' + C.reset + ' → autorise le mot de passe',
+      C.brYellow + 'PubkeyAuthentication' + C.reset + ' → autorise la clé SSH (+ sûr)',
+      '',
+      C.bold + 'En clair :' + C.reset + ' chaque ligne = un réglage « clé valeur »',
+      'qui contrôle comment on se connecte au serveur.'
+    ]
+  },
+  'auth.log': {
+    title: 'Traduction : journal des connexions (sécurité)',
+    lines: [
+      C.brGreen + 'Accepted publickey' + C.reset + ' → connexion RÉUSSIE par clé',
+      C.brRed + 'Failed password' + C.reset + ' → tentative RATÉE de mot de passe',
+      '  (souvent une attaque automatisée)',
+      C.brYellow + 'sudo: user :' + C.reset + ' → user a utilisé sudo (trace admin)',
+      '',
+      C.bold + 'En clair :' + C.reset + ' beaucoup de « Failed password » d\'une même',
+      'IP = quelqu\'un essaie de forcer l\'entrée.'
+    ]
+  },
+  'access.log': {
+    title: 'Traduction : journal des visites du site',
+    example: '203.0.113.5 - - [...] "GET /admin HTTP/1.1" 404 153',
+    lines: [
+      ['203.0.113.5', '① IP du visiteur'],
+      ['GET /admin', '② ce qu\'il a demandé (la page)'],
+      ['404', '③ code réponse (404 = absente, 200 = OK, 500 = erreur)'],
+      ['153', '④ taille de la réponse (octets)'],
+      '',
+      C.bold + 'En clair :' + C.reset + ' chaque ligne = une visite. « GET /admin 404 »',
+      '= on a cherché une page /admin qui n\'existe pas.'
+    ]
+  }
+};
+function _dash(n) { n = n < 0 ? 0 : n; var s = ''; for (var i = 0; i < n; i++) s += '─'; return s; }
+function printFileLegend(fileName) {
+  var L = FILE_LEGENDS[fileName];
+  if (!L || !term) return;
+  var g = C.gray, cy = C.brCyan, y = C.brYellow, b = C.bold, r = C.reset;
+  var w = 0;
+  L.lines.forEach(function(ln) { if (Array.isArray(ln) && ln[0].length > w) w = ln[0].length; });
+  if (w > 18) w = 18;
+  function pad(s) { s = String(s); while (s.length < w) s += ' '; return s; }
   term.writeln('');
-  term.writeln(g + '  ┌─ ' + r + cy + b + 'Traduction : une ligne = un compte' + r + g + ' ──────────────' + r);
-  term.writeln(g + '  │ ' + r + 'Exemple : ' + y + 'user:x:1000:1000:user:/home/user:/bin/bash' + r);
-  term.writeln(g + '  │' + r);
-  term.writeln(g + '  │ ' + y + 'user' + r + '         ' + g + '→' + r + ' ① le nom du compte');
-  term.writeln(g + '  │ ' + y + 'x' + r + '            ' + g + '→' + r + ' ② mot de passe rangé ailleurs (/etc/shadow), pas ici');
-  term.writeln(g + '  │ ' + y + '1000' + r + '         ' + g + '→' + r + ' ③ son n° unique (UID). ' + gr + '0 = root' + r + ', le chef ; 1000+ = humains');
-  term.writeln(g + '  │ ' + y + '1000' + r + '         ' + g + '→' + r + ' ④ n° de son groupe principal (GID)');
-  term.writeln(g + '  │ ' + y + 'user' + r + '         ' + g + '→' + r + ' ⑤ description / nom complet');
-  term.writeln(g + '  │ ' + y + '/home/user' + r + '   ' + g + '→' + r + ' ⑥ son dossier personnel');
-  term.writeln(g + '  │ ' + y + '/bin/bash' + r + '    ' + g + '→' + r + ' ⑦ programme lancé à la connexion (ici : un shell)');
-  term.writeln(g + '  │' + r);
-  term.writeln(g + '  │ ' + r + b + 'En clair :' + r);
-  term.writeln(g + '  │  • ' + gr + 'root' + r + '                → le super-admin, il peut TOUT faire');
-  term.writeln(g + '  │  • ' + y + 'daemon, www-data' + r + '    → des comptes de services (pas d\'humain)');
-  term.writeln(g + '  │    ' + g + 'nologin' + r + '            = interdits de se connecter (sécurité)');
-  term.writeln(g + '  │  • ' + gr + 'user' + r + '                → toi, un humain (n° 1000)');
-  term.writeln(g + '  └────────────────────────────────────────────────' + r);
+  term.writeln('  ' + g + '┌─ ' + r + cy + b + L.title + r + ' ' + g + _dash(50 - L.title.length) + r);
+  if (L.example) {
+    term.writeln('  ' + g + '│ ' + r + 'Exemple : ' + y + L.example + r);
+    term.writeln('  ' + g + '│' + r);
+  }
+  L.lines.forEach(function(ln) {
+    if (ln === '') { term.writeln('  ' + g + '│' + r); return; }
+    if (typeof ln === 'string') { term.writeln('  ' + g + '│ ' + r + ln); return; }
+    term.writeln('  ' + g + '│ ' + y + pad(ln[0]) + r + ' ' + g + '→' + r + ' ' + ln[1]);
+  });
+  term.writeln('  ' + g + '└' + _dash(53) + r);
   term.writeln('');
 }
 
