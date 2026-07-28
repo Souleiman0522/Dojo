@@ -4543,7 +4543,16 @@ function cmdCat(args) {
     var fileName = arg.split('/').pop();
     var content = FILE_CONTENTS[fileName] || '(contenu binaire ou vide)';
     content.split('\n').forEach(function(l) { term.writeln(l); });
-    highlighted = fileName;
+    // `cat` AFFICHE le fichier mais ne te DÉPLACE PAS : ton dossier courant
+    // ne change pas. On ne surligne le fichier dans l'explorateur que s'il
+    // est bien dans le dossier affiché ; sinon on l'explique.
+    var full = resolvePath(arg);
+    var fileDir = full.slice(0, full.lastIndexOf('/')) || '/';
+    if (fileDir === cwd) {
+      highlighted = fileName;
+    } else if (typeof showToast === 'function') {
+      showToast('📖 Tu as lu ' + full + ', mais tu es toujours dans ' + cwd + '. « cat » affiche un fichier sans t’y déplacer — fais « cd ' + fileDir + ' » pour l’explorer.');
+    }
   });
   renderFs();
 }
