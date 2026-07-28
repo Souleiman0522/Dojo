@@ -110,6 +110,35 @@
   .foot-in a{text-decoration:none;color:var(--ink-soft);}
 
   @media (max-width:680px){.path{grid-template-columns:1fr;}.roles{grid-template-columns:1fr;}.pj-check{display:none;}}
+
+  .guide-toggle{margin-top:8px;background:transparent;border:1px dashed var(--line);color:var(--indigo);font-family:var(--font-mono);font-size:.74rem;font-weight:600;padding:9px 14px;border-radius:9px;cursor:pointer;width:100%;text-align:left;transition:all .15s;}
+  .guide-toggle:hover{border-color:var(--indigo);background:rgba(30,58,92,.05);}
+  .guide-toggle.open{border-style:solid;}
+  .pj-guide{display:none;margin-top:14px;}
+  .pj-guide.open{display:block;}
+  .gsteps{list-style:none;margin:0;padding:0;counter-reset:gs;display:flex;flex-direction:column;gap:14px;}
+  .gstep{position:relative;padding-left:2px;}
+  .gstep-head{display:flex;align-items:flex-start;gap:11px;cursor:pointer;}
+  .gstep-head input{appearance:none;-webkit-appearance:none;width:20px;height:20px;flex:none;margin-top:2px;border:2px solid var(--line);border-radius:6px;cursor:pointer;position:relative;background:var(--paper-2);transition:all .15s;}
+  .gstep-head input:checked{background:var(--matcha);border-color:var(--matcha);}
+  .gstep-head input:checked::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.8rem;font-weight:800;}
+  .gstep-head input:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+  .gstep-head .txt{counter-increment:gs;font-weight:700;color:var(--ink);font-size:.98rem;}
+  .gstep-head .txt::before{content:counter(gs) '. ';color:var(--gold);}
+  .gstep-head input:checked ~ .txt{color:var(--taupe);}
+  .gstep-body{margin:8px 0 0 31px;}
+  pre.cmd{margin:0;background:#1a1712;color:#e8dfc9;border-radius:9px;padding:12px 14px;font-family:var(--font-mono);font-size:.82rem;line-height:1.55;overflow-x:auto;white-space:pre;border:1px solid #33291c;}
+  .verify{margin-top:8px;font-size:.85rem;color:var(--ink-soft);}
+  .verify b{color:var(--matcha);}
+  .pj-tv{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px;}
+  .tv-box{border-radius:11px;padding:16px 18px;border:1px solid var(--line);}
+  .tv-box.test{background:rgba(30,90,61,.05);border-left:3px solid var(--matcha);}
+  .tv-box.deploy{background:rgba(179,128,31,.06);border-left:3px solid var(--gold);}
+  .tv-box h4{margin:0 0 6px;font-family:var(--font-mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;}
+  .tv-box.test h4{color:var(--matcha);}
+  .tv-box.deploy h4{color:var(--gold);}
+  .tv-box p{margin:0;font-size:.86rem;color:var(--ink-soft);}
+  @media (max-width:680px){.pj-tv{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
@@ -187,59 +216,289 @@
 
 <script>
   var PROJECTS = [
-    { ic:'🐧', title:'Créer un serveur Linux', lvl:1, tags:['Ubuntu Server','SSH','permissions'],
-      why:"La brique de base de toute infrastructure : un serveur que tu administres de A à Z.",
-      cv:"Prouve : administration système Linux.",
-      steps:['Installer Ubuntu Server','Créer des utilisateurs','Configurer SSH','Mettre en place les permissions','Installer les mises à jour'] },
-    { ic:'🌐', title:'Héberger un site web', lvl:1, tags:['Nginx','Apache','DNS local'],
-      why:"Rendre un service accessible : le cœur du métier d'hébergement.",
-      cv:"Prouve : déploiement d'un service web.",
-      steps:['Installer Nginx ou Apache','Afficher une page web','Ajouter un nom de domaine local via le fichier hosts'] },
-    { ic:'🔀', title:'Construire un petit réseau', lvl:2, tags:['Cisco','PNetLab','VLAN','DHCP'],
-      why:"Le lab qui met en pratique ton CCNA — routeur, switches, PC.",
-      cv:"Prouve : réseau Cisco, VLAN et routage inter-VLAN.",
-      steps:['Monter la topologie dans PNetLab (1 routeur, 2 switches, 2 PC)','Configurer les VLAN','Configurer le routage inter-VLAN','Configurer le DHCP'] },
-    { ic:'🏢', title:'Monter un petit datacenter virtuel', lvl:3, tags:['Windows Server','pfSense','Cisco'],
-      why:"Un environnement mixte réaliste : Linux, Windows, réseau et sécurité réunis.",
-      cv:"Prouve : conception d'infrastructure multi-OS.",
-      steps:['Déployer une machine Ubuntu','Déployer une machine Windows Server','Ajouter un switch Cisco','Installer un pare-feu (pfSense ou OPNsense)'] },
-    { ic:'⚙️', title:'Automatiser avec Bash', lvl:2, tags:['Bash','cron','automatisation'],
-      why:"Ce qui distingue un admin d'un pro : ne jamais refaire deux fois à la main.",
-      cv:"Prouve : scripting et automatisation.",
-      steps:['Script de sauvegarde de fichiers','Script de création automatique d’utilisateurs','Script de vérification de l’espace disque','Script d’envoi de rapport'] },
-    { ic:'📊', title:'Supervision réseau', lvl:3, tags:['Zabbix','Grafana','Prometheus'],
-      why:"Surveiller serveurs et équipements : voir venir la panne avant qu'elle n'arrive.",
-      cv:"Prouve : supervision et observabilité.",
-      steps:['Installer Zabbix','Installer Prometheus','Visualiser les métriques avec Grafana','Configurer une alerte'] },
-    { ic:'🐳', title:'Docker', lvl:2, tags:['Docker','conteneurs'],
-      why:"Emballer une appli et ses dépendances : la compétence cloud incontournable.",
-      cv:"Prouve : conteneurisation.",
-      steps:['Installer Docker','Lancer un serveur web en conteneur','Lancer une base de données en conteneur','Lancer un serveur DNS en conteneur'] }
-  ];
+  {
+    "ic": "🐧",
+    "title": "Créer un serveur Linux",
+    "lvl": 1,
+    "tags": [
+      "Ubuntu Server",
+      "SSH",
+      "permissions"
+    ],
+    "why": "La brique de base de toute infrastructure : un serveur que tu administres de A à Z.",
+    "cv": "Prouve : administration système Linux.",
+    "steps": [
+      {
+        "t": "Installer Ubuntu Server",
+        "do": "# Télécharge l'ISO sur ubuntu.com/download/server\n# En VM (recommandé) : VirtualBox/VMware → nouvelle machine Linux 64-bit → monte l'ISO\n# Suis l'installeur (langue, disque, nom d'utilisateur, 'Install OpenSSH server' : coche-le)",
+        "verify": "Au reboot, connecte-toi : tu obtiens le prompt user@serveur:~$ — `lsb_release -a` affiche Ubuntu."
+      },
+      {
+        "t": "Créer des utilisateurs",
+        "do": "sudo adduser alice          # crée l'utilisateur + son /home + mot de passe\nsudo usermod -aG sudo alice  # lui donne les droits admin (sudo)",
+        "verify": "`id alice` liste ses groupes ; `su - alice` puis `sudo whoami` renvoie root."
+      },
+      {
+        "t": "Configurer SSH",
+        "do": "sudo apt install openssh-server\nsudo systemctl enable --now ssh   # démarre + active au boot\n# Depuis un autre PC :\nssh alice@IP_DU_SERVEUR",
+        "verify": "`systemctl status ssh` = active (running), et la connexion SSH depuis un autre poste aboutit."
+      },
+      {
+        "t": "Mettre en place les permissions",
+        "do": "sudo mkdir /srv/data\nsudo chown alice:alice /srv/data   # propriétaire\nsudo chmod 750 /srv/data           # rwx pour alice, r-x pour le groupe, rien pour les autres",
+        "verify": "`ls -ld /srv/data` affiche  drwxr-x---  alice alice."
+      },
+      {
+        "t": "Installer les mises à jour",
+        "do": "sudo apt update && sudo apt upgrade -y\n# Automatiser les mises à jour de sécurité :\nsudo apt install unattended-upgrades",
+        "verify": "`apt list --upgradable` ne renvoie plus rien après l'upgrade."
+      }
+    ],
+    "test": "Redémarre le serveur, reconnecte-toi en SSH avec ton nouvel utilisateur (pas root) et vérifie que sudo, les permissions et l'accès réseau fonctionnent.",
+    "deploy": "Héberge-le sur un vieux PC, un Raspberry Pi ou un VPS gratuit (Oracle Cloud Free Tier). CV : « Déploiement et administration d'un serveur Ubuntu : utilisateurs, SSH, permissions, mises à jour »."
+  },
+  {
+    "ic": "🌐",
+    "title": "Héberger un site web",
+    "lvl": 1,
+    "tags": [
+      "Nginx",
+      "Apache",
+      "DNS local"
+    ],
+    "why": "Rendre un service accessible : le cœur du métier d'hébergement.",
+    "cv": "Prouve : déploiement d'un service web.",
+    "steps": [
+      {
+        "t": "Installer Nginx (ou Apache)",
+        "do": "sudo apt install nginx\nsudo systemctl enable --now nginx",
+        "verify": "`curl localhost` renvoie « Welcome to nginx! ». Dans un navigateur : http://IP_DU_SERVEUR."
+      },
+      {
+        "t": "Afficher ta page web",
+        "do": "sudo nano /var/www/html/index.html\n# Remplace le contenu par ton HTML, sauvegarde (Ctrl+O, Ctrl+X)",
+        "verify": "Recharge la page dans le navigateur → ton contenu s'affiche."
+      },
+      {
+        "t": "Nom de domaine local (fichier hosts)",
+        "do": "# Sur ton PC CLIENT, édite le fichier hosts :\n#   Linux/Mac : sudo nano /etc/hosts\n#   Windows   : C:\\Windows\\System32\\drivers\\etc\\hosts (Bloc-notes en admin)\n# Ajoute la ligne :\nIP_DU_SERVEUR   monsite.local",
+        "verify": "http://monsite.local ouvre ton site (au lieu de taper l'IP)."
+      }
+    ],
+    "test": "Ouvre le site depuis un autre appareil du réseau (téléphone en Wi-Fi) via l'IP ou monsite.local.",
+    "deploy": "Passe en HTTPS avec un vrai domaine : `sudo apt install certbot python3-certbot-nginx && sudo certbot --nginx`. CV : « Déploiement d'un serveur web Nginx avec virtual host et certificat TLS »."
+  },
+  {
+    "ic": "🔀",
+    "title": "Construire un petit réseau",
+    "lvl": 2,
+    "tags": [
+      "Cisco",
+      "PNetLab",
+      "VLAN",
+      "DHCP"
+    ],
+    "why": "Le lab qui met en pratique ton CCNA — routeur, switches, PC.",
+    "cv": "Prouve : réseau Cisco, VLAN et routage inter-VLAN.",
+    "steps": [
+      {
+        "t": "Monter la topologie dans PNetLab",
+        "do": "# Nouveau lab. Glisse : 1 routeur (IOSv), 2 switches (IOSvL2), 2 PC (VPC).\n# Câble : PC1-SW1, PC2-SW2, SW1-SW2, SW1-Routeur.",
+        "verify": "Tous les nœuds démarrent (icônes vertes) et tu accèdes à leur console."
+      },
+      {
+        "t": "Créer les VLAN",
+        "do": "enable\nconf t\nvlan 10\n name DATA\nvlan 20\n name VOICE\ninterface fa0/1\n switchport mode access\n switchport access vlan 10",
+        "verify": "`show vlan brief` liste tes VLAN avec les bons ports assignés."
+      },
+      {
+        "t": "Routage inter-VLAN (router-on-a-stick)",
+        "do": "# Côté switch : le lien vers le routeur en trunk\ninterface g0/1\n switchport mode trunk\n# Côté routeur : une sous-interface par VLAN\ninterface g0/0.10\n encapsulation dot1Q 10\n ip address 192.168.10.1 255.255.255.0",
+        "verify": "Un PC du VLAN 10 arrive à ping un PC du VLAN 20."
+      },
+      {
+        "t": "Distribuer les IP en DHCP",
+        "do": "ip dhcp pool VLAN10\n network 192.168.10.0 255.255.255.0\n default-router 192.168.10.1\n dns-server 8.8.8.8",
+        "verify": "Sur un VPC : `ip dhcp` → il reçoit une adresse automatiquement."
+      }
+    ],
+    "test": "Vérifie le ping inter-VLAN dans les deux sens ET l'attribution DHCP automatique sur chaque VLAN.",
+    "deploy": "Exporte les configs (`show run`) et un schéma de la topologie, pousse le tout sur GitHub. CV : « Conception d'un réseau commuté Cisco : VLAN, routage inter-VLAN, DHCP »."
+  },
+  {
+    "ic": "🏢",
+    "title": "Monter un petit datacenter virtuel",
+    "lvl": 3,
+    "tags": [
+      "Windows Server",
+      "pfSense",
+      "Proxmox"
+    ],
+    "why": "Un environnement mixte réaliste : Linux, Windows, réseau et sécurité réunis.",
+    "cv": "Prouve : conception d'infrastructure multi-OS.",
+    "steps": [
+      {
+        "t": "Poser l'hyperviseur + une VM Ubuntu",
+        "do": "# Installe Proxmox VE (ou VMware/VirtualBox) sur la machine hôte.\n# Crée une 1re VM : Ubuntu Server (voir projet 1).",
+        "verify": "La VM Ubuntu démarre et répond en SSH."
+      },
+      {
+        "t": "Ajouter un Windows Server (AD + DNS)",
+        "do": "# 2e VM : Windows Server. Ajoute les rôles :\n#  - Active Directory Domain Services (AD DS) → promeus en contrôleur de domaine\n#  - DNS (installé avec AD)",
+        "verify": "Un poste client rejoint le domaine (mondomaine.local) et s'y authentifie."
+      },
+      {
+        "t": "Segmenter avec un switch Cisco",
+        "do": "# Relie les VM via un switch (PNetLab ou vSwitch).\n# Crée des VLAN : Serveurs, Clients — comme au projet 3.",
+        "verify": "La connectivité suit tes VLAN (les segments sont bien séparés)."
+      },
+      {
+        "t": "Placer un pare-feu (pfSense / OPNsense)",
+        "do": "# VM pfSense avec 2 cartes : WAN (Internet) et LAN (ton réseau).\n# Configure les interfaces, les règles de filtrage et le NAT.",
+        "verify": "Le LAN accède à Internet À TRAVERS pfSense, et les règles bloquent bien le trafic non autorisé."
+      }
+    ],
+    "test": "Un client Windows du domaine accède à Internet via pfSense, tandis qu'un service hébergé sur l'Ubuntu n'est joignable que selon tes règles de pare-feu.",
+    "deploy": "Documente l'architecture (schéma + rôles + plan d'adressage). CV : « Maquette de datacenter : AD/DNS Windows Server, Linux, segmentation VLAN et pare-feu pfSense »."
+  },
+  {
+    "ic": "⚙️",
+    "title": "Automatiser avec Bash",
+    "lvl": 2,
+    "tags": [
+      "Bash",
+      "cron",
+      "automatisation"
+    ],
+    "why": "Ce qui distingue un admin d'un pro : ne jamais refaire deux fois à la main.",
+    "cv": "Prouve : scripting et automatisation.",
+    "steps": [
+      {
+        "t": "Script de sauvegarde",
+        "do": "#!/bin/bash\n# backup.sh\nDATE=$(date +%F)\ntar -czf /backups/home-$DATE.tar.gz /home/alice\necho \"Sauvegarde du $DATE terminée\"\n\nchmod +x backup.sh && ./backup.sh",
+        "verify": "Un fichier /backups/home-AAAA-MM-JJ.tar.gz apparaît, daté du jour."
+      },
+      {
+        "t": "Créer des utilisateurs en masse",
+        "do": "#!/bin/bash\n# users.txt : un login par ligne\nwhile read u; do\n  sudo adduser --disabled-password --gecos '' \"$u\"\ndone < users.txt",
+        "verify": "`id nom_du_fichier` confirme que chaque utilisateur listé existe."
+      },
+      {
+        "t": "Vérifier l'espace disque",
+        "do": "#!/bin/bash\ndf -h | awk 'NR>1 && $5+0 > 80 {print \"⚠ \" $6 \" plein à \" $5}'",
+        "verify": "Le script affiche une alerte seulement si une partition dépasse 80 %."
+      },
+      {
+        "t": "Envoyer un rapport (+ cron)",
+        "do": "# rapport.sh : combine uptime, df -h, who > /var/log/rapport.log\n# Planifie-le chaque matin à 8h :\ncrontab -e\n0 8 * * *  /home/alice/rapport.sh",
+        "verify": "Le rapport est généré automatiquement à l'heure prévue (vérifie l'horodatage du log)."
+      }
+    ],
+    "test": "Lance chaque script à la main, puis planifie-les avec cron et confirme leur exécution automatique le lendemain.",
+    "deploy": "Versionne tes scripts sur GitHub (un dépôt « bash-sysadmin-scripts »). CV : « Automatisation de l'administration système en Bash : sauvegardes, provisioning, monitoring, cron »."
+  },
+  {
+    "ic": "📊",
+    "title": "Supervision réseau",
+    "lvl": 3,
+    "tags": [
+      "Zabbix",
+      "Prometheus",
+      "Grafana"
+    ],
+    "why": "Surveiller serveurs et équipements : voir venir la panne avant qu'elle n'arrive.",
+    "cv": "Prouve : supervision et observabilité.",
+    "steps": [
+      {
+        "t": "Installer Prometheus + node_exporter",
+        "do": "# Le plus simple, en Docker :\ndocker run -d -p 9090:9090 --name prometheus prom/prometheus\ndocker run -d -p 9100:9100 --name node prom/node-exporter\n# Ajoute node_exporter comme 'target' dans prometheus.yml",
+        "verify": "http://IP:9090/targets montre tes cibles à l'état UP."
+      },
+      {
+        "t": "Visualiser avec Grafana",
+        "do": "docker run -d -p 3000:3000 --name grafana grafana/grafana\n# Connecte-toi (admin/admin), ajoute Prometheus comme source de données,\n# puis importe le dashboard 'Node Exporter Full' (ID 1860).",
+        "verify": "Les graphiques CPU/RAM/disque s'affichent en temps réel."
+      },
+      {
+        "t": "(Option) Ajouter Zabbix",
+        "do": "# Alternative 'tout-en-un' très demandée en entreprise :\ndocker run ... zabbix/zabbix-appliance   # ou suis docs.zabbix.com\n# Ajoute un hôte à surveiller + son agent.",
+        "verify": "L'hôte remonte ses métriques dans l'interface Zabbix (Monitoring → Hosts)."
+      },
+      {
+        "t": "Configurer une alerte",
+        "do": "# Dans Grafana (ou Prometheus Alertmanager) :\n# règle : CPU > 90 % pendant 5 min → notification (email / Discord / Slack).",
+        "verify": "Tu stresses la machine et l'alerte se déclenche."
+      }
+    ],
+    "test": "Installe `stress` (`sudo apt install stress`), lance `stress --cpu 4 --timeout 120`, et observe la montée des métriques puis le déclenchement de l'alerte.",
+    "deploy": "Mets ta config (docker-compose + dashboards exportés en JSON) sur GitHub. CV : « Stack d'observabilité Prometheus/Grafana (+ Zabbix) avec alerting »."
+  },
+  {
+    "ic": "🐳",
+    "title": "Docker",
+    "lvl": 2,
+    "tags": [
+      "Docker",
+      "Compose",
+      "conteneurs"
+    ],
+    "why": "Emballer une appli et ses dépendances : la compétence cloud incontournable.",
+    "cv": "Prouve : conteneurisation.",
+    "steps": [
+      {
+        "t": "Installer Docker",
+        "do": "curl -fsSL https://get.docker.com | sh\nsudo usermod -aG docker $USER   # puis déconnecte/reconnecte-toi",
+        "verify": "`docker run hello-world` affiche le message de succès de Docker."
+      },
+      {
+        "t": "Lancer un serveur web",
+        "do": "docker run -d -p 8080:80 --name web nginx",
+        "verify": "`curl localhost:8080` renvoie la page nginx (ou ouvre http://localhost:8080)."
+      },
+      {
+        "t": "Lancer une base de données",
+        "do": "docker run -d --name db -e POSTGRES_PASSWORD=secret postgres",
+        "verify": "`docker exec -it db psql -U postgres -c '\\l'` liste les bases de données."
+      },
+      {
+        "t": "Lancer un serveur DNS",
+        "do": "docker run -d --name dns -p 5353:53/udp -p 5353:53/tcp \\\n  -e DNSMASQ_USER=root jpillora/dnsmasq",
+        "verify": "`dig @127.0.0.1 -p 5353 google.com` reçoit une réponse."
+      },
+      {
+        "t": "Tout orchestrer avec Compose",
+        "do": "# docker-compose.yml qui décrit les 3 services, puis :\ndocker compose up -d\ndocker compose ps",
+        "verify": "Les 3 conteneurs sont 'Up' avec une seule commande."
+      }
+    ],
+    "test": "Arrête tout (`docker compose down`) puis relance (`docker compose up -d`) : l'environnement complet remonte à l'identique en quelques secondes.",
+    "deploy": "Publie ton docker-compose.yml sur GitHub. CV : « Conteneurisation de services (web, base de données, DNS) avec Docker & Docker Compose »."
+  }
+];
 
   var KEY = 'dojo_projets_v1';
   var checked = {};
   try { checked = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch(e){ checked = {}; }
   function save(){ try { localStorage.setItem(KEY, JSON.stringify(checked)); } catch(e){} }
-
   function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
   function render(){
     var host = document.getElementById('projects');
     host.innerHTML = '';
-    var totalSteps = 0, totalDone = 0;
     PROJECTS.forEach(function(pj, pi){
-      var doneCount = 0;
-      pj.steps.forEach(function(_, si){ if(checked[pi+'-'+si]) doneCount++; });
-      totalSteps += pj.steps.length; totalDone += doneCount;
-      var complete = doneCount === pj.steps.length;
-
+      var done = 0; pj.steps.forEach(function(_, si){ if(checked[pi+'-'+si]) done++; });
+      var complete = done === pj.steps.length;
       var card = document.createElement('div');
       card.className = 'pj' + (complete ? ' done' : '');
       var tags = pj.tags.map(function(t){ return '<span class="tag">'+esc(t)+'</span>'; }).join('');
       var stepsHtml = pj.steps.map(function(st, si){
         var id = pi+'-'+si;
-        return '<li><label><input type="checkbox" data-id="'+id+'"'+(checked[id]?' checked':'')+'><span class="txt">'+esc(st)+'</span></label></li>';
+        return '<li class="gstep">'+
+          '<label class="gstep-head"><input type="checkbox" data-id="'+id+'"'+(checked[id]?' checked':'')+'><span class="txt">'+esc(st.t)+'</span></label>'+
+          '<div class="gstep-body">'+
+            '<pre class="cmd">'+esc(st['do'])+'</pre>'+
+            '<div class="verify"><b>Vérifie</b> — '+esc(st.verify)+'</div>'+
+          '</div></li>';
       }).join('');
       card.innerHTML =
         '<div class="pj-head">'+
@@ -250,9 +509,19 @@
             '<p class="pj-why">'+esc(pj.why)+'</p>'+
             '<p class="pj-cv">📄 <b>'+esc(pj.cv)+'</b></p>'+
           '</div>'+
-          '<span class="pj-check">'+doneCount+'/'+pj.steps.length+(complete?' ✓':'')+'</span>'+
+          '<span class="pj-check">'+done+'/'+pj.steps.length+(complete?' ✓':'')+'</span>'+
         '</div>'+
-        '<div class="pj-body"><div class="tags">'+tags+'</div><ul class="steps">'+stepsHtml+'</ul></div>';
+        '<div class="pj-body">'+
+          '<div class="tags">'+tags+'</div>'+
+          '<button class="guide-toggle" data-pi="'+pi+'">▸ Guide pas à pas — '+pj.steps.length+' étapes</button>'+
+          '<div class="pj-guide">'+
+            '<ol class="gsteps">'+stepsHtml+'</ol>'+
+            '<div class="pj-tv">'+
+              '<div class="tv-box test"><h4>🧪 Tester</h4><p>'+esc(pj.test)+'</p></div>'+
+              '<div class="tv-box deploy"><h4>🚀 Déployer &amp; CV</h4><p>'+esc(pj.deploy)+'</p></div>'+
+            '</div>'+
+          '</div>'+
+        '</div>';
       host.appendChild(card);
     });
 
@@ -262,16 +531,22 @@
         save(); updateAll();
       });
     });
+    Array.prototype.forEach.call(host.querySelectorAll('.guide-toggle'), function(btn){
+      btn.addEventListener('click', function(){
+        var g = btn.nextElementSibling;
+        var open = g.classList.toggle('open');
+        btn.classList.toggle('open', open);
+        btn.firstChild.nodeValue = (open ? '▾' : '▸') + ' Guide pas à pas — ' + PROJECTS[btn.dataset.pi].steps.length + ' étapes';
+      });
+    });
     updateAll();
   }
 
-  // Met à jour compteurs, pastilles "terminé" et barre globale sans reconstruire le DOM
   function updateAll(){
     var totalSteps = 0, totalDone = 0;
     var cards = document.querySelectorAll('.pj');
     PROJECTS.forEach(function(pj, pi){
-      var done = 0;
-      pj.steps.forEach(function(_, si){ if(checked[pi+'-'+si]) done++; });
+      var done = 0; pj.steps.forEach(function(_, si){ if(checked[pi+'-'+si]) done++; });
       totalSteps += pj.steps.length; totalDone += done;
       var card = cards[pi];
       if(card){
