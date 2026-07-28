@@ -3268,10 +3268,15 @@ var QUESTS = [
       {
         level: 'intermediate',
         title: 'nano — l\'éditeur simple',
-        context: "nano est l'éditeur facile pour débuter. Il affiche les raccourcis en bas. ^X = quitter (Ctrl+X), ^O = enregistrer (write Out). Le ^ représente Ctrl.",
-        scene: "Tu dois modifier un fichier de config rapidement.",
-        mission: "Ouvre ~/notes.txt avec nano (simulation : tape la commande).",
-        steps: ["Crée d'abord le fichier : `touch notes.txt`", "Puis : `nano notes.txt`", "Pour quitter : Ctrl+X", "Pour enregistrer : Ctrl+O puis Entrée"],
+        context: "Modifier un fichier dans le terminal se fait avec un **éditeur en ligne de commande**. Le plus accueillant est **nano** : tu tapes `nano fichier`, tu écris ton texte directement, et les raccourcis utiles sont rappelés en bas de l'écran. Un seul détail à connaître : le symbole `^` affiché en bas veut dire la touche **Ctrl**. Donc `^X` = Ctrl+X.",
+        scene: "Tu dois modifier un fichier rapidement, sur une machine où il n'y a pas d'interface graphique.",
+        mission: "Ouvre `~/notes.txt` avec nano (ici, il suffit de taper la commande).",
+        steps: [
+          "Crée d'abord le fichier : `touch notes.txt`",
+          "Ouvre-le : `nano notes.txt` — tu peux taper ton texte directement",
+          "Pour enregistrer : `Ctrl+O` puis Entrée (O = *write Out*, « écrire »)",
+          "Pour quitter : `Ctrl+X`"
+        ],
         expected: "(éditeur ouvert)\n^G Aide   ^O Écrire\n^X Quitter ^W Chercher\n^K Couper  ^U Coller",
         diagram: "Raccourcis nano :\n  Ctrl+X  →  Quitter\n  Ctrl+O  →  Enregistrer (write Out)\n  Ctrl+W  →  Rechercher (Where)\n  Ctrl+K  →  Couper la ligne\n  Ctrl+U  →  Coller",
         culture: "nano est né en 1999 comme clone libre de **pico**, l'éditeur du logiciel de mail Pine. Sa philosophie : **zéro courbe d'apprentissage**. Tout est affiché, rien à mémoriser. Le `^` de sa barre du bas représente la touche **Ctrl** — une notation héritée des vieux terminaux où Ctrl générait des « caractères de contrôle ». C'est aujourd'hui l'éditeur par défaut de nombreuses distributions et le premier réflexe des débutants comme des pros pressés.",
@@ -3281,10 +3286,15 @@ var QUESTS = [
       {
         level: 'advanced',
         title: 'vim — les modes',
-        context: "vim est plus puissant mais déroutant : il a 3 modes. NORMAL (navigation, défaut), INSERT (saisie, touche `i`), COMMAND (commandes ex: `:w` save, `:q` quit). Pour quitter sans sauver : `:q!`. Pour sauver et quitter : `:wq` ou `ZZ`.",
-        scene: "Sur un serveur minimal, seul vim est dispo. Tu dois t'en sortir.",
-        mission: "Ouvre /etc/hostname avec vim (simulation).",
-        steps: ["`vim /etc/hostname`", "Tu démarres en mode NORMAL", "Pour modifier : tape `i` (insert)", "Pour sortir d'insert : Échap", "Pour quitter : `:q` (ou `:q!` sans sauver)"],
+        context: "**vim** est plus puissant que nano, mais déroutant, parce qu'il est **modal** : selon le mode où tu es, les touches ne font pas la même chose.\n• Au démarrage : mode **NORMAL** — les touches sont des COMMANDES, pas du texte.\n• `i` entre en mode **INSERTION** — là, tu tapes normalement.\n• `Échap` te ramène en NORMAL.\n• Depuis NORMAL, `:` ouvre une ligne de commande : `:wq` = sauver et quitter, `:q!` = quitter SANS sauver.",
+        scene: "Sur un serveur minimal, seul vim est installé. Tu dois savoir en sortir.",
+        mission: "Ouvre `/etc/hostname` avec vim (simulation), entre en écriture, puis quitte.",
+        steps: [
+          "Ouvre : `vim /etc/hostname` — tu démarres en mode NORMAL",
+          "Passe en écriture : tape `i` (le bas affiche `-- INSERT --`)",
+          "Reviens en NORMAL : touche `Échap`",
+          "Quitte : `:q` (ou `:q!` pour partir sans rien sauver)"
+        ],
         expected: "(vim ouvert)\n~\n~\n~\n\"hostname\" 1L, 5C\n-- INSERT --  (après `i`)",
         diagram: "Cycle vim :\n         ┌──────────┐\n   `i`  →│  INSERT  │ Esc → NORMAL\n         └──────────┘\n  ┌─────────┐\n  │ NORMAL  │ ←── démarrage\n  └────┬────┘\n       │  `:`\n       ↓\n   ┌─────────┐\n   │ COMMAND │  → :w :q :wq :q!\n   └─────────┘",
         culture: "vim (**Vi IMproved**) descend de `vi`, écrit en 1976 par Bill Joy. Son système modal déroute mais permet d'éditer à la vitesse de la pensée sans jamais quitter le clavier : `dd` supprime une ligne, `yy` la copie, `p` la colle. Des développeurs l'utilisent depuis 40 ans et refusent d'en changer. Sa réputation d'« impossible à quitter » est si tenace que la question *how to exit vim* a été vue des **millions** de fois sur Stack Overflow — et est devenue un mème.",
@@ -3294,22 +3304,68 @@ var QUESTS = [
       {
         level: 'advanced',
         title: 'vim — recherche',
-        context: "En mode NORMAL : `/motif` cherche en avant, `?motif` en arrière, `n` répète, `N` répète en sens inverse. Indispensable dans les gros fichiers.",
-        scene: "Tu cherches une ligne précise dans /etc/ssh/sshd_config.",
-        mission: "Ouvre sshd_config et cherche 'PermitRootLogin' (simulation).",
-        steps: ["`vim /etc/ssh/sshd_config`", "En mode NORMAL, tape `/PermitRootLogin`", "Entrée pour valider", "`n` pour le résultat suivant"],
+        context: "Dans un gros fichier, chercher un mot à la main est impensable. En mode **NORMAL**, tape `/` suivi du mot : vim saute à la première occurrence. `n` va à la suivante, `N` à la précédente. C'est la façon la plus rapide de retrouver une ligne dans une longue config.",
+        scene: "Tu cherches un réglage précis, `PermitRootLogin`, dans le fichier de config SSH.",
+        mission: "Ouvre `sshd_config` avec vim et cherche « PermitRootLogin » (simulation).",
+        steps: [
+          "Ouvre : `vim /etc/ssh/sshd_config`",
+          "En mode NORMAL, tape `/PermitRootLogin` puis Entrée",
+          "Appuie sur `n` pour aller à l'occurrence suivante"
+        ],
         expected: "(vim) Ligne 32 :\nPermitRootLogin no",
+        culture: "La recherche `/motif` de vim comprend les **expressions régulières** (regex) : tu peux chercher des motifs, pas seulement des mots exacts. `/error` trouve « error », mais `/err.*` trouverait tout ce qui commence par « err ». Cette même logique de recherche se retrouve dans `grep`, `sed`, et presque tous les outils Unix — l'apprendre une fois, c'est la réutiliser partout.",
+        reflection: "Dans un fichier de 500 lignes, pourquoi `/PermitRootLogin` bat-il le défilement à l'œil ?\n👉 Parce que la recherche te téléporte à la ligne exacte, instantanément, et `n` t'emmène à la suivante. Faire défiler à la main, c'est perdre du temps et risquer de rater une occurrence. Chercher est le réflexe ; défiler est le dernier recours.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('vim') === 0 && c.indexOf('sshd_config') >= 0; }); }
       },
       {
         level: 'advanced',
-        title: 'echo + redirection = créer un fichier',
-        context: "Sans éditeur, on peut écrire dans un fichier directement avec `echo \"texte\" > fichier`. Le `>` écrase, `>>` ajoute. Pratique pour automatiser.",
-        scene: "Tu veux créer un fichier README.md avec une ligne.",
-        mission: "Crée ~/README.md contenant 'Mon projet'.",
-        steps: ["`cd ~`", "`echo \"Mon projet\" > README.md`", "Vérifie : `cat README.md`"],
+        title: 'Écrire dans un fichier sans éditeur (>)',
+        context: "On peut remplir un fichier **sans ouvrir d'éditeur**, grâce à la **redirection**. `echo \"texte\" > fichier` prend ce qu'`echo` afficherait et l'envoie DANS le fichier au lieu de l'écran. ⚠️ Le `>` **écrase** tout le contenu précédent du fichier.",
+        scene: "Tu veux créer un `README.md` d'une ligne, en une seule commande.",
+        mission: "Crée `~/README.md` contenant « Mon projet ».",
+        steps: [
+          "Place-toi chez toi : `cd ~`",
+          "Écris dans le fichier : `echo \"Mon projet\" > README.md` (le `>` = « envoie dans »)",
+          "Vérifie le contenu : `cat README.md`"
+        ],
         expected: "$ echo \"Mon projet\" > README.md\n$ cat README.md\nMon projet",
+        culture: "La redirection `>` est un pilier d'Unix : la sortie d'une commande, au lieu de s'afficher, part dans un fichier. On l'utilise pour créer des configs à la volée, enregistrer un rapport (`ps aux > processus.txt`), ou journaliser. Même idée que le tuyau `|`, mais vers un fichier plutôt que vers une autre commande.",
+        reflection: "Quelle est la différence, potentiellement catastrophique, entre `>` et `>>` ?\n👉 `>` **écrase** : tout le contenu précédent est effacé et remplacé. `>>` **ajoute** à la fin, sans rien effacer. Taper `>` au lieu de `>>` sur un fichier de log ou de config important, c'est en perdre tout le contenu d'un coup. Un piège classique — on vérifie toujours lequel on utilise.",
         check: function(s) { var h = getNode('/home/user'); return !!(h && h.children && h.children['README.md']); }
+      },
+      {
+        level: 'advanced',
+        title: 'Ajouter sans écraser (>>)',
+        context: "Le double chevron `>>` **ajoute** à la fin d'un fichier, sans toucher à ce qui existe déjà — contrairement à `>` qui écrase tout. C'est LE bon outil pour empiler des lignes : ajouter une entrée à un journal, une ligne à une config, sans repartir de zéro.",
+        scene: "Tu construis un petit fichier ligne par ligne, sans jamais perdre les précédentes.",
+        mission: "Crée `journal.txt` avec une 1ʳᵉ ligne, puis ajoute-en une 2ᵉ avec `>>`.",
+        steps: [
+          "Place-toi chez toi : `cd ~`",
+          "Crée la 1ʳᵉ ligne (avec `>`, qui crée le fichier) : `echo \"jour 1\" > journal.txt`",
+          "Ajoute une 2ᵉ ligne (avec `>>`, qui n'écrase pas) : `echo \"jour 2\" >> journal.txt`",
+          "Relis le tout : `cat journal.txt`"
+        ],
+        expected: "$ echo \"jour 1\" > journal.txt\n$ echo \"jour 2\" >> journal.txt\n$ cat journal.txt\njour 1\njour 2",
+        culture: "En production, `>>` est partout : chaque ligne d'un fichier de log (`/var/log/…`) y est ajoutée avec `>>`, jamais avec `>` (sinon on effacerait tout l'historique à chaque écriture). Les scripts d'installation ajoutent souvent une ligne à une config existante avec `echo \"…\" >> fichier`. Le réflexe : `>>` pour empiler, `>` seulement pour (ré)initialiser.",
+        reflection: "Ton script doit ajouter une ligne au `.bashrc` de l'utilisateur sans détruire sa config. `>` ou `>>` ?\n👉 `>>`, évidemment. `echo \"export PATH=…\" >> ~/.bashrc` ajoute la ligne à la fin en gardant tout le reste. Un `>` aurait REMPLACÉ tout le `.bashrc` par cette seule ligne — une erreur qui casse le shell. La nuance entre `>` et `>>` est minuscule à l'écrit, énorme dans les faits.",
+        check: function(s) { var h = getNode('/home/user'); return !!(h && h.children && h.children['journal.txt']); }
+      },
+      {
+        level: 'advanced',
+        title: 'Mini-défi : une config sans éditeur',
+        context: "On combine tout : créer un fichier, l'enrichir ligne par ligne, le relire — sans jamais ouvrir d'éditeur. C'est exactement ce que font les scripts d'installation pour générer une configuration.",
+        scene: "Le Sensei te demande de fabriquer un mini-fichier de config à la main, en trois commandes.",
+        mission: "Construis `~/config.txt` avec deux lignes (`# Config` puis `port=22`), puis affiche-le.",
+        steps: [
+          "Place-toi chez toi : `cd ~`",
+          "Crée la 1ʳᵉ ligne : `echo \"# Config\" > config.txt` (le `>` crée le fichier)",
+          "Ajoute la 2ᵉ : `echo \"port=22\" >> config.txt` (le `>>` complète sans écraser)",
+          "Relis : `cat config.txt`"
+        ],
+        expected: "$ cat config.txt\n# Config\nport=22",
+        culture: "Générer une config par `echo >>` est la base de l'automatisation : un script crée le fichier vide, puis empile ses lignes selon les réponses de l'utilisateur. Pas d'éditeur interactif — tout est reproductible et scriptable. C'est le pont entre « éditer à la main » et « automatiser ».",
+        reflection: "Pourquoi générer une config par script (`echo >>`) plutôt que de l'écrire à la main dans nano ?\n👉 Parce que c'est **reproductible** : le même script recrée la même config à l'identique, sur 1 ou 1000 machines, sans faute de frappe. Éditer à la main convient pour un ajustement ponctuel ; générer par script devient indispensable dès qu'il faut refaire la même chose. Toute la philosophie de l'Infrastructure as Code commence ici.",
+        check: function(s) { var h = getNode('/home/user'); return !!(h && h.children && h.children['config.txt']); }
       }
     ]
   },
@@ -4361,9 +4417,11 @@ function parseAndExecute(cmd) {
     } else {
       var existing = parent.children[fileName];
       if (redirOp === '>>' && existing) {
-        // Append (we don't store actual content, just register the file)
-        // Update size
-        existing.size = (parseInt(existing.size, 10) || 0) + captured.length + '';
+        // Append : on ajoute vraiment le contenu à la suite (pour que `cat` le montre)
+        var addC = String(captured).replace(/\n+$/, '');
+        var prev = FILE_CONTENTS[fileName];
+        FILE_CONTENTS[fileName] = (prev != null && prev !== '') ? prev + '\n' + addC : addC;
+        existing.size = ((parseInt(existing.size, 10) || 0) + captured.length) + '';
       } else {
         parent.children[fileName] = {
           type: 'file', perms: '-rw-r--r--', owner: sysState.user,
