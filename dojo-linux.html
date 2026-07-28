@@ -1385,16 +1385,22 @@ window.addEventListener('error', function(e) {
   .toast {
     position: fixed; bottom: 100px; left: 50%;
     transform: translateX(-50%) translateY(20px);
-    background: rgba(20,12,36,0.95);
-    border: 1px solid var(--mint);
-    color: var(--mint);
-    padding: 9px 16px; border-radius: 8px;
-    font-size: 0.78rem;
+    background: #241a10;
+    border: 1px solid var(--gold, #c89028);
+    color: #f6edd7;
+    padding: 11px 18px; border-radius: 10px;
+    font-size: 0.82rem;
+    line-height: 1.45;
     font-family: var(--font-mono);
+    max-width: min(520px, 90vw);
+    white-space: pre-line;
+    text-align: center;
+    box-shadow: 0 8px 24px rgba(20,12,4,0.32);
     z-index: 9999;
     opacity: 0;
     transition: opacity 0.25s, transform 0.25s ease;
   }
+  .toast code, .toast b, .toast strong { color: #ffd98a; }
   .toast.show {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
@@ -4022,7 +4028,9 @@ function showToast(msg) {
   t.textContent = msg;
   t.classList.add('show');
   clearTimeout(_toastTimer);
-  _toastTimer = setTimeout(function() { t.classList.remove('show'); }, 2200);
+  // Durée proportionnelle à la longueur : les messages longs restent lisibles.
+  var dur = Math.min(6500, Math.max(2400, (msg || '').length * 55));
+  _toastTimer = setTimeout(function() { t.classList.remove('show'); }, dur);
 }
 
 document.getElementById('exo-toggle').onclick = function() {
@@ -4562,7 +4570,7 @@ function cmdCat(args) {
     if (fileDir === cwd) {
       highlighted = fileName;
     } else if (typeof showToast === 'function') {
-      showToast('📖 Tu as lu ' + full + ', mais tu es toujours dans ' + cwd + '. « cat » affiche un fichier sans t’y déplacer — fais « cd ' + fileDir + ' » pour l’explorer.');
+      showToast('📖 « cat » affiche le fichier sans te déplacer.\nTu es toujours dans ' + cwd + ' — fais « cd ' + fileDir + ' » pour explorer ' + fileDir + '.');
     }
   });
   renderFs();
