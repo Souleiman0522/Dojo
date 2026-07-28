@@ -2514,11 +2514,14 @@ var QUESTS = [
     exos: [
       {
         level: 'intermediate',
-        title: 'Qui suis-je ?',
-        context: "whoami affiche ton nom d'utilisateur. id donne plus de détails : UID, GID, groupes.",
-        scene: "Tu te demandes quel utilisateur exécute ta session.",
-        mission: "Affiche ton identité avec `whoami`.",
-        steps: ["Tape `whoami`", "Pour plus d'infos : `id`"],
+        title: 'Sous quelle identité j\'agis ?',
+        context: "Tu as croisé `whoami` au chapitre 1. Ici il prend tout son sens : **les droits sur un fichier dépendent de QUI tu es**. Avant de parler permissions, on confirme donc ton identité. `whoami` donne ton nom ; `id` ira plus loin (ton numéro et tes groupes).",
+        scene: "Avant de toucher aux droits, tu vérifies sous quel compte tu agis.",
+        mission: "Confirme ton identité avec `whoami`.",
+        steps: [
+          "Tape `whoami` → il affiche ton nom de compte",
+          "Pour le détail complet (numéro + groupes), enchaîne avec `id`"
+        ],
         expected: "$ whoami\nuser\n$ id\nuid=1000(user) gid=1000(user) groups=1000(user),27(sudo)",
         culture: "Derrière ton nom se cache un **numéro** : l'UID (User ID). Le tien est 1000 — le premier utilisateur humain (les distributions démarrent les comptes humains à 1000). Mais l'UID qui fait trembler, c'est le **0** : c'est **root**, le super-utilisateur qui peut TOUT faire, ignorer toutes les permissions. Le système ne connaît que les numéros ; les noms (`user`, `root`) ne sont qu'un confort humain traduit via `/etc/passwd`.",
         reflection: "Comment le système sait-il que tu es « user » et pas quelqu'un d'autre ?\n👉 Chaque processus porte l'UID de qui l'a lancé. Ton shell tourne sous l'UID 1000, hérité de ta connexion. `whoami` lit juste cet UID et le traduit en nom. Quand tu fais `sudo`, tu demandes temporairement l'UID 0 (root) — d'où la question de mot de passe : le système vérifie que tu as le DROIT d'emprunter cette identité.",
@@ -2526,11 +2529,15 @@ var QUESTS = [
       },
       {
         level: 'intermediate',
-        title: 'Identité complète',
-        context: "id affiche UID (numéro utilisateur), GID (groupe principal) et tous les groupes secondaires. Le groupe `sudo` autorise les commandes administrateur.",
-        scene: "Tu veux savoir si tu es membre du groupe sudo.",
-        mission: "Affiche ton ID complet avec `id`.",
-        steps: ["Tape `id`", "Cherche `sudo` dans la liste des groupes"],
+        title: 'Identité complète (id)',
+        context: "`id` affiche ta carte d'identité complète : ton **UID** (numéro d'utilisateur), ton **GID** (groupe principal), et tous tes **groupes**. Le groupe le plus important à repérer est `sudo` : en faire partie, c'est avoir le droit de devenir administrateur.",
+        scene: "Tu veux savoir si tu as les droits d'administration (groupe sudo).",
+        mission: "Affiche ton identité détaillée avec `id`.",
+        steps: [
+          "Tape `id`",
+          "Repère `(sudo)` dans la liste des groupes — c'est ton passe admin",
+          "Note ton UID : `1000` = un humain ; `0` serait root"
+        ],
         expected: "uid=1000(user) gid=1000(user) groups=1000(user),27(sudo)",
         reflection: "Dans la sortie de `id`, que signifie la présence de `27(sudo)` dans les groupes ?\n👉 Tu es membre du groupe **sudo** (numéro 27). C'est le sésame de l'administration : ses membres peuvent lancer des commandes en tant que root via `sudo`. Sans ce groupe, `sudo apt install ...` te répondrait « user is not in the sudoers file ». Être dans le groupe sudo = détenir les clés du royaume. À accorder avec prudence.",
         check: function(s) { return s.history.indexOf('id') >= 0 || s.history.some(function(c) { return c === 'id'; }); }
@@ -2538,10 +2545,14 @@ var QUESTS = [
       {
         level: 'advanced',
         title: 'Lire les permissions',
-        context: "Les permissions Linux sont 9 caractères : 3 pour le propriétaire (u), 3 pour le groupe (g), 3 pour les autres (o). r=lire, w=écrire, x=exécuter.",
-        scene: "Tu veux comprendre les permissions de ton install.sh.",
-        mission: "Affiche les permissions des fichiers de ~/scripts.",
-        steps: ["`cd ~/scripts`", "`ls -l`", "Lis `-rw-r--r--` : propriétaire peut lire/écrire, groupe et autres seulement lire"],
+        context: "Chaque fichier affiche ses droits dans une suite de **10 caractères**, tout à gauche quand tu fais `ls -l` : par ex. `-rwxr-xr--`. Le 1er dit le type (`-` fichier, `d` dossier), puis 3 blocs de 3 : ce que peut faire **toi** (le propriétaire), puis **ton groupe**, puis **les autres**. `r`=lire, `w`=écrire, `x`=exécuter. (Le Dojo t'affiche un décodeur au tout premier `ls -l`.)",
+        scene: "Tu veux comprendre les droits de tes scripts.",
+        mission: "Affiche les droits des fichiers de `~/scripts` avec `ls -l`.",
+        steps: [
+          "Va dans le dossier : `cd ~/scripts`",
+          "Affiche les droits : `ls -l`",
+          "Lis `-rw-r--r--` : toi tu lis + écris, ton groupe et les autres lisent seulement"
+        ],
         expected: "-rw-r--r--  user  user  234  install.sh\n-rw-r--r--  user  user  512  backup.sh",
         diagram: "  -rwxr-xr-x\n  │└┬┘└┬┘└┬┘\n  │ u  g  o\n  └ type fichier",
         culture: "Les permissions se lisent en **trois publics** : `u` (user, le propriétaire), `g` (group, son groupe), `o` (others, tout le reste). Chaque public a ses trois droits : `r`ead, `w`rite, e`x`ecute. Ce modèle date de 1971 et n'a quasiment pas changé — sa simplicité (3×3 bits) est sa force. Sur un dossier, les droits ont un sens légèrement différent : `x` = « droit d'entrer » (`cd`), `r` = « droit de lister le contenu ».",
@@ -2550,23 +2561,31 @@ var QUESTS = [
       },
       {
         level: 'advanced',
-        title: 'Rendre exécutable (chmod)',
-        context: "Par défaut un script créé n'est pas exécutable. chmod +x ajoute le droit d'exécution. C'est obligatoire pour pouvoir lancer un script avec ./script.sh.",
-        scene: "Ton install.sh est là mais ne se lance pas. Permission denied.",
-        mission: "Ajoute le droit d'exécution à install.sh.",
-        steps: ["`cd ~/scripts`", "`chmod +x install.sh`", "Vérifie : `ls -l` — un x apparaît"],
+        title: 'Rendre exécutable (chmod +x)',
+        context: "Un fichier ne peut être **lancé** comme un programme que s'il a le droit `x` (exécuter). Un script fraîchement créé ne l'a pas → tu obtiens « Permission denied ». `chmod +x fichier` ajoute ce droit. `chmod` veut dire *change mode*, « changer les droits ».",
+        scene: "Ton `install.sh` est là mais refuse de se lancer : « Permission denied ».",
+        mission: "Ajoute le droit d'exécution à `install.sh`.",
+        steps: [
+          "Va dans `~/scripts` : `cd ~/scripts`",
+          "Ajoute le droit d'exécuter : `chmod +x install.sh` (`+x` = « ajoute exécuter »)",
+          "Vérifie avec `ls -l` : un `x` est apparu dans les droits"
+        ],
         expected: "Avant : -rw-r--r--  install.sh\nAprès : -rwxr-xr-x  install.sh",
-        culture: "Sous Windows, un fichier est « exécutable » selon son extension (`.exe`, `.bat`). Sous Unix, l'extension ne veut RIEN dire : c'est le **bit d'exécution** (`x`) qui décide. Un fichier peut s'appeler `install.sh`, `install`, ou `install.txt` — s'il a le bit `x` et un shebang valide, il tourne. Cette séparation entre nom et permission est plus sûre : un fichier téléchangé n'est pas exécutable par accident, il faut explicitement lui donner le droit.",
+        culture: "Sous Windows, un fichier est « exécutable » selon son extension (`.exe`, `.bat`). Sous Unix, l'extension ne veut RIEN dire : c'est le **bit d'exécution** (`x`) qui décide. Un fichier peut s'appeler `install.sh`, `install`, ou `install.txt` — s'il a le bit `x` et un shebang valide, il tourne. Cette séparation entre nom et permission est plus sûre : un fichier téléchargé n'est pas exécutable par accident, il faut explicitement lui donner le droit.",
         reflection: "Tu télécharges un script mais `./script.sh` répond « Permission denied ». Pourquoi, et comment corriger ?\n👉 Le fichier n'a pas le bit d'exécution (`x`) — c'est la protection par défaut. `chmod +x script.sh` l'ajoute, et `./script.sh` fonctionne. C'est une sécurité voulue : rien de téléchargé ne s'exécute sans que tu l'autorises explicitement. Le réflexe : `chmod +x` puis lancer.",
         check: function(s) { var f = getNode('/home/user/scripts/install.sh'); return !!(f && f.perms && f.perms.indexOf('x') > 0); }
       },
       {
         level: 'advanced',
         title: 'Permissions numériques',
-        context: "chmod accepte aussi des nombres : r=4, w=2, x=1. On les additionne. Ex : 755 = 7(rwx) 5(r-x) 5(r-x). Très utilisé en sysadmin.",
-        scene: "Tu veux donner des permissions strictes à backup.sh : seul le propriétaire peut tout faire (700).",
-        mission: "Applique chmod 700 à backup.sh.",
-        steps: ["`cd ~/scripts`", "`chmod 700 backup.sh`", "Vérifie avec `ls -l`"],
+        context: "Au lieu de `+x`, on peut fixer TOUS les droits d'un coup avec **trois chiffres** : `chmod 700 fichier`. L'astuce : `r=4`, `w=2`, `x=1`, et on additionne par bloc. `7 = 4+2+1 = rwx` (tout), `5 = 4+0+1 = r-x`, `0 = ---` (rien). Donc `700` = tout pour toi, rien pour le groupe, rien pour les autres.",
+        scene: "`backup.sh` peut contenir des chemins sensibles : tu veux que toi seul puisses le toucher.",
+        mission: "Verrouille `backup.sh` en `700` (accès strictement privé).",
+        steps: [
+          "Va dans `~/scripts` : `cd ~/scripts`",
+          "Fixe les droits : `chmod 700 backup.sh` (7 = toi tout, 0 = groupe rien, 0 = autres rien)",
+          "Vérifie : `ls -l` → `-rwx------`"
+        ],
         expected: "-rwx------  backup.sh",
         diagram: "Tableau magique :\n  7=rwx  6=rw-  5=r-x\n  4=r--  2=-w-  1=--x\n  0=---",
         culture: "Ces nombres sont de l'**octal** (base 8) : chaque chiffre code 3 bits de permission. `r=4, w=2, x=1` sont les valeurs des trois bits, et on les additionne. `7 = 4+2+1 = rwx`, `5 = 4+0+1 = r-x`, `6 = 4+2+0 = rw-`. Ce système vient directement des premiers Unix de 1971 et n'a jamais changé — un `chmod 755` tapé aujourd'hui est identique à celui de Ken Thompson il y a 50 ans. C'est l'une des interfaces les plus stables de l'informatique.",
@@ -2576,12 +2595,35 @@ var QUESTS = [
       {
         level: 'expert',
         title: 'Changer le propriétaire (chown)',
-        context: "chown (change owner) change le propriétaire d'un fichier. Réservé à root. Format : `chown user:group fichier`. Très utile en hébergement web pour donner des fichiers à www-data.",
-        scene: "Tu veux donner ~/site/index.html au serveur web (www-data).",
-        mission: "Change le propriétaire de ~/site/index.html en www-data.",
-        steps: ["Cette commande nécessite sudo en vrai", "Ici : `sudo chown www-data:www-data ~/site/index.html`", "Vérifie avec `ls -l ~/site`"],
+        context: "`chown` (*change owner*) change **à qui appartient** un fichier. Réservé à l'administrateur (donc `sudo`). Format : `chown nouveau_propriétaire fichier`. Usage typique en hébergement web : donner les fichiers du site au compte du serveur web, `www-data`.",
+        scene: "Tu veux confier `~/site/index.html` au serveur web (`www-data`) pour qu'il puisse le servir.",
+        mission: "Change le propriétaire de `~/site/index.html` en `www-data`.",
+        steps: [
+          "Cette action demande les droits admin, d'où le `sudo`",
+          "Change le propriétaire : `sudo chown www-data:www-data ~/site/index.html`",
+          "Vérifie : `ls -l ~/site` → le propriétaire est devenu `www-data`"
+        ],
         expected: "Avant : -rw-r--r--  user       index.html\nAprès : -rw-r--r--  www-data   index.html",
+        culture: "Séparer **propriétaire** (`chown`) et **droits** (`chmod`) donne un contrôle très fin. En hébergement, la combinaison typique : les fichiers appartiennent à `www-data` avec des droits juste suffisants pour être lus par le serveur, jamais plus. Trop de droits sur un fichier web = une porte ouverte si le site est piraté.",
+        reflection: "Pourquoi donner un fichier de site web à `www-data` plutôt que de le laisser à `user` ?\n👉 Parce que c'est le serveur web (qui tourne sous le compte `www-data`) qui doit lire — et parfois écrire — ces fichiers. Lui donner la propriété, c'est lui accorder juste ce qu'il faut, sans ouvrir les droits à tout le monde. Principe du moindre privilège : chacun possède ce dont il a besoin, rien de plus.",
         check: function(s) { var f = getNode('/home/user/site/index.html'); return !!(f && f.owner === 'www-data'); }
+      },
+      {
+        level: 'expert',
+        title: 'Mini-défi : verrouiller un secret',
+        context: "On combine identité + droits. Objectif concret d'admin : préparer un script qui doit tourner, ET protéger un fichier sensible pour que toi seul puisses le toucher. Le bon dosage des droits, c'est ça la sécurité au quotidien.",
+        scene: "Tu déposes un utilitaire et un script sensible. L'utilitaire doit être exécutable ; le sensible doit être illisible pour les autres.",
+        mission: "Rends `install.sh` exécutable, et verrouille `backup.sh` en accès strictement privé (700).",
+        steps: [
+          "Va dans `~/scripts` : `cd ~/scripts`",
+          "Rends le script exécutable : `chmod +x install.sh`",
+          "Verrouille l'autre en privé total : `chmod 700 backup.sh`",
+          "Contrôle le résultat : `ls -l`"
+        ],
+        expected: "-rwxr-xr-x  install.sh\n-rwx------  backup.sh",
+        culture: "« Le moindre privilège » est LA règle d'or de la sécurité : chaque fichier, chaque compte n'a que les droits strictement nécessaires. Un secret en `600`/`700`, un exécutable partagé en `755` : ce dosage fin des droits est ce qui empêche qu'une simple faille sur un service donne accès à tout le reste du système.",
+        reflection: "Pourquoi ne pas simplement tout mettre en `777` (tous les droits pour tout le monde) pour « éviter les soucis » ?\n👉 Parce que `777` = n'importe qui peut lire, modifier ET exécuter — un trou de sécurité béant. C'est la mauvaise habitude n°1 des débutants pressés. Les bons droits ne sont pas ceux qui « évitent les erreurs » sur le moment, mais ceux qui limitent les dégâts en cas de problème.",
+        check: function(s) { var i = getNode('/home/user/scripts/install.sh'); var b = getNode('/home/user/scripts/backup.sh'); return !!(i && i.perms && i.perms.indexOf('x') > 0) && !!(b && b.perms === '-rwx------'); }
       }
     ]
   },
@@ -4694,6 +4736,27 @@ function cmdGzip(args) {
   term.writeln(C.dim + (f || '') + " compressé → " + (f || '') + ".gz" + C.reset);
 }
 
+// Décodeur des droits, affiché UNE fois après le premier `ls -l` de la session
+var _permsLegendShown = false;
+function printPermsLegend() {
+  if (_permsLegendShown || !term) return;
+  _permsLegendShown = true;
+  var g = C.gray, cy = C.brCyan, y = C.brYellow, gr = C.brGreen, b = C.bold, r = C.reset;
+  term.writeln('');
+  term.writeln('  ' + g + '┌─ ' + r + cy + b + 'Lire les droits (la colonne de gauche)' + r + ' ' + g + _dash(14) + r);
+  term.writeln('  ' + g + '│ ' + r + 'Exemple : ' + y + '-rwxr-xr--' + r);
+  term.writeln('  ' + g + '│' + r);
+  term.writeln('  ' + g + '│ ' + y + '-  ' + r + g + '→' + r + ' type : ' + y + '-' + r + ' fichier, ' + y + 'd' + r + ' dossier, ' + y + 'l' + r + ' lien');
+  term.writeln('  ' + g + '│ ' + y + 'rwx' + r + g + '→' + r + ' ' + gr + 'toi' + r + ' (propriétaire) : lire, écrire, exécuter');
+  term.writeln('  ' + g + '│ ' + y + 'r-x' + r + g + '→' + r + ' ton ' + gr + 'groupe' + r + ' : lire + exécuter (pas écrire)');
+  term.writeln('  ' + g + '│ ' + y + 'r--' + r + g + '→' + r + ' les ' + gr + 'autres' + r + ' : lire seulement');
+  term.writeln('  ' + g + '│' + r);
+  term.writeln('  ' + g + '│ ' + r + b + 'r' + r + '=lire  ' + b + 'w' + r + '=écrire  ' + b + 'x' + r + '=exécuter (ou « entrer » pour un dossier)');
+  term.writeln('  ' + g + '│ ' + g + '(cette aide ne s\'affiche qu\'une fois)' + r);
+  term.writeln('  ' + g + '└' + _dash(50) + r);
+  term.writeln('');
+}
+
 function cmdLs(args) {
   var showAll = args.some(function(a) { return /^-.*a/.test(a); });
   var longFmt = args.some(function(a) { return /^-.*l/.test(a); });
@@ -4720,6 +4783,7 @@ function cmdLs(args) {
       var pad = '       '.slice(Math.min(sz.length, 7)); if (pad === undefined) pad = '';
       term.writeln(C.dim + (it.perms || '-rw-r--r--') + C.reset + ' ' + (it.owner || 'user') + '  ' + sz + '  ' + cn + C.reset);
     });
+    printPermsLegend();
   } else {
     var items = entries.map(function(e) {
       var n = e[0], it = e[1];
