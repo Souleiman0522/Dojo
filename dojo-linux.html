@@ -1225,6 +1225,7 @@ window.addEventListener('error', function(e) {
     font-family: var(--font-mono);
   }
   .item-card {
+    position: relative;
     display: flex; flex-direction: column; align-items: center;
     padding: 11px 5px; border-radius: 10px;
     cursor: pointer;
@@ -1246,13 +1247,22 @@ window.addEventListener('error', function(e) {
   }
   .item-card.hidden { opacity: 0.5; }
   .item-card.highlighted {
-    background: linear-gradient(135deg, rgba(30,90,61,0.25), rgba(30,58,92,0.2));
-    border-color: var(--mint);
-    animation: glow 1.5s ease-in-out infinite;
+    background: rgba(200,144,40,0.16);
+    border-color: var(--gold, #c89028);
+    animation: glow 1.6s ease-in-out infinite;
+  }
+  .item-card.highlighted .item-name { color: var(--text-1, #1a1a1a) !important; font-weight: 800; }
+  .item-card.highlighted::after {
+    content: '👁';
+    position: absolute; top: 3px; right: 3px;
+    font-size: 0.72rem; line-height: 1;
+    background: var(--vermilion, #c8341c);
+    border-radius: 50%; padding: 2px 3px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.25);
   }
   @keyframes glow {
-    0%, 100% { box-shadow: var(--shadow-md); }
-    50% { box-shadow: var(--shadow-lg); }
+    0%, 100% { box-shadow: 0 0 0 2px rgba(200,144,40,0.45), var(--shadow-sm); }
+    50%      { box-shadow: 0 0 0 3px rgba(200,52,28,0.55), var(--shadow-md); }
   }
   .item-icon { width: 44px; height: 36px; margin-bottom: 6px; }
   .item-name {
@@ -3604,7 +3614,8 @@ function renderFs() {
     }
     grid.appendChild(card);
   });
-  if (highlighted) setTimeout(function() { highlighted = null; }, 2500);
+  // La surbrillance reste jusqu'à la prochaine commande qui touche un
+  // autre fichier (plus de disparition automatique après quelques secondes).
 }
 
 function navigateTo(path) {
