@@ -1806,6 +1806,7 @@ window.addEventListener('error', function(e) {
     </div>
 
     <button class="modal-btn" onclick="exportProgress()" style="margin-bottom:8px;background:linear-gradient(135deg,var(--mint),var(--blue))">📥 Exporter ma progression</button>
+    <button class="modal-btn secondary" onclick="logout()" style="margin-bottom:8px">⏻ Se déconnecter</button>
     <div class="modal-btns">
       <button class="modal-btn secondary" onclick="closeProfileModal()">Fermer</button>
       <button class="modal-btn" onclick="confirmReset()" style="background:linear-gradient(135deg,#ff5c8a,#c8341c)">🗑️ Reset</button>
@@ -5718,6 +5719,20 @@ function closeProfileModal() {
     showToast('Email mis à jour');
   }
   document.getElementById('profile-modal').classList.add('hidden');
+}
+
+function logout() {
+  if (!confirm('Se déconnecter ?\n\nTa progression reste sauvegardée sur cet appareil ; tu la retrouveras en te reconnectant avec le même pseudo.')) return;
+  try {
+    localStorage.removeItem('dojo_email');
+    localStorage.removeItem('dojo_pseudo');
+    localStorage.removeItem('dojo_signup_sent');
+  } catch (e) {}
+  userPseudo = null;
+  userEmail = null;
+  updateUserBadge();
+  // Retour à la page de connexion
+  window.location.href = 'accueil.html';
 }
 
 function exportProgress() {

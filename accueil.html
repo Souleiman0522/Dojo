@@ -248,6 +248,11 @@
 <!-- REJOINDRE -->
 <section id="rejoindre"><div class="wrap">
   <div class="join">
+    <div id="connected-banner" style="display:none;background:rgba(30,90,61,0.08);border:1px solid rgba(30,90,61,0.32);border-radius:12px;padding:15px 16px;margin-bottom:18px;text-align:left">
+      <div style="font-size:.92rem;color:#1e5a3d;margin-bottom:11px">✅ Déjà connecté en tant que <strong id="cb-name" style="color:#143d29">--</strong></div>
+      <button class="btn btn-primary btn-block" onclick="window.location.href='dojo-linux.html'" style="margin-bottom:8px">Reprendre l'entraînement →</button>
+      <button class="btn btn-block" onclick="dojoLogout()" style="background:transparent;border:1px solid #c8341c;color:#c8341c">⏻ Se déconnecter</button>
+    </div>
     <h2>Rejoins le Dojo</h2>
     <p class="sub">Crée ton accès en 10 secondes pour sauvegarder ta progression.</p>
     <button class="btn btn-google btn-block btn-lg" onclick="googleConnect()" style="margin-bottom:8px">
@@ -335,6 +340,25 @@
     toast('Connexion Google indisponible ici — ouvre le site en http/https (pas file://), ou utilise ton email.');
     var e=document.getElementById('email'); if(e){ e.scrollIntoView({behavior:'smooth',block:'center'}); setTimeout(function(){e.focus();},400); }
   }
+
+  // Affiche l'état « déjà connecté » + déconnexion
+  function refreshConnected(){
+    var em=null, ps=null;
+    try{ em=localStorage.getItem('dojo_email'); ps=localStorage.getItem('dojo_pseudo'); }catch(e){}
+    var b=document.getElementById('connected-banner');
+    if(!b) return;
+    if(em || ps){
+      var nm=document.getElementById('cb-name'); if(nm) nm.textContent = ps || em;
+      b.style.display='block';
+    } else { b.style.display='none'; }
+  }
+  function dojoLogout(){
+    if(!confirm('Se déconnecter ?\n\nTa progression reste sauvegardée sur cet appareil ; tu la retrouveras en te reconnectant avec le même pseudo.')) return;
+    try{ localStorage.removeItem('dojo_email'); localStorage.removeItem('dojo_pseudo'); localStorage.removeItem('dojo_signup_sent'); }catch(e){}
+    refreshConnected();
+    toast('Déconnecté ✓ — tu peux te reconnecter quand tu veux.');
+  }
+  refreshConnected();
 </script>
 </body>
 </html>
