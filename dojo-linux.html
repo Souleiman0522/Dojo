@@ -426,9 +426,13 @@ window.addEventListener('error', function(e) {
     padding-bottom: 10px;
     border-bottom: 2px solid var(--border);
   }
+  .quest-section.current {
+    border-color: var(--vermilion, #c8341c);
+    box-shadow: 0 2px 8px rgba(200,52,28,0.14);
+  }
   .quest-section.current > .quest-header {
-    background: rgba(200,144,40,0.12);
-    border-radius: 6px;
+    background: rgba(200,52,28,0.10);
+    border-bottom-color: rgba(200,52,28,0.28);
   }
   @media (max-width: 900px) {
     html, body { height: auto; overflow-y: auto; }
@@ -753,6 +757,119 @@ window.addEventListener('error', function(e) {
     color: #241a10;
   }
 
+  /* ═══════════════════════════════════════════════
+     RÉCIT EN MODE RPG — boîte de dialogue laquée
+     (le récit devient une scène ; portrait du Sensei,
+      plaque de nom, texte de dialogue, curseur « ▼ »)
+     ═══════════════════════════════════════════════ */
+  .rpg-scene {
+    position: relative;
+    margin: 6px 0 16px;
+    padding: 0;
+    background: radial-gradient(130% 110% at 0% 0%, #29394d 0%, #1b2734 55%, #131c27 100%);
+    border: 1px solid #2f4a66;
+    border-left: 3px solid var(--gold, #c89028);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(15,23,32,0.32), inset 0 0 0 1px rgba(200,144,40,0.16);
+    overflow: hidden;
+    font-family: var(--font-serif);
+  }
+  .rpg-scene-bar {
+    position: relative; z-index: 1;
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 8px 12px;
+    background: linear-gradient(180deg, rgba(200,144,40,0.16), rgba(200,144,40,0.02));
+    border-bottom: 1px solid rgba(200,144,40,0.24);
+  }
+  .rpg-scene .quest-story-label {
+    color: #e6bb63; opacity: 1; margin-bottom: 0;
+  }
+  .rpg-scene .quest-story-label:hover { color: #f4cd78; }
+  .rpg-scene .quest-story-label .narr-read {
+    color: rgba(240,232,214,0.62); font-weight: 600;
+  }
+  .rpg-scene-chap {
+    font-family: var(--font-jp, 'Shippori Mincho', serif);
+    font-size: 0.72rem; letter-spacing: 3px;
+    color: rgba(230,187,99,0.85); white-space: nowrap;
+  }
+  .rpg-stage {
+    position: relative; z-index: 1;
+    display: flex; gap: 14px; align-items: flex-start;
+    padding: 16px 16px 12px;
+  }
+  .rpg-portrait {
+    flex: 0 0 auto; width: 56px;
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+  }
+  .rpg-portrait-emoji {
+    width: 54px; height: 54px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.9rem; line-height: 1;
+    background: radial-gradient(circle at 50% 34%, #38506a, #1a2634);
+    border: 2px solid var(--gold, #c89028);
+    border-radius: 50%;
+    box-shadow: 0 0 0 3px rgba(200,144,40,0.16), 0 4px 10px rgba(0,0,0,0.34);
+  }
+  .rpg-portrait-name {
+    font-family: var(--font-mono);
+    font-size: 0.5rem; letter-spacing: 1.5px; font-weight: 700;
+    color: rgba(230,187,99,0.9);
+  }
+  .rpg-box { position: relative; flex: 1; min-width: 0; }
+  .rpg-say {
+    color: #f1e9d5;
+    font-size: 0.92rem;
+    line-height: 1.66;
+    font-family: var(--font-serif);
+  }
+  .rpg-say strong { color: #fff; font-weight: 700; }
+  .rpg-say code {
+    font-family: var(--font-mono);
+    font-size: 0.84em;
+    background: rgba(200,144,40,0.16);
+    color: #ffd98a;
+    border: 1px solid rgba(200,144,40,0.30);
+    border-radius: 4px;
+    padding: 0.5px 5px;
+  }
+  .rpg-next {
+    display: block; text-align: right;
+    color: #e6bb63; font-size: 0.82rem; margin-top: 4px;
+    animation: rpgBlink 1.15s steps(1,end) infinite;
+  }
+  @keyframes rpgBlink { 50% { opacity: 0; } }
+
+  /* La technique du Sensei → parchemin (contraste avec la scène) */
+  .rpg-scroll {
+    background: linear-gradient(180deg, #fbf4e0, #f4ebd0) !important;
+    border: 1px solid #d8c49a !important;
+    border-left: 4px solid var(--indigo, #1e3a5c) !important;
+    border-radius: 8px;
+    box-shadow: inset 0 0 22px rgba(180,150,90,0.10);
+  }
+  .rpg-scroll .quest-mentor-label { color: var(--indigo, #1e3a5c); opacity: 1; }
+
+  /* Le défi → bannière de quête « boss » */
+  .rpg-quest {
+    background: linear-gradient(135deg, #3a2a10, #241a0b) !important;
+    border: 1px solid var(--gold, #c89028) !important;
+    border-left: 5px solid var(--gold, #c89028) !important;
+  }
+  .rpg-quest .quest-challenge-head { color: #f0c869; }
+  .rpg-quest .quest-challenge-title { color: #ffe1a3; }
+  .rpg-quest .quest-challenge-body { color: #ece0c8; }
+  .rpg-quest .quest-challenge-body strong { color: #fff; }
+  .rpg-quest .quest-challenge-body code {
+    font-family: var(--font-mono); font-size: 0.84em;
+    background: rgba(200,144,40,0.18); color: #ffd98a;
+    border: 1px solid rgba(200,144,40,0.32); border-radius: 4px; padding: 0.5px 5px;
+  }
+  @media (max-width: 620px) {
+    .rpg-stage { flex-direction: column; gap: 9px; }
+    .rpg-portrait { flex-direction: row; width: auto; align-self: flex-start; }
+  }
+
   .exo-status {
     margin-top: 10px; padding: 8px 12px;
     border-radius: 6px; font-size: 0.78rem;
@@ -887,19 +1004,20 @@ window.addEventListener('error', function(e) {
     margin-bottom: 14px;
     border-radius: 10px;
     overflow: hidden;
-    background: rgba(20,12,36,0.4);
-    border: 1px solid rgba(180,168,208,0.08);
+    background: var(--bg-card-2, #fdfaef);
+    border: 1px solid var(--border, #c8baa0);
+    box-shadow: 0 1px 2px rgba(90,70,40,0.06);
   }
   .quest-header {
     padding: 10px 12px;
     display: flex; align-items: center; gap: 8px;
     cursor: pointer;
-    background: rgba(200,52,28,0.06);
-    border-bottom: 1px solid rgba(200,52,28,0.15);
+    background: rgba(200,144,40,0.07);
+    border-bottom: 1px solid var(--border-light, #e0d6c0);
     user-select: none;
   }
   .quest-header:hover {
-    background: rgba(200,52,28,0.1);
+    background: rgba(200,144,40,0.14);
   }
   .quest-icon {
     font-size: 1.1rem;
@@ -915,23 +1033,23 @@ window.addEventListener('error', function(e) {
   .quest-chapter {
     display: inline-block;
     font-family: var(--font-mono);
-    font-size: 0.58rem;
+    font-size: 0.64rem;
     font-weight: 800;
     letter-spacing: 0.5px;
-    color: #241a10;
-    background: var(--gold, #c89028);
-    border: 1px solid var(--gold, #c89028);
+    color: #fff;
+    background: var(--vermilion, #c8341c);
+    border: 1px solid #a82813;
     border-radius: 4px;
-    padding: 1px 6px;
+    padding: 1.5px 7px;
     vertical-align: middle;
-    margin-right: 4px;
-    box-shadow: 0 1px 2px rgba(120,80,10,0.25);
+    margin-right: 5px;
+    box-shadow: 0 1px 2px rgba(120,20,10,0.28);
   }
   .quest-meta {
-    font-size: 0.62rem;
-    color: var(--text-3);
+    font-size: 0.64rem;
+    color: var(--text-2);
     font-family: var(--font-mono);
-    margin-top: 2px;
+    margin-top: 3px;
   }
   .quest-chevron {
     color: var(--text-3);
@@ -943,7 +1061,8 @@ window.addEventListener('error', function(e) {
   }
   .quest-body {
     display: none;
-    padding: 6px;
+    padding: 8px 6px;
+    background: rgba(120,90,40,0.045);
   }
   .quest-section.expanded .quest-body {
     display: block;
@@ -2324,7 +2443,7 @@ var QUESTS = [
     title: 'Recherche & filtrage',
     color: '#1e3a5c',
     desc: 'grep, pipes et redirections',
-    story: "« Tu crées des fichiers, tu les édites. Mais quand il y en aura mille, Kaï, tu ne les liras pas un par un. » Le Sensei baisse la voix comme s'il partageait un trésor. « Voici le secret le mieux gardé d'Unix. Chaque commande fait UNE chose. Mais tu peux les **enchaîner** — la sortie de l'une devient l'entrée de la suivante. C'est le `|`, le *pipe*. C'est ce qui transforme dix petites commandes en un outil surpuissant. »\n\nIl écrit au tableau : `cat log | grep ERROR | wc -l`. « Lis ça comme une phrase, Kaï : prends le fichier, garde les lignes qui contiennent ERROR, compte-les. Trois outils simples, une réponse précise. **C'est ça, penser en Unix.** »",
+    story: "« Tu crées des fichiers, tu les édites. Mais quand il y en aura mille, Kaï, tu ne les liras pas un par un. » Le Sensei baisse la voix comme s'il partageait un trésor. « Voici le secret le mieux gardé d'Unix. Chaque commande fait UNE chose. Mais tu peux les **enchaîner** — la sortie de l'une devient l'entrée de la suivante. C'est le `|`, le **pipe**. C'est ce qui transforme dix petites commandes en un outil surpuissant. »\n\nIl écrit au tableau : `cat log | grep ERROR | wc -l`. « Lis ça comme une phrase, Kaï : prends le fichier, garde les lignes qui contiennent ERROR, compte-les. Trois outils simples, une réponse précise. **C'est ça, penser en Unix.** »",
     mentor: "L'art de composer les commandes :\n\n① `grep MOT fichier` cherche un motif. `head` / `tail` montrent le début / la fin (parfait pour les logs : `tail -f` suit en direct).\n② Le pipe `|` connecte : `commande1 | commande2` envoie la sortie de 1 dans 2. On peut en chaîner autant qu'on veut.\n③ `wc -l` compte les lignes. `sort`, `uniq`, `cut` transforment le flux au passage.\n④ **Rediriger** au lieu d'afficher : `>` écrit dans un fichier (écrase), `>>` ajoute à la fin. `commande > fichier.txt` capture le résultat.",
     challenge: {
       title: "Le détective des logs",
@@ -2959,7 +3078,7 @@ var QUESTS = [
     color: '#c89028',
     desc: 'Automatiser avec des scripts',
     story: "« Cron sait QUAND agir, Kaï. Le moment est venu de lui apprendre QUOI faire — avec tes propres mots. » Le Sensei prend un ton solennel. « Voici l'aboutissement de tout ton apprentissage. Jusqu'ici tu tapais des commandes une à une. Maintenant tu vas les **enchaîner dans un fichier** — un script — qui les rejoue toutes seules, dans l'ordre, à l'infini. C'est le passage de l'artisan à l'architecte. »\n\nIl trace le chemin : « Un script Bash, c'est du texte : une première ligne magique, le `#!/bin/bash`, puis tes commandes. Tu le rends exécutable, tu le lances, et la machine fait le travail de cent gestes manuels. Sauvegardes, déploiements, rapports — tout ce qui se répète mérite un script, Kaï. »",
-    mentor: "Écrire ton premier script Bash :\n\n① La **première ligne** est sacrée : `#!/bin/bash` (le *shebang*). Elle dit au système quel interpréteur utiliser. Sans elle, ton script est juste du texte.\n② Un script doit être **exécutable** : `chmod +x script.sh`, puis on le lance avec `./script.sh` (le `./` dit « ici, dans ce dossier »).\n③ Les **variables** : `nom=\"valeur\"` (sans espaces autour du `=` !), et on les lit avec `$nom`. `$1`, `$2` sont les arguments passés au script.\n④ Les briques logiques : `if [ condition ]; then ... fi`, les boucles `for x in ...; do ... done`. Avec ça, un script devient un vrai programme.",
+    mentor: "Écrire ton premier script Bash :\n\n① La **première ligne** est sacrée : `#!/bin/bash` (le **shebang**). Elle dit au système quel interpréteur utiliser. Sans elle, ton script est juste du texte.\n② Un script doit être **exécutable** : `chmod +x script.sh`, puis on le lance avec `./script.sh` (le `./` dit « ici, dans ce dossier »).\n③ Les **variables** : `nom=\"valeur\"` (sans espaces autour du `=` !), et on les lit avec `$nom`. `$1`, `$2` sont les arguments passés au script.\n④ Les briques logiques : `if [ condition ]; then ... fi`, les boucles `for x in ...; do ... done`. Avec ça, un script devient un vrai programme.",
     challenge: {
       title: "Le premier automate",
       desc: "Crée un script qui travaille pour toi. **① Écris un fichier `backup.sh`** commençant par `#!/bin/bash`, **② rends-le exécutable** (`chmod +x`), **③ lance-le** (`./backup.sh`), **④ vérifie qu'il s'exécute**. Réflexion : à quoi sert exactement la ligne `#!/bin/bash` tout en haut, et que se passe-t-il si tu l'oublies ?"
@@ -3187,7 +3306,7 @@ var QUESTS = [
     title: 'Archives & compression',
     color: '#c89028',
     desc: 'tar, gzip — empaqueter et compresser',
-    story: "« Nous voici au bout du chemin, Kaï. » Le Sensei te regarde autrement — comme un pair. « Tu sauvegardes ton code avec Git. Reste à savoir déplacer des montagnes de fichiers d'un serveur à l'autre. Les envoyer un par un ? Une folie. On les **empaquette** en un seul fichier, on le **compresse** pour qu'il pèse moins, on l'envoie, on le **dépaquette** à l'arrivée. C'est le geste des sauvegardes, des déploiements, des transferts. »\n\nIl brandit un fichier `.tar.gz` : « Ceci est l'archive reine d'Unix. `tar` empaquette, `gzip` compresse. Ensemble, ils font le célèbre *tarball*. Maîtrise ses trois lettres magiques — `czf` pour créer, `xzf` pour extraire — et tu déplaceras des montagnes de fichiers d'un geste. »\n\nLe Sensei se tait un instant, puis : « Ce jour-là, Kaï, tu ne seras plus l'apprenti devant l'écran noir. Tu seras l'administrateur. Et un autre débutant s'assiéra à ta place, les yeux perdus devant le curseur qui clignote. »",
+    story: "« Nous voici au bout du chemin, Kaï. » Le Sensei te regarde autrement — comme un pair. « Tu sauvegardes ton code avec Git. Reste à savoir déplacer des montagnes de fichiers d'un serveur à l'autre. Les envoyer un par un ? Une folie. On les **empaquette** en un seul fichier, on le **compresse** pour qu'il pèse moins, on l'envoie, on le **dépaquette** à l'arrivée. C'est le geste des sauvegardes, des déploiements, des transferts. »\n\nIl brandit un fichier `.tar.gz` : « Ceci est l'archive reine d'Unix. `tar` empaquette, `gzip` compresse. Ensemble, ils font le célèbre **tarball**. Maîtrise ses trois lettres magiques — `czf` pour créer, `xzf` pour extraire — et tu déplaceras des montagnes de fichiers d'un geste. »\n\nLe Sensei se tait un instant, puis : « Ce jour-là, Kaï, tu ne seras plus l'apprenti devant l'écran noir. Tu seras l'administrateur. Et un autre débutant s'assiéra à ta place, les yeux perdus devant le curseur qui clignote. »",
     mentor: "L'art d'empaqueter avec tar :\n\n① `tar` (Tape ARchive) regroupe plusieurs fichiers en UN seul `.tar`. Il ne compresse pas tout seul — c'est `gzip` qui réduit la taille, d'où le `.tar.gz` (empaqueté PUIS compressé).\n② Les 3 lettres à graver : **c**reate, e**x**tract, lis**t**. Toujours suivies de `z` (gzip) et `f` (fichier). Donc :\n   `tar -czf save.tar.gz dossier/` → crée l'archive\n   `tar -xzf save.tar.gz` → extrait\n   `tar -tzf save.tar.gz` → liste le contenu sans extraire\n③ Moyen mnémotechnique : **c**réer / e**x**traire, et `zf` = **z**ippé dans un **f**ichier.\n④ Piège classique : oublier le `f` — tar cherche alors une bande magnétique (héritage de 1979 !) et se bloque.",
     challenge: {
       title: "Le grand déménagement",
@@ -3228,7 +3347,7 @@ var QUESTS = [
     title: 'Virtualisation (KVM)',
     color: '#1e3a5c',
     desc: 'Faire tourner des machines dans ta machine',
-    story: "« Tu sais versionner ton travail, Kaï. Voici maintenant un art de maître : faire tourner des ordinateurs entiers… à l'intérieur du tien. » Le Sensei dessine un carré dans un carré. « On appelle ça la **virtualisation**. Un logiciel — l'*hyperviseur* — crée des machines virtuelles : chacune se croit un vrai serveur, avec son système, sa mémoire, son disque. »\n\n« Sur Linux, l'hyperviseur roi s'appelle **KVM**, piloté par **libvirt** et sa baguette `virsh`. Un seul serveur physique peut en héberger dix. C'est le fondement de tout le cloud, Kaï. »",
+    story: "« Tu sais versionner ton travail, Kaï. Voici maintenant un art de maître : faire tourner des ordinateurs entiers… à l'intérieur du tien. » Le Sensei dessine un carré dans un carré. « On appelle ça la **virtualisation**. Un logiciel — l'**hyperviseur** — crée des machines virtuelles : chacune se croit un vrai serveur, avec son système, sa mémoire, son disque. »\n\n« Sur Linux, l'hyperviseur roi s'appelle **KVM**, piloté par **libvirt** et sa baguette `virsh`. Un seul serveur physique peut en héberger dix. C'est le fondement de tout le cloud, Kaï. »",
     mentor: "La virtualisation, dans l'ordre :\n\n① **Vérifie le support du CPU** — `lscpu | grep Virtualization` doit montrer `VT-x` (Intel) ou `AMD-V` (AMD). Sans lui, pas de KVM rapide.\n② **Installe la pile** — `qemu-kvm` (le moteur) + `libvirt-daemon-system` (le gestionnaire).\n③ **Démarre le démon `libvirtd`** — c'est lui qui parle à l'hyperviseur. `virsh` ne répond que s'il tourne.\n④ **Pilote tes VM avec `virsh`** — `list --all`, `start`, `shutdown`. C'est le `systemctl` des machines entières.",
     challenge: {
       title: "Le maître des mondes",
@@ -3581,22 +3700,25 @@ function renderChapterNarrative(qid) {
   html += '<div class="content-chapter-title">' + chapPrefix + escapeHtml(quest.title) + '</div>';
   if (quest.story) {
     var sCol = collapsedNarrative['story:' + quest.id];
-    html += '<div class="quest-story' + (sCol ? ' collapsed' : '') + '">';
+    html += '<div class="rpg-scene quest-story' + (sCol ? ' collapsed' : '') + '">';
+    html += '<div class="rpg-scene-bar">';
     html += '<span class="quest-story-label narr-toggle" data-narr="story:' + quest.id + '"><span class="narr-chev">▼</span> 📖 Le récit' + (sCol ? '<span class="narr-read">lu ✓</span>' : '') + '</span>';
-    html += '<div class="quest-story-body">';
-    if (quest.chapter) html += '<span class="quest-story-cap">' + kanjiNum(quest.chapter) + '</span>';
-    html += formatTextWithCode(quest.story);
+    if (quest.chapter) html += '<span class="rpg-scene-chap">第' + kanjiNum(quest.chapter) + '章</span>';
+    html += '</div>';
+    html += '<div class="quest-story-body rpg-stage">';
+    html += '<div class="rpg-portrait" aria-hidden="true"><span class="rpg-portrait-emoji">🧙</span><span class="rpg-portrait-name">SENSEI</span></div>';
+    html += '<div class="rpg-box"><div class="rpg-say">' + formatTextWithCode(quest.story) + '</div><span class="rpg-next">▼</span></div>';
     html += '</div></div>';
   }
   if (quest.mentor) {
     var mCol = collapsedNarrative['mentor:' + quest.id];
-    html += '<div class="quest-mentor' + (mCol ? ' collapsed' : '') + '">';
-    html += '<span class="quest-mentor-label narr-toggle" data-narr="mentor:' + quest.id + '"><span class="narr-chev">▼</span> 🧙 Le Sensei</span>';
+    html += '<div class="quest-mentor rpg-scroll' + (mCol ? ' collapsed' : '') + '">';
+    html += '<span class="quest-mentor-label narr-toggle" data-narr="mentor:' + quest.id + '"><span class="narr-chev">▼</span> 📜 La technique du Sensei</span>';
     html += '<div class="quest-mentor-body">' + formatTextWithCode(quest.mentor) + '</div></div>';
   }
   if (quest.challenge) {
-    html += '<div class="quest-challenge">';
-    html += '<div class="quest-challenge-head"><span class="quest-challenge-icon">⚔️</span> Le Défi du Sensei</div>';
+    html += '<div class="quest-challenge rpg-quest">';
+    html += '<div class="quest-challenge-head"><span class="quest-challenge-icon">⚔️</span> Quête du chapitre</div>';
     html += '<div class="quest-challenge-title">' + escapeHtml(quest.challenge.title) + '</div>';
     html += '<div class="quest-challenge-body">' + formatTextWithCode(quest.challenge.desc) + '</div>';
     html += '</div>';
