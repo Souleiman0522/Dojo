@@ -139,6 +139,9 @@
   .tv-box.deploy h4{color:var(--gold);}
   .tv-box p{margin:0;font-size:.86rem;color:var(--ink-soft);}
   @media (max-width:680px){.pj-tv{grid-template-columns:1fr;}}
+
+  .pj-challenge{background:rgba(200,52,28,.06);border:1px solid var(--line);border-left:3px solid var(--vermilion);border-radius:10px;padding:12px 15px;font-size:.9rem;color:var(--ink);margin-bottom:14px;}
+  .pj-challenge b{color:var(--vermilion);font-family:var(--font-mono);font-size:.74rem;letter-spacing:.04em;text-transform:uppercase;display:block;margin-bottom:3px;}
 </style>
 </head>
 <body>
@@ -157,7 +160,7 @@
   <header class="hero">
     <div class="eyebrow">Ta feuille de route</div>
     <h1>Des projets qui font un vrai CV</h1>
-    <p>Le meilleur diplôme, c'est ce que tu as construit. Voici 7 projets d'infrastructure à réaliser, guidés pas à pas — coche chaque étape, ta progression est sauvegardée.</p>
+    <p>Pas des tutos copier-coller : 7 projets d'infrastructure <b>ambitieux</b>, comme en entreprise. Chacun a son <b>vrai défi</b>, son guide pas à pas, et ce qu'il prouve sur ton CV.</p>
   </header>
 
   <div class="overall">
@@ -217,262 +220,310 @@
 <script>
   var PROJECTS = [
   {
-    "ic": "🐧",
-    "title": "Créer un serveur Linux",
-    "lvl": 1,
-    "tags": [
-      "Ubuntu Server",
-      "SSH",
-      "permissions"
-    ],
-    "why": "La brique de base de toute infrastructure : un serveur que tu administres de A à Z.",
-    "cv": "Prouve : administration système Linux.",
-    "steps": [
-      {
-        "t": "Installer Ubuntu Server",
-        "do": "# Télécharge l'ISO sur ubuntu.com/download/server\n# En VM (recommandé) : VirtualBox/VMware → nouvelle machine Linux 64-bit → monte l'ISO\n# Suis l'installeur (langue, disque, nom d'utilisateur, 'Install OpenSSH server' : coche-le)",
-        "verify": "Au reboot, connecte-toi : tu obtiens le prompt user@serveur:~$ — `lsb_release -a` affiche Ubuntu."
-      },
-      {
-        "t": "Créer des utilisateurs",
-        "do": "sudo adduser alice          # crée l'utilisateur + son /home + mot de passe\nsudo usermod -aG sudo alice  # lui donne les droits admin (sudo)",
-        "verify": "`id alice` liste ses groupes ; `su - alice` puis `sudo whoami` renvoie root."
-      },
-      {
-        "t": "Configurer SSH",
-        "do": "sudo apt install openssh-server\nsudo systemctl enable --now ssh   # démarre + active au boot\n# Depuis un autre PC :\nssh alice@IP_DU_SERVEUR",
-        "verify": "`systemctl status ssh` = active (running), et la connexion SSH depuis un autre poste aboutit."
-      },
-      {
-        "t": "Mettre en place les permissions",
-        "do": "sudo mkdir /srv/data\nsudo chown alice:alice /srv/data   # propriétaire\nsudo chmod 750 /srv/data           # rwx pour alice, r-x pour le groupe, rien pour les autres",
-        "verify": "`ls -ld /srv/data` affiche  drwxr-x---  alice alice."
-      },
-      {
-        "t": "Installer les mises à jour",
-        "do": "sudo apt update && sudo apt upgrade -y\n# Automatiser les mises à jour de sécurité :\nsudo apt install unattended-upgrades",
-        "verify": "`apt list --upgradable` ne renvoie plus rien après l'upgrade."
-      }
-    ],
-    "test": "Redémarre le serveur, reconnecte-toi en SSH avec ton nouvel utilisateur (pas root) et vérifie que sudo, les permissions et l'accès réseau fonctionnent.",
-    "deploy": "Héberge-le sur un vieux PC, un Raspberry Pi ou un VPS gratuit (Oracle Cloud Free Tier). CV : « Déploiement et administration d'un serveur Ubuntu : utilisateurs, SSH, permissions, mises à jour »."
-  },
-  {
-    "ic": "🌐",
-    "title": "Héberger un site web",
-    "lvl": 1,
-    "tags": [
-      "Nginx",
-      "Apache",
-      "DNS local"
-    ],
-    "why": "Rendre un service accessible : le cœur du métier d'hébergement.",
-    "cv": "Prouve : déploiement d'un service web.",
-    "steps": [
-      {
-        "t": "Installer Nginx (ou Apache)",
-        "do": "sudo apt install nginx\nsudo systemctl enable --now nginx",
-        "verify": "`curl localhost` renvoie « Welcome to nginx! ». Dans un navigateur : http://IP_DU_SERVEUR."
-      },
-      {
-        "t": "Afficher ta page web",
-        "do": "sudo nano /var/www/html/index.html\n# Remplace le contenu par ton HTML, sauvegarde (Ctrl+O, Ctrl+X)",
-        "verify": "Recharge la page dans le navigateur → ton contenu s'affiche."
-      },
-      {
-        "t": "Nom de domaine local (fichier hosts)",
-        "do": "# Sur ton PC CLIENT, édite le fichier hosts :\n#   Linux/Mac : sudo nano /etc/hosts\n#   Windows   : C:\\Windows\\System32\\drivers\\etc\\hosts (Bloc-notes en admin)\n# Ajoute la ligne :\nIP_DU_SERVEUR   monsite.local",
-        "verify": "http://monsite.local ouvre ton site (au lieu de taper l'IP)."
-      }
-    ],
-    "test": "Ouvre le site depuis un autre appareil du réseau (téléphone en Wi-Fi) via l'IP ou monsite.local.",
-    "deploy": "Passe en HTTPS avec un vrai domaine : `sudo apt install certbot python3-certbot-nginx && sudo certbot --nginx`. CV : « Déploiement d'un serveur web Nginx avec virtual host et certificat TLS »."
-  },
-  {
-    "ic": "🔀",
-    "title": "Construire un petit réseau",
-    "lvl": 2,
+    "ic": "🏛️",
+    "title": "Infrastructure d'entreprise multi-sites",
+    "lvl": 3,
     "tags": [
       "Cisco",
-      "PNetLab",
-      "VLAN",
-      "DHCP"
-    ],
-    "why": "Le lab qui met en pratique ton CCNA — routeur, switches, PC.",
-    "cv": "Prouve : réseau Cisco, VLAN et routage inter-VLAN.",
-    "steps": [
-      {
-        "t": "Monter la topologie dans PNetLab",
-        "do": "# Nouveau lab. Glisse : 1 routeur (IOSv), 2 switches (IOSvL2), 2 PC (VPC).\n# Câble : PC1-SW1, PC2-SW2, SW1-SW2, SW1-Routeur.",
-        "verify": "Tous les nœuds démarrent (icônes vertes) et tu accèdes à leur console."
-      },
-      {
-        "t": "Créer les VLAN",
-        "do": "enable\nconf t\nvlan 10\n name DATA\nvlan 20\n name VOICE\ninterface fa0/1\n switchport mode access\n switchport access vlan 10",
-        "verify": "`show vlan brief` liste tes VLAN avec les bons ports assignés."
-      },
-      {
-        "t": "Routage inter-VLAN (router-on-a-stick)",
-        "do": "# Côté switch : le lien vers le routeur en trunk\ninterface g0/1\n switchport mode trunk\n# Côté routeur : une sous-interface par VLAN\ninterface g0/0.10\n encapsulation dot1Q 10\n ip address 192.168.10.1 255.255.255.0",
-        "verify": "Un PC du VLAN 10 arrive à ping un PC du VLAN 20."
-      },
-      {
-        "t": "Distribuer les IP en DHCP",
-        "do": "ip dhcp pool VLAN10\n network 192.168.10.0 255.255.255.0\n default-router 192.168.10.1\n dns-server 8.8.8.8",
-        "verify": "Sur un VPC : `ip dhcp` → il reçoit une adresse automatiquement."
-      }
-    ],
-    "test": "Vérifie le ping inter-VLAN dans les deux sens ET l'attribution DHCP automatique sur chaque VLAN.",
-    "deploy": "Exporte les configs (`show run`) et un schéma de la topologie, pousse le tout sur GitHub. CV : « Conception d'un réseau commuté Cisco : VLAN, routage inter-VLAN, DHCP »."
-  },
-  {
-    "ic": "🏢",
-    "title": "Monter un petit datacenter virtuel",
-    "lvl": 3,
-    "tags": [
-      "Windows Server",
+      "OSPF",
       "pfSense",
-      "Proxmox"
+      "VPN IPsec",
+      "DMZ"
     ],
-    "why": "Un environnement mixte réaliste : Linux, Windows, réseau et sécurité réunis.",
-    "cv": "Prouve : conception d'infrastructure multi-OS.",
+    "why": "Le projet qui prouve que tu sais concevoir un réseau d'entreprise complet, pas juste configurer un switch.",
+    "cv": "Prouve : conception d'infrastructure réseau multi-sites.",
+    "challenge": "Deux sites distants doivent se voir comme un seul réseau — chacun avec ses VLAN, ses serveurs, sa DMZ et son pare-feu — et RIEN ne doit passer qui ne devrait pas. Faire router, filtrer et chiffrer tout ça ensemble sans trou de sécurité, c'est là que ça se corse.",
     "steps": [
       {
-        "t": "Poser l'hyperviseur + une VM Ubuntu",
-        "do": "# Installe Proxmox VE (ou VMware/VirtualBox) sur la machine hôte.\n# Crée une 1re VM : Ubuntu Server (voir projet 1).",
-        "verify": "La VM Ubuntu démarre et répond en SSH."
+        "t": "Monter la topologie 2 sites (PNetLab)",
+        "do": "# Site A et Site B. Chacun : 1 routeur, 1 switch L3, 2-3 VLAN, 2 PC.\n# Un lien WAN (/30) entre les deux routeurs.\n# Établis ton plan d'adressage AVANT de câbler (c'est 80% du travail).",
+        "verify": "Chaque site ping en interne ; le lien WAN entre routeurs est up."
       },
       {
-        "t": "Ajouter un Windows Server (AD + DNS)",
-        "do": "# 2e VM : Windows Server. Ajoute les rôles :\n#  - Active Directory Domain Services (AD DS) → promeus en contrôleur de domaine\n#  - DNS (installé avec AD)",
-        "verify": "Un poste client rejoint le domaine (mondomaine.local) et s'y authentifie."
+        "t": "VLAN + routage inter-VLAN par site",
+        "do": "vlan 10 name DATA\nvlan 20 name SERVEURS\ninterface vlan 10\n ip address 10.1.10.1 255.255.255.0   # SVI sur le switch L3",
+        "verify": "Ping inter-VLAN OK à l'intérieur de chaque site."
       },
       {
-        "t": "Segmenter avec un switch Cisco",
-        "do": "# Relie les VM via un switch (PNetLab ou vSwitch).\n# Crée des VLAN : Serveurs, Clients — comme au projet 3.",
-        "verify": "La connectivité suit tes VLAN (les segments sont bien séparés)."
+        "t": "Router entre les sites (OSPF)",
+        "do": "router ospf 1\n network 10.1.0.0 0.0.255.255 area 0\n network 192.168.0.0 0.0.0.3 area 0   # le lien WAN\n# idem sur le routeur du site B",
+        "verify": "`show ip route ospf` liste les réseaux du site distant ; PC site A ping PC site B."
       },
       {
-        "t": "Placer un pare-feu (pfSense / OPNsense)",
-        "do": "# VM pfSense avec 2 cartes : WAN (Internet) et LAN (ton réseau).\n# Configure les interfaces, les règles de filtrage et le NAT.",
-        "verify": "Le LAN accède à Internet À TRAVERS pfSense, et les règles bloquent bien le trafic non autorisé."
+        "t": "Services centraux (DHCP + DNS)",
+        "do": "# Un serveur (VM) héberge DHCP + DNS pour les deux sites,\n# ou DHCP par routeur avec ip helper-address vers le serveur.",
+        "verify": "Un PC obtient IP + DNS automatiquement et résout un nom interne."
+      },
+      {
+        "t": "DMZ + pare-feu (le point sensible)",
+        "do": "# Serveur web en DMZ derrière pfSense (ou ACL Cisco).\n# Règles : LAN -> DMZ:443 AUTORISÉ ; DMZ -> LAN INTERDIT ; WAN -> DMZ:443 AUTORISÉ.",
+        "verify": "Un PC du LAN atteint le web en DMZ ; le serveur DMZ ne peut PAS initier vers le LAN (teste-le, c'est le piège)."
+      },
+      {
+        "t": "VPN IPsec site-à-site",
+        "do": "# Tunnel chiffré entre les deux pare-feux/routeurs.\ncrypto isakmp policy 10 / crypto ipsec transform-set ... / crypto map ...",
+        "verify": "`show crypto isakmp sa` = ACTIVE ; le trafic inter-sites passe chiffré dans le tunnel."
       }
     ],
-    "test": "Un client Windows du domaine accède à Internet via pfSense, tandis qu'un service hébergé sur l'Ubuntu n'est joignable que selon tes règles de pare-feu.",
-    "deploy": "Documente l'architecture (schéma + rôles + plan d'adressage). CV : « Maquette de datacenter : AD/DNS Windows Server, Linux, segmentation VLAN et pare-feu pfSense »."
+    "test": "Depuis un PC du site A, accède à un service du site B à travers le VPN, PENDANT que le pare-feu bloque un flux interdit (DMZ vers LAN). Les deux comportements doivent être vrais en même temps.",
+    "deploy": "Livrable pro : schéma de topologie + plan d'adressage + matrice de flux + configs, le tout sur GitHub. CV : « Conception et déploiement d'une infra réseau multi-sites : OSPF, VLAN, DMZ, pare-feu, VPN IPsec »."
   },
   {
-    "ic": "⚙️",
-    "title": "Automatiser avec Bash",
-    "lvl": 2,
-    "tags": [
-      "Bash",
-      "cron",
-      "automatisation"
-    ],
-    "why": "Ce qui distingue un admin d'un pro : ne jamais refaire deux fois à la main.",
-    "cv": "Prouve : scripting et automatisation.",
-    "steps": [
-      {
-        "t": "Script de sauvegarde",
-        "do": "#!/bin/bash\n# backup.sh\nDATE=$(date +%F)\ntar -czf /backups/home-$DATE.tar.gz /home/alice\necho \"Sauvegarde du $DATE terminée\"\n\nchmod +x backup.sh && ./backup.sh",
-        "verify": "Un fichier /backups/home-AAAA-MM-JJ.tar.gz apparaît, daté du jour."
-      },
-      {
-        "t": "Créer des utilisateurs en masse",
-        "do": "#!/bin/bash\n# users.txt : un login par ligne\nwhile read u; do\n  sudo adduser --disabled-password --gecos '' \"$u\"\ndone < users.txt",
-        "verify": "`id nom_du_fichier` confirme que chaque utilisateur listé existe."
-      },
-      {
-        "t": "Vérifier l'espace disque",
-        "do": "#!/bin/bash\ndf -h | awk 'NR>1 && $5+0 > 80 {print \"⚠ \" $6 \" plein à \" $5}'",
-        "verify": "Le script affiche une alerte seulement si une partition dépasse 80 %."
-      },
-      {
-        "t": "Envoyer un rapport (+ cron)",
-        "do": "# rapport.sh : combine uptime, df -h, who > /var/log/rapport.log\n# Planifie-le chaque matin à 8h :\ncrontab -e\n0 8 * * *  /home/alice/rapport.sh",
-        "verify": "Le rapport est généré automatiquement à l'heure prévue (vérifie l'horodatage du log)."
-      }
-    ],
-    "test": "Lance chaque script à la main, puis planifie-les avec cron et confirme leur exécution automatique le lendemain.",
-    "deploy": "Versionne tes scripts sur GitHub (un dépôt « bash-sysadmin-scripts »). CV : « Automatisation de l'administration système en Bash : sauvegardes, provisioning, monitoring, cron »."
-  },
-  {
-    "ic": "📊",
-    "title": "Supervision réseau",
+    "ic": "⚖️",
+    "title": "Service web en haute disponibilité",
     "lvl": 3,
     "tags": [
-      "Zabbix",
-      "Prometheus",
-      "Grafana"
+      "HAProxy",
+      "keepalived",
+      "PostgreSQL",
+      "VIP"
     ],
-    "why": "Surveiller serveurs et équipements : voir venir la panne avant qu'elle n'arrive.",
-    "cv": "Prouve : supervision et observabilité.",
+    "why": "Un service qui ne tombe JAMAIS, même quand un serveur meurt : la compétence qui sépare l'amateur du pro.",
+    "cv": "Prouve : haute disponibilité et répartition de charge.",
+    "challenge": "Le site doit rester en ligne quand tu débranches un serveur en pleine requête. Répartir la charge, répliquer la base, et faire basculer une IP virtuelle en moins d'une seconde sans perdre de session — c'est un vrai casse-tête d'intégration.",
     "steps": [
       {
-        "t": "Installer Prometheus + node_exporter",
-        "do": "# Le plus simple, en Docker :\ndocker run -d -p 9090:9090 --name prometheus prom/prometheus\ndocker run -d -p 9100:9100 --name node prom/node-exporter\n# Ajoute node_exporter comme 'target' dans prometheus.yml",
-        "verify": "http://IP:9090/targets montre tes cibles à l'état UP."
+        "t": "Deux backends web identiques",
+        "do": "# 2 VM (web1, web2) : nginx + la même app.\n# La page affiche son hostname (pour voir qui répond).",
+        "verify": "web1 et web2 répondent chacun avec leur nom."
       },
       {
-        "t": "Visualiser avec Grafana",
-        "do": "docker run -d -p 3000:3000 --name grafana grafana/grafana\n# Connecte-toi (admin/admin), ajoute Prometheus comme source de données,\n# puis importe le dashboard 'Node Exporter Full' (ID 1860).",
-        "verify": "Les graphiques CPU/RAM/disque s'affichent en temps réel."
+        "t": "Répartiteur de charge (HAProxy)",
+        "do": "frontend http\n  bind *:80\n  default_backend serveurs\nbackend serveurs\n  balance roundrobin\n  server web1 10.0.0.11:80 check\n  server web2 10.0.0.12:80 check",
+        "verify": "En rechargeant la page, tu vois alterner web1 / web2. Coupe web1 : HAProxy le retire (`check`)."
       },
       {
-        "t": "(Option) Ajouter Zabbix",
-        "do": "# Alternative 'tout-en-un' très demandée en entreprise :\ndocker run ... zabbix/zabbix-appliance   # ou suis docs.zabbix.com\n# Ajoute un hôte à surveiller + son agent.",
-        "verify": "L'hôte remonte ses métriques dans l'interface Zabbix (Monitoring → Hosts)."
+        "t": "Base de données répliquée",
+        "do": "# PostgreSQL : db1 = primary, db2 = replica en streaming.\n# postgresql.conf : wal_level=replica ; pg_basebackup sur db2.",
+        "verify": "Une écriture sur db1 apparaît sur db2 en lecture."
       },
       {
-        "t": "Configurer une alerte",
-        "do": "# Dans Grafana (ou Prometheus Alertmanager) :\n# règle : CPU > 90 % pendant 5 min → notification (email / Discord / Slack).",
-        "verify": "Tu stresses la machine et l'alerte se déclenche."
+        "t": "IP virtuelle flottante (keepalived)",
+        "do": "# keepalived sur les 2 répartiteurs, une VIP 10.0.0.100.\nvrrp_instance VI_1 { state MASTER ; virtual_ipaddress { 10.0.0.100 } }",
+        "verify": "`ip a` montre la VIP sur le MASTER ; arrête-le, elle bascule sur le BACKUP."
+      },
+      {
+        "t": "Épreuve du feu",
+        "do": "# Lance une boucle de requêtes en continu :\nwhile true; do curl -s http://10.0.0.100 | grep -o 'web.'; sleep .3; done",
+        "verify": "Tu tues web1, puis le LB MASTER : la boucle ne s'interrompt PAS. Aucune erreur visible."
       }
     ],
-    "test": "Installe `stress` (`sudo apt install stress`), lance `stress --cpu 4 --timeout 120`, et observe la montée des métriques puis le déclenchement de l'alerte.",
-    "deploy": "Mets ta config (docker-compose + dashboards exportés en JSON) sur GitHub. CV : « Stack d'observabilité Prometheus/Grafana (+ Zabbix) avec alerting »."
+    "test": "Pendant la boucle `curl` sur la VIP, tue un backend PUIS le répartiteur master : le service continue sans une seule coupure. C'est ça, la vraie HA.",
+    "deploy": "CV : « Architecture web haute disponibilité : load balancing HAProxy, réplication PostgreSQL, bascule automatique de VIP avec keepalived »."
   },
   {
-    "ic": "🐳",
-    "title": "Docker",
+    "ic": "🤖",
+    "title": "Automatiser toute une flotte avec Ansible",
     "lvl": 2,
     "tags": [
-      "Docker",
-      "Compose",
-      "conteneurs"
+      "Ansible",
+      "Jinja2",
+      "idempotence"
     ],
-    "why": "Emballer une appli et ses dépendances : la compétence cloud incontournable.",
-    "cv": "Prouve : conteneurisation.",
+    "why": "Configurer 5 serveurs à l'identique en UNE commande, et réversible : le graal de l'admin moderne.",
+    "cv": "Prouve : Infrastructure as Code.",
+    "challenge": "Écrire des playbooks IDEMPOTENTS — les relancer 10 fois ne change rien — et penser en rôles réutilisables + variables plutôt qu'en commandes. Ajouter un serveur doit coûter zéro effort. Ce changement de cerveau, c'est tout le sujet.",
     "steps": [
       {
-        "t": "Installer Docker",
-        "do": "curl -fsSL https://get.docker.com | sh\nsudo usermod -aG docker $USER   # puis déconnecte/reconnecte-toi",
-        "verify": "`docker run hello-world` affiche le message de succès de Docker."
+        "t": "Inventaire + connexion",
+        "do": "# inventory.ini\n[web]\nsrv1 ansible_host=10.0.0.11\nsrv2 ansible_host=10.0.0.12\n\nansible all -i inventory.ini -m ping",
+        "verify": "Tous les hôtes répondent \"pong\"."
       },
       {
-        "t": "Lancer un serveur web",
-        "do": "docker run -d -p 8080:80 --name web nginx",
-        "verify": "`curl localhost:8080` renvoie la page nginx (ou ouvre http://localhost:8080)."
+        "t": "Premier rôle réutilisable",
+        "do": "ansible-galaxy init roles/common\n# tasks/main.yml : users, paquets de base, fuseau horaire, NTP",
+        "verify": "`ansible-playbook site.yml` applique la config sur toute la flotte."
       },
       {
-        "t": "Lancer une base de données",
-        "do": "docker run -d --name db -e POSTGRES_PASSWORD=secret postgres",
-        "verify": "`docker exec -it db psql -U postgres -c '\\l'` liste les bases de données."
+        "t": "Rôle de durcissement (hardening)",
+        "do": "# roles/hardening : SSH sans root, ufw, fail2ban, mises à jour auto",
+        "verify": "Sur les 5 serveurs : root SSH refusé, ufw actif — vérifié d'un coup avec `ansible all -a 'ufw status'`."
       },
       {
-        "t": "Lancer un serveur DNS",
-        "do": "docker run -d --name dns -p 5353:53/udp -p 5353:53/tcp \\\n  -e DNSMASQ_USER=root jpillora/dnsmasq",
-        "verify": "`dig @127.0.0.1 -p 5353 google.com` reçoit une réponse."
+        "t": "Templates Jinja2 par hôte",
+        "do": "# templates/nginx.conf.j2 avec des variables :\nserver_name {{ domaine }};\nworker_processes {{ ansible_processor_vcpus }};",
+        "verify": "Chaque serveur reçoit une config générée à partir de SES variables."
       },
       {
-        "t": "Tout orchestrer avec Compose",
-        "do": "# docker-compose.yml qui décrit les 3 services, puis :\ndocker compose up -d\ndocker compose ps",
-        "verify": "Les 3 conteneurs sont 'Up' avec une seule commande."
+        "t": "Prouver l'idempotence",
+        "do": "ansible-playbook site.yml   # 1er run : des 'changed'\nansible-playbook site.yml   # 2e run",
+        "verify": "Au 2e run : `changed=0` partout. Rien ne bouge si rien n'a changé."
       }
     ],
-    "test": "Arrête tout (`docker compose down`) puis relance (`docker compose up -d`) : l'environnement complet remonte à l'identique en quelques secondes.",
-    "deploy": "Publie ton docker-compose.yml sur GitHub. CV : « Conteneurisation de services (web, base de données, DNS) avec Docker & Docker Compose »."
+    "test": "Ajoute un 6e serveur à l'inventaire et relance le playbook : il est configuré à l'identique, sans toucher aux 5 autres. Zéro clic manuel.",
+    "deploy": "Versionne le dépôt Ansible sur GitHub. CV : « Automatisation de la configuration d'une flotte avec Ansible : rôles, templates Jinja2, idempotence »."
+  },
+  {
+    "ic": "🔁",
+    "title": "Pipeline CI/CD complet",
+    "lvl": 3,
+    "tags": [
+      "GitLab CI",
+      "GitHub Actions",
+      "Docker",
+      "registry"
+    ],
+    "why": "Du `git push` à la production, sans intervention humaine : le cœur du DevOps.",
+    "cv": "Prouve : CI/CD et déploiement automatisé.",
+    "challenge": "Enchaîner build → tests → image → déploiement → rollback de façon FIABLE, et gérer les secrets sans jamais les exposer. Le jour où le pipeline casse à 2h du matin, c'est ton design qui te sauve (ou pas).",
+    "steps": [
+      {
+        "t": "Conteneuriser l'app",
+        "do": "# Dockerfile multi-stage (build puis image légère)\ndocker build -t monapp:dev . && docker run --rm monapp:dev",
+        "verify": "L'image se construit et l'app tourne dans le conteneur."
+      },
+      {
+        "t": "Définir le pipeline",
+        "do": "# .gitlab-ci.yml (ou .github/workflows/ci.yml)\nstages: [build, test, deploy]\ntest:\n  script: [ \"pytest\" ]   # ou npm test",
+        "verify": "Un `git push` déclenche le pipeline, qui passe au vert."
+      },
+      {
+        "t": "Publier l'image (registry)",
+        "do": "# job build : docker build + docker push vers le registry,\n# taguée par le SHA du commit ($CI_COMMIT_SHORT_SHA).",
+        "verify": "L'image apparaît dans le registry, une par commit."
+      },
+      {
+        "t": "Déployer automatiquement",
+        "do": "# job deploy (branche main) : SSH sur le serveur\nssh deploy@prod 'cd /srv/app && docker compose pull && docker compose up -d'",
+        "verify": "Après un push sur main, la nouvelle version est en ligne toute seule."
+      },
+      {
+        "t": "Sécuriser + rollback",
+        "do": "# Secrets dans les variables CI (jamais dans le code).\n# Rollback = redéployer le tag précédent.",
+        "verify": "Casse un test → le déploiement est BLOQUÉ. Redéploie l'ancien tag → la prod revient en arrière en une commande."
+      }
+    ],
+    "test": "Change une ligne de code, push : regarde la prod se mettre à jour seule. Puis introduis un bug qui casse les tests : le pipeline doit refuser de déployer.",
+    "deploy": "CV : « Pipeline CI/CD de bout en bout : build, tests automatisés, image Docker, déploiement continu et rollback »."
+  },
+  {
+    "ic": "☸️",
+    "title": "Cluster de conteneurs (k3s / Swarm)",
+    "lvl": 3,
+    "tags": [
+      "Kubernetes",
+      "k3s",
+      "scaling",
+      "rolling update"
+    ],
+    "why": "Faire tourner une app sur plusieurs machines, la scaler et la mettre à jour sans coupure : l'infra cloud d'aujourd'hui.",
+    "cv": "Prouve : orchestration de conteneurs.",
+    "challenge": "Répartir une app multi-services sur un cluster, garder les données quand un nœud meurt, et faire un rolling update SANS que l'utilisateur voie quoi que ce soit. L'orchestration force à penser « état désiré » au lieu de « comment » — c'est déroutant au début.",
+    "steps": [
+      {
+        "t": "Monter le cluster",
+        "do": "# 3 VM. Léger et réaliste : k3s.\ncurl -sfL https://get.k3s.io | sh -            # master\ncurl -sfL https://get.k3s.io | K3S_URL=... sh - # agents",
+        "verify": "`kubectl get nodes` : 3 nœuds Ready."
+      },
+      {
+        "t": "Déployer l'app multi-services",
+        "do": "# manifests : Deployment web + API + Service + Ingress,\n# et une DB en StatefulSet.\nkubectl apply -f k8s/",
+        "verify": "L'app répond via l'Ingress ; `kubectl get pods` tout en Running."
+      },
+      {
+        "t": "Scaler horizontalement",
+        "do": "kubectl scale deployment web --replicas=3",
+        "verify": "3 pods web répartis sur les nœuds (`kubectl get pods -o wide`)."
+      },
+      {
+        "t": "Données persistantes",
+        "do": "# PersistentVolumeClaim pour la DB.",
+        "verify": "Tu supprimes le pod DB : il renaît AVEC ses données."
+      },
+      {
+        "t": "Rolling update + panne",
+        "do": "kubectl set image deployment/web web=monapp:v2\n# puis éteins un nœud agent",
+        "verify": "Mise à jour sans coupure (curl en boucle) ; les pods du nœud mort se replanifient ailleurs."
+      }
+    ],
+    "test": "Lance une boucle de requêtes, déploie une v2 ET éteins un nœud en même temps : le service ne bronche pas, le cluster s'auto-répare.",
+    "deploy": "CV : « Déploiement et orchestration d'une application sur cluster k3s/Kubernetes : scaling, rolling updates, persistance, tolérance aux pannes »."
+  },
+  {
+    "ic": "📈",
+    "title": "Supervision production-grade + alerting",
+    "lvl": 2,
+    "tags": [
+      "Prometheus",
+      "Grafana",
+      "Alertmanager",
+      "Loki"
+    ],
+    "why": "Voir venir la panne avant tes utilisateurs, avec des dashboards et des alertes qui te préviennent au bon moment.",
+    "cv": "Prouve : observabilité et alerting.",
+    "challenge": "Superviser une flotte entière, décider CE QUI mérite une alerte (et éviter le bruit qui fait qu'on finit par les ignorer), et corréler métriques + logs pour trouver la cause. Bien alerter, sans crier au loup, c'est un art.",
+    "steps": [
+      {
+        "t": "Collecter les métriques",
+        "do": "# Prometheus central + node_exporter sur chaque serveur\n# (déploie-les avec Ansible — clin d'œil au projet 3).",
+        "verify": "Toutes les cibles sont UP dans http://prometheus:9090/targets."
+      },
+      {
+        "t": "Tableaux de bord",
+        "do": "# Grafana + dashboard 'Node Exporter Full' (ID 1860)\n# + un dashboard SLA maison (dispo des services).",
+        "verify": "Métriques temps réel de TOUTE la flotte sur un écran."
+      },
+      {
+        "t": "Règles d'alerte pertinentes",
+        "do": "# Prometheus rules : disque > 85%, service down > 2min,\n# latence p95 élevée, load anormal.",
+        "verify": "Les règles apparaissent dans /alerts, à l'état inactive."
+      },
+      {
+        "t": "Notifications qui te réveillent",
+        "do": "# Alertmanager -> Discord / e-mail / Slack, avec regroupement\n# et niveaux (warning vs critical).",
+        "verify": "Une alerte de test arrive bien sur ton téléphone."
+      },
+      {
+        "t": "Métriques + logs (corrélation)",
+        "do": "# Ajoute Loki + Promtail pour centraliser les logs.",
+        "verify": "Depuis un pic sur un graphe, tu sautes au log correspondant en un clic."
+      }
+    ],
+    "test": "Installe `stress`, sature une machine et coupe un service : tu dois recevoir LES BONNES alertes, sans faux positifs sur le reste de la flotte.",
+    "deploy": "CV : « Stack d'observabilité complète (Prometheus, Grafana, Alertmanager, Loki) : dashboards SLA et alerting multi-niveaux »."
+  },
+  {
+    "ic": "🖧",
+    "title": "Datacenter virtuel Proxmox + provisioning auto",
+    "lvl": 3,
+    "tags": [
+      "Proxmox",
+      "cloud-init",
+      "Terraform",
+      "backups"
+    ],
+    "why": "Ton propre hyperviseur qui fabrique des VM à la chaîne : le quotidien d'un datacenter engineer.",
+    "cv": "Prouve : virtualisation et provisioning datacenter.",
+    "challenge": "Transformer un template en flotte de VM identiques en quelques secondes, maîtriser réseau (bridges/VLAN) ET stockage, et automatiser les sauvegardes avec restauration testée. Industrialiser au lieu d'installer à la main, c'est LE déclic datacenter.",
+    "steps": [
+      {
+        "t": "Installer l'hyperviseur",
+        "do": "# Proxmox VE sur la machine hôte (ou en virtualisation imbriquée).",
+        "verify": "Interface web accessible sur https://IP:8006, un nœud visible."
+      },
+      {
+        "t": "Créer un template cloud-init",
+        "do": "# Importe une image cloud Ubuntu, ajoute le disque cloud-init\n# (utilisateur, clé SSH), puis : qm template <id>",
+        "verify": "Le template apparaît ; cloud-init injecte user + clé au 1er boot."
+      },
+      {
+        "t": "Cloner en masse",
+        "do": "for i in 1 2 3; do qm clone 9000 10$i --name web0$i --full; qm start 10$i; done\n# (ou, plus pro : Terraform provider proxmox)",
+        "verify": "3 VM démarrent et sont joignables en SSH SANS aucune config manuelle."
+      },
+      {
+        "t": "Réseau (bridges + VLAN) et stockage",
+        "do": "# Bridges Linux + tags VLAN par VM ; un pool de stockage dédié.",
+        "verify": "Chaque VM est dans le bon VLAN, ses disques sur le bon stockage."
+      },
+      {
+        "t": "Sauvegardes + restauration testée",
+        "do": "# Planifie des backups (vzdump) chaque nuit.\n# PUIS : détruis une VM et restaure-la depuis le backup.",
+        "verify": "La VM restaurée redémarre intacte. (Un backup jamais testé n'existe pas.)"
+      }
+    ],
+    "test": "Détruis une VM en production puis restaure-la depuis la sauvegarde ; et clone 3 nouvelles VM prêtes-à-l'emploi en une seule commande.",
+    "deploy": "CV : « Hyperviseur Proxmox : templates cloud-init, provisioning automatisé (Terraform), réseau/VLAN, sauvegardes et restauration éprouvée »."
   }
 ];
 
@@ -512,6 +563,7 @@
           '<span class="pj-check">'+done+'/'+pj.steps.length+(complete?' ✓':'')+'</span>'+
         '</div>'+
         '<div class="pj-body">'+
+          '<div class="pj-challenge"><b>\uD83E\uDDE9 Le vrai défi</b> — '+esc(pj.challenge)+'</div>'+
           '<div class="tags">'+tags+'</div>'+
           '<button class="guide-toggle" data-pi="'+pi+'">▸ Guide pas à pas — '+pj.steps.length+' étapes</button>'+
           '<div class="pj-guide">'+
