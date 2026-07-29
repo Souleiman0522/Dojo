@@ -4020,10 +4020,14 @@ var QUESTS = [
       {
         level: 'intermediate',
         title: 'Créer une archive compressée',
-        context: "`tar -czf archive.tar.gz fichiers` crée une archive compressée. c=create, z=gzip (compression), f=fichier de sortie. C'est LE geste de sauvegarde Unix.",
+        context: "Pour transporter ou sauvegarder plein de fichiers d'un coup, on les réunit dans **une seule archive**, qu'on **compresse** pour qu'elle pèse moins lourd. L'outil roi est `tar`, avec trois lettres à retenir : `c` (*create*, créer), `z` (compresser en gzip), `f` (le nom du **f**ichier de sortie). Donc `tar -czf backup.tar.gz Documents` = « crée, compresse, dans backup.tar.gz, le dossier Documents ».",
         scene: "Tu veux sauvegarder ton dossier Documents en un seul fichier compressé.",
-        mission: "Crée une archive compressée nommée backup.tar.gz de tes documents.",
-        steps: ["`tar -czf backup.tar.gz Documents`", "Un seul fichier contient tout le dossier, compressé"],
+        mission: "Crée une archive compressée `backup.tar.gz` de ton dossier Documents.",
+        steps: [
+          "Place-toi chez toi : `cd ~`",
+          "Crée l'archive : `tar -czf backup.tar.gz Documents` (c=créer, z=compresser, f=fichier)",
+          "Un seul fichier contient désormais tout le dossier, compressé"
+        ],
         expected: "$ tar -czf backup.tar.gz Documents\nArchive créée : backup.tar.gz",
         diagram: "  Documents/ ──tar -czf──▶ backup.tar.gz\n  (plusieurs fichiers)      (un seul, compressé)",
         culture: "`tar` signifie **Tape ARchive** : il a été créé en 1979 pour écrire des fichiers sur des **bandes magnétiques**, où il fallait tout mettre bout à bout en un flux continu. Les bandes ont disparu, mais tar est resté — c'est pourquoi il n'a pas de compression native (les bandes ne compressaient pas). On lui adjoint `gzip` (1992) pour ça. Un demi-siècle plus tard, chaque sauvegarde Linux passe encore par cet outil vénérable.",
@@ -4033,13 +4037,34 @@ var QUESTS = [
       {
         level: 'advanced',
         title: 'Extraire une archive',
-        context: "`tar -xzf archive.tar.gz` extrait le contenu. x=extract. On récupère les fichiers d'origine. `tar -tzf` (t=list) montre le contenu SANS extraire — pratique pour vérifier avant.",
-        scene: "Tu as reçu une archive backup.tar.gz et tu veux récupérer les fichiers.",
-        mission: "Extrais l'archive backup.tar.gz.",
-        steps: ["Vérifie d'abord : `tar -tzf backup.tar.gz`", "Puis extrais : `tar -xzf backup.tar.gz`"],
+        context: "À l'arrivée, on **dépaquette** l'archive pour retrouver les fichiers d'origine. Même commande `tar`, on change juste la 1ʳᵉ lettre : `x` (*extract*, extraire). Et un réflexe de sécurité : `t` (*list*) montre le contenu SANS rien extraire — pour inspecter une archive avant de l'ouvrir.",
+        scene: "Tu as reçu une archive `backup.tar.gz` et tu veux en récupérer les fichiers.",
+        mission: "Vérifie puis extrais l'archive `backup.tar.gz`.",
+        steps: [
+          "Vérifie d'abord le contenu : `tar -tzf backup.tar.gz` (t=lister, sans extraire)",
+          "Puis extrais : `tar -xzf backup.tar.gz` (x=extraire)",
+          "Les fichiers d'origine réapparaissent dans le dossier courant"
+        ],
         expected: "$ tar -xzf backup.tar.gz\nExtraction de backup.tar.gz...\n  Documents",
+        culture: "Les trois lettres de tête de `tar` forment un mini-langage : **c**reate (créer), e**x**tract (extraire), lis**t** (`t`). Toujours suivies de `z` (gzip) et `f` (fichier). Beaucoup de systèmes de sauvegarde professionnels ne sont, au fond, qu'un `tar -czf` horodaté lancé par cron et envoyé sur un stockage distant. L'outil de 1979 est encore le socle des sauvegardes modernes.",
         reflection: "Avant d'extraire une archive reçue d'un inconnu, quelle commande taper d'abord, et pourquoi ?\n👉 `tar -tzf archive.tar.gz` liste le contenu SANS rien écrire. Ça te protège des archives piégées qui écrasent des fichiers système (une archive peut contenir des chemins absolus comme `/etc/passwd`). Vérifier avant d'extraire = réflexe de sécurité.",
         check: function(s) { return s.history.some(function(c) { return /tar\s+-[xt]/.test(c); }); }
+      },
+      {
+        level: 'advanced',
+        title: 'Mini-défi : sauvegarde et restauration',
+        context: "Le dernier geste du parcours : le **cycle complet de sauvegarde**. Empaqueter + compresser, vérifier, restaurer. C'est ce que fait, au fond, toute stratégie de backup — de ton petit serveur perso jusqu'aux datacenters.",
+        scene: "Le Sensei te confie une dernière épreuve : sauvegarder un dossier, et prouver que tu sais le restaurer intact.",
+        mission: "Archive `Documents`, vérifie le contenu de l'archive sans l'extraire, puis restaure-la.",
+        steps: [
+          "① Empaquette + compresse : `tar -czf sauvegarde.tar.gz Documents`",
+          "② Vérifie AVANT d'ouvrir : `tar -tzf sauvegarde.tar.gz` (liste sans rien écrire)",
+          "③ Restaure : `tar -xzf sauvegarde.tar.gz`"
+        ],
+        expected: "$ tar -czf sauvegarde.tar.gz Documents\n$ tar -tzf sauvegarde.tar.gz\nDocuments/\n$ tar -xzf sauvegarde.tar.gz\nExtraction...",
+        culture: "Une sauvegarde qu'on n'a jamais testée n'en est pas une. La règle d'or des admins : « un backup non restauré est un backup mort ». Savoir vérifier (`-tzf`) puis restaurer (`-xzf`) vaut autant que savoir créer l'archive. Bien des entreprises ont découvert, le jour d'un crash, que leurs sauvegardes étaient corrompues depuis des mois. Tester la restauration fait partie du geste — c'est là que finit ton apprentissage, et que commence le métier.",
+        reflection: "Pourquoi le format s'appelle-t-il `.tar.gz` en DEUX extensions, et pas une seule ?\n👉 Parce que ce sont DEUX opérations successives, faites par deux outils : `tar` **empaquette** plusieurs fichiers en un seul `.tar`, puis `gzip` le **compresse** en `.tar.gz`. Chaque extension raconte une étape. C'est aussi pourquoi existent les `.tar.bz2` ou `.tar.xz` : même empaquetage tar, mais un compresseur différent. tar assemble, le second réduit.",
+        check: function(s) { var created = Object.keys(sysState.archives).length > 0 || s.history.some(function(c) { return /tar\s+-c/.test(c); }); var listed = s.history.some(function(c) { return /tar\s+-t/.test(c); }); var extracted = s.history.some(function(c) { return /tar\s+-x/.test(c); }); return created && listed && extracted; }
       }
     ]
   }
