@@ -3241,10 +3241,14 @@ var QUESTS = [
       {
         level: 'advanced',
         title: 'Lister les comptes système',
-        context: "/etc/passwd contient un compte par ligne. Format : nom:x:UID:GID:description:home:shell. Les UIDs <1000 sont système, >=1000 sont humains.",
-        scene: "Tu hérites d'un serveur. Tu veux voir tous les comptes existants.",
-        mission: "Affiche /etc/passwd et identifie les comptes humains.",
-        steps: ["`cat /etc/passwd`", "Repère les lignes avec UID >= 1000 (vrais utilisateurs)", "Note ceux avec /usr/sbin/nologin (services)"],
+        context: "Tous les comptes de la machine sont listés dans le fichier `/etc/passwd`, **un par ligne**. Astuce pour les distinguer : les comptes avec un numéro (UID) **≥ 1000** sont des **humains** ; ceux en dessous sont des comptes **système** (services). Et ceux qui finissent par `nologin` n'ont pas le droit de se connecter. (Le Dojo décode chaque champ après le `cat`.)",
+        scene: "Tu hérites d'un serveur inconnu. Tu veux voir tous les comptes existants.",
+        mission: "Affiche `/etc/passwd` et repère les comptes humains.",
+        steps: [
+          "Affiche le fichier : `cat /etc/passwd`",
+          "Repère les lignes avec un UID ≥ 1000 → ce sont les vrais utilisateurs",
+          "Ceux en `/usr/sbin/nologin` sont des comptes de services (pas d'humain)"
+        ],
         expected: "root:x:0:0:root:/root:/bin/bash\nwww-data:x:33:33:www-data:/var/www:/usr/sbin/nologin\nuser:x:1000:1000:user:/home/user:/bin/bash",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('passwd') >= 0; }); }
       },
@@ -3264,20 +3268,28 @@ var QUESTS = [
       {
         level: 'expert',
         title: 'Définir un mot de passe',
-        context: "passwd permet de changer un mot de passe. Sans argument = le tien. Avec un nom = celui d'un autre (root only). Le mot de passe est haché dans /etc/shadow (jamais en clair).",
-        scene: "Alice a son compte mais pas de mot de passe — elle ne peut pas se connecter.",
-        mission: "Définis le mot de passe d'alice.",
-        steps: ["`sudo passwd alice`", "On te demande le nouveau mot de passe (deux fois)", "Le hash est stocké dans /etc/shadow"],
+        context: "`passwd` définit ou change un mot de passe. Sans argument, il change **le tien** ; suivi d'un nom (`passwd alice`, réservé à l'admin), il change celui d'un autre. Le mot de passe n'est jamais stocké en clair : il est **haché** (transformé en une empreinte irréversible) dans `/etc/shadow`, lisible par root seul.",
+        scene: "Alice a un compte mais aucun mot de passe — elle ne peut donc pas se connecter.",
+        mission: "Définis le mot de passe du compte `alice`.",
+        steps: [
+          "Lance : `sudo passwd alice`",
+          "Le système demande le nouveau mot de passe (deux fois, pour éviter une faute de frappe)",
+          "L'empreinte est enregistrée dans `/etc/shadow` — le compte devient utilisable"
+        ],
         expected: "$ sudo passwd alice\nNouveau mot de passe : ********\nRetapez : ********\npasswd: mot de passe mis à jour",
         check: function(s) { return s.history.some(function(c) { return /^(sudo\s+)?passwd\s+\w+/.test(c); }); }
       },
       {
         level: 'expert',
         title: 'Lister les groupes',
-        context: "/etc/group liste les groupes. Format : nom:x:GID:membres. Le groupe 'sudo' est crucial — ses membres peuvent utiliser sudo.",
-        scene: "Tu veux savoir qui peut faire sudo.",
-        mission: "Affiche /etc/group.",
-        steps: ["`cat /etc/group`", "Repère la ligne `sudo:x:27:`", "Les noms après le dernier `:` sont les membres"],
+        context: "Un **groupe** rassemble plusieurs utilisateurs pour leur donner des droits en commun. La liste des groupes est dans `/etc/group`. Le plus important s'appelle `sudo` : **ses membres peuvent devenir administrateur**. Sur chaque ligne, les noms après le dernier `:` sont les membres du groupe. (Le Dojo décode ce fichier après le `cat`.)",
+        scene: "Tu veux savoir qui, sur ce serveur, a le droit d'utiliser sudo.",
+        mission: "Affiche `/etc/group`.",
+        steps: [
+          "Affiche le fichier : `cat /etc/group`",
+          "Repère la ligne `sudo:x:27:user` → `user` est membre du groupe sudo",
+          "Les noms après le dernier `:` = les membres du groupe"
+        ],
         expected: "root:x:0:\nsudo:x:27:user\nwww-data:x:33:\nuser:x:1000:",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('group') >= 0; }); }
       },
@@ -3297,11 +3309,16 @@ var QUESTS = [
       {
         level: 'expert',
         title: 'Créer un groupe',
-        context: "groupadd crée un groupe. Utile pour gérer des permissions partagées (ex: équipe dev qui doit accéder à /var/www).",
-        scene: "Tu veux un groupe 'devs' pour partager des fichiers.",
-        mission: "Crée le groupe 'devs'.",
-        steps: ["`sudo groupadd devs`", "Vérifie : `cat /etc/group | grep devs`"],
+        context: "`groupadd` crée un nouveau groupe. L'intérêt : au lieu de donner un droit à 50 utilisateurs un par un, on crée UN groupe, on donne le droit au groupe, et on y ajoute les gens. Exemple typique : un groupe `devs` dont les membres partagent l'accès à `/var/www`.",
+        scene: "Ton équipe de développeurs doit partager des fichiers : tu leur prépares un groupe commun.",
+        mission: "Crée le groupe `devs`.",
+        steps: [
+          "Crée le groupe : `sudo groupadd devs`",
+          "Vérifie qu'il existe : `cat /etc/group | grep devs`"
+        ],
         expected: "$ sudo groupadd devs\n$ grep devs /etc/group\ndevs:x:1001:",
+        culture: "Gérer les droits **par groupe** plutôt que par personne est un principe d'administration fondamental. Quand un nouveau développeur arrive, on l'ajoute au groupe `devs` et il hérite instantanément de tous les accès de l'équipe. Quand il part, on le retire. Sans groupes, il faudrait revoir les droits de chaque fichier un par un — ingérable dès qu'on dépasse quelques personnes.",
+        reflection: "Pourquoi gérer les permissions par groupe plutôt que d'accorder les droits utilisateur par utilisateur ?\n👉 Parce que ça passe à l'échelle. 3 personnes, on peut bricoler ; 300, c'est impossible à la main. Un groupe centralise la décision : « les membres de `devs` accèdent à `/var/www` ». Ajouter ou retirer quelqu'un devient une seule commande, et les droits des fichiers ne changent jamais. Moins d'erreurs, moins d'oublis.",
         check: function(s) { return s.history.some(function(c) { return /^(sudo\s+)?groupadd\s+\w+/.test(c); }); }
       },
       {
@@ -3315,6 +3332,23 @@ var QUESTS = [
         culture: "Supprimer un compte à un départ est une obligation de sécurité (un compte oublié = une porte ouverte), mais le `-r` (remove home) est à double tranchant. Il efface `/home/alice` ET les mails — parfois des données que l'entreprise doit ARCHIVER légalement. La bonne pratique en production n'est souvent pas de supprimer mais de **désactiver** (`usermod -L alice` verrouille le compte, ou `usermod -s /usr/sbin/nologin` interdit la connexion) : l'accès est coupé, mais les fichiers restent récupérables.",
         reflection: "Faut-il toujours utiliser `userdel -r` quand un employé part ?\n👉 Pas forcément. Le `-r` détruit ses fichiers **définitivement** — or l'entreprise doit parfois les conserver (obligations légales, passation à un successeur). Souvent on **désactive** d'abord le compte (`usermod -L`), on archive le home, et on ne supprime qu'après. Couper l'accès immédiatement : oui. Détruire les données dans la foulée : à réfléchir. La révocation d'accès et la suppression de données sont deux décisions distinctes.",
         check: function(s) { return !getNode('/home/alice') && s.history.some(function(c) { return /userdel/.test(c); }); }
+      },
+      {
+        level: 'expert',
+        title: 'Mini-défi : le cycle de vie d\'un compte',
+        context: "On assemble le chapitre en une seule mission d'admin : accueillir un arrivant, puis gérer son départ. Créer un compte utilisable, c'est **deux temps** (le compte PUIS le mot de passe) ; le supprimer proprement, c'en est un troisième.",
+        scene: "Un intérimaire, `bob`, arrive pour une courte mission. Tu l'onboardes, puis tu l'offboardes à la fin.",
+        mission: "Crée le compte `bob` (avec home + shell), donne-lui un mot de passe, puis supprime-le entièrement à son départ.",
+        steps: [
+          "① Crée le compte : `sudo useradd -m -s /bin/bash bob` (`-m` crée /home/bob)",
+          "② Active-le : `sudo passwd bob` (sinon il ne peut pas se connecter)",
+          "③ Fin de mission : `sudo userdel -r bob` (`-r` supprime aussi son home)",
+          "Vérifie : `ls /home` → plus de `bob`"
+        ],
+        expected: "$ sudo useradd -m -s /bin/bash bob\n$ sudo passwd bob\n$ sudo userdel -r bob\n$ ls /home\nuser",
+        culture: "Ce cycle créer → activer → supprimer est le quotidien d'un admin système, et chaque étape a son piège : oublier le `passwd` (compte inutilisable), oublier le `-m` (pas de home), ou supprimer avec `-r` des données qu'il fallait archiver. En entreprise, tout ça est souvent automatisé par un script d'onboarding/offboarding — mais il faut d'abord comprendre les gestes à la main.",
+        reflection: "Pourquoi la création d'un compte utilisable se fait-elle en DEUX commandes (`useradd` puis `passwd`) ?\n👉 Parce que `useradd` crée le compte mais le laisse **verrouillé**, sans mot de passe : impossible de s'y connecter. C'est une sécurité — un compte n'existe vraiment qu'une fois qu'on lui a donné un moyen d'authentification. Créer, puis activer : deux gestes distincts, et oublier le second est l'erreur n°1 des débutants.",
+        check: function(s) { var created = s.history.some(function(c) { return /useradd.*\bbob\b/.test(c); }); var deleted = s.history.some(function(c) { return /userdel.*\bbob\b/.test(c); }); return created && deleted && !getNode('/home/bob'); }
       }
     ]
   },
