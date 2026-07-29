@@ -3193,12 +3193,50 @@ var QUESTS = [
       {
         level: 'advanced',
         title: 'Config réseau',
-        context: "/etc/network/interfaces (Debian/Ubuntu) configure les interfaces. `auto eth0` = active au boot. `dhcp` = IP automatique. `static` = IP fixe.",
-        scene: "Tu veux comprendre comment la machine récupère son IP.",
-        mission: "Affiche /etc/network/interfaces.",
-        steps: ["`cat /etc/network/interfaces`", "Repère eth0 et son mode (dhcp/static)"],
+        context: "Comment une machine obtient-elle son adresse sur le réseau ? Deux modes : **DHCP** (l'IP est attribuée automatiquement par la box/le routeur — le cas courant) ou **statique** (une IP fixe écrite à la main — pour les serveurs). Sous Debian/Ubuntu, ça se règle dans `/etc/network/interfaces` : `auto eth0` = active la carte au démarrage, `dhcp` = mode automatique.",
+        scene: "Tu veux comprendre comment cette machine récupère son adresse IP.",
+        mission: "Affiche `/etc/network/interfaces`.",
+        steps: [
+          "Affiche la config : `cat /etc/network/interfaces`",
+          "Repère la carte `eth0` et son mode (`dhcp` = auto, `static` = IP fixe)",
+          "`lo` (loopback) est la carte virtuelle de la machine vers elle-même (127.0.0.1)"
+        ],
         expected: "auto lo\niface lo inet loopback\n\nauto eth0\niface eth0 inet dhcp",
+        culture: "Sur les distributions récentes, la config réseau a migré vers d'autres outils (**netplan** en YAML sur Ubuntu, **NetworkManager** sur les postes de bureau), mais le principe reste le même : décrire chaque interface et son mode. Le **DHCP** convient aux postes clients (l'IP peut changer), le **statique** est vital pour un serveur.",
+        reflection: "Pourquoi un serveur a-t-il presque toujours une IP **statique**, alors qu'un portable est en DHCP ?\n👉 Parce qu'on doit pouvoir joindre un serveur à une adresse FIXE et connue (pour le DNS, les autres services, les règles de pare-feu). Si son IP changeait au gré du DHCP, tout ce qui pointe vers lui casserait. Un portable, lui, se moque d'avoir une IP différente à chaque réseau : personne ne cherche à le joindre à une adresse fixe.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('interfaces') >= 0; }); }
+      },
+      {
+        level: 'advanced',
+        title: 'Voir son adresse IP (ip a)',
+        context: "Pour connaître l'adresse IP de ta machine, la commande moderne est `ip a` (raccourci de `ip address`). Elle liste chaque carte réseau et son adresse. L'ancienne commande équivalente, `ifconfig`, est encore très répandue mais parfois absente des systèmes récents.",
+        scene: "Un collègue doit se connecter à ta machine : il te faut son adresse IP.",
+        mission: "Affiche les adresses réseau de la machine avec `ip a`.",
+        steps: [
+          "Tape `ip a` (ou `ifconfig`)",
+          "Repère la carte `eth0` et sa ligne `inet` → c'est ton adresse IP (192.168.1.42)",
+          "Ignore `lo` (127.0.0.1) : c'est la boucle locale, pas une vraie adresse réseau"
+        ],
+        expected: "eth0: ... inet 192.168.1.42  netmask 255.255.255.0\nlo: ... inet 127.0.0.1",
+        culture: "`192.168.1.42` est une adresse **privée** : les plages `192.168.x.x`, `10.x.x.x` et `172.16-31.x.x` ne circulent pas sur Internet. Ta box fait la traduction (le *NAT*) entre ton réseau privé et l'unique adresse publique de ton abonnement. C'est ainsi que 50 appareils chez toi partagent une seule IP publique vue de l'extérieur.",
+        reflection: "Que représente `127.0.0.1` (la carte `lo`), toujours présente même câble débranché ?\n👉 C'est le **loopback** : l'adresse de la machine vers elle-même. Elle sert à ce que des programmes d'une même machine se parlent via le réseau (ex : `curl localhost`) sans jamais sortir sur le câble. `lo` n'est pas une carte physique — c'est une boucle interne, d'où son nom.",
+        check: function(s) { return s.history.some(function(c) { return /^ip\b/.test(c) || c.indexOf('ifconfig') >= 0; }); }
+      },
+      {
+        level: 'advanced',
+        title: 'Tester la connexion (ping)',
+        context: "`ping` est le test réseau le plus simple : il envoie de petits paquets à une machine et mesure si — et en combien de temps — elle répond. `ping 8.8.8.8` teste si tu atteins Internet (8.8.8.8 = un serveur de Google, facile à retenir). Des réponses = la connexion marche.",
+        scene: "Internet semble coupé. Avant de paniquer, tu vérifies si tu atteins l'extérieur.",
+        mission: "Teste ta connexion à Internet avec `ping 8.8.8.8`.",
+        steps: [
+          "Tape `ping 8.8.8.8`",
+          "Des lignes `64 bytes from ...` = la machine répond, la connexion marche",
+          "Le `time=` indique la latence (le temps d'aller-retour) en millisecondes"
+        ],
+        expected: "PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.\n64 bytes from 8.8.8.8: icmp_seq=1 ttl=117 time=12.2 ms",
+        culture: "`ping` doit son nom au **sonar** des sous-marins : envoyer un signal, écouter l'écho. Le `ttl` (*time to live*) de la réponse compte les routeurs traversés : parti de 128, un ttl de 117 = ~11 sauts entre toi et la cible. Attention : certains serveurs bloquent volontairement le ping pour rester discrets — « ne pas répondre au ping » ne signifie donc pas toujours « en panne ».",
+        reflection: "`ping 8.8.8.8` répond, mais `ping google.com` échoue. Que t'apprend ce test en deux temps ?\n👉 Que ta connexion Internet marche (l'IP répond), mais que le **DNS** est en panne : `google.com` ne se traduit pas en adresse. C'est LE diagnostic réseau fondamental : tester d'abord par IP (couche réseau), puis par nom (couche DNS), pour isoler immédiatement la couche fautive.",
+        check: function(s) { return s.history.some(function(c) { return c.indexOf('ping') === 0; }); }
       },
       {
         level: 'advanced',
@@ -3234,6 +3272,22 @@ var QUESTS = [
         culture: "`~/.ssh/authorized_keys` est la **liste des invités** de ton compte : chaque ligne est une clé publique autorisée à se connecter sans mot de passe. Quand quelqu'un tente de se connecter, le serveur parcourt ce fichier et lance un défi cryptographique pour chaque clé. C'est ainsi qu'on donne accès à un serveur : on ajoute une ligne (la clé publique de la personne) dans son authorized_keys. Retirer l'accès ? On supprime la ligne. Simple, précis, révocable.",
         reflection: "Ce fichier doit avoir les permissions `600` (rw-------). Pourquoi SSH refuse-t-il de fonctionner sinon ?\n👉 Sécurité stricte : si `authorized_keys` était modifiable par d'autres utilisateurs (permissions trop larges), n'importe qui pourrait y ajouter SA clé et s'octroyer un accès à ton compte. SSH vérifie donc les permissions AVANT d'accepter la connexion et refuse net si le fichier (ou le dossier `~/.ssh`) est trop ouvert. Un cas rare où être « trop permissif » bloque tout — par précaution.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('authorized_keys') >= 0; }); }
+      },
+      {
+        level: 'expert',
+        title: 'Mini-défi : diagnostic réseau',
+        context: "On assemble le chapitre en une méthode que TOUT admin exécute quand « Internet ne marche pas ». On teste couche par couche, du plus bas au plus haut, pour localiser exactement où ça casse — au lieu de deviner au hasard.",
+        scene: "Un utilisateur t'appelle : « le site ne charge pas ». Avant de toucher à quoi que ce soit, tu diagnostiques dans l'ordre.",
+        mission: "Vérifie ta connexion en deux temps : d'abord par IP (`ping 8.8.8.8`), puis par nom (`ping google.com`).",
+        steps: [
+          "① Teste le réseau brut : `ping 8.8.8.8` (une IP directe, sans DNS)",
+          "② Teste le DNS : `ping google.com` (un nom, qui doit être traduit en IP)",
+          "Si ① marche et ② échoue → le réseau est bon, c'est le DNS. Si ① échoue déjà → c'est la connexion elle-même"
+        ],
+        expected: "$ ping 8.8.8.8\n64 bytes from 8.8.8.8 ...\n$ ping google.com\n64 bytes from 142.250.75.238 ...",
+        culture: "Cette méthode « du bas vers le haut » est universelle en dépannage réseau : carte (`ip a`) → Internet (`ping 8.8.8.8`) → DNS (`ping un-nom`) → service (`curl`). À chaque étage qui répond, on élimine une cause. Diagnostiquer, ce n'est pas deviner : c'est éliminer méthodiquement jusqu'à ce qu'il ne reste qu'une seule explication possible.",
+        reflection: "Pourquoi tester `8.8.8.8` (une IP) AVANT `google.com` (un nom), et pas l'inverse ?\n👉 Parce que ça sépare deux problèmes. Joindre `google.com` fait intervenir DEUX choses : le réseau ET le DNS. Si tu testes le nom d'abord et que ça échoue, tu ignores laquelle est en cause. En testant l'IP pure en premier, tu valides la couche réseau ; le nom teste ensuite le DNS par-dessus. On va toujours du plus simple au plus complexe.",
+        check: function(s) { var pingIp = s.history.some(function(c) { return /^ping\s+\d+\.\d+\.\d+\.\d+/.test(c); }); var pingName = s.history.some(function(c) { return /^ping\s+/.test(c) && !/^ping\s+\d/.test(c); }); return pingIp && pingName; }
       }
     ]
   },
@@ -4736,6 +4790,7 @@ function runSingleCommand(cmd) {
     case 'systemctl': cmdSystemctl(args, sudo); break;
     case 'ufw': cmdUfw(args, sudo); break;
     case 'ip': case 'ifconfig': cmdIfconfig(); break;
+    case 'ping': cmdPing(args); break;
     case 'man': term.writeln(C.dim + '(man pages non disponibles ici, tape help)' + C.reset); break;
     case 'apt': cmdApt(args, sudo); break;
     case 'git': cmdGit(args); break;
@@ -5802,6 +5857,21 @@ function cmdUfw(args, sudo) {
     term.writeln(C.red + 'ufw: action inconnue: ' + action + C.reset);
     term.writeln(C.dim + '(actions : status, enable, disable, allow, deny)' + C.reset);
   }
+}
+
+function cmdPing(args) {
+  var host = args.filter(function(a) { return a.charAt(0) !== '-'; })[0];
+  if (!host) { term.writeln(C.red + 'ping: usage : ping <hôte>' + C.reset); return; }
+  var ip = /^\d+\.\d+\.\d+\.\d+$/.test(host) ? host :
+           (host === 'localhost' ? '127.0.0.1' :
+           (/google/.test(host) ? '142.250.75.238' : '93.184.216.34'));
+  term.writeln('PING ' + host + ' (' + ip + ') 56(84) bytes of data.');
+  for (var i = 1; i <= 3; i++) {
+    term.writeln('64 bytes from ' + ip + ': icmp_seq=' + i + ' ttl=117 time=' + (11 + i) + '.' + (i * 2) + ' ms');
+  }
+  term.writeln('--- ' + host + ' ping statistics ---');
+  term.writeln('3 packets transmitted, 3 received, 0% packet loss, time 2003ms');
+  term.writeln(C.dim + '(simulation — un vrai ping tourne en boucle jusqu\'à Ctrl+C)' + C.reset);
 }
 
 function cmdIfconfig() {
