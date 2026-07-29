@@ -2967,11 +2967,17 @@ var QUESTS = [
       {
         level: 'advanced',
         title: '③  Le dossier des sites',
-        context: "/var/www/html est le dossier par défaut où nginx sert les pages. Tout fichier index.html ici sera affiché à la racine du site.",
-        scene: "🎬 Étape 3 : repérer où nginx sert ses fichiers.",
-        mission: "Va dans /var/www/html et liste son contenu.",
-        steps: ["`cd /var/www/html`", "`ls`", "Note le fichier d'accueil par défaut"],
+        context: "Un serveur web sert les fichiers d'un dossier bien précis, appelé la **racine web** (*document root*). Chez nginx, par défaut, c'est `/var/www/html`. Tout ce que tu poses là devient accessible depuis un navigateur ; le fichier `index.html` est celui affiché quand on visite le site « à la racine ». C'est là que tu déposeras ta page.",
+        scene: "🎬 Étape 3 : repérer l'endroit exact où nginx va chercher les pages à servir.",
+        mission: "Va dans `/var/www/html` et liste son contenu.",
+        steps: [
+          "Rends-toi dans la racine web : `cd /var/www/html`",
+          "Liste son contenu : `ls`",
+          "Note le fichier d'accueil par défaut (`index.nginx-debian.html`)"
+        ],
         expected: "$ ls\nindex.nginx-debian.html",
+        culture: "`/var/www` est, par convention, l'emplacement des sites web. Le `/var` (*variable*) regroupe les données qui changent pendant la vie du serveur : sites, logs, bases de données. Séparer le code des services (`/usr`, `/etc`) des données qui grossissent (`/var`) est un principe du FHS : on peut ainsi sauvegarder ou déplacer les données sans toucher au système.",
+        reflection: "Comment nginx sait-il quel fichier afficher quand on visite le site sans préciser de page (juste `/`) ?\n👉 Par convention, il cherche un fichier `index.html` (ou `index.htm`, `index.php`…) dans la racine web. C'est le fichier « par défaut ». Sans lui, selon la config, nginx affiche soit la liste des fichiers du dossier, soit une erreur 403. D'où le rôle central de `index.html` : c'est la porte d'entrée de ton site.",
         check: function(s) { return s.cwd === '/var/www/html'; }
       },
       {
@@ -3007,6 +3013,22 @@ var QUESTS = [
         culture: "Chaque ligne d'`access.log` raconte une visite : l'IP du visiteur, la date, la requête (`GET / HTTP/1.1`), et surtout le **code de statut HTTP**. Ces codes sont un langage universel : **2xx** = succès (200 = OK), **3xx** = redirection (301 = déplacé définitivement), **4xx** = erreur du client (404 = introuvable, 403 = interdit), **5xx** = erreur du serveur (500 = plantage interne, 502 = passerelle en panne). Lire ces logs en direct avec `tail -f`, c'est voir battre le cœur de ton site.",
         reflection: "Dans les logs, tu vois beaucoup de `404` sur des URL comme `/wp-login.php` alors que ton site n'utilise pas WordPress. Que se passe-t-il ?\n👉 Des **robots malveillants** scannent automatiquement tout Internet à la recherche de failles connues (ici, la page de login WordPress). Les 404 signifient qu'ils ne trouvent rien — ton site n'est pas concerné. C'est le bruit de fond permanent d'un serveur exposé. Utile pour repérer les attaques : une avalanche de 404 ou 403 depuis une même IP = un scanner qu'on peut bannir avec `ufw` ou fail2ban.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('tail') >= 0 && c.indexOf('access.log') >= 0; }); }
+      },
+      {
+        level: 'expert',
+        title: '⑦  La preuve : tester avec curl',
+        context: "Pas besoin de navigateur pour vérifier qu'un site répond : `curl` envoie une requête HTTP depuis le terminal et affiche la réponse brute. `curl localhost` interroge TON serveur, depuis la machine elle-même. Si ton HTML revient, le site est réellement servi — c'est la preuve finale du déploiement.",
+        scene: "🎬 Étape 7 (finale) : ton site répond-il vraiment ? On demande directement au serveur.",
+        mission: "Teste ton site avec `curl localhost` et vois ton HTML revenir.",
+        steps: [
+          "Interroge ton serveur : `curl localhost`",
+          "Le serveur te renvoie le contenu HTML de ta page",
+          "Si tu vois ton `<h1>`, c'est gagné : le site est officiellement en ligne 🎉"
+        ],
+        expected: "$ curl localhost\n<!DOCTYPE html>\n<html>\n<head><title>Mon site</title></head>\n<body><h1>Bienvenue !</h1></body>\n</html>",
+        culture: "`curl` (*Client URL*) est le couteau suisse des requêtes réseau : tester une API, télécharger un fichier, vérifier qu'un service répond. `curl localhost` teste « depuis l'intérieur » (la machine se parle à elle-même). C'est le premier geste de diagnostic web : si `curl localhost` marche mais que le site est injoignable de l'extérieur, le problème n'est pas nginx — c'est le pare-feu ou le réseau.",
+        reflection: "`curl localhost` te renvoie bien ta page, mais depuis ton PC le site reste injoignable. Où chercher ?\n👉 Pas dans nginx : il sert correctement (le curl local le prouve). Le problème est plus haut : le **pare-feu** bloque sans doute le port 80 (`sudo ufw allow 80`), ou c'est un souci de réseau/DNS. Tester en local d'abord, puis de l'extérieur, permet d'isoler la couche fautive — on diagnostique du cœur (le service) vers l'extérieur (réseau, pare-feu).",
+        check: function(s) { return s.history.some(function(c) { return c.indexOf('curl') >= 0; }); }
       }
     ]
   },
@@ -4707,6 +4729,7 @@ function runSingleCommand(cmd) {
     case 'head': cmdHead(args); break;
     case 'tail': cmdTail(args); break;
     case 'wc': cmdWc(args); break;
+    case 'curl': case 'wget': cmdCurl(args); break;
     case 'find': cmdFind(args); break;
     case 'df': cmdDf(args); break;
     case 'du': cmdDu(args); break;
@@ -5387,6 +5410,30 @@ function cmdChown(args, sudo) {
   node.owner = newOwner;
   highlighted = target.split('/').pop();
   renderFs();
+}
+
+// curl / wget : requête HTTP simulée (localhost => sert la page nginx)
+function cmdCurl(args) {
+  var url = args.filter(function(a) { return a.charAt(0) !== '-'; })[0] || 'localhost';
+  var isLocal = /localhost|127\.0\.0\.1/.test(url) || url.indexOf('http') !== 0;
+  if (isLocal) {
+    if (!sysState.services.nginx.active) {
+      term.writeln(C.red + 'curl: (7) Failed to connect to localhost port 80: Connection refused' + C.reset);
+      term.writeln(C.dim + '(nginx n\'est pas démarré — fais « sudo systemctl start nginx »)' + C.reset);
+      return;
+    }
+    var root = getNode('/var/www/html');
+    var page = null;
+    if (root && root.children) {
+      page = root.children['index.html'] ? 'index.html' :
+             (root.children['index.nginx-debian.html'] ? 'index.nginx-debian.html' : null);
+    }
+    var content = page ? (FILE_CONTENTS[page] || '') : '';
+    if (!content) { term.writeln('<html><body><h1>404 Not Found</h1></body></html>'); return; }
+    content.split('\n').forEach(function(l) { term.writeln(l); });
+    return;
+  }
+  term.writeln(C.dim + '(accès réseau externe simulé : ' + url + ')' + C.reset);
 }
 
 // Décodeur des colonnes de ps/top, affiché une fois par session
