@@ -3948,11 +3948,17 @@ var QUESTS = [
       {
         level: 'intermediate',
         title: "Ajouter à l'index (add)",
-        context: "`git add fichier` place un fichier dans l'index (staging), prêt à être commité. `git add .` ajoute tout le dossier. C'est l'étape de préparation avant de graver.",
-        scene: "Ton fichier notes.txt est prêt. Tu veux l'inclure dans le prochain commit.",
-        mission: "Ajoute notes.txt à l'index.",
-        steps: ["`git add notes.txt`", "Vérifie avec `git status` : il passe en vert (staged)"],
+        context: "Avant de « graver » des changements dans l'histoire, Git te fait les **préparer** dans une zone d'attente : l'**index** (ou *staging area*). `git add fichier` y place un fichier ; `git add .` y met tout le dossier. C'est une étape exprès : elle te laisse choisir précisément CE qui entrera dans le prochain commit.",
+        scene: "Ton fichier `notes.txt` est prêt. Tu veux l'inclure dans le prochain commit.",
+        mission: "Ajoute `notes.txt` à l'index.",
+        steps: [
+          "Prépare le fichier : `git add notes.txt`",
+          "Vérifie avec `git status` : il passe de rouge (untracked) à vert (staged)",
+          "Astuce : `git add .` prépare TOUT le dossier d'un coup"
+        ],
         expected: "$ git add notes.txt\n$ git status\nChanges to be committed:\n\tnew file:   notes.txt",
+        culture: "Cette **zone d'attente** entre « modifié » et « gravé » est LA particularité de Git. Elle te permet de faire des commits propres et cohérents : tu peux modifier 10 fichiers mais n'en préparer que 3 pour un commit « Corrige le bug de connexion », puis les 7 autres pour un commit « Met à jour la doc ». Un historique lisible se construit ici, fichier par fichier, plutôt que de tout jeter en vrac.",
+        reflection: "Tu as modifié 5 fichiers, mais un seul concerne le bug que tu corriges. Comment faire un commit propre ?\n👉 `git add le_bon_fichier` (lui seul), puis `git commit`. Les 4 autres restent hors de ce commit, prêts pour un autre. C'est tout l'intérêt de l'index : un commit = un changement cohérent, pas un fourre-tout. `git add .` (tout ajouter) est pratique mais fait perdre cette finesse : à utiliser en connaissance de cause.",
         check: function(s) { return sysState.git.staged.length > 0 || sysState.git.committed.length > 0; }
       },
       {
@@ -3975,6 +3981,24 @@ var QUESTS = [
         mission: "Affiche l'historique des commits.",
         steps: ["`git log`", "Chaque bloc = un commit avec son hash et son message"],
         expected: "commit a1b2c3d...\nAuthor: user <user@dojo>\nDate:   ...\n\n    Ajoute mes notes",
+        check: function(s) { return sysState.git.commits.length > 0 && s.history.some(function(c) { return c.indexOf('git log') === 0; }); }
+      },
+      {
+        level: 'intermediate',
+        title: 'Mini-défi : le cycle Git complet',
+        context: "On enchaîne les quatre gestes qui font 99% de l'usage quotidien de Git : **modifier → préparer (`add`) → graver (`commit`) → relire (`log`)**. Ce cycle, tu le referas des dizaines de fois par jour dans ta carrière. C'est le rythme de tout travail versionné.",
+        scene: "Le Sensei te confie un dépôt vide : « fais-y vivre un fichier, du néant jusqu'à l'historique. »",
+        mission: "Crée un fichier, prépare-le, commite-le avec un message clair, puis relis l'historique.",
+        steps: [
+          "① Assure-toi d'avoir un dépôt : `git init` (si ce n'est pas déjà fait)",
+          "② Crée un fichier : `echo \"# Mon journal\" > journal.md`",
+          "③ Prépare-le : `git add journal.md`",
+          "④ Grave-le : `git commit -m \"Ajoute le journal\"`",
+          "⑤ Relis l'histoire : `git log`"
+        ],
+        expected: "$ git add journal.md\n$ git commit -m \"Ajoute le journal\"\n[main a1b2c3d] Ajoute le journal\n$ git log\ncommit a1b2c3d... Ajoute le journal",
+        culture: "Ce cycle add → commit → (push) est le battement de cœur du développement moderne. En équipe, on ajoute une 5ᵉ étape : `git push` envoie tes commits sur un serveur partagé (GitHub, GitLab), où les collègues les récupèrent avec `git pull`. Mais tout part d'ici : des commits petits, fréquents et bien décrits valent mille fois mieux qu'un énorme commit « tout le projet » une fois par mois.",
+        reflection: "Vaut-il mieux faire un gros commit par jour, ou plusieurs petits commits ciblés ?\n👉 Plusieurs **petits commits ciblés**, chacun autour d'un seul changement cohérent. Avantages : un historique lisible (`git log` raconte vraiment l'évolution), et la possibilité d'annuler UN changement précis sans tout défaire. Un commit géant « travail du jour » mélange tout : impossible à relire, impossible à annuler proprement. La règle : un commit = une idée.",
         check: function(s) { return sysState.git.commits.length > 0 && s.history.some(function(c) { return c.indexOf('git log') === 0; }); }
       }
     ]
