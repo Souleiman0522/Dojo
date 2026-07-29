@@ -3770,21 +3770,33 @@ var QUESTS = [
       {
         level: 'advanced',
         title: 'Qui est connecté (w / who)',
-        context: "`who` liste les utilisateurs connectés. `w` ajoute ce qu'ils font. `last` montre l'historique des connexions (utile pour audit sécurité).",
-        scene: "Audit : qui est sur le serveur en ce moment ?",
+        context: "Sur un serveur, tu n'es pas forcément seul : d'autres admins — ou un intrus — peuvent avoir une session ouverte en même temps. `who` liste les utilisateurs connectés ; `w` va plus loin en montrant **ce que chacun fait** (sa commande en cours) et depuis quelle adresse. C'est un réflexe de sécurité de base.",
+        scene: "Audit rapide : qui est présent sur le serveur en ce moment, et que fait-il ?",
         mission: "Affiche les utilisateurs connectés avec `w`.",
-        steps: ["`w`", "Première ligne = uptime", "Lignes suivantes = sessions actives", "Colonne WHAT = commande en cours"],
+        steps: [
+          "Tape `w`",
+          "La 1ʳᵉ ligne rappelle l'uptime et la charge",
+          "Chaque ligne suivante = une session : colonne `FROM` (d'où il vient) et `WHAT` (ce qu'il fait)"
+        ],
         expected: "10:30:42 up 2 days, load 0.05\nUSER  TTY   FROM           LOGIN@   IDLE  WHAT\nuser  pts/0 192.168.1.10   09:00    1m    bash",
+        culture: "Voir une session inconnue dans `w` — un utilisateur que tu n'as pas invité, une adresse `FROM` étrangère — est l'un des premiers signaux d'une intrusion en cours. La colonne `FROM` révèle l'IP d'origine : une session admin légitime vient de ton réseau ; une venue d'une IP inconnue à l'autre bout du monde doit t'alerter immédiatement. `w` est le coup d'œil « qui est chez moi, là, maintenant ? ».",
+        reflection: "Quelle différence entre `who` et `w`, et lequel choisir pour un audit de sécurité ?\n👉 `who` liste juste QUI est connecté (nom, terminal, heure). `w` ajoute ce qu'ils FONT et d'où ils viennent (`FROM`, `WHAT`). Pour un audit, `w` est plus riche : voir qu'un compte lance des commandes suspectes depuis une IP inconnue vaut mille fois plus qu'un simple nom. `who` pour un coup d'œil, `w` pour enquêter.",
         check: function(s) { return s.history.some(function(c) { return c.trim() === 'w' || c.trim() === 'who'; }); }
       },
       {
         level: 'advanced',
         title: 'Historique des connexions',
-        context: "last lit /var/log/wtmp et liste les connexions passées. Très utile pour les audits : qui s'est connecté quand, depuis où, combien de temps.",
-        scene: "Tu enquêtes sur une intrusion potentielle.",
-        mission: "Affiche les dernières connexions avec `last`.",
-        steps: ["`last`", "Lis user, terminal, IP source, durée", "Cherche des IPs inconnues"],
+        context: "Là où `w` montre qui est connecté MAINTENANT, `last` montre l'**historique** : toutes les connexions passées, avec l'utilisateur, l'adresse source, l'heure et la durée. C'est l'outil d'enquête par excellence : reconstituer qui est venu, quand, et d'où.",
+        scene: "Tu soupçonnes qu'un accès non autorisé a eu lieu cette nuit. Tu remontes l'historique.",
+        mission: "Affiche l'historique des connexions avec `last`.",
+        steps: [
+          "Tape `last`",
+          "Lis chaque ligne : utilisateur, terminal, IP source, date et durée",
+          "Cherche l'anormal : une IP inconnue, une connexion à une heure improbable"
+        ],
         expected: "user   pts/0  192.168.1.10  Tue May 5 09:00 still logged in\nuser   pts/0  192.168.1.10  Mon May 4 14:00 - 17:30 (3:30)",
+        culture: "`last` lit le journal binaire `/var/log/wtmp`, qui garde la trace de chaque ouverture/fermeture de session. En cas d'incident de sécurité, c'est l'une des premières sources consultées : elle répond à « quelqu'un s'est-il connecté, et depuis quelle IP ? ». Un attaquant expérimenté tentera d'effacer ces traces — un `wtmp` étrangement vide ou tronqué est en soi un signe suspect.",
+        reflection: "En quoi `last` complète-t-il `w` lors d'une enquête de sécurité ?\n👉 `w` est une photo de l'instant (qui est là maintenant), `last` est le film du passé (qui est venu, quand, d'où). Un intrus peut s'être déconnecté avant ton audit : `w` ne le verra pas, `last` gardera sa trace. Les deux ensemble donnent le présent ET le passé des accès — indispensable pour reconstituer ce qui s'est passé.",
         check: function(s) { return s.history.some(function(c) { return c.trim() === 'last'; }); }
       },
       {
@@ -3808,6 +3820,22 @@ var QUESTS = [
         culture: "`vmstat` répond à LA question du diagnostic : « ça rame, mais à cause de QUOI ? ». Ses colonnes CPU sont un partage à 100% : `us` (temps passé dans les programmes), `sy` (dans le noyau), `id` (inactif), et surtout **`wa`** (wait — le CPU attend le disque). Un `wa` élevé est le signe classique d'un disque saturé qui étrangle tout : le processeur est prêt mais poireaute. `si`/`so` (swap in/out) non nuls = la RAM déborde sur le disque, catastrophe de lenteur.",
         reflection: "Ta machine rame. `vmstat` montre `us=5, wa=80`. CPU ou disque ?\n👉 **Le disque.** `wa` (wait I/O) à 80% signifie que le CPU passe l'essentiel de son temps à ATTENDRE le disque — il est prêt mais bloqué par des lectures/écritures lentes. Le CPU lui-même est peu utilisé (`us=5`). Ajouter un processeur n'y changerait rien ; il faut un disque plus rapide (SSD), moins d'I/O, ou plus de RAM (pour cacher). À l'inverse, `us=95, wa=2` pointerait vers un CPU saturé.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('vmstat') === 0; }); }
+      },
+      {
+        level: 'expert',
+        title: 'Mini-défi : état des lieux express',
+        context: "On assemble le chapitre en le geste que tout admin fait en se connectant à un serveur : un état des lieux « vivant » en trois questions. La machine est-elle chargée ? A-t-elle de la mémoire ? Qui d'autre est présent ? Trois commandes, trente secondes.",
+        scene: "Tu ouvres une session SSH sur un serveur de production. Avant d'agir, tu prends son pouls.",
+        mission: "Fais l'état des lieux : la charge (`uptime`), la mémoire (`free -h`), et les sessions actives (`w`).",
+        steps: [
+          "① Charge : `uptime` (compare la load au nombre de cœurs)",
+          "② Mémoire : `free -h` (regarde la colonne `available`)",
+          "③ Présences : `w` (qui est là, et que fait-il ?)"
+        ],
+        expected: "$ uptime\n... load average: 0.05, 0.10, 0.08\n$ free -h\nMem: 16Gi ... 11Gi\n$ w\nUSER  TTY  FROM  ...  WHAT",
+        culture: "Ce trio `uptime` + `free` + `w` (souvent avec `df -h` et un coup d'œil à `top`) est le rituel d'accueil du sysadmin sur une machine vivante. En trente secondes, tu sais si elle souffre (charge, mémoire) et si quelqu'un d'autre y touche. Beaucoup d'équipes affichent même ces infos automatiquement à chaque connexion SSH, via un « message du jour » (MOTD) généré par script.",
+        reflection: "Pourquoi prendre le « pouls » d'un serveur (charge, mémoire, sessions) AVANT d'y lancer une action ?\n👉 Parce que le contexte change tout. Lancer une tâche lourde sur une machine déjà saturée peut la faire tomber ; agir alors qu'un collègue est en pleine intervention peut tout casser à deux. Trente secondes d'observation évitent l'incident. C'est le réflexe « regarder avant d'agir » du premier chapitre, appliqué à l'état vivant du serveur.",
+        check: function(s) { var h = s.history; var up = h.some(function(c) { return c.trim() === 'uptime'; }); var fr = h.some(function(c) { return c.indexOf('free') === 0; }); var ww = h.some(function(c) { return c.trim() === 'w' || c.trim() === 'who'; }); return up && fr && ww; }
       }
     ]
   },
