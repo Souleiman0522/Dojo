@@ -3733,11 +3733,18 @@ var QUESTS = [
       {
         level: 'expert',
         title: 'Lancer un script',
-        context: "Pour exécuter un script : 1) `bash script.sh` (lance avec bash explicitement, pas besoin de chmod) 2) `./script.sh` (nécessite chmod +x).",
-        scene: "Tu veux exécuter install.sh.",
-        mission: "Rends install.sh exécutable puis lance-le avec ./",
-        steps: ["`cd ~/scripts`", "`chmod +x install.sh`", "`./install.sh`", "Tu vois la sortie des echo"],
+        context: "Deux façons de lancer un script. **①** `bash script.sh` : on donne le fichier à bash à la main (pas besoin de droit d'exécution). **②** `./script.sh` : on le lance « tout seul » — mais il faut d'abord lui donner le droit `x` avec `chmod +x`. Le `./` dit « le script est ICI, dans le dossier courant » (rappel du chapitre permissions).",
+        scene: "Ton script `install.sh` est prêt. Tu veux le lancer comme un vrai programme.",
+        mission: "Rends `install.sh` exécutable, puis lance-le avec `./`.",
+        steps: [
+          "Va dans le dossier : `cd ~/scripts`",
+          "Donne le droit d'exécuter : `chmod +x install.sh`",
+          "Lance-le : `./install.sh`",
+          "Tu vois s'afficher la sortie de ses commandes `echo`"
+        ],
         expected: "$ chmod +x install.sh\n$ ./install.sh\nInstallation en cours...\nTout est prêt !",
+        culture: "Différence subtile mais utile : `bash script.sh` ignore le shebang et le bit `x` (c'est TOI qui choisis l'interpréteur), tandis que `./script.sh` s'appuie sur le shebang et EXIGE le droit `x`. En développement, on teste souvent avec `bash script.sh` (rapide, pas de chmod) ; en production, on installe le script avec `chmod +x` et on l'appelle par son chemin, comme une vraie commande.",
+        reflection: "`./install.sh` répond « Permission denied ». Qu'as-tu oublié, et quelle est l'alternative immédiate ?\n👉 Le droit d'exécution : `chmod +x install.sh` le corrige. Alternative sans chmod : `bash install.sh` — en passant le fichier directement à bash, le bit `x` n'est plus requis. C'est le dépannage express quand on n'a pas (ou pas encore) mis le droit d'exécution.",
         check: function(s) { var f = getNode('/home/user/scripts/install.sh'); return !!(f && f.perms && f.perms.indexOf('x') > 0) && s.history.some(function(c) { return c.indexOf('./install.sh') >= 0 || c.indexOf('install.sh') >= 0; }); }
       },
       {
@@ -3755,12 +3762,36 @@ var QUESTS = [
       {
         level: 'expert',
         title: 'Substitution de commande',
-        context: "`$(commande)` remplace par le résultat de la commande. Utilisé pour mettre la sortie d'une commande dans une variable. Ex : `DATE=$(date)`.",
-        scene: "Tu veux afficher la date dans un message.",
-        mission: "Affiche 'Aujourd'hui : <date>' avec substitution.",
-        steps: ["`echo \"Aujourd'hui : $(date)\"`", "Le $(date) est exécuté en premier", "Le résultat remplace dans la chaîne"],
+        context: "La **substitution de commande** `$(...)` exécute la commande entre parenthèses et remplace le tout par son résultat. Autrement dit : « mets ICI ce que produit cette commande ». On l'utilise pour injecter une valeur dynamique dans un message ou une variable — par ex. `DATE=$(date +%Y%m%d)` range la date du jour dans une variable.",
+        scene: "Tu veux qu'un message affiche automatiquement la date du moment.",
+        mission: "Affiche « Aujourd'hui : <la date> » en utilisant une substitution.",
+        steps: [
+          "Tape `echo \"Aujourd'hui : $(date)\"`",
+          "Le `$(date)` est exécuté EN PREMIER",
+          "Son résultat remplace `$(date)` dans la phrase, puis `echo` affiche le tout"
+        ],
         expected: "$ echo \"Aujourd'hui : $(date)\"\nAujourd'hui : Tue May 5 10:30:00 UTC 2026",
+        culture: "L'ancienne syntaxe de la substitution utilisait des **accents graves** : `` `date` `` faisait la même chose que `$(date)`. On préfère aujourd'hui `$(...)` car elle s'**imbrique** proprement : `$(dirname $(which bash))` est lisible, alors que la version en accents graves imbriqués devient un cauchemar d'échappements. Un des rares cas où la nouvelle syntaxe a gagné net contre l'ancienne.",
+        reflection: "Quelle différence entre `$VAR` et `$(commande)` ?\n👉 `$VAR` lit le contenu d'une **variable** déjà définie. `$(commande)` **exécute une commande** et te donne sa sortie. L'un rappelle une valeur stockée, l'autre en fabrique une à la volée. On les combine souvent : `NOW=$(date)` (substitution) crée la variable, puis `echo $NOW` (variable) la relit.",
         check: function(s) { return s.history.some(function(c) { return /\$\(.*\)/.test(c); }); }
+      },
+      {
+        level: 'expert',
+        title: 'Mini-défi : ton premier script',
+        context: "L'aboutissement du chapitre : au lieu de taper des commandes une à une, tu les **enchaînes dans un fichier** que la machine rejoue toute seule. Un script, c'est trois ingrédients : le shebang (`#!/bin/bash`), tes commandes, et le droit d'exécution. On le construit ici sans même ouvrir d'éditeur, avec `echo` et la redirection.",
+        scene: "Le Sensei te demande ton tout premier automate : un script qui te salue. Du fichier vide à l'exécution.",
+        mission: "Crée un script `hello.sh` qui affiche un message, rends-le exécutable, puis lance-le.",
+        steps: [
+          "① Place-toi chez toi : `cd ~`",
+          "② Écris le shebang : `echo '#!/bin/bash' > hello.sh` (le `>` crée le fichier)",
+          "③ Ajoute une commande : `echo 'echo Bonjour Kaï' >> hello.sh` (le `>>` complète)",
+          "④ Rends-le exécutable : `chmod +x hello.sh`",
+          "⑤ Lance-le : `./hello.sh` → il affiche ton message"
+        ],
+        expected: "$ ./hello.sh\nBonjour Kaï",
+        culture: "Tu viens de faire, en petit, ce que font TOUS les scripts d'automatisation : réunir des commandes dans un fichier réexécutable. Sauvegardes nocturnes, déploiements, rapports : tout ce qui se répète mérite un script. C'est le passage de l'artisan (qui refait à la main) à l'architecte (qui décrit une fois, et la machine rejoue mille fois). Et comme c'est un fichier texte, il se versionne avec git — la boucle est bouclée.",
+        reflection: "Pourquoi mettre trois commandes dans un script plutôt que de les taper à la main à chaque fois ?\n👉 Pour la **reproductibilité** et la fiabilité : un script rejoue exactement les mêmes gestes, dans le même ordre, sans faute de frappe ni oubli — la nuit, sur mille machines, sans toi. Taper à la main convient pour l'exceptionnel ; dès que c'est répétitif, on scripte. C'est la définition même du métier d'administrateur moderne : automatiser ce qui se répète.",
+        check: function(s) { var f = getNode('/home/user/hello.sh'); return !!(f && f.perms && f.perms.indexOf('x') > 0) && s.history.some(function(c) { return c.indexOf('./hello.sh') >= 0; }); }
       }
     ]
   },
