@@ -3385,10 +3385,14 @@ var QUESTS = [
       {
         level: 'expert',
         title: 'Lire le crontab système',
-        context: "cron exécute des tâches à heures régulières. /etc/crontab est le crontab système. Format : `minute heure jour mois jour-semaine user commande`.",
-        scene: "Tu veux savoir ce qui s'exécute automatiquement la nuit.",
-        mission: "Affiche /etc/crontab.",
-        steps: ["`cat /etc/crontab`", "Décode le format : '0 4 * * 0' = dim 4h00"],
+        context: "**cron** est le programmateur de Linux : il exécute des tâches automatiquement, à heures fixes, sans que personne ne soit là. La liste des tâches système est dans `/etc/crontab`. Chaque ligne commence par **5 champs** qui disent QUAND (`minute heure jour-du-mois mois jour-de-semaine`), puis qui l'exécute et la commande. (Le Dojo décode chaque champ après le `cat`.)",
+        scene: "Tu veux savoir ce qui s'exécute tout seul sur la machine, notamment la nuit.",
+        mission: "Affiche `/etc/crontab`.",
+        steps: [
+          "Affiche-le : `cat /etc/crontab`",
+          "Les 5 premiers champs = QUAND · le reste = QUI et QUOI",
+          "Décode l'exemple : `0 4 * * 0` = « à 4h00, chaque dimanche »"
+        ],
         expected: "# m h dom mon dow user  command\n0 4 * * 0   root  /home/user/scripts/backup.sh",
         diagram: "Format cron :\n  *  *  *  *  *\n  │  │  │  │  │\n  │  │  │  │  └─ jour semaine (0-7)\n  │  │  │  └──── mois (1-12)\n  │  │  └─────── jour du mois\n  │  └────────── heure (0-23)\n  └───────────── minute (0-59)",
         culture: "Le nom **cron** vient du grec *chronos* (le temps). Le démon `cron` tourne en permanence depuis les premiers Unix (1975) et se réveille chaque minute pour vérifier s'il y a une tâche à lancer. Subtilité célèbre : le champ `jour-du-mois` ET le champ `jour-de-semaine` sont en **OU** logique, pas ET — `0 0 13 * 5` se déclenche le 13 du mois OU chaque vendredi, pas « le vendredi 13 ». Un piège qui a surpris des générations d'admins.",
@@ -3406,6 +3410,38 @@ var QUESTS = [
         culture: "La syntaxe `DATE=$(date +%Y%m%d)` s'appelle une **substitution de commande** : `$(...)` exécute la commande à l'intérieur et remplace le tout par son résultat. Ici, `date +%Y%m%d` produit `20260315`, stocké dans la variable `DATE`. Résultat : chaque sauvegarde a un nom horodaté unique (`backup-20260315.tar.gz`), sans jamais écraser la précédente. C'est le motif de base de tout script de backup professionnel.",
         reflection: "Pourquoi ce script utilise-t-il des **chemins absolus** (`/tmp/...`, `/home/user`) plutôt que relatifs ?\n👉 Parce qu'il est lancé par cron, dans un environnement minimal où le « dossier courant » n'est pas celui que tu crois. Un chemin relatif comme `backup.tar.gz` finirait Dieu sait où (souvent `/` ou le home de root). Règle d'or des scripts automatisés : **toujours des chemins absolus**, jamais de suppositions sur le répertoire courant.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('backup.sh') >= 0; }); }
+      },
+      {
+        level: 'expert',
+        title: 'L\'horodatage (date)',
+        context: "Le script de backup nomme ses archives avec la **date du jour**, pour ne jamais écraser la précédente. La commande `date` donne l'heure ; avec un format `+%Y%m%d`, elle produit une date compacte comme `20260315`. C'est ce petit bout qui rend chaque sauvegarde unique.",
+        scene: "Tu veux voir concrètement ce que produit le `date +%Y%m%d` utilisé dans le script.",
+        mission: "Affiche la date au format compact `AAAAMMJJ`.",
+        steps: [
+          "Tape `date +%Y%m%d` (le `+` introduit un format ; `%Y`=année, `%m`=mois, `%d`=jour)",
+          "Tu obtiens une date collée, ex. `20260315`",
+          "C'est ce qui donne à chaque archive un nom unique et daté"
+        ],
+        expected: "$ date +%Y%m%d\n20260315",
+        culture: "Nommer ses fichiers avec la date au format `%Y%m%d` (année-mois-jour) est une convention précieuse : ainsi triés, ils apparaissent automatiquement dans l'ordre chronologique (`backup-20260114` vient avant `backup-20260315`, même par tri alphabétique). L'ordre « grand vers petit » (année, puis mois, puis jour) n'est pas un hasard : c'est le seul qui rende le tri de texte identique au tri de dates.",
+        reflection: "Pourquoi horodater une sauvegarde en `AAAAMMJJ` plutôt qu'en `JJMMAAAA` (le format « français ») ?\n👉 Parce que `AAAAMMJJ` se **trie tout seul** dans l'ordre chronologique, même comme simple texte. En `JJMMAAAA`, `31012026` (31 jan) apparaîtrait avant `01032025` (1er mars 2025) — le tri serait faux. Mettre l'unité la plus grande en premier (année) est LA règle pour que des noms de fichiers datés restent ordonnés.",
+        check: function(s) { return s.history.some(function(c) { return c.indexOf('date') === 0 && c.indexOf('%') >= 0; }); }
+      },
+      {
+        level: 'expert',
+        title: 'Mini-défi : comprendre l\'automate',
+        context: "On relie les pièces : cron déclenche une commande À UNE HEURE (le QUAND), et cette commande est un script qui fait le travail (le QUOI). Comprendre une automatisation, c'est suivre ce fil du planning jusqu'au script.",
+        scene: "Le Sensei te confie un serveur : « une sauvegarde tourne toute seule. Retrouve QUAND elle part et CE qu'elle fait. »",
+        mission: "Remonte la chaîne : lis le planning (`/etc/crontab`), puis le script qu'il déclenche (`~/scripts/backup.sh`).",
+        steps: [
+          "① Le planning : `cat /etc/crontab` → repère l'heure ET le script appelé",
+          "② Le script : `cat ~/scripts/backup.sh` → vois ce qu'il fait vraiment",
+          "③ Relie : « chaque dimanche 4h, cron lance backup.sh, qui archive /home/user »"
+        ],
+        expected: "$ cat /etc/crontab\n0 4 * * 0  root  /home/user/scripts/backup.sh\n$ cat ~/scripts/backup.sh\n#!/bin/bash\nDATE=$(date +%Y%m%d)\ntar -czf /tmp/backup-$DATE.tar.gz /home/user",
+        culture: "Suivre cette chaîne planning → script est le réflexe de tout admin qui découvre une tâche automatique : le crontab dit QUAND et QUEL script, le script dit QUOI. Beaucoup d'incidents en production viennent d'une tâche cron oubliée (un backup qui remplit le disque, un script qui échoue en silence chaque nuit). Savoir remonter ce fil, c'est pouvoir auditer et réparer l'invisible.",
+        reflection: "Une tâche cron « marche à la main » mais échoue une fois planifiée. Le premier suspect ?\n👉 Les **chemins** et l'**environnement**. cron s'exécute dans un environnement minimal : pas le même `$PATH`, pas le même dossier courant, pas forcément les variables de ton shell. Un script qui suppose « je suis dans mon home » ou appelle `backup.sh` sans chemin complet casse. La règle : chemins absolus partout, et tester le script tel que cron le lancera.",
+        check: function(s) { var h = s.history; var cron = h.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('crontab') >= 0; }); var bak = h.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('backup.sh') >= 0; }); return cron && bak; }
       }
     ]
   }  ,
@@ -4875,7 +4911,7 @@ function runSingleCommand(cmd) {
     case 'whoami': term.writeln(sysState.user); break;
     case 'id': cmdId(); break;
     case 'hostname': term.writeln(sysState.hostname); break;
-    case 'date': term.writeln(new Date().toString()); break;
+    case 'date': cmdDate(args); break;
     case 'clear': case 'cls': term.clear(); return;
     case 'history': hist.slice(0, 20).forEach(function(h, i) { term.writeln('  ' + (i+1) + '  ' + h); }); break;
     case 'help': case '?': cmdHelp(); break;
@@ -5981,6 +6017,21 @@ function cmdUfw(args, sudo) {
     term.writeln(C.red + 'ufw: action inconnue: ' + action + C.reset);
     term.writeln(C.dim + '(actions : status, enable, disable, allow, deny)' + C.reset);
   }
+}
+
+function cmdDate(args) {
+  var d = new Date();
+  var fmt = args.filter(function(a) { return a.charAt(0) === '+'; })[0];
+  if (!fmt) { term.writeln(d.toString()); return; }
+  var pad = function(n) { return (n < 10 ? '0' : '') + n; };
+  var out = fmt.slice(1)
+    .replace(/%Y/g, d.getFullYear())
+    .replace(/%m/g, pad(d.getMonth() + 1))
+    .replace(/%d/g, pad(d.getDate()))
+    .replace(/%H/g, pad(d.getHours()))
+    .replace(/%M/g, pad(d.getMinutes()))
+    .replace(/%S/g, pad(d.getSeconds()));
+  term.writeln(out);
 }
 
 function cmdPing(args) {
