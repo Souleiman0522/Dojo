@@ -3049,11 +3049,17 @@ var QUESTS = [
       {
         level: 'expert',
         title: 'État du pare-feu',
-        context: "ufw (Uncomplicated Firewall) est le pare-feu simplifié d'Ubuntu. `ufw status` montre s'il est actif et les règles en place.",
-        scene: "Tu veux vérifier si la machine est protégée.",
-        mission: "Vérifie l'état du pare-feu avec ufw.",
-        steps: ["`sudo ufw status`", "Si `inactive` : aucune protection", "Si `active` : règles affichées"],
+        context: "Un **pare-feu** (*firewall*) contrôle qui a le droit de se connecter à ta machine, **port par port**. Sur Ubuntu, l'outil simple s'appelle `ufw` (*Uncomplicated Firewall*). `ufw status` te dit s'il est actif et quelles connexions il laisse passer. `inactive` = aucune protection, tout est ouvert.",
+        scene: "Tu hérites d'un serveur exposé et tu veux vérifier s'il est protégé.",
+        mission: "Vérifie l'état du pare-feu avec `ufw`.",
+        steps: [
+          "Vérifie l'état : `sudo ufw status`",
+          "`inactive` = pas de protection · `active` = les règles autorisées s'affichent",
+          "C'est le premier réflexe d'audit d'une machine en ligne"
+        ],
         expected: "$ sudo ufw status\nStatus: inactive",
+        culture: "Un **port** est comme une porte numérotée sur ta machine : chaque service écoute sur le sien (SSH sur 22, HTTP sur 80, HTTPS sur 443…). Le pare-feu décide, porte par porte, qui peut entrer. Sans lui, tous les ports ouverts par des services sont joignables depuis Internet — autant de portes qu'un attaquant peut essayer une à une.",
+        reflection: "Que signifie concrètement un pare-feu `inactive` sur un serveur exposé à Internet ?\n👉 Que TOUS les ports ouverts par des services sont accessibles depuis le monde entier, sans filtre. Si un service mal configuré écoute sur un port oublié, il est exposé aux scans automatiques. Sur une machine en ligne, un pare-feu inactif est une invitation. Le premier geste de durcissement : le configurer PUIS l'activer.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('ufw') >= 0 && c.indexOf('status') >= 0; }); }
       },
       {
@@ -3071,11 +3077,17 @@ var QUESTS = [
       {
         level: 'expert',
         title: 'Détecter les attaques SSH',
-        context: "Les serveurs Internet subissent des tentatives d'intrusion permanentes. Les Failed password dans /var/log/auth.log sont les attaques en cours.",
-        scene: "Tu veux compter les attaques SSH du jour.",
-        mission: "Compte les lignes 'Failed' dans /var/log/auth.log.",
-        steps: ["`grep Failed /var/log/auth.log | wc -l`", "Le chiffre = nombre d'attaques"],
+        context: "Tout serveur exposé à Internet subit en permanence des tentatives d'intrusion automatisées : des robots essaient des milliers de mots de passe. Chaque échec laisse une trace « Failed password » dans `/var/log/auth.log`. Les compter, c'est mesurer l'intensité des attaques — exactement la technique du chapitre Recherche & filtrage.",
+        scene: "Tu veux savoir combien de tentatives d'intrusion SSH ton serveur a essuyé.",
+        mission: "Compte les lignes « Failed » dans `/var/log/auth.log`.",
+        steps: [
+          "Compte les échecs : `grep Failed /var/log/auth.log | wc -l`",
+          "Le chiffre = le nombre de tentatives ratées",
+          "Une même IP qui revient des dizaines de fois = une attaque par force brute à bannir"
+        ],
         expected: "$ grep Failed /var/log/auth.log | wc -l\n2",
+        culture: "C'est exactement ce que fait l'outil **fail2ban** : il surveille `auth.log`, et dès qu'une IP dépasse un seuil de « Failed password », il la bannit automatiquement via le pare-feu. Un durcissement quasi indispensable sur tout serveur SSH exposé. Le savoir-faire manuel (grep les logs) devient un automatisme confié à un outil.",
+        reflection: "Tu vois 5000 « Failed password » depuis 200 IP différentes en une nuit. Faut-il paniquer ?\n👉 Non, c'est le **bruit de fond** normal d'Internet : des botnets scannent en permanence tous les serveurs SSH du monde. Tant que tu as désactivé le login root, imposé les clés SSH et installé fail2ban, ces tentatives échouent toutes. Ce qui doit alerter, c'est un « Accepted » inattendu, ou un pic ciblé depuis UNE seule IP — pas le bruit ambiant.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('grep') >= 0 && c.indexOf('Failed') >= 0 && (c.indexOf('|') >= 0 || c.indexOf('wc') >= 0); }); }
       },
       {
@@ -3101,6 +3113,23 @@ var QUESTS = [
         culture: "Le fichier `/etc/sudoers` est si critique qu'on ne l'édite JAMAIS directement — on utilise `visudo`, qui **vérifie la syntaxe avant d'enregistrer**. La raison : une seule faute de frappe dans ce fichier peut casser `sudo` pour tout le monde, y compris toi — et tu ne pourras plus le réparer, puisque le réparer demande... sudo. `visudo` refuse de sauver un fichier invalide, t'évitant ce piège fatal. La ligne `%sudo ALL=(ALL:ALL) ALL` dit : « tout membre du groupe sudo peut tout faire ».",
         reflection: "Que signifie le `%` devant `%sudo` dans le fichier sudoers ?\n👉 Le `%` désigne un **groupe**, pas un utilisateur. `%sudo` = « tous les membres du groupe sudo ». Sans le `%`, `sudo` serait interprété comme un nom d'utilisateur. Cette distinction permet de gérer les privilèges par groupe (ajouter un admin = le mettre dans le groupe sudo) plutôt que d'éditer sudoers pour chaque personne. Plus simple, plus sûr.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('sudoers') >= 0; }); }
+      },
+      {
+        level: 'expert',
+        title: 'Mini-défi : verrouiller la forteresse',
+        context: "On assemble le durcissement de base. La règle d'or d'un pare-feu : **tout fermer par défaut, puis ouvrir uniquement le strict nécessaire**. Pour un serveur web, ça veut dire deux portes : SSH (pour l'administrer) et HTTP (pour servir le site), et rien d'autre.",
+        scene: "Ton serveur est en ligne, sans pare-feu. Tu le verrouilles proprement, sans te couper l'accès.",
+        mission: "Autorise SSH (port 22) et HTTP (port 80), puis active le pare-feu.",
+        steps: [
+          "① Autorise SSH AVANT tout (sinon tu te coupes l'accès distant) : `sudo ufw allow 22`",
+          "② Autorise le web : `sudo ufw allow 80`",
+          "③ Active le mur : `sudo ufw enable`",
+          "④ Vérifie : `sudo ufw status`"
+        ],
+        expected: "$ sudo ufw allow 22\n$ sudo ufw allow 80\n$ sudo ufw enable\nFirewall is active\n$ sudo ufw status\nStatus: active\n22   ALLOW\n80   ALLOW",
+        culture: "Ce jeu de règles minimal — SSH + HTTP, tout le reste fermé — est la base de tout serveur web. Chaque port ouvert est une surface d'attaque potentielle : on n'en ouvre donc AUCUN « au cas où ». Si demain tu ajoutes HTTPS, tu ouvriras le 443 explicitement. La discipline : un port ouvert = un besoin justifié, jamais un oubli.",
+        reflection: "Pourquoi ouvrir le port 22 (SSH) AVANT de taper `ufw enable`, et jamais après ?\n👉 Parce que `ufw enable` applique immédiatement la politique « tout fermer sauf les règles existantes ». Si SSH n'est pas encore autorisé au moment de l'activation, ta propre connexion SSH est coupée net — et sur un serveur distant, tu es verrouillé dehors sans retour. L'ordre est vital : on autorise son propre accès, PUIS on ferme le reste.",
+        check: function(s) { return sysState.firewall.enabled === true && sysState.firewall.rules.indexOf(22) >= 0 && sysState.firewall.rules.indexOf(80) >= 0; }
       }
     ]
   },
