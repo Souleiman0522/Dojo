@@ -2852,10 +2852,13 @@ var QUESTS = [
       {
         level: 'advanced',
         title: 'État d\'un service',
-        context: "systemd est l'init system de Linux moderne. systemctl est l'outil pour le piloter : démarrer, arrêter, activer au boot. `systemctl status nom` montre l'état d'un service.",
-        scene: "Tu veux savoir si nginx tourne.",
-        mission: "Vérifie l'état du service nginx.",
-        steps: ["`systemctl status nginx`", "Cherche `active (running)` ou `inactive (dead)`"],
+        context: "Un **service** (ou *daemon*) est un programme qui tourne en arrière-plan en permanence : le serveur web, la base de données… Le chef d'orchestre qui les démarre, les arrête et les surveille tous s'appelle **systemd**, et on le pilote avec la commande `systemctl`. Ton tout premier réflexe face à un souci : `systemctl status <nom>`, qui dit si le service tourne ou non.",
+        scene: "Tu veux savoir si le serveur web nginx tourne.",
+        mission: "Vérifie l'état du service `nginx`.",
+        steps: [
+          "Tape `systemctl status nginx`",
+          "Cherche la ligne `Active:` → `active (running)` (il tourne) ou `inactive (dead)` (arrêté)"
+        ],
         expected: "● nginx.service - A high performance web server\n   Loaded: loaded\n   Active: inactive (dead)",
         culture: "**systemd** est arrivé vers 2010 et a déclenché l'une des plus grandes guerres de religion de l'histoire de Linux. Avant lui, chaque service était lancé par des scripts shell (`/etc/init.d/`). systemd a tout unifié : démarrage parallèle (plus rapide au boot), gestion des dépendances, logs centralisés (`journalctl`). Ses détracteurs lui reprochent de faire « trop de choses » contre la philosophie Unix. Aimé ou détesté, il équipe aujourd'hui la quasi-totalité des distributions.",
         reflection: "Dans `systemctl status`, quelle différence entre `Loaded` et `Active` ?\n👉 **Loaded** = systemd connaît le service (son fichier `.service` est lu et valide). **Active** = son état réel : `active (running)` s'il tourne, `inactive (dead)` s'il est arrêté, `failed` s'il a planté. Un service peut être *loaded* mais *inactive* (connu mais éteint). `status` est TOUJOURS ton premier réflexe quand « ça ne marche pas ».",
@@ -2864,11 +2867,17 @@ var QUESTS = [
       {
         level: 'advanced',
         title: 'Démarrer un service',
-        context: "`systemctl start service` démarre un service immédiatement. Pour qu'il démarre au boot, il faut aussi `systemctl enable`.",
-        scene: "nginx est arrêté. Tu veux le lancer.",
-        mission: "Démarre le service nginx.",
-        steps: ["`sudo systemctl start nginx`", "Vérifie : `systemctl status nginx`", "Tu devrais voir `active (running)`"],
+        context: "`systemctl start <service>` **allume** un service tout de suite. Ça demande les droits admin, donc `sudo`. Attention : ce démarrage est immédiat mais **temporaire** — au prochain redémarrage de la machine, le service sera de nouveau éteint (sauf si on l'a aussi *activé*, voir l'exo suivant).",
+        scene: "nginx est arrêté. Tu veux le mettre en marche maintenant.",
+        mission: "Démarre le service `nginx`.",
+        steps: [
+          "Démarre-le : `sudo systemctl start nginx`",
+          "Vérifie qu'il tourne : `systemctl status nginx`",
+          "Tu dois maintenant voir `active (running)`"
+        ],
         expected: "$ sudo systemctl start nginx\n$ systemctl status nginx\n● Active: active (running)",
+        culture: "`start`, `stop`, `restart`, `reload` : ce sont les quatre verbes de base. `restart` arrête puis redémarre (coupure brève) ; `reload` recharge la config SANS couper le service (idéal en production pour appliquer un changement sans interrompre les visiteurs). Sur un serveur web chargé, un admin averti fait `reload` plutôt que `restart` chaque fois que c'est possible.",
+        reflection: "Tu as modifié la config de nginx. Vaut-il mieux `restart` ou `reload` ?\n👉 `reload` quand c'est possible : il applique la nouvelle config **sans couper** le service — les visiteurs ne voient rien. `restart` coupe brièvement le service (les requêtes en cours échouent). En production, on privilégie `reload` ; on ne `restart` que si le changement l'exige (par ex. une modification que reload ne prend pas en compte).",
         check: function(s) { return sysState.services.nginx.active === true; }
       },
       {
@@ -2886,12 +2895,35 @@ var QUESTS = [
       {
         level: 'expert',
         title: 'Lire un fichier .service',
-        context: "Les services systemd sont définis dans /etc/systemd/system/*.service. Format texte simple : ExecStart, After, etc.",
-        scene: "Tu veux comprendre comment nginx est lancé.",
-        mission: "Affiche /etc/systemd/system/nginx.service.",
-        steps: ["`cat /etc/systemd/system/nginx.service`", "Note la ligne `ExecStart=`"],
+        context: "Comment systemd sait-il DÉMARRER un service ? Grâce à un petit **fichier texte de description**, rangé dans `/etc/systemd/system/` avec l'extension `.service`. On y lit notamment la ligne `ExecStart=` (la commande exacte à lancer) et `After=` (ce qui doit être prêt avant). Comprendre ce fichier, c'est comprendre comment un service est piloté.",
+        scene: "Tu veux savoir exactement quelle commande systemd exécute pour lancer nginx.",
+        mission: "Affiche le fichier `nginx.service`.",
+        steps: [
+          "Affiche-le : `cat /etc/systemd/system/nginx.service`",
+          "Repère la ligne `ExecStart=` → c'est le programme lancé",
+          "Repère `After=network.target` → nginx attend que le réseau soit prêt"
+        ],
         expected: "[Unit]\nDescription=A high performance web server\n[Service]\nExecStart=/usr/sbin/nginx",
+        culture: "Ces fichiers `.service` sont la vraie puissance de systemd : en quelques lignes texte, tu décris comment lancer ton propre programme comme un service géré (redémarrage auto s'il plante avec `Restart=always`, lancement au boot, dépendances). Transformer un simple script en service systemd, c'est le passage du « je lance à la main » au « la machine s'en occupe toute seule, pour toujours ».",
+        reflection: "À quoi sert la ligne `After=network.target` dans un fichier `.service` ?\n👉 Elle gère une **dépendance** : elle dit à systemd « ne démarre nginx qu'une fois le réseau prêt ». Sans elle, nginx pourrait tenter de se lancer avant que la carte réseau soit configurée, et échouer. systemd démarre les services en parallèle pour aller vite, mais respecte ces règles d'ordre — c'est ce qui rend un boot à la fois rapide et fiable.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('nginx.service') >= 0; }); }
+      },
+      {
+        level: 'expert',
+        title: 'Mini-défi : mettre nginx en ligne',
+        context: "On assemble le chapitre. Mettre un service « en production » demande DEUX gestes qu'on confond souvent : le **démarrer maintenant** (`start`) ET le **programmer au boot** (`enable`). L'un sans l'autre laisse un piège : soit il s'arrête au prochain reboot, soit il ne tourne pas tout de suite.",
+        scene: "Le serveur web est installé mais éteint. Tu dois le mettre en service pour de bon.",
+        mission: "Démarre nginx MAINTENANT et programme-le pour qu'il revienne à chaque redémarrage.",
+        steps: [
+          "① Constate l'état : `systemctl status nginx` (inactive)",
+          "② Démarre-le : `sudo systemctl start nginx`",
+          "③ Programme-le au boot : `sudo systemctl enable nginx`",
+          "④ Confirme : `systemctl status nginx` → `active (running)`"
+        ],
+        expected: "$ sudo systemctl start nginx\n$ sudo systemctl enable nginx\n$ systemctl status nginx\n● Active: active (running)",
+        culture: "Le raccourci que tout admin finit par adopter : `systemctl enable --now nginx` fait les DEUX d'un coup (démarre + active au boot). Mais tant que la distinction `start` (maintenant) / `enable` (au boot) n'est pas parfaitement claire dans ta tête, mieux vaut taper les deux commandes séparément pour bien comprendre ce que chacune fait.",
+        reflection: "Pourquoi faut-il À LA FOIS `start` et `enable` pour mettre un service en production ?\n👉 Parce qu'ils ne font pas la même chose. `start` = « allume-le tout de suite » (mais ça ne survit pas au reboot). `enable` = « rallume-le à chaque démarrage » (mais ça ne l'allume pas maintenant). Un service en production doit tourner MAINTENANT et REVENIR après un redémarrage — donc les deux. Oublier `enable`, c'est risquer un service qui ne remonte pas après une coupure de courant.",
+        check: function(s) { return sysState.services.nginx.active === true && s.history.some(function(c) { return c.indexOf('enable') >= 0 && c.indexOf('nginx') >= 0; }); }
       }
     ]
   },
