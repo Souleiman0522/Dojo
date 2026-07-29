@@ -4129,6 +4129,24 @@ var QUESTS = [
         culture: "En vrai, on ne recrée pas 50 VM à la main : on les **clone** depuis un modèle (`virt-clone`), ou on les décrit dans du code avec des outils comme **Terraform** ou **Vagrant**. C'est l'*Infrastructure as Code* : ta flotte de serveurs devient un fichier texte versionné avec Git. La boucle est bouclée, Kaï.",
         reflection: "Pourquoi préférer `virt-install`/l'Infrastructure as Code plutôt que cliquer dans une interface ?\n👉 Parce que c'est **reproductible et versionnable**. Une VM créée à la main est un flocon de neige unique, impossible à recréer à l'identique. Décrite en commande ou en fichier, elle se recrée en une seconde, se relit, se partage, se versionne. C'est toute la philosophie Unix appliquée aux serveurs.",
         check: function(s) { return sysState.virt.vms.some(function(v) { return v.name === 'dojo-vm'; }); }
+      },
+      {
+        level: 'advanced',
+        title: 'Mini-défi : de zéro à une VM',
+        context: "On assemble toute la pile, dans l'ordre. Chaque étage repose sur le précédent : le CPU (VT-x) porte le moteur (`qemu-kvm`), piloté par le démon (`libvirtd`), commandé par l'outil (`virsh`). Si un maillon manque, rien ne tourne.",
+        scene: "Le Sensei te confie une machine vierge : « fais-en un hyperviseur, et fais-y naître une VM. » Sans filet.",
+        mission: "Depuis zéro : vérifie le CPU, installe la pile, démarre le démon, crée une VM `dojo-vm`, et prouve qu'elle tourne.",
+        steps: [
+          "① Vérifie le support CPU : `lscpu | grep Virtualization`",
+          "② Installe la pile : `sudo apt install qemu-kvm libvirt-daemon-system`",
+          "③ Démarre le démon : `sudo systemctl start libvirtd`",
+          "④ Crée et lance la VM : `virt-install --name dojo-vm --memory 1024 --vcpus 1 --disk size=10 --cdrom ubuntu.iso`",
+          "⑤ Prouve qu'elle tourne : `virsh list`"
+        ],
+        expected: "$ virsh list\n Id   Name       State\n 1    dojo-vm    running",
+        culture: "Tu viens de reproduire, à la main, ce qui se cache derrière CHAQUE serveur cloud (AWS, OVH, Azure) : un hyperviseur qui découpe une grosse machine physique en dizaines de VM isolées. À grande échelle, tout est automatisé (Terraform, Ansible) et facturé à la minute — mais le geste de fond, vérifier → installer → démarrer le démon → créer la VM, est exactement celui-ci.",
+        reflection: "L'ordre compte : que se passe-t-il si tu tapes `virsh list` AVANT de démarrer `libvirtd` ?\n👉 `virsh` échoue (« failed to connect to the hypervisor »). `virsh` n'est qu'une télécommande : sans le démon `libvirtd` allumé pour la recevoir, elle ne parle à personne. Chaque étage de la pile repose sur le précédent — sauter une étape casse la chaîne. On monte toujours du matériel vers l'outil, jamais l'inverse.",
+        check: function(s) { return sysState.virt.installed && !!(sysState.services.libvirtd && sysState.services.libvirtd.active) && sysState.virt.vms.some(function(v) { return v.state === 'running'; }); }
       }
     ]
   }
