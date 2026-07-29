@@ -2644,10 +2644,14 @@ var QUESTS = [
       {
         level: 'intermediate',
         title: 'Lister les processus',
-        context: "ps (process status) liste les processus en cours. `ps aux` est la forme la plus utilisée : tous les processus, pour tous les utilisateurs, avec détails.",
+        context: "Un **processus**, c'est un programme en train de tourner. À tout instant, des dizaines tournent en même temps, invisibles. `ps` (*process status*) les liste. La forme la plus utilisée est `ps aux` : **tous** les processus, de **tous** les utilisateurs, avec les détails (numéro, CPU, mémoire). (Le Dojo t'affiche un décodeur des colonnes au 1er `ps`.)",
         scene: "Tu veux voir tout ce qui tourne sur ta machine.",
         mission: "Liste tous les processus avec `ps aux`.",
-        steps: ["Tape `ps aux`", "Repère PID 1 (init/systemd) et ton shell bash"],
+        steps: [
+          "Tape `ps aux`",
+          "Chaque ligne = un processus ; regarde son numéro (colonne PID)",
+          "Repère le PID 1 (init/systemd) et ton propre shell (`-bash`)"
+        ],
         expected: "USER  PID  CPU  MEM  COMMAND\nroot    1  0.0  0.4  /sbin/init\nroot  743  0.0  0.2  /usr/sbin/sshd\nuser 1024  0.0  0.1  -bash",
         culture: "Le `aux` de `ps aux` est une curiosité : ce sont des options **sans tiret** (syntaxe BSD, l'ancêtre d'Unix de Berkeley), alors que le Linux moderne utilise plutôt `ps -ef` (syntaxe System V). `a` = tous les utilisateurs, `u` = format détaillé, `x` = y compris les processus sans terminal. Les deux syntaxes coexistent encore aujourd'hui — un vestige de la guerre des Unix des années 80.",
         reflection: "Que représente le processus de **PID 1**, toujours présent en haut de la liste ?\n👉 C'est le tout premier processus lancé au démarrage, l'ancêtre de tous les autres : `init` ou, sur les systèmes modernes, `systemd`. Il ne meurt jamais tant que la machine tourne, et **adopte** tous les processus orphelins. Si PID 1 s'arrête, le système s'éteint. C'est la racine de l'arbre des processus.",
@@ -2656,10 +2660,14 @@ var QUESTS = [
       {
         level: 'intermediate',
         title: 'Top des consommateurs',
-        context: "top affiche les processus en temps réel, triés par utilisation CPU/RAM. Quitter avec `q`. C'est l'équivalent du gestionnaire de tâches Windows.",
-        scene: "Ta machine est lente. Tu veux voir qui mange le CPU.",
-        mission: "Lance `top` (affiche les processus, puis quitte avec q ou Ctrl+C).",
-        steps: ["`top`", "Observe le tri par CPU", "Quitte avec `q`"],
+        context: "Là où `ps` prend une **photo** à un instant, `top` filme **en direct** : il affiche les processus rafraîchis chaque seconde, triés par consommation de CPU. C'est l'équivalent du Gestionnaire des tâches de Windows. Un piège classique : `top` occupe tout l'écran — pour en sortir, il faut appuyer sur `q`.",
+        scene: "Ta machine est lente. Tu veux voir EN TEMPS RÉEL qui mange le processeur.",
+        mission: "Lance `top`, observe, puis quitte avec `q`.",
+        steps: [
+          "Tape `top`",
+          "Les processus sont triés du plus gourmand (CPU) au moins gourmand",
+          "Quitte avec la touche `q` (comme *quit*)"
+        ],
         expected: "PID  USER  %CPU  %MEM  COMMAND\n1056  user  0.5   0.3   top\n   1  root  0.0   0.4   init",
         culture: "`top` (pour *table of processes*) date de 1984 et rafraîchit son affichage toutes les 3 secondes. Sa ligne la plus importante est le **load average** en haut : trois nombres = la charge moyenne sur 1, 5 et 15 minutes. Astuce d'expert : une charge de `1.00` sur une machine à 1 cœur = 100% occupé ; sur 4 cœurs, `4.00` = plein. Comparer la charge au nombre de cœurs (`nproc`) dit instantanément si la machine souffre.",
         reflection: "Beaucoup de débutants ouvrent `top` et... ne savent plus comment en sortir. Quelle touche ?\n👉 La touche `q` (quit). `top` tourne en continu (comme vim, il « capture » ton terminal), donc `Ctrl+C` marche aussi. C'est le même piège que vim : les outils interactifs plein écran demandent une touche précise pour rendre la main. `q` est la convention quasi-universelle sous Unix.",
@@ -2668,14 +2676,34 @@ var QUESTS = [
       {
         level: 'advanced',
         title: 'Tuer un processus',
-        context: "kill envoie un signal à un processus. `kill PID` envoie SIGTERM (arrêt propre). `kill -9 PID` envoie SIGKILL (forcé). On trouve le PID avec ps.",
-        scene: "Un processus est figé. Tu dois le tuer.",
-        mission: "Tue le processus avec PID 1056.",
-        steps: ["Identifie d'abord avec `ps aux`", "`kill 1056`", "Vérifie : il a disparu de `ps aux`"],
+        context: "Pour arrêter un processus, on le vise par son **PID** (son numéro, lu dans `ps`). `kill PID` lui envoie une demande polie de s'arrêter (le signal *SIGTERM*) : il a le temps de ranger ses affaires. `kill -9 PID` envoie l'arrêt **brutal** (*SIGKILL*) — instantané, mais sans nettoyage. On garde le `-9` en dernier recours.",
+        scene: "Un processus est figé et refuse de répondre. Tu dois l'arrêter.",
+        mission: "Tue proprement le processus dont le PID est 1056.",
+        steps: [
+          "Retrouve-le d'abord : `ps aux` (le PID est dans la 2ᵉ colonne)",
+          "Arrête-le poliment : `kill 1056`",
+          "Vérifie qu'il a disparu : `ps aux`"
+        ],
         expected: "$ kill 1056\n$ ps aux | grep 1056\n(rien : il est mort)",
         culture: "`kill` porte mal son nom : il n'\"tue\" pas, il **envoie un signal**. `kill PID` envoie SIGTERM (15) — une demande polie : « range tes affaires et arrête-toi ». Le processus peut sauver ses données avant de partir. `kill -9` envoie SIGKILL — le noyau abat le processus **instantanément**, sans qu'il puisse rien nettoyer (fichiers temporaires, connexions ouvertes restent en plan). C'est pour ça que `-9` est le dernier recours : brutal et potentiellement salissant.",
         reflection: "Pourquoi ne pas toujours utiliser `kill -9` directement, puisque c'est plus sûr de tuer d'un coup ?\n👉 Parce que SIGKILL ne laisse **aucune chance** au processus de se terminer proprement : une base de données peut corrompre ses fichiers, un éditeur perdre ton travail non sauvegardé. On essaie TOUJOURS `kill` (SIGTERM) d'abord, on attend quelques secondes, et seulement s'il refuse de mourir on passe à `kill -9`.",
         check: function(s) { return s.history.some(function(c) { return /^kill\s+1056/.test(c); }); }
+      },
+      {
+        level: 'advanced',
+        title: 'Mini-défi : traquer un PID',
+        context: "Sur un vrai serveur, `ps aux` crache des centaines de lignes. Pour retrouver LE processus qui t'intéresse, on combine deux réflexes du parcours : lister avec `ps aux`, puis filtrer avec `grep` via un **pipe** `|`. C'est LA façon de trouver le PID d'un programme précis avant de le tuer.",
+        scene: "Un programme rame et tu dois le cibler dans une liste énorme, sans la lire en entier.",
+        mission: "Retrouve la ligne du processus `top` en filtrant la sortie de `ps aux`.",
+        steps: [
+          "Liste ET filtre d'un coup : `ps aux | grep top`",
+          "Le pipe `|` envoie la liste des processus à `grep`, qui ne garde que « top »",
+          "Lis le PID dans la 2ᵉ colonne — c'est lui que tu passerais à `kill`"
+        ],
+        expected: "$ ps aux | grep top\nuser  1056  0.5   0.3   top",
+        culture: "`ps aux | grep <nom>` est l'un des enchaînements les plus tapés par les administrateurs. Petit piège d'expert : `grep` se voit parfois lui-même dans la liste (il apparaît comme un processus « grep »). Les pros contournent ça avec `pgrep <nom>` (qui cherche directement) ou l'astuce `grep [t]op`. Mais le réflexe de base reste `ps aux | grep`.",
+        reflection: "Pourquoi filtrer avec `| grep top` plutôt que de lire toute la sortie de `ps aux` ?\n👉 Parce que sur une machine réelle, `ps aux` peut afficher 300 lignes : chercher à l'œil est lent et faillible. Le pipe vers `grep` isole instantanément ce qui t'intéresse. C'est exactement le raisonnement du chapitre pipes, appliqué aux processus : de petits outils qu'on emboîte pour une réponse précise.",
+        check: function(s) { return s.history.some(function(c) { return /^ps\b/.test(c) && c.indexOf('|') >= 0 && c.indexOf('grep') >= 0; }); }
       }
     ]
   },
@@ -5295,6 +5323,24 @@ function cmdChown(args, sudo) {
   renderFs();
 }
 
+// Décodeur des colonnes de ps/top, affiché une fois par session
+var _psLegendShown = false;
+function printPsLegend() {
+  if (_psLegendShown || !term) return;
+  _psLegendShown = true;
+  var g = C.gray, cy = C.brCyan, y = C.brYellow, b = C.bold, r = C.reset;
+  term.writeln('');
+  term.writeln('  ' + g + '┌─ ' + r + cy + b + 'Les colonnes de « ps »' + r + ' ' + g + _dash(28) + r);
+  term.writeln('  ' + g + '│ ' + y + 'USER   ' + r + g + '→' + r + ' à qui appartient le processus');
+  term.writeln('  ' + g + '│ ' + y + 'PID    ' + r + g + '→' + r + ' son numéro unique (pour le viser avec kill)');
+  term.writeln('  ' + g + '│ ' + y + '%CPU   ' + r + g + '→' + r + ' part du processeur qu\'il consomme');
+  term.writeln('  ' + g + '│ ' + y + '%MEM   ' + r + g + '→' + r + ' part de la mémoire (RAM) qu\'il occupe');
+  term.writeln('  ' + g + '│ ' + y + 'COMMAND' + r + g + '→' + r + ' le programme lancé');
+  term.writeln('  ' + g + '│ ' + g + '(cette aide ne s\'affiche qu\'une fois)' + r);
+  term.writeln('  ' + g + '└' + _dash(48) + r);
+  term.writeln('');
+}
+
 function cmdPs(args) {
   var showAll = args.some(function(a) { return a.indexOf('a') >= 0; });
   term.writeln(C.dim + 'USER       PID  %CPU  %MEM  COMMAND' + C.reset);
@@ -5311,6 +5357,7 @@ function cmdPs(args) {
   if (sysState.services.nginx.active) {
     term.writeln('www-data   ' + (sysState.services.nginx.pid || 2000) + '  0.1   1.2   nginx: worker process');
   }
+  printPsLegend();
 }
 
 function cmdTop() {
