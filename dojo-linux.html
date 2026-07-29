@@ -3150,10 +3150,14 @@ var QUESTS = [
       {
         level: 'advanced',
         title: 'Espace disque (df)',
-        context: "df (disk free) affiche l'espace utilisé/libre par filesystem monté. `-h` (human) donne des unités lisibles (Go, Mo).",
-        scene: "Tu veux savoir s'il reste de la place sur le disque.",
-        mission: "Affiche l'espace disque avec df -h.",
-        steps: ["`df -h`", "Lis les colonnes : Size, Used, Avail, Use%"],
+        context: "`df` (*disk free*) montre, pour chaque disque, combien d'espace est **utilisé** et combien reste **libre**. On ajoute toujours `-h` (*human*) pour des unités lisibles (Go, Mo) au lieu de blocs de 1 Ko. La colonne à surveiller est `Use%` : au-dessus de 90%, il faut agir. (Le Dojo décode les colonnes au 1er `df`.)",
+        scene: "Tu veux savoir s'il reste de la place sur le disque avant qu'il ne se remplisse.",
+        mission: "Affiche l'espace disque avec `df -h`.",
+        steps: [
+          "Tape `df -h` (`-h` = tailles lisibles)",
+          "Lis les colonnes : `Size` (total), `Used` (occupé), `Avail` (libre), `Use%` (pourcentage plein)",
+          "Repère les partitions proches de 100% : elles vont poser problème"
+        ],
         expected: "Filesystem  Size  Used  Avail  Use%  Mounted\n/dev/sda1   50G   12G   36G    25%   /\ntmpfs       2G    0     2G     0%    /tmp",
         culture: "Un disque plein à **100%** est l'une des pannes les plus vicieuses : le système ne peut plus écrire de logs (donc plus de traces), les bases de données refusent les écritures, les sessions plantent. Et le pire : parfois `df` montre de la place libre mais l'écriture échoue quand même — parce que ce sont les **inodes** (le nombre de fichiers possibles) qui sont épuisés, pas l'espace. `df -i` révèle ce cas rare. Toujours garder une marge : au-dessus de 90%, on agit.",
         reflection: "Que représente la ligne `tmpfs` montée sur `/tmp` dans la sortie de `df` ?\n👉 `tmpfs` est un système de fichiers **en mémoire RAM**, pas sur le disque. `/tmp` y est souvent monté pour des raisons de vitesse — mais attention : son contenu **disparaît au redémarrage** (c'est de la RAM). D'où le nom /tmp (temporaire). Ne jamais y stocker quelque chose d'important. C'est un exemple du principe Unix : « tout est fichier », même la mémoire vive.",
@@ -3186,22 +3190,66 @@ var QUESTS = [
       {
         level: 'advanced',
         title: 'Infos mémoire',
-        context: "/proc/meminfo donne tout sur la RAM. MemAvailable est plus utile que MemFree (inclut les buffers/cache récupérables).",
-        scene: "Tu veux savoir combien de RAM est disponible.",
-        mission: "Affiche /proc/meminfo.",
-        steps: ["`cat /proc/meminfo`", "Lis MemTotal et MemAvailable"],
+        context: "La **RAM** (mémoire vive) est l'espace de travail rapide du système — distinct du disque, qui est le stockage durable. Le fichier virtuel `/proc/meminfo` en donne l'état brut. Le chiffre à regarder n'est PAS `MemFree` mais **`MemAvailable`** : il inclut la mémoire occupée par des caches que le système peut libérer à tout moment. C'est la vraie RAM « utilisable ».",
+        scene: "La machine rame : tu veux savoir combien de mémoire vive est réellement disponible.",
+        mission: "Affiche `/proc/meminfo`.",
+        steps: [
+          "Affiche-le : `cat /proc/meminfo`",
+          "Lis `MemTotal` (RAM totale) et surtout `MemAvailable` (réellement disponible)",
+          "Les valeurs sont en kilo-octets (kB)"
+        ],
         expected: "MemTotal:     16384000 kB\nMemAvailable: 12288000 kB",
+        culture: "Piège classique du débutant : voir `MemFree` très bas et croire que la RAM est saturée. En réalité, Linux **utilise volontairement la RAM libre comme cache disque** pour accélérer les accès (« la RAM libre est de la RAM gâchée »). Ce cache est instantanément rendu si un programme en a besoin. D'où `MemAvailable`, qui compte cette RAM récupérable. Sous Linux, une RAM « pleine » de cache est saine, pas alarmante.",
+        reflection: "`MemFree` est presque à zéro. Faut-il s'inquiéter ?\n👉 Pas forcément. Linux remplit la RAM inutilisée de **cache** pour aller plus vite, et le libère dès qu'un programme réclame de la mémoire. Le vrai indicateur, c'est `MemAvailable` : tant qu'il reste confortable, tout va bien. On ne s'alarme que si `MemAvailable` s'effondre ET que le *swap* (RAM sur disque) se remplit — signe d'une vraie pénurie.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('meminfo') >= 0; }); }
       },
       {
         level: 'advanced',
+        title: 'Mémoire lisible (free)',
+        context: "`/proc/meminfo` est brut et verbeux. La commande `free -h` en donne un résumé clair et lisible (`-h` = *human*) : total, utilisé, libre, et surtout `available`. C'est le réflexe rapide pour jauger la mémoire, plutôt que de lire le fichier brut.",
+        scene: "Tu veux un état de la mémoire en un coup d'œil, sans décrypter `/proc/meminfo`.",
+        mission: "Affiche l'état de la mémoire avec `free -h`.",
+        steps: [
+          "Tape `free -h`",
+          "Ligne `Mem:` → ta RAM (colonne `available` = réellement dispo)",
+          "Ligne `Swap:` → la mémoire de secours sur disque (lente : si elle se remplit, la machine souffre)"
+        ],
+        expected: "              total   used   free   available\nMem:          16Gi   4.2Gi  3.8Gi      11Gi\nSwap:         2.0Gi     0B  2.0Gi",
+        culture: "Le **swap** est une extension de la RAM… sur le disque. Quand la RAM est pleine, le système déplace les données les moins utilisées vers le swap pour faire de la place. Problème : le disque est des milliers de fois plus lent que la RAM. Un serveur qui « swappe » beaucoup rame terriblement. Voir le swap se remplir dans `free` est un signal d'alarme : il manque de la vraie RAM.",
+        reflection: "Dans `free -h`, pourquoi regarder la colonne `available` plutôt que `free` ?\n👉 Même raison que pour `/proc/meminfo` : `free` ne compte que la RAM totalement inutilisée, alors qu'`available` inclut la RAM occupée par des caches récupérables. `available` reflète donc ce qu'un nouveau programme pourrait réellement obtenir. C'est LE chiffre qui dit si la machine a de la marge ou non.",
+        check: function(s) { return s.history.some(function(c) { return c.indexOf('free') === 0; }); }
+      },
+      {
+        level: 'advanced',
         title: 'Version du système',
-        context: "/etc/os-release contient le nom et la version de la distribution. Universel : marche sur Ubuntu, Debian, CentOS, etc.",
-        scene: "Tu veux savoir sur quelle distrib tu es.",
-        mission: "Affiche /etc/os-release.",
-        steps: ["`cat /etc/os-release`", "Lis NAME et VERSION"],
+        context: "Avant toute intervention, un admin vérifie **sur quel système** il se trouve : la distribution et sa version décident des commandes disponibles, des chemins, du gestionnaire de paquets. Le fichier `/etc/os-release` donne cette carte d'identité, dans un format **universel** (il existe à l'identique sur Ubuntu, Debian, CentOS, Fedora…). (Le Dojo le décode après le `cat`.)",
+        scene: "Tu te connectes à un serveur inconnu et tu veux savoir sur quelle distribution tu es tombé.",
+        mission: "Affiche `/etc/os-release`.",
+        steps: [
+          "Affiche-le : `cat /etc/os-release`",
+          "Lis `NAME` (la distribution) et `VERSION`",
+          "`ID=ubuntu` est le champ que lisent les scripts pour s'adapter"
+        ],
         expected: "NAME=\"Ubuntu\"\nVERSION=\"22.04.3 LTS\"",
+        culture: "Savoir sa distribution n'est pas un détail : c'est elle qui décide du **gestionnaire de paquets** (`apt` sur Debian/Ubuntu, `dnf`/`yum` sur Fedora/CentOS), de l'emplacement de certains fichiers, et des versions de logiciels disponibles. Un script d'installation lit `ID=` dans `os-release` pour choisir automatiquement les bonnes commandes selon la distrib. C'est le premier réflexe sur une machine qu'on découvre.",
+        reflection: "Pourquoi un script d'installation lit-il `/etc/os-release` avant d'agir ?\n👉 Pour s'**adapter** : installer un paquet ne se fait pas pareil selon la distribution (`apt install` vs `dnf install`). En lisant `ID=ubuntu` ou `ID=fedora`, le script choisit les bonnes commandes tout seul. C'est ce qui permet à un même installeur de fonctionner sur des systèmes différents — la base de la portabilité.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('os-release') >= 0; }); }
+      },
+      {
+        level: 'expert',
+        title: 'Mini-défi : bilan de santé de la machine',
+        context: "On assemble le chapitre en un check-up rapide, celui qu'un admin fait en arrivant sur un serveur : reste-t-il de l'espace disque ? de la mémoire ? sur quel système suis-je ? Trois commandes, trois réponses vitales.",
+        scene: "Tu prends en main un serveur inconnu. Avant tout, tu établis son bilan de santé.",
+        mission: "Fais le check-up : espace disque, mémoire disponible, et version du système.",
+        steps: [
+          "① Disque : `df -h` (reste-t-il de la place ?)",
+          "② Mémoire : `free -h` (la RAM respire-t-elle ?)",
+          "③ Système : `cat /etc/os-release` (quelle distribution ?)"
+        ],
+        expected: "$ df -h\n/dev/sda1  50G  12G  36G  25%  /\n$ free -h\nMem:  16Gi  4.2Gi  ...  11Gi\n$ cat /etc/os-release\nNAME=\"Ubuntu\" ...",
+        culture: "Ce trio `df` + `free` + `os-release` (souvent complété par `uptime` et `ps aux`) est le rituel d'accueil sur toute machine qu'on découvre. En trente secondes, on sait si elle est saine, saturée, et à quoi on a affaire. Les pros en font parfois un petit script `healthcheck.sh` qu'ils lancent en arrivant — le sujet du prochain grand chapitre : le scripting.",
+        reflection: "Pourquoi établir un « bilan » (disque + mémoire + système) AVANT d'intervenir sur une machine inconnue ?\n👉 Parce qu'on ne soigne pas sans diagnostiquer. Un disque plein ou une RAM saturée expliquent la moitié des pannes ; connaître la distribution évite d'utiliser les mauvaises commandes. Trente secondes d'observation évitent des heures d'erreurs — c'est le même réflexe que « pwd → ls » du tout premier chapitre, à l'échelle de la machine entière.",
+        check: function(s) { var h = s.history; var df = h.some(function(c) { return c.indexOf('df') === 0; }); var free = h.some(function(c) { return c.indexOf('free') === 0; }); var os = h.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('os-release') >= 0; }); return df && free && os; }
       }
     ]
   },
@@ -5693,6 +5741,25 @@ function cmdDf(args) {
     term.writeln('/dev/sda1   52428800 12582912 37748736 25% /');
     term.writeln('tmpfs        2097152        0  2097152  0% /tmp');
   }
+  printDfLegend();
+}
+
+var _dfLegendShown = false;
+function printDfLegend() {
+  if (_dfLegendShown || !term) return;
+  _dfLegendShown = true;
+  var g = C.gray, cy = C.brCyan, y = C.brYellow, b = C.bold, r = C.reset;
+  term.writeln('');
+  term.writeln('  ' + g + '┌─ ' + r + cy + b + 'Les colonnes de « df »' + r + ' ' + g + _dash(28) + r);
+  term.writeln('  ' + g + '│ ' + y + 'Filesystem ' + r + g + '→' + r + ' le disque/partition concerné');
+  term.writeln('  ' + g + '│ ' + y + 'Size       ' + r + g + '→' + r + ' sa taille totale');
+  term.writeln('  ' + g + '│ ' + y + 'Used       ' + r + g + '→' + r + ' espace occupé');
+  term.writeln('  ' + g + '│ ' + y + 'Avail      ' + r + g + '→' + r + ' espace encore libre');
+  term.writeln('  ' + g + '│ ' + y + 'Use%       ' + r + g + '→' + r + ' pourcentage plein (surveille au-dessus de 90% !)');
+  term.writeln('  ' + g + '│ ' + y + 'Mounted on ' + r + g + '→' + r + ' où ce disque est branché dans l\'arbre');
+  term.writeln('  ' + g + '│ ' + g + '(cette aide ne s\'affiche qu\'une fois)' + r);
+  term.writeln('  ' + g + '└' + _dash(50) + r);
+  term.writeln('');
 }
 
 function cmdDu(args) {
