@@ -2432,34 +2432,36 @@ var QUESTS = [
       {
         level: 'advanced',
         title: 'Structure de projet',
-        context: "En vrai, un projet n'est jamais un seul dossier : on le structure en **sous-dossiers** par rôle — `src/` pour le code source, `docs/` pour la documentation, `tests/` pour les tests… Bonne nouvelle : `mkdir` peut créer plusieurs dossiers d'un coup, en les listant à la suite.",
+        context: "En vrai, un projet n'est jamais un seul dossier : on le structure en **sous-dossiers** par rôle — `src/` pour le code source, `docs/` pour la documentation, `tests/` pour les tests… Bonne nouvelle : il y a **plusieurs façons** de créer cette structure, de la plus simple à la plus rapide. On te les montre toutes.",
         scene: "Tu démarres un projet de zéro et tu veux poser une structure propre dès le départ.",
         mission: "Crée `~/monprojet` avec deux sous-dossiers : `src` et `docs`.",
         steps: [
           "Place-toi chez toi : `cd ~`",
           "Crée le dossier du projet : `mkdir monprojet`, puis entre dedans : `cd monprojet`",
           "Crée les deux sous-dossiers d'un coup : `mkdir src docs`",
-          "Admire le résultat : `tree`"
+          "Admire le résultat : `tree`",
+          "💡 **La même chose en UNE ligne** (avance, à essayer) : `mkdir -p monprojet/{src,docs}` — voir l'encadré Culture juste en dessous 👇"
         ],
         expected: "monprojet/\n├── docs/\n└── src/",
-        culture: "Créer plusieurs dossiers en une commande (`mkdir src docs tests`) est un réflexe qui fait gagner du temps. Cette structure `src/` + `docs/` n'est pas une règle imposée, mais une **convention** que tout développeur reconnaît au premier coup d'œil : elle rend ton projet lisible par les autres (et par toi dans six mois).",
+        culture: "**Trois façons d'obtenir EXACTEMENT le même résultat** — choisis la tienne :\n\n① **Pas à pas** (ce qu'on vient de faire) :\n`mkdir monprojet` puis `cd monprojet` puis `mkdir src docs`\n\n② **En une commande, chemins complets** :\n`mkdir -p monprojet/src monprojet/docs`\n\n③ **La plus concise, avec l'expansion d'accolades** :\n`mkdir -p monprojet/{src,docs}`\n\nLe `-p` crée au passage les parents manquants (ici `monprojet`) sans erreur. Les **accolades** `{src,docs}` sont développées par le shell en `monprojet/src monprojet/docs`. Encore plus fort : `mkdir -p projet/{src,tests,docs}` crée trois dossiers, et `mkdir -p projet/{src,docs}/{v1,v2}` en crée quatre d'un coup. Un raccourci que tout admin chevronné adore.",
         reflection: "Pourquoi ranger son code dans `src/` plutôt qu'en vrac à la racine du projet ?\n👉 Pour séparer ce qui compte (le code) de tout le reste (docs, config, tests, fichiers générés). Un dossier `src/` clair permet aux outils, aux collègues et aux scripts de build de savoir où chercher. L'organisation, c'est de la communication : un projet bien rangé se comprend sans qu'on l'explique.",
         check: function(s) { var p = getNode('/home/user/monprojet'); return !!(p && p.children && p.children.src && p.children.docs); }
       },
       {
         level: 'advanced',
         title: 'README pour ton projet',
-        context: "Un **README** (« lis-moi ») est le fichier qui explique un projet : à quoi il sert, comment l'installer, comment l'utiliser. C'est le tout premier fichier qu'un visiteur ouvre. L'extension `.md` signifie **Markdown**, un format texte simple pour mettre en forme (titres, listes, gras). On le crée d'abord vide, avec `touch`.",
-        scene: "Ton projet a besoin d'une carte d'identité que les autres liront en premier.",
-        mission: "Crée un fichier `README.md` dans `~/monprojet`.",
+        context: "Un **README** (« lis-moi ») est la **carte d'identité** de ton projet : une courte description de ce qu'il fait, pour qui, et comment s'en servir. C'est le tout premier fichier qu'un visiteur — ou un recruteur ! — ouvre. L'extension `.md` = **Markdown**, un format texte simple où un `#` fait un titre. Ici, on va le créer ET lui donner un contenu, pas juste un fichier vide.",
+        scene: "Ton projet a besoin d'une carte d'identité que les autres liront en tout premier.",
+        mission: "Crée un `README.md` dans `~/monprojet`, avec un titre et une courte description.",
         steps: [
           "Entre dans ton projet : `cd ~/monprojet`",
-          "Crée le fichier : `touch README.md`",
-          "Vérifie : `ls` — tu pourras l'éditer plus tard (chapitre éditeurs)"
+          "Crée-le avec un titre : `echo \"# Mon projet\" > README.md` (le `#` = un titre en Markdown, le `>` écrit dans le fichier)",
+          "Ajoute la courte description : `echo \"Un petit outil qui automatise mes sauvegardes.\" >> README.md` (le `>>` ajoute sans écraser)",
+          "Relis sa carte d'identité : `cat README.md`"
         ],
-        expected: "$ ls\ndocs  README.md  src",
-        culture: "Le README est une institution du logiciel libre : sur GitHub, c'est lui qui s'affiche automatiquement sur la page d'un projet. Un bon README répond à trois questions : **c'est quoi ?**, **comment je l'installe ?**, **comment je l'utilise ?**. Beaucoup de projets géniaux sont ignorés faute d'un README clair — la doc fait partie du travail, pas un bonus.",
-        reflection: "Pourquoi le tout premier fichier d'un projet sérieux est-il presque toujours un README ?\n👉 Parce qu'un projet que personne ne comprend est un projet mort. Le README est la porte d'entrée : il transforme un tas de fichiers obscurs en quelque chose d'utilisable par un humain. Écrire la doc en même temps que le code, c'est la marque des pros.",
+        expected: "$ cat README.md\n# Mon projet\nUn petit outil qui automatise mes sauvegardes.",
+        culture: "Un bon README tient en quelques lignes et répond à **trois questions** : **c'est quoi ?** (une phrase de description), **comment je l'installe ?**, **comment je l'utilise ?**. Sur GitHub, ce fichier s'affiche automatiquement sur la page du projet — c'est ta vitrine. Beaucoup de projets géniaux sont ignorés faute d'un README clair : la doc fait partie du travail, pas un bonus. Pour un CV de projets (chapitre Projets !), un README soigné fait toute la différence.",
+        reflection: "Pourquoi le tout premier fichier d'un projet sérieux est-il presque toujours un README ?\n👉 Parce qu'un projet que personne ne comprend est un projet mort. Le README est la porte d'entrée : en une courte description, il transforme un tas de fichiers obscurs en quelque chose qu'un humain (recruteur, collègue, ou toi dans six mois) peut comprendre et utiliser. Écrire cette carte d'identité dès le départ, c'est la marque des pros.",
         check: function(s) { var p = getNode('/home/user/monprojet'); return !!(p && p.children && p.children['README.md']); }
       },
       {
@@ -5504,17 +5506,44 @@ function printFileLegend(fileName) {
 
 function cmdMkdir(args) {
   if (!args.length) { term.writeln(C.red + 'mkdir: opérande manquante' + C.reset); return; }
-  var node = getNode(cwd);
-  if (!node || !node.children) return;
-  args.forEach(function(name) {
-    if (name.charAt(0) === '-') return;
-    if (node.children[name]) {
-      term.writeln(C.red + 'mkdir: ' + name + ': existe déjà' + C.reset);
+  var parents = args.some(function(a) { return /^-\w*p/.test(a); });
+  var targets = args.filter(function(a) { return a.charAt(0) !== '-'; });
+  if (!targets.length) { term.writeln(C.red + 'mkdir: opérande manquante' + C.reset); return; }
+  // Expansion d'accolades : monprojet/{src,docs} -> monprojet/src monprojet/docs
+  var expanded = [];
+  targets.forEach(function(t) {
+    var m = t.match(/^(.*)\{([^}]*)\}(.*)$/);
+    if (m && m[2].indexOf(',') >= 0) {
+      m[2].split(',').forEach(function(part) { expanded.push(m[1] + part.trim() + m[3]); });
     } else {
-      node.children[name] = { type: 'dir', perms: 'drwxr-xr-x', owner: sysState.user, children: {} };
+      expanded.push(t);
     }
   });
-  highlighted = args[args.length - 1];
+  var last = null;
+  expanded.forEach(function(path) {
+    var full = resolvePath(path);
+    var parts = full.split('/').filter(function(p) { return p; });
+    var cur = getNode('/');
+    if (!cur || !cur.children) return;
+    for (var i = 0; i < parts.length; i++) {
+      var name = parts[i];
+      var isLast = (i === parts.length - 1);
+      if (cur.children[name]) {
+        if (isLast && !parents) { term.writeln(C.red + 'mkdir: ' + path + ': existe déjà' + C.reset); }
+        cur = cur.children[name];
+        if (!cur.children) return;
+      } else {
+        if (!isLast && !parents) {
+          term.writeln(C.red + 'mkdir: impossible de créer « ' + path +' » : dossier parent inexistant (utilise -p)' + C.reset);
+          return;
+        }
+        cur.children[name] = { type: 'dir', perms: 'drwxr-xr-x', owner: sysState.user, children: {} };
+        cur = cur.children[name];
+      }
+    }
+    last = parts[parts.length - 1];
+  });
+  if (last) highlighted = last;
   renderFs();
 }
 
