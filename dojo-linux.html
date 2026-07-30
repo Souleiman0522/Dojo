@@ -2120,7 +2120,8 @@ var QUESTS = [
         steps: [
           "Tape `echo Bonjour` — `echo` veut dire « répète »",
           "Le terminal réaffiche exactement ce que tu as écrit",
-          "Essaie avec ton pseudo : `echo Salut Kaï`"
+          "Essaie avec ton pseudo : `echo Salut Kaï`",
+          "💡 **Deux options utiles** : `echo -n Bonjour` (n'ajoute PAS de retour à la ligne à la fin) · `echo -e \"Ligne1\\nLigne2\"` (interprète `\\n` comme un vrai saut de ligne)."
         ],
         expected: "$ echo Bonjour\nBonjour",
         culture: "`echo` (« écho ») répète son texte. Trivial ? C'est pourtant partout : `echo $PATH` affiche le contenu d'une variable, `echo \"texte\" > fichier` crée un fichier contenant ce texte, et dans un script chaque message à l'écran passe par `echo`. Les outils Unix les plus puissants sont souvent les plus simples… une fois assemblés entre eux.",
@@ -2152,7 +2153,8 @@ var QUESTS = [
         steps: [
           "Tape `ls -la`",
           "Repère le `.bashrc` : il était invisible avec `ls` simple (il commence par un point)",
-          "Regarde la colonne de gauche, `-rw-r--r--` : ce sont les **droits** du fichier (qui peut lire/écrire)"
+          "Regarde la colonne de gauche, `-rw-r--r--` : ce sont les **droits** du fichier (qui peut lire/écrire)",
+          "💡 **Les autres options qui servent tous les jours** : `ls -lh` (tailles lisibles : `4,0K`, `2,3M` au lieu d'octets bruts) · `ls -lt` (tri par date, le plus récent en haut) · `ls -R` (récursif : descend dans TOUS les sous-dossiers). On les combine : `ls -lhrt` = « détaillé, lisible, trié par date »."
         ],
         expected: "drwxr-xr-x  user  4096  Documents/\n-rw-r--r--  user  3584  .bashrc",
         diagram: "Droits :\n  d r w x r - x r - x\n  │ └─┬─┘ └─┬─┘ └─┬─┘\n  │  toi   groupe  autres\n  └─ d=dossier, -=fichier",
@@ -2169,7 +2171,8 @@ var QUESTS = [
         steps: [
           "Tape `help`",
           "Parcours la liste des commandes reconnues",
-          "Sur une vraie machine, tu ferais plutôt `man ls` ou `ls --help` pour l'aide d'UNE commande précise"
+          "Sur une vraie machine, tu ferais plutôt `man ls` ou `ls --help` pour l'aide d'UNE commande précise",
+          "💡 **Les différentes façons de se documenter** : `man ls` (le manuel complet, parfois long) · `ls --help` (le résumé rapide des options) · `tldr ls` (des exemples concrets, à installer) · `apropos copie` (retrouve une commande à partir d'un mot-clé quand tu as oublié son nom)."
         ],
         expected: "$ help\n(la liste des commandes disponibles s'affiche)",
         culture: "Le fameux `man` (*manual*) est l'encyclopédie intégrée d'Unix : `man ls` ouvre le mode d'emploi complet de `ls`. La blague culte « **RTFM** » (*Read The Fine Manual*, « lis donc le manuel ») en vient. Savoir lire un `man` — ou un `--help` — est LA compétence qui rend autonome : tu n'attends plus qu'on te donne la réponse, tu la trouves toi-même.",
@@ -2281,7 +2284,8 @@ var QUESTS = [
         mission: "Reviens dans ton dossier personnel, où que tu sois.",
         steps: [
           "Tape `cd ~` (ou juste `cd`, ça revient au même)",
-          "Vérifie avec `pwd` → `/home/user`"
+          "Vérifie avec `pwd` → `/home/user`",
+          "💡 **Tous les raccourcis de `cd` à connaître** : `cd` ou `cd ~` (maison) · `cd ..` (un cran au-dessus) · `cd ../..` (deux crans) · `cd -` (le dossier PRÉCÉDENT, comme un bouton retour) · `cd /` (la racine). Avec la touche **Tab**, tu complètes les noms sans les taper en entier."
         ],
         expected: "$ cd ~\n$ pwd\n/home/user",
         culture: "Le `~` (tilde) n'est pas qu'un caprice : dans presque tous les outils Unix, il désigne ton home. `~/Documents` = ton dossier Documents, `~/.bashrc` = ta config perso. Le shell le remplace par le vrai chemin avant d'exécuter la commande. C'est pour ça que les tutos écrivent `~/…` : ça marche pour chaque utilisateur, quel que soit son nom de compte.",
@@ -2423,7 +2427,8 @@ var QUESTS = [
         steps: [
           "Place-toi chez toi : `cd ~`",
           "Renomme : `mv notes.txt todo.txt` (l'ancien nom, puis le nouveau)",
-          "Vérifie : `ls` — `notes.txt` a disparu, `todo.txt` est là"
+          "Vérifie : `ls` — `notes.txt` a disparu, `todo.txt` est là",
+          "💡 **Les trois usages de `mv`** : `mv notes.txt todo.txt` (renommer) · `mv notes.txt Documents/` (déplacer dans un dossier) · `mv -i notes.txt todo.txt` (le `-i` demande confirmation AVANT d'écraser un fichier existant — le filet de sécurité)."
         ],
         expected: "$ mv notes.txt todo.txt\n$ ls\ntodo.txt  Documents  ...",
         culture: "Pourquoi une seule commande `mv` pour déplacer ET renommer ? Parce qu'en Unix, ce sont la **même opération** : un nom de fichier n'est qu'une étiquette pointant vers des données. Renommer `notes.txt` en `todo.txt`, c'est juste changer l'étiquette (au même endroit). Le déplacer dans `Documents/`, c'est changer l'étiquette (à un autre endroit). D'où l'absence de commande `rename` séparée — `mv` fait déjà tout.",
@@ -2474,7 +2479,8 @@ var QUESTS = [
         steps: [
           "Place-toi chez toi : `cd ~`",
           "Supprime le dossier et son contenu : `rm -r monprojet` (le `-r` = « et tout ce qu'il y a dedans »)",
-          "Vérifie qu'il a disparu : `ls`"
+          "Vérifie qu'il a disparu : `ls`",
+          "💡 **Les variantes de `rm`, de la plus sûre à la plus dangereuse** : `rm fichier.txt` (un seul fichier) · `rm -i fichier.txt` (demande confirmation — le réflexe prudent) · `rm -r dossier` (un dossier entier) · `rm -rf dossier` (force, sans AUCUNe confirmation : la plus puissante ET la plus risquée, à relire trois fois avant Entrée)."
         ],
         expected: "$ rm -r monprojet\n$ ls\nDocuments  Downloads  ...",
         diagram: "⚠️ rm -rf /  est l'erreur de carrière classique\n   (efface tout le système). Soyez prudents.",
@@ -2571,7 +2577,8 @@ var QUESTS = [
         steps: [
           "Va dans `~/scripts` : `cd ~/scripts`",
           "Ajoute le droit d'exécuter : `chmod +x install.sh` (`+x` = « ajoute exécuter »)",
-          "Vérifie avec `ls -l` : un `x` est apparu dans les droits"
+          "Vérifie avec `ls -l` : un `x` est apparu dans les droits",
+          "💡 **La notation symbolique complète** : on cible un public (`u`=toi, `g`=groupe, `o`=autres, `a`=tous) et on ajoute `+` / retire `-` un droit (`r`/`w`/`x`). Ex. : `chmod u+x` (exécuter, pour toi seul) · `chmod g-w` (retire l'écriture au groupe) · `chmod a+r` (lecture pour tout le monde). L'autre écriture, en chiffres, est juste en dessous 👇."
         ],
         expected: "Avant : -rw-r--r--  install.sh\nAprès : -rwxr-xr-x  install.sh",
         culture: "Sous Windows, un fichier est « exécutable » selon son extension (`.exe`, `.bat`). Sous Unix, l'extension ne veut RIEN dire : c'est le **bit d'exécution** (`x`) qui décide. Un fichier peut s'appeler `install.sh`, `install`, ou `install.txt` — s'il a le bit `x` et un shebang valide, il tourne. Cette séparation entre nom et permission est plus sûre : un fichier téléchargé n'est pas exécutable par accident, il faut explicitement lui donner le droit.",
@@ -2587,7 +2594,8 @@ var QUESTS = [
         steps: [
           "Va dans `~/scripts` : `cd ~/scripts`",
           "Fixe les droits : `chmod 700 backup.sh` (7 = toi tout, 0 = groupe rien, 0 = autres rien)",
-          "Vérifie : `ls -l` → `-rwx------`"
+          "Vérifie : `ls -l` → `-rwx------`",
+          "💡 **Les quatre chiffres qu'on tape 99 % du temps** : `644` (fichier normal : toi rw, les autres r) · `755` (dossier ou script partagé : toi rwx, les autres r-x) · `700` (privé total : toi seul) · `600` (fichier de secret : toi rw, personne d'autre). C'est exactement la même chose que la notation symbolique : `chmod 700` = `chmod u=rwx,go=`."
         ],
         expected: "-rwx------  backup.sh",
         diagram: "Tableau magique :\n  7=rwx  6=rw-  5=r-x\n  4=r--  2=-w-  1=--x\n  0=---",
@@ -2604,7 +2612,8 @@ var QUESTS = [
         steps: [
           "Cette action demande les droits admin, d'où le `sudo`",
           "Change le propriétaire : `sudo chown www-data:www-data ~/site/index.html`",
-          "Vérifie : `ls -l ~/site` → le propriétaire est devenu `www-data`"
+          "Vérifie : `ls -l ~/site` → le propriétaire est devenu `www-data`",
+          "💡 **Les formes de `chown`** : `chown user fichier` (change juste le propriétaire) · `chown user:group fichier` (propriétaire ET groupe d'un coup) · `chown -R www-data:www-data /var/www/monsite` (le `-R` applique à TOUT un dossier et son contenu — l'usage classique en hébergement). Pour ne changer que le groupe : `chgrp group fichier`."
         ],
         expected: "Avant : -rw-r--r--  user       index.html\nAprès : -rw-r--r--  www-data   index.html",
         culture: "Séparer **propriétaire** (`chown`) et **droits** (`chmod`) donne un contrôle très fin. En hébergement, la combinaison typique : les fichiers appartiennent à `www-data` avec des droits juste suffisants pour être lus par le serveur, jamais plus. Trop de droits sur un fichier web = une porte ouverte si le site est piraté.",
@@ -2653,7 +2662,8 @@ var QUESTS = [
         steps: [
           "Tape `ps aux`",
           "Chaque ligne = un processus ; regarde son numéro (colonne PID)",
-          "Repère le PID 1 (init/systemd) et ton propre shell (`-bash`)"
+          "Repère le PID 1 (init/systemd) et ton propre shell (`-bash`)",
+          "💡 **Les façons de lister les processus** : `ps aux` (tout, syntaxe BSD) · `ps -ef` (tout, syntaxe System V — mêmes infos, autre présentation) · `ps aux | grep nginx` (ne garder qu'un programme précis) · `pgrep nginx` (encore plus direct : donne juste le PID)."
         ],
         expected: "USER  PID  CPU  MEM  COMMAND\nroot    1  0.0  0.4  /sbin/init\nroot  743  0.0  0.2  /usr/sbin/sshd\nuser 1024  0.0  0.1  -bash",
         culture: "Le `aux` de `ps aux` est une curiosité : ce sont des options **sans tiret** (syntaxe BSD, l'ancêtre d'Unix de Berkeley), alors que le Linux moderne utilise plutôt `ps -ef` (syntaxe System V). `a` = tous les utilisateurs, `u` = format détaillé, `x` = y compris les processus sans terminal. Les deux syntaxes coexistent encore aujourd'hui — un vestige de la guerre des Unix des années 80.",
@@ -2669,7 +2679,8 @@ var QUESTS = [
         steps: [
           "Tape `top`",
           "Les processus sont triés du plus gourmand (CPU) au moins gourmand",
-          "Quitte avec la touche `q` (comme *quit*)"
+          "Quitte avec la touche `q` (comme *quit*)",
+          "💡 **Les moniteurs en temps réel** : `top` (présent partout, la base) · `htop` (le même en couleur, navigable à la souris/flèches — à installer) · `top -o %MEM` (trier par mémoire plutôt que par CPU). Dans `top`, tape `M` pour trier par mémoire, `P` pour revenir au CPU."
         ],
         expected: "PID  USER  %CPU  %MEM  COMMAND\n1056  user  0.5   0.3   top\n   1  root  0.0   0.4   init",
         culture: "`top` (pour *table of processes*) date de 1984 et rafraîchit son affichage toutes les 3 secondes. Sa ligne la plus importante est le **load average** en haut : trois nombres = la charge moyenne sur 1, 5 et 15 minutes. Astuce d'expert : une charge de `1.00` sur une machine à 1 cœur = 100% occupé ; sur 4 cœurs, `4.00` = plein. Comparer la charge au nombre de cœurs (`nproc`) dit instantanément si la machine souffre.",
@@ -2685,7 +2696,8 @@ var QUESTS = [
         steps: [
           "Retrouve-le d'abord : `ps aux` (le PID est dans la 2ᵉ colonne)",
           "Arrête-le poliment : `kill 1056`",
-          "Vérifie qu'il a disparu : `ps aux`"
+          "Vérifie qu'il a disparu : `ps aux`",
+          "💡 **Les façons d'arrêter un processus** : `kill 1056` (poliment, par son PID) · `kill -9 1056` (arrêt brutal, dernier recours) · `killall firefox` (tue TOUS les processus portant ce nom, sans chercher le PID) · `pkill firefox` (idem, avec correspondance partielle du nom)."
         ],
         expected: "$ kill 1056\n$ ps aux | grep 1056\n(rien : il est mort)",
         culture: "`kill` porte mal son nom : il n'\"tue\" pas, il **envoie un signal**. `kill PID` envoie SIGTERM (15) — une demande polie : « range tes affaires et arrête-toi ». Le processus peut sauver ses données avant de partir. `kill -9` envoie SIGKILL — le noyau abat le processus **instantanément**, sans qu'il puisse rien nettoyer (fichiers temporaires, connexions ouvertes restent en plan). C'est pour ça que `-9` est le dernier recours : brutal et potentiellement salissant.",
@@ -2732,7 +2744,8 @@ var QUESTS = [
         mission: "Affiche les 5 premières lignes de `/var/log/syslog`.",
         steps: [
           "Affiche le début : `head -n 5 /var/log/syslog` (`-n 5` = « 5 lignes »)",
-          "Tu obtiens un aperçu instantané, sans charger le fichier entier"
+          "Tu obtiens un aperçu instantané, sans charger le fichier entier",
+          "💡 **Les variantes** : `head fichier` (10 lignes par défaut) · `head -n 20 fichier` (20 lignes) · `head -c 100 fichier` (les 100 premiers octets). En bout de pipe : `ls -lS | head -3` = les 3 plus gros fichiers."
         ],
         expected: "Apr 28 12:00:01 dojo systemd[1]: Started...\nApr 28 12:01:23 dojo kernel: ...",
         culture: "`head` et `tail` sont des jumeaux : l'un montre le début, l'autre la fin. Ils brillent en **pipe** : `ls -lS | head -3` = les 3 plus gros fichiers, `sort notes.txt | tail -5` = les 5 derniers alphabétiquement. Ce sont des « robinets » qu'on branche en bout de chaîne pour ne garder qu'un échantillon d'un flux potentiellement gigantesque, sans jamais tout charger.",
@@ -2748,7 +2761,8 @@ var QUESTS = [
         steps: [
           "Affiche la fin : `tail -n 5 /var/log/syslog`",
           "Ce sont les événements les plus récents",
-          "En vrai, `tail -f` suivrait le log en temps réel (on quitte avec Ctrl+C)"
+          "En vrai, `tail -f` suivrait le log en temps réel (on quitte avec Ctrl+C)",
+          "💡 **Les variantes** : `tail -n 20 fichier` (20 dernières lignes) · `tail -f fichier` (suit le log EN DIRECT, ligne par ligne) · `tail -F fichier` (idem, mais survit à une rotation du log — l'option des vrais serveurs)."
         ],
         expected: "Apr 28 12:10:11 dojo systemd[1]: Started Session 12.",
         culture: "L'option la plus culte de `tail` est `-f` (**follow**) : `tail -f /var/log/nginx/access.log` affiche les nouvelles lignes **en temps réel**, à mesure qu'elles arrivent. C'est LE geste de tout admin qui débogue un serveur en direct : on lance `tail -f` sur un log, on reproduit le bug, et on voit l'erreur s'écrire sous ses yeux. On quitte avec `Ctrl+C`. Un outil de 1979 encore irremplaçable aujourd'hui.",
@@ -2797,7 +2811,8 @@ var QUESTS = [
         steps: [
           "Compte les échecs : `grep Failed /var/log/auth.log | wc -l`",
           "Le pipe passe les lignes « Failed » à `wc -l`, qui les compte",
-          "Le chiffre te dit combien d'attaques ont eu lieu"
+          "Le chiffre te dit combien d'attaques ont eu lieu",
+          "💡 **Ce que `wc` sait compter** : `wc -l` (lignes) · `wc -w` (mots) · `wc -c` (octets) · `wc -m` (caractères). `wc` seul (sans option) affiche les trois d'un coup : lignes, mots, octets."
         ],
         expected: "$ grep Failed /var/log/auth.log | wc -l\n2",
         culture: "`wc` (word count) compte lignes (`-l`), mots (`-w`) ou octets (`-c`). Seul il est banal ; en **bout de pipe**, il devient un compteur universel : `ls | wc -l` = nombre de fichiers, `grep -c` ou `... | wc -l` = nombre d'occurrences, `who | wc -l` = nombre d'utilisateurs connectés. Transformer une liste en un CHIFFRE est une opération si fréquente que `wc -l` est l'un des maillons de pipe les plus tapés au monde.",
@@ -2813,7 +2828,8 @@ var QUESTS = [
         steps: [
           "Capture les erreurs dans un fichier : `grep ERROR /var/log/syslog > ~/erreurs.txt`",
           "Rien ne s'affiche à l'écran : tout est parti dans le fichier",
-          "Relis ton rapport : `cat ~/erreurs.txt`"
+          "Relis ton rapport : `cat ~/erreurs.txt`",
+          "💡 **Tous les opérateurs de redirection** : `> fichier` (écrit, en écrasant) · `>> fichier` (ajoute à la fin) · `2> erreurs.log` (redirige SEULEMENT les messages d'erreur) · `> tout.log 2>&1` ou `&> tout.log` (capture la sortie ET les erreurs) · `2>/dev/null` (jette les erreurs à la poubelle)."
         ],
         expected: "$ cat ~/erreurs.txt\nApr 28 12:06:01 dojo CRON[2105]: ERROR backup failed",
         culture: "`>` et `>>` manipulent les **flux standards** d'Unix. Toute commande a trois canaux : l'entrée (stdin), la sortie (stdout) et les erreurs (stderr). `>` redirige stdout vers un fichier en **écrasant**, `>>` en **ajoutant** à la fin. Piège classique : `>` détruit le contenu existant SANS confirmation. Pour capturer aussi les erreurs : `2>` (stderr) ou `&>` (les deux). Ces symboles sont la plomberie invisible de tous les scripts.",
