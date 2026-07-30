@@ -3648,7 +3648,8 @@ var QUESTS = [
           "Crée d'abord le fichier : `touch notes.txt`",
           "Ouvre-le : `nano notes.txt` — tu peux taper ton texte directement",
           "Pour enregistrer : `Ctrl+O` puis Entrée (O = *write Out*, « écrire »)",
-          "Pour quitter : `Ctrl+X`"
+          "Pour quitter : `Ctrl+X`",
+          "💡 **Les raccourcis nano à retenir** : `Ctrl+O` (enregistrer) · `Ctrl+X` (quitter) · `Ctrl+W` (chercher, *Where*) · `Ctrl+K` (couper la ligne) · `Ctrl+U` (coller). Le `^` affiché en bas = la touche Ctrl. Choisir son éditeur : `nano` pour aller vite sans réfléchir, `vim` quand on veut la puissance (exo suivant)."
         ],
         expected: "(éditeur ouvert)\n^G Aide   ^O Écrire\n^X Quitter ^W Chercher\n^K Couper  ^U Coller",
         diagram: "Raccourcis nano :\n  Ctrl+X  →  Quitter\n  Ctrl+O  →  Enregistrer (write Out)\n  Ctrl+W  →  Rechercher (Where)\n  Ctrl+K  →  Couper la ligne\n  Ctrl+U  →  Coller",
@@ -3666,7 +3667,8 @@ var QUESTS = [
           "Ouvre : `vim /etc/hostname` — tu démarres en mode NORMAL",
           "Passe en écriture : tape `i` (le bas affiche `-- INSERT --`)",
           "Reviens en NORMAL : touche `Échap`",
-          "Quitte : `:q` (ou `:q!` pour partir sans rien sauver)"
+          "Quitte : `:q` (ou `:q!` pour partir sans rien sauver)",
+          "💡 **Les commandes de survie vim** (toujours en mode NORMAL, après `Échap`) : `:w` (enregistrer) · `:q` (quitter) · `:wq` ou `:x` (enregistrer ET quitter) · `:q!` (quitter en JETANT les modifications — le bouton d'évacuation)."
         ],
         expected: "(vim ouvert)\n~\n~\n~\n\"hostname\" 1L, 5C\n-- INSERT --  (après `i`)",
         diagram: "Cycle vim :\n         ┌──────────┐\n   `i`  →│  INSERT  │ Esc → NORMAL\n         └──────────┘\n  ┌─────────┐\n  │ NORMAL  │ ←── démarrage\n  └────┬────┘\n       │  `:`\n       ↓\n   ┌─────────┐\n   │ COMMAND │  → :w :q :wq :q!\n   └─────────┘",
@@ -3683,7 +3685,8 @@ var QUESTS = [
         steps: [
           "Ouvre : `vim /etc/ssh/sshd_config`",
           "En mode NORMAL, tape `/PermitRootLogin` puis Entrée",
-          "Appuie sur `n` pour aller à l'occurrence suivante"
+          "Appuie sur `n` pour aller à l'occurrence suivante",
+          "💡 **Chercher ET remplacer dans vim** : `/motif` (chercher vers le bas) · `?motif` (vers le haut) · `n`/`N` (occurrence suivante/précédente) · `:%s/ancien/nouveau/g` (remplacer TOUTES les occurrences dans le fichier) · `:%s/ancien/nouveau/gc` (pareil, mais en demandant confirmation à chaque fois)."
         ],
         expected: "(vim) Ligne 32 :\nPermitRootLogin no",
         culture: "La recherche `/motif` de vim comprend les **expressions régulières** (regex) : tu peux chercher des motifs, pas seulement des mots exacts. `/error` trouve « error », mais `/err.*` trouverait tout ce qui commence par « err ». Cette même logique de recherche se retrouve dans `grep`, `sed`, et presque tous les outils Unix — l'apprendre une fois, c'est la réutiliser partout.",
@@ -4167,7 +4170,11 @@ var QUESTS = [
         context: "La pile KVM sous Ubuntu : `qemu-kvm` (le moteur d'exécution) et `libvirt-daemon-system` (le service qui gère les VM). On les installe avec `apt`.",
         scene: "Le CPU est compatible. Installe de quoi créer des VM.",
         mission: "Installe qemu-kvm et libvirt-daemon-system.",
-        steps: ["`sudo apt install qemu-kvm libvirt-daemon-system`", "Attends la fin de l'installation"],
+        steps: [
+          "`sudo apt install qemu-kvm libvirt-daemon-system`",
+          "Attends la fin de l'installation",
+          "💡 **Les commandes `apt` du quotidien** : `apt update` (rafraîchit la liste des paquets disponibles) · `apt upgrade` (met à jour ceux installés) · `apt install <paquet>` (installe) · `apt remove <paquet>` (désinstalle) · `apt search <mot>` (cherche un paquet). Le réflexe avant d'installer : toujours `apt update` d'abord."
+        ],
         expected: "$ sudo apt install qemu-kvm libvirt-daemon-system\nSetting up qemu-kvm ...\nSetting up libvirt-daemon-system ...\nDone.",
         culture: "**libvirt** est une couche d'abstraction : la même commande `virsh` pilote KVM, mais aussi Xen, VMware ou des conteneurs LXC. Tu apprends `virsh` une seule fois, et tu commandes n'importe quel hyperviseur. C'est le `systemctl` du monde des VM.",
         reflection: "Différence entre `qemu-kvm` et `libvirt` ?\n👉 **QEMU/KVM** = le moteur qui *fait tourner* la VM (CPU, RAM, disque virtuels). **libvirt** = le chef d'orchestre qui *gère* les VM (démarrer, arrêter, lister, cloner) via son démon `libvirtd` et l'outil `virsh`. L'un exécute, l'autre organise.",
@@ -4203,7 +4210,11 @@ var QUESTS = [
         context: "`virsh start <nom>` démarre une VM éteinte : elle passe de `shut off` à `running`, comme un vrai serveur qu'on allume. `virsh shutdown <nom>` fait l'inverse, proprement.",
         scene: "Réveille la VM ubuntu-serveur.",
         mission: "Démarre la VM `ubuntu-serveur`, puis confirme qu'elle tourne.",
-        steps: ["`virsh start ubuntu-serveur`", "`virsh list` → elle apparaît en `running`"],
+        steps: [
+          "`virsh start ubuntu-serveur`",
+          "`virsh list` → elle apparaît en `running`",
+          "💡 **La télécommande d'une VM (le `systemctl` des machines)** : `virsh start nom` (allumer) · `virsh shutdown nom` (éteindre poliment) · `virsh reboot nom` (redémarrer) · `virsh suspend`/`virsh resume` (mettre en pause / reprendre) · `virsh destroy nom` (couper le courant en force — ne SUPPRIME pas la VM, malgré le nom)."
+        ],
         expected: "$ virsh start ubuntu-serveur\nDomain 'ubuntu-serveur' started",
         culture: "Différence subtile mais vitale : `virsh shutdown` demande **poliment** à l'OS invité de s'éteindre (comme le bouton power), alors que `virsh destroy` **coupe le courant** brutalement (comme arracher la prise). `destroy` ne détruit PAS la VM — il la force juste à s'arrêter. Mauvais nom, piège classique.",
         reflection: "Tu fais `virsh shutdown` mais la VM reste `running`. Pourquoi ?\n👉 `shutdown` envoie un signal à l'OS *invité*, qui doit coopérer (avoir les agents ACPI). S'il ne répond pas, la VM ne s'éteint pas. En dernier recours : `virsh destroy` (arrêt forcé). Comme un PC figé qu'on éteint par le bouton maintenu.",
