@@ -3516,7 +3516,13 @@ var QUESTS = [
         context: "useradd crée un compte. -m crée le home directory. -s définit le shell. -G ajoute aux groupes secondaires. Toujours suivi de passwd pour fixer le mot de passe.",
         scene: "Un nouveau collègue arrive. Tu dois lui créer un compte 'alice' avec home et bash.",
         mission: "Crée l'utilisateur alice avec son home directory.",
-        steps: ["`sudo useradd -m -s /bin/bash alice`", "`-m` crée /home/alice", "`-s /bin/bash` définit le shell", "Vérifie : `cat /etc/passwd | grep alice`"],
+        steps: [
+          "`sudo useradd -m -s /bin/bash alice`",
+          "`-m` crée /home/alice",
+          "`-s /bin/bash` définit le shell",
+          "Vérifie : `cat /etc/passwd | grep alice`",
+          "💡 **Les deux commandes pour créer un compte** : `useradd -m -s /bin/bash alice` (bas niveau, précis, parfait pour un SCRIPT — n'oublie pas le `-m` !) · `adduser alice` (le script convivial de Debian/Ubuntu : crée le home, demande le mot de passe et pose les questions tout seul — parfait À LA MAIN)."
+        ],
         expected: "$ sudo useradd -m -s /bin/bash alice\n$ grep alice /etc/passwd\nalice:x:1001:1001::/home/alice:/bin/bash",
         diagram: "useradd options :\n  -m  →  crée /home/<name>\n  -s  →  shell par défaut\n  -G  →  groupes additionnels\n  -u  →  UID forcé",
         culture: "Attention à un piège célèbre : `useradd` (bas niveau, austère) ne crée PAS le home ni ne demande de mot de passe par défaut — d'où le `-m` obligatoire. Son cousin `adduser` (un script Perl convivial, Debian/Ubuntu) fait tout automatiquement et pose les questions de façon interactive. Beaucoup de tutos confondent les deux. Règle : `adduser` pour la main, `useradd` (précis, scriptable) pour l'automatisation.",
@@ -3585,7 +3591,12 @@ var QUESTS = [
         context: "userdel supprime un compte. Sans option : garde le home. Avec -r : supprime aussi /home/<user> ET les mails. À utiliser avec précaution.",
         scene: "Alice quitte la société. Tu dois supprimer son compte ET ses fichiers.",
         mission: "Supprime alice avec son home directory.",
-        steps: ["`sudo userdel -r alice`", "`-r` = remove home et mail", "Vérifie : `ls /home`"],
+        steps: [
+          "`sudo userdel -r alice`",
+          "`-r` = remove home et mail",
+          "Vérifie : `ls /home`",
+          "💡 **Les variantes de suppression** : `userdel alice` (supprime le compte mais GARDE `/home/alice` — utile pour archiver ses fichiers) · `userdel -r alice` (supprime AUSSI le home et les mails — le nettoyage complet) · `deluser --remove-home alice` (l'équivalent convivial Debian/Ubuntu)."
+        ],
         expected: "$ sudo userdel -r alice\n$ ls /home\nuser",
         culture: "Supprimer un compte à un départ est une obligation de sécurité (un compte oublié = une porte ouverte), mais le `-r` (remove home) est à double tranchant. Il efface `/home/alice` ET les mails — parfois des données que l'entreprise doit ARCHIVER légalement. La bonne pratique en production n'est souvent pas de supprimer mais de **désactiver** (`usermod -L alice` verrouille le compte, ou `usermod -s /usr/sbin/nologin` interdit la connexion) : l'accès est coupé, mais les fichiers restent récupérables.",
         reflection: "Faut-il toujours utiliser `userdel -r` quand un employé part ?\n👉 Pas forcément. Le `-r` détruit ses fichiers **définitivement** — or l'entreprise doit parfois les conserver (obligations légales, passation à un successeur). Souvent on **désactive** d'abord le compte (`usermod -L`), on archive le home, et on ne supprime qu'après. Couper l'accès immédiatement : oui. Détruire les données dans la foulée : à réfléchir. La révocation d'accès et la suppression de données sont deux décisions distinctes.",
@@ -3805,7 +3816,8 @@ var QUESTS = [
         steps: [
           "Tape `echo \"Aujourd'hui : $(date)\"`",
           "Le `$(date)` est exécuté EN PREMIER",
-          "Son résultat remplace `$(date)` dans la phrase, puis `echo` affiche le tout"
+          "Son résultat remplace `$(date)` dans la phrase, puis `echo` affiche le tout",
+          "💡 **Les deux écritures (même résultat)** : `$(date)` (la moderne, recommandée — elle s'imbrique proprement) et l'ancienne aux accents graves `` `date` ``. On range souvent le résultat dans une variable : `MAINTENANT=$(date)` puis `echo $MAINTENANT`."
         ],
         expected: "$ echo \"Aujourd'hui : $(date)\"\nAujourd'hui : Tue May 5 10:30:00 UTC 2026",
         culture: "L'ancienne syntaxe de la substitution utilisait des **accents graves** : `` `date` `` faisait la même chose que `$(date)`. On préfère aujourd'hui `$(...)` car elle s'**imbrique** proprement : `$(dirname $(which bash))` est lisible, alors que la version en accents graves imbriqués devient un cauchemar d'échappements. Un des rares cas où la nouvelle syntaxe a gagné net contre l'ancienne.",
@@ -3991,7 +4003,8 @@ var QUESTS = [
         steps: [
           "Prépare le fichier : `git add notes.txt`",
           "Vérifie avec `git status` : il passe de rouge (untracked) à vert (staged)",
-          "Astuce : `git add .` prépare TOUT le dossier d'un coup"
+          "Astuce : `git add .` prépare TOUT le dossier d'un coup",
+          "💡 **Les façons de préparer** : `git add fichier.txt` (un fichier précis) · `git add .` (tout le dossier courant) · `git add -A` (tout le dépôt, y compris les suppressions) · `git add -p` (interactif : Git te montre chaque morceau et te demande si tu l'inclus — pour des commits chirurgicaux)."
         ],
         expected: "$ git add notes.txt\n$ git status\nChanges to be committed:\n\tnew file:   notes.txt",
         culture: "Cette **zone d'attente** entre « modifié » et « gravé » est LA particularité de Git. Elle te permet de faire des commits propres et cohérents : tu peux modifier 10 fichiers mais n'en préparer que 3 pour un commit « Corrige le bug de connexion », puis les 7 autres pour un commit « Met à jour la doc ». Un historique lisible se construit ici, fichier par fichier, plutôt que de tout jeter en vrac.",
@@ -4004,7 +4017,11 @@ var QUESTS = [
         context: "`git commit -m \"message\"` enregistre définitivement les fichiers de l'index dans l'historique. Le `-m` fournit le message qui décrit le changement. Sans message, Git refuse.",
         scene: "Ton fichier est dans l'index. Il est temps de le graver dans l'histoire.",
         mission: "Crée un commit avec un message clair.",
-        steps: ["`git commit -m \"Ajoute mes notes\"`", "Git renvoie un identifiant de commit (hash)"],
+        steps: [
+          "`git commit -m \"Ajoute mes notes\"`",
+          "Git renvoie un identifiant de commit (hash)",
+          "💡 **Les variantes** : `git commit -m \"msg\"` (message en ligne) · `git commit` (ouvre un éditeur pour un message long) · `git commit -am \"msg\"` (fait le `add` des fichiers DÉJÀ suivis ET le commit d'un coup) · `git commit --amend` (corrige le DERNIER commit : message ou fichiers oubliés)."
+        ],
         expected: "[main a1b2c3d] Ajoute mes notes\n 1 file(s) changed",
         culture: "Chaque commit reçoit un **hash SHA-1** (ex : `a1b2c3d`) : une empreinte unique de 40 caractères calculée à partir du contenu, de l'auteur, de la date ET du commit précédent. Cet enchaînement rend l'historique **infalsifiable** : changer un vieux commit changerait tous les hashes suivants. C'est la même idée que la blockchain — inventée par Git dix ans avant le Bitcoin.",
         reflection: "Pourquoi Git impose-t-il un message à chaque commit ?\n👉 Parce que l'historique se lit comme un journal de bord. Dans six mois, `git log` doit te raconter l'histoire du projet : ce qui a changé et POURQUOI. Un bon message (\"Corrige la fuite mémoire au démarrage\") vaut de l'or ; un mauvais (\"maj\", \"fix\", \"truc\") rend l'historique inutile.",
@@ -4016,8 +4033,14 @@ var QUESTS = [
         context: "`git log` affiche l'historique des commits, du plus récent au plus ancien : hash, auteur, date, message. C'est la mémoire du projet.",
         scene: "Tu veux voir tous les commits déjà réalisés.",
         mission: "Affiche l'historique des commits.",
-        steps: ["`git log`", "Chaque bloc = un commit avec son hash et son message"],
+        steps: [
+          "`git log`",
+          "Chaque bloc = un commit avec son hash et son message",
+          "💡 **Les vues qui rendent `git log` lisible** : `git log --oneline` (une ligne par commit, compact) · `git log -3` (les 3 derniers seulement) · `git log --graph --oneline --all` (l'arbre des branches en ASCII) · `git log --stat` (avec la liste des fichiers modifiés à chaque commit)."
+        ],
         expected: "commit a1b2c3d...\nAuthor: user <user@dojo>\nDate:   ...\n\n    Ajoute mes notes",
+        culture: "`git log` est la mémoire du projet, mais brut il est vite illisible. Les pros vivent avec `git log --oneline --graph` : d'un coup d'œil, ils voient l'enchaînement des commits et des branches. Autre trésor : `git log --oneline fichier.txt` montre TOUTE l'histoire d'un seul fichier, et `git log --author=\"Marie\"` filtre par personne. Savoir interroger l'historique, c'est savoir enquêter : « qui a changé cette ligne, et pourquoi ? ».",
+        reflection: "L'historique est devenu énorme et illisible avec `git log`. Comment le rendre exploitable ?\n👉 `git log --oneline` le condense à une ligne par commit (hash court + message). Ajoute `--graph --all` pour visualiser les branches, ou `-5` pour ne voir que les 5 derniers. Pour enquêter sur UN fichier : `git log --oneline fichier`. Le brut `git log` répond rarement à la vraie question — ce sont ses options qui en font un outil d'enquête.",
         check: function(s) { return sysState.git.commits.length > 0 && s.history.some(function(c) { return c.indexOf('git log') === 0; }); }
       },
       {
@@ -4081,7 +4104,8 @@ var QUESTS = [
         steps: [
           "Vérifie d'abord le contenu : `tar -tzf backup.tar.gz` (t=lister, sans extraire)",
           "Puis extrais : `tar -xzf backup.tar.gz` (x=extraire)",
-          "Les fichiers d'origine réapparaissent dans le dossier courant"
+          "Les fichiers d'origine réapparaissent dans le dossier courant",
+          "💡 **Les variantes d'extraction** : `tar -xzf archive.tar.gz` (extrait ici) · `tar -xzf archive.tar.gz -C /tmp/restore` (extrait DANS un dossier précis, avec `-C`) · `tar -xzf archive.tar.gz Documents/notes.txt` (extrait UN seul fichier de l'archive). Pour du `.tar.bz2` ou `.tar.xz`, remplace `z` par `j` ou `J`."
         ],
         expected: "$ tar -xzf backup.tar.gz\nExtraction de backup.tar.gz...\n  Documents",
         culture: "Les trois lettres de tête de `tar` forment un mini-langage : **c**reate (créer), e**x**tract (extraire), lis**t** (`t`). Toujours suivies de `z` (gzip) et `f` (fichier). Beaucoup de systèmes de sauvegarde professionnels ne sont, au fond, qu'un `tar -czf` horodaté lancé par cron et envoyé sur un stockage distant. L'outil de 1979 est encore le socle des sauvegardes modernes.",
