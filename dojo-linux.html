@@ -2892,7 +2892,8 @@ var QUESTS = [
         steps: [
           "Démarre-le : `sudo systemctl start nginx`",
           "Vérifie qu'il tourne : `systemctl status nginx`",
-          "Tu dois maintenant voir `active (running)`"
+          "Tu dois maintenant voir `active (running)`",
+          "💡 **Les quatre verbes qui pilotent un service** : `start` (allume) · `stop` (éteint) · `restart` (coupe puis rallume) · `reload` (recharge la config SANS couper — l'option de production). En cas de doute sur l'état : `systemctl status <service>`."
         ],
         expected: "$ sudo systemctl start nginx\n$ systemctl status nginx\n● Active: active (running)",
         culture: "`start`, `stop`, `restart`, `reload` : ce sont les quatre verbes de base. `restart` arrête puis redémarre (coupure brève) ; `reload` recharge la config SANS couper le service (idéal en production pour appliquer un changement sans interrompre les visiteurs). Sur un serveur web chargé, un admin averti fait `reload` plutôt que `restart` chaque fois que c'est possible.",
@@ -2905,7 +2906,11 @@ var QUESTS = [
         context: "`systemctl enable` rend un service automatique au boot. `disable` le désactive. Différent de start/stop qui sont immédiats.",
         scene: "Tu veux que nginx démarre tout seul à chaque reboot.",
         mission: "Active nginx au démarrage du système.",
-        steps: ["`sudo systemctl enable nginx`", "Le service est marqué pour démarrer au boot"],
+        steps: [
+          "`sudo systemctl enable nginx`",
+          "Le service est marqué pour démarrer au boot",
+          "💡 **Les variantes autour du boot** : `enable` (démarre au boot) · `disable` (ne démarre plus au boot) · `enable --now` (active au boot ET démarre TOUT DE SUITE — le combo gagnant, deux gestes en un) · `is-enabled nginx` (juste vérifier : « est-il programmé au boot ? »)."
+        ],
         expected: "$ sudo systemctl enable nginx\nCreated symlink /etc/systemd/system/multi-user.target.wants/nginx.service",
         culture: "La distinction `start` / `enable` est LE piège n°1 de l'administration de services. `start` = « démarre MAINTENANT » (état immédiat, perdu au reboot). `enable` = « démarre à CHAQUE boot » (persistant, mais ne lance rien maintenant). Techniquement, `enable` crée juste un **lien symbolique** (le message le montre) qui dit à systemd de lancer le service au prochain démarrage. Les deux sont indépendants — d'où le réflexe `enable --now` qui fait les deux d'un coup.",
         reflection: "Tu fais `systemctl enable nginx` mais nginx ne répond toujours pas. Pourquoi ?\n👉 Parce que `enable` ne DÉMARRE pas le service — il le programme juste pour le prochain boot. Tant que tu ne fais pas `systemctl start nginx` (ou que tu ne redémarres pas la machine), il reste éteint. Le combo gagnant : `systemctl enable --now nginx` (active au boot ET démarre maintenant), ou les deux commandes séparément.",
@@ -3087,7 +3092,12 @@ var QUESTS = [
         context: "ATTENTION : avant d'activer ufw sur un serveur distant, autorise SSH (port 22) sinon tu te coupes l'accès. Toujours `ufw allow 22` avant `ufw enable`.",
         scene: "Tu veux activer le pare-feu sans te bloquer.",
         mission: "Autorise SSH puis active le pare-feu.",
-        steps: ["`sudo ufw allow 22`", "`sudo ufw enable`", "`sudo ufw status` pour confirmer"],
+        steps: [
+          "`sudo ufw allow 22`",
+          "`sudo ufw enable`",
+          "`sudo ufw status` pour confirmer",
+          "💡 **Les façons d'écrire une règle** : `ufw allow 22` (par numéro de port) · `ufw allow ssh` (par nom de service, ufw connaît les ports usuels) · `ufw allow 80/tcp` (port + protocole) · `ufw deny 23` (bloquer explicitement) · `ufw delete allow 22` (retirer une règle). Pour voir les règles numérotées : `ufw status numbered`."
+        ],
         expected: "$ sudo ufw allow 22\nRule added\n$ sudo ufw enable\nFirewall is active",
         culture: "Autoriser le port 22 AVANT d'activer le pare-feu est l'une des règles de survie les plus importantes de l'admin distant. Le scénario cauchemar : tu es connecté en SSH sur un serveur à l'autre bout du monde, tu tapes `ufw enable` sans avoir autorisé SSH → le pare-feu **coupe ta propre connexion** et tu es verrouillé dehors, sans moyen de revenir. Des milliers d'admins ont vécu ce moment de panique. `ufw` te met même en garde par un avertissement. La règle : `allow 22` d'abord, TOUJOURS.",
         reflection: "Pourquoi la philosophie « tout bloquer, puis ouvrir le minimum » est-elle plus sûre que l'inverse ?\n👉 Parce qu'un pare-feu en **liste blanche** (deny par défaut, allow ciblé) ne laisse passer QUE ce que tu as explicitement autorisé. Tout nouveau service, tout port oublié reste fermé par défaut — donc protégé. L'approche inverse (tout ouvert, fermer les risques) t'oblige à connaître et bloquer CHAQUE menace, une par une : impossible. Le refus par défaut est le fondement de toute sécurité réseau.",
@@ -3175,7 +3185,8 @@ var QUESTS = [
         steps: [
           "Tape `df -h` (`-h` = tailles lisibles)",
           "Lis les colonnes : `Size` (total), `Used` (occupé), `Avail` (libre), `Use%` (pourcentage plein)",
-          "Repère les partitions proches de 100% : elles vont poser problème"
+          "Repère les partitions proches de 100% : elles vont poser problème",
+          "💡 **Les variantes** : `df -h` (tailles lisibles Go/Mo) · `df -h /` (juste la partition qui contient `/`) · `df -i` (les *inodes* : le NOMBRE de fichiers possibles — utile quand `df -h` montre de la place mais que l'écriture échoue quand même)."
         ],
         expected: "Filesystem  Size  Used  Avail  Use%  Mounted\n/dev/sda1   50G   12G   36G    25%   /\ntmpfs       2G    0     2G     0%    /tmp",
         culture: "Un disque plein à **100%** est l'une des pannes les plus vicieuses : le système ne peut plus écrire de logs (donc plus de traces), les bases de données refusent les écritures, les sessions plantent. Et le pire : parfois `df` montre de la place libre mais l'écriture échoue quand même — parce que ce sont les **inodes** (le nombre de fichiers possibles) qui sont épuisés, pas l'espace. `df -i` révèle ce cas rare. Toujours garder une marge : au-dessus de 90%, on agit.",
@@ -3188,7 +3199,11 @@ var QUESTS = [
         context: "du (disk usage) calcule la taille d'un dossier. `-sh` (sum + human) = taille totale lisible.",
         scene: "Tu veux savoir combien pèse ton home.",
         mission: "Affiche la taille de ton home.",
-        steps: ["`du -sh ~`", "Le résultat est la taille totale (récursive)"],
+        steps: [
+          "`du -sh ~`",
+          "Le résultat est la taille totale (récursive)",
+          "💡 **Les variantes** : `du -sh dossier` (juste le total du dossier) · `du -h --max-depth=1 dossier` (le poids de chaque sous-dossier, un niveau) · `du -sh /var/* | sort -rh | head` (le classement des plus gros — LE réflexe quand un disque se remplit)."
+        ],
         expected: "$ du -sh ~\n128M  /home/user",
         culture: "`df` et `du` sont complémentaires mais différents : `df` regarde le disque **d'en haut** (combien reste-t-il sur la partition ?), `du` regarde **d'en bas** (combien pèse ce dossier précis ?). Le combo qui sauve : quand un disque est plein (`df` à 95%), on lance `du -sh /var/*` pour trouver QUEL dossier est le coupable, puis on descend : `du -sh /var/log/*`. On traque le gouffre de proche en proche jusqu'à trouver le fichier géant.",
         reflection: "Ton disque est plein. Quelle stratégie avec `du` pour trouver ce qui le remplit ?\n👉 On descend l'arbre en suivant le plus gros à chaque niveau : `du -sh /*` (racine), repère le plus lourd (souvent `/var`), puis `du -sh /var/*`, puis `du -sh /var/log/*`... jusqu'au fichier coupable. Astuce pro : `du -sh /var/* | sort -rh | head` trie et montre directement les plus gros. La chasse au gaspillage d'espace, geste hebdomadaire de l'admin.",
@@ -3231,7 +3246,8 @@ var QUESTS = [
         steps: [
           "Tape `free -h`",
           "Ligne `Mem:` → ta RAM (colonne `available` = réellement dispo)",
-          "Ligne `Swap:` → la mémoire de secours sur disque (lente : si elle se remplit, la machine souffre)"
+          "Ligne `Swap:` → la mémoire de secours sur disque (lente : si elle se remplit, la machine souffre)",
+          "💡 **Les variantes** : `free -h` (unités lisibles Gi/Mi) · `free -m` (tout en Mo) · `free -g` (tout en Go) · `free -h -s 2` (rafraîchit l'affichage toutes les 2 secondes, pour surveiller en direct)."
         ],
         expected: "              total   used   free   available\nMem:          16Gi   4.2Gi  3.8Gi      11Gi\nSwap:         2.0Gi     0B  2.0Gi",
         culture: "Le **swap** est une extension de la RAM… sur le disque. Quand la RAM est pleine, le système déplace les données les moins utilisées vers le swap pour faire de la place. Problème : le disque est des milliers de fois plus lent que la RAM. Un serveur qui « swappe » beaucoup rame terriblement. Voir le swap se remplir dans `free` est un signal d'alarme : il manque de la vraie RAM.",
@@ -3311,7 +3327,8 @@ var QUESTS = [
         steps: [
           "Tape `ip a` (ou `ifconfig`)",
           "Repère la carte `eth0` et sa ligne `inet` → c'est ton adresse IP (192.168.1.42)",
-          "Ignore `lo` (127.0.0.1) : c'est la boucle locale, pas une vraie adresse réseau"
+          "Ignore `lo` (127.0.0.1) : c'est la boucle locale, pas une vraie adresse réseau",
+          "💡 **La famille de commandes `ip`** : `ip a` (les adresses IP) · `ip r` (la table de routage : par où sort le trafic, quelle passerelle) · `ip link` (l'état physique des cartes : `UP`/`DOWN`). Les équivalents anciens, encore vus partout : `ifconfig` (≈ `ip a`) et `route -n` (≈ `ip r`)."
         ],
         expected: "eth0: ... inet 192.168.1.42  netmask 255.255.255.0\nlo: ... inet 127.0.0.1",
         culture: "`192.168.1.42` est une adresse **privée** : les plages `192.168.x.x`, `10.x.x.x` et `172.16-31.x.x` ne circulent pas sur Internet. Ta box fait la traduction (le *NAT*) entre ton réseau privé et l'unique adresse publique de ton abonnement. C'est ainsi que 50 appareils chez toi partagent une seule IP publique vue de l'extérieur.",
@@ -3327,7 +3344,8 @@ var QUESTS = [
         steps: [
           "Tape `ping 8.8.8.8`",
           "Des lignes `64 bytes from ...` = la machine répond, la connexion marche",
-          "Le `time=` indique la latence (le temps d'aller-retour) en millisecondes"
+          "Le `time=` indique la latence (le temps d'aller-retour) en millisecondes",
+          "💡 **Les variantes utiles** : `ping 8.8.8.8` (tourne à l'infini — on arrête avec Ctrl+C) · `ping -c 4 8.8.8.8` (s'arrête tout seul après 4 paquets — l'option à réflexe) · `ping -c 4 google.com` (tester par NOM, ce qui vérifie aussi le DNS)."
         ],
         expected: "PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.\n64 bytes from 8.8.8.8: icmp_seq=1 ttl=117 time=12.2 ms",
         culture: "`ping` doit son nom au **sonar** des sous-marins : envoyer un signal, écouter l'écho. Le `ttl` (*time to live*) de la réponse compte les routeurs traversés : parti de 128, un ttl de 117 = ~11 sauts entre toi et la cible. Attention : certains serveurs bloquent volontairement le ping pour rester discrets — « ne pas répondre au ping » ne signifie donc pas toujours « en panne ».",
