@@ -142,6 +142,22 @@
 
   .pj-challenge{background:rgba(200,52,28,.06);border:1px solid var(--line);border-left:3px solid var(--vermilion);border-radius:10px;padding:12px 15px;font-size:.9rem;color:var(--ink);margin-bottom:14px;}
   .pj-challenge b{color:var(--vermilion);font-family:var(--font-mono);font-size:.74rem;letter-spacing:.04em;text-transform:uppercase;display:block;margin-bottom:3px;}
+  /* ── Fil rouge : une PME qui grandit ── */
+  .story{position:relative;margin:6px 0 4px;}
+  .story::before{content:"";position:absolute;left:26px;top:10px;bottom:10px;width:2px;background:linear-gradient(var(--gold),var(--vermilion));opacity:.35;}
+  .stage{position:relative;display:grid;grid-template-columns:54px 1fr;gap:16px;margin:0 0 20px;}
+  .stage-num{position:relative;z-index:1;width:54px;height:54px;border-radius:50%;background:var(--card-2);border:2px solid var(--gold);display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:var(--shadow);}
+  .stage-num b{font-family:var(--font-display);font-size:1.2rem;color:var(--vermilion);line-height:1;}
+  .stage-num span{font-family:var(--font-mono);font-size:.48rem;letter-spacing:.04em;color:var(--taupe);text-transform:uppercase;margin-top:2px;}
+  .stage-card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:16px 18px;min-width:0;}
+  .stage-card h3{font-family:var(--font-display);font-weight:700;font-size:1.15rem;margin:0 0 2px;}
+  .stage-size{font-family:var(--font-mono);font-size:.66rem;color:var(--taupe);letter-spacing:.03em;}
+  .stage-problem{font-style:italic;color:var(--ink-soft);margin:9px 0 10px;border-left:3px solid var(--vermilion);padding-left:11px;font-size:.92rem;}
+  .stage-proj{display:inline-flex;align-items:center;gap:7px;font-family:var(--font-mono);font-size:.72rem;text-decoration:none;background:var(--paper-2);border:1px solid var(--line);color:var(--ink);padding:5px 11px;border-radius:100px;margin-bottom:12px;}
+  .stage-proj:hover{border-color:var(--vermilion);}
+  .stage-proj b{color:var(--vermilion);}
+  pre.schema{margin:0;background:#1a1712;color:#d9cfb6;border-radius:9px;padding:13px 15px;font-family:var(--font-mono);font-size:.75rem;line-height:1.5;overflow-x:auto;white-space:pre;border:1px solid #33291c;}
+  @media(max-width:560px){.stage{grid-template-columns:40px 1fr;gap:11px;}.stage-num{width:40px;height:40px;}.stage-num b{font-size:1rem;}.story::before{left:19px;}}
 </style>
 </head>
 <body>
@@ -162,6 +178,115 @@
     <h1>Des projets qui font un vrai CV</h1>
     <p>Pas des tutos copier-coller : 7 projets d'infrastructure <b>ambitieux</b>, comme en entreprise. Chacun a son <b>vrai défi</b>, son guide pas à pas, et ce qu'il prouve sur ton CV.</p>
   </header>
+
+  <section class="section" style="margin-top:30px">
+    <div class="sec-head">
+      <div class="sec-eyebrow">Le fil rouge</div>
+      <h2>Une PME qui grandit</h2>
+      <p>Ces projets ne sortent pas de nulle part : ils racontent la croissance d'une entreprise. Voici <b>BayouTech</b>, de la startup au multi-sites — et le projet qu'on déploie à chaque étape.</p>
+    </div>
+    <div class="story">
+
+      <div class="stage">
+        <div class="stage-num"><b>1</b><span>~5 pers.</span></div>
+        <div class="stage-card">
+          <h3>La startup</h3>
+          <div class="stage-size">Une petite équipe · un site vitrine qui devient vital</div>
+          <p class="stage-problem">« Notre site est notre vitrine commerciale : il ne doit JAMAIS tomber, même si un serveur plante. »</p>
+          <a class="stage-proj" href="#projects">→ Projet : <b>Service web en haute disponibilité</b></a>
+          <pre class="schema">          Internet
+             │
+         ┌───────┐
+         │HAProxy│  + keepalived  (IP flottante)
+         └───┬───┘
+        ┌────┴────┐
+     ┌──┴──┐   ┌──┴──┐
+     │web 1│   │web 2│   (nginx)
+     └──┬──┘   └──┬──┘
+        └────┬────┘
+       ┌─────┴──────┐
+       │ PostgreSQL │  (+ réplica)
+       └────────────┘</pre>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="stage-num"><b>2</b><span>~20 pers.</span></div>
+        <div class="stage-card">
+          <h3>Ça grossit</h3>
+          <div class="stage-size">15 serveurs · les configs divergent à la main</div>
+          <p class="stage-problem">« Configurer chaque serveur un par un, c'est long, et deux machines ne sont jamais identiques. »</p>
+          <a class="stage-proj" href="#projects">→ Projet : <b>Automatiser la flotte avec Ansible</b></a>
+          <pre class="schema">        ┌─────────┐
+        │ Ansible │  playbooks = config as code
+        └────┬────┘
+   ┌────┬────┼────┬─────┐
+ srv1  srv2 srv3  …   srv15    (config identique, rejouable à l'infini)</pre>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="stage-num"><b>3</b><span>dev</span></div>
+        <div class="stage-card">
+          <h3>Les devs livrent tous les jours</h3>
+          <div class="stage-size">Des mises en production plusieurs fois par semaine</div>
+          <p class="stage-problem">« Déployer à la main, c'est la loterie : un oubli et la prod tombe un vendredi soir. »</p>
+          <a class="stage-proj" href="#projects">→ Projet : <b>Pipeline CI/CD complet</b></a>
+          <pre class="schema"> git push ─▶ CI : tests + build ─▶ registry ─▶ déploiement ─▶ PROD
+                 │                                       ▲
+                 └── échec = on stoppe        rollback ──┘  (si KO)</pre>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="stage-num"><b>4</b><span>SaaS</span></div>
+        <div class="stage-card">
+          <h3>Le produit explose</h3>
+          <div class="stage-size">Des pics de trafic imprévisibles à encaisser</div>
+          <p class="stage-problem">« Un jour 100 utilisateurs, le lendemain 10 000. Il faut scaler tout seul, sans tout casser. »</p>
+          <a class="stage-proj" href="#projects">→ Projet : <b>Cluster de conteneurs (k3s)</b></a>
+          <pre class="schema">   ┌──────────── cluster k3s ────────────┐
+   │   node 1     node 2     node 3       │
+   │   [pods]     [pods]     [pods]       │   ⇅ scaling automatique
+   └──────────────────────────────────────┘
+        un node tombe ⇒ ses pods repartent ailleurs (zéro coupure)</pre>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="stage-num"><b>5</b><span>24/7</span></div>
+        <div class="stage-card">
+          <h3>On vole à l'aveugle</h3>
+          <div class="stage-size">Les pannes, on les apprend par les clients qui râlent</div>
+          <p class="stage-problem">« Un disque plein, un service mort à 3h du matin… et personne n'est prévenu avant qu'il soit trop tard. »</p>
+          <a class="stage-proj" href="#projects">→ Projet : <b>Supervision production-grade</b></a>
+          <pre class="schema"> serveurs ─(exporters)─▶ Prometheus ─▶ Grafana  (tableaux de bord)
+                             │
+                             └─▶ Alertmanager ─▶ 📟 alerte
+                                 (tu es prévenu AVANT le client)</pre>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="stage-num"><b>6</b><span>2 sites</span></div>
+        <div class="stage-card">
+          <h3>Deux bureaux, son propre cloud</h3>
+          <div class="stage-size">La PME ouvre une agence et veut héberger ses propres VM</div>
+          <p class="stage-problem">« Deux sites distants doivent se voir comme un seul réseau — sécurisé, chiffré, sans trou. Et on veut notre datacenter maison. »</p>
+          <a class="stage-proj" href="#projects">→ Projets : <b>Datacenter Proxmox</b> + <b>Infra multi-sites</b></a>
+          <pre class="schema">   Site A — siège              Site B — agence
+  ┌─────────────────┐  VPN     ┌─────────────────┐
+  │ Proxmox + VMs   │ IPsec    │  serveurs       │
+  │ VLAN · DMZ      │◀═══════▶│  VLAN · DMZ     │
+  │ pare-feu pfSense│ chiffré  │  pare-feu       │
+  └─────────────────┘          └─────────────────┘
+       routage dynamique (OSPF) entre les deux sites</pre>
+        </div>
+      </div>
+
+    </div>
+    <p style="text-align:center;font-family:var(--font-mono);font-size:.8rem;color:var(--taupe);margin-top:4px">↓ Les 7 projets en détail, avec leur guide pas à pas ↓</p>
+  </section>
 
   <div class="overall">
     <span class="lbl">Progression globale</span>
