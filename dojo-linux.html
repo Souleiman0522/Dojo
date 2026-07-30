@@ -1132,6 +1132,41 @@ window.addEventListener('error', function(e) {
     line-height: 1.3; padding-right: 16px;
   }
 
+  /* ===== CEINTURES (badges de niveau) ===== */
+  .belt {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-family: var(--font-mono);
+    font-size: 0.6rem; font-weight: 800; letter-spacing: 0.4px;
+    padding: 2px 8px; border-radius: 999px;
+    border: 1px solid transparent; white-space: nowrap; vertical-align: middle;
+  }
+  .belt-beginner     { background: rgba(30,90,61,0.10);  color: var(--green);  border-color: rgba(30,90,61,0.30); }
+  .belt-intermediate { background: rgba(200,144,40,0.12); color: var(--amber);  border-color: rgba(200,144,40,0.34); }
+  .belt-advanced     { background: rgba(139,44,44,0.10);  color: var(--red);    border-color: rgba(139,44,44,0.34); }
+  .belt-expert       { background: rgba(30,58,92,0.12);   color: var(--violet); border-color: rgba(30,58,92,0.36); }
+
+  /* Variante compacte pour la ligne « EXO 07 · … » des cartes */
+  .belt-mini {
+    font-family: var(--font-mono); font-weight: 800;
+    letter-spacing: 0; text-transform: none;
+    padding: 1px 6px; border-radius: 4px; font-size: 0.58rem;
+  }
+  .belt-mini.belt-beginner     { background: rgba(30,90,61,0.10);  color: var(--green); }
+  .belt-mini.belt-intermediate { background: rgba(200,144,40,0.12); color: var(--amber); }
+  .belt-mini.belt-advanced     { background: rgba(139,44,44,0.10);  color: var(--red); }
+  .belt-mini.belt-expert       { background: rgba(30,58,92,0.12);   color: var(--violet); }
+
+  /* Légende des ceintures en haut du parcours */
+  .belt-legend {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+    padding: 6px 4px 2px;
+  }
+  .belt-legend-title {
+    font-family: var(--font-mono); font-size: 0.6rem; font-weight: 800;
+    color: var(--text-2); letter-spacing: 0.5px; margin-right: 2px;
+  }
+  .quest-meta-txt { color: var(--text-2); }
+
   /* FS PANEL */
   .fs-panel {
     flex: none;
@@ -1730,6 +1765,15 @@ window.addEventListener('error', function(e) {
         </div>
 
         <div class="panel-sep"></div>
+
+        <!-- LÉGENDE DES CEINTURES -->
+        <div class="belt-legend">
+          <span class="belt-legend-title">🥋 Ceintures</span>
+          <span class="belt belt-beginner">⬜ Fondation</span>
+          <span class="belt belt-intermediate">🟩 Intermédiaire</span>
+          <span class="belt belt-advanced">🟥 Avancé</span>
+          <span class="belt belt-expert">⬛ Expert</span>
+        </div>
 
         <div id="exo-list"></div>
 
@@ -4460,6 +4504,31 @@ function navigateTo(path) {
   renderFs();
 }
 
+// ===== CEINTURES (niveaux du Dojo) =====
+// Le niveau (level) existe déjà sur chaque exercice ; on l'expose ici en
+// ceintures FR lisibles, avec une pastille couleur qui monte comme au dojo.
+var BELTS = {
+  beginner:     { sq: '⬜', label: 'Fondation' },
+  intermediate: { sq: '🟩', label: 'Intermédiaire' },
+  advanced:     { sq: '🟥', label: 'Avancé' },
+  expert:       { sq: '⬛', label: 'Expert' }
+};
+var BELT_RANK = { beginner: 1, intermediate: 2, advanced: 3, expert: 4 };
+var BELT_BY_RANK = { 1: 'beginner', 2: 'intermediate', 3: 'advanced', 4: 'expert' };
+
+// Ceinture d'un chapitre = moyenne (arrondie) des niveaux de ses exercices.
+// Plus honnête que le plafond (qui rendrait presque tout « expert ») et que
+// le mode dominant (qui sous-évaluerait un chapitre à intros nombreuses).
+function questBelt(quest) {
+  var sum = 0, n = 0;
+  quest.exos.forEach(function(ex) {
+    var r = BELT_RANK[ex.level];
+    if (r) { sum += r; n++; }
+  });
+  if (!n) return 'beginner';
+  return BELT_BY_RANK[Math.round(sum / n)] || 'expert';
+}
+
 // ===== EXERCISES UI =====
 function renderExercises() {
   var list = document.getElementById('exo-list');
@@ -4480,7 +4549,10 @@ function renderExercises() {
     html += '<div style="flex:1">';
     var chapPrefix = quest.chapter ? '<span class="quest-chapter">Ch ' + quest.chapter + '</span> ' : '';
     html += '<div class="quest-title">' + chapPrefix + escapeHtml(quest.title) + '</div>';
-    html += '<div class="quest-meta">' + doneInQuest + '/' + quest.exos.length + ' · ' + escapeHtml(quest.desc) + '</div>';
+    var qb = questBelt(quest);
+    var qbLabel = (qb === 'expert') ? 'Projet Expert' : BELTS[qb].label;
+    var beltPill = '<span class="belt belt-' + qb + '">' + BELTS[qb].sq + ' ' + qbLabel + '</span>';
+    html += '<div class="quest-meta">' + beltPill + ' <span class="quest-meta-txt">' + doneInQuest + '/' + quest.exos.length + ' · ' + escapeHtml(quest.desc) + '</span></div>';
     html += '</div>';
     html += '<span class="quest-chevron">▶</span>';
     html += '</div>';
@@ -4491,7 +4563,8 @@ function renderExercises() {
       html += '<div class="' + cls + '" data-idx="' + idx + '">';
       var num = String(idx + 1);
       if (num.length === 1) num = '0' + num;
-      html += '<div class="exo-card-num">EXO ' + num + ' · ' + ex.level.toUpperCase().slice(0, 4) + '</div>';
+      var eb = BELTS[ex.level] || BELTS.beginner;
+      html += '<div class="exo-card-num">EXO ' + num + ' · <span class="belt-mini belt-' + ex.level + '">' + eb.sq + ' ' + eb.label + '</span></div>';
       html += '<div class="exo-card-title">' + escapeHtml(ex.title) + '</div>';
       html += '</div>';
     });
@@ -4593,7 +4666,8 @@ function renderActiveExo() {
   // HEADER : LAB N/80 + difficulty
   html += '<div class="active-exo-header">';
   html += '<span class="active-exo-lab-num">LAB ' + num + ' / ' + total + '</span>';
-  html += '<span class="active-exo-difficulty ' + ex.level + '">' + ex.level + '</span>';
+  var ab = BELTS[ex.level] || BELTS.beginner;
+  html += '<span class="active-exo-difficulty ' + ex.level + '">' + ab.sq + ' ' + ab.label + '</span>';
   html += '</div>';
 
   // BODY
