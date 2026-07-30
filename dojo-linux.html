@@ -7218,5 +7218,362 @@ if (document.readyState === 'loading') {
 }
 
 </script>
+<!-- ==================== MODE PROJETS (module autonome) ==================== -->
+<style>
+  .pv-tabs{display:flex;gap:6px;padding:8px 4px 4px}
+  .pv-tab{flex:1;text-align:center;cursor:pointer;font-family:var(--font-mono);font-weight:800;
+    font-size:.7rem;letter-spacing:.5px;padding:8px 6px;border-radius:8px;border:1px solid var(--border);
+    background:var(--bg-card-2);color:var(--text-2);user-select:none}
+  .pv-tab.active{background:var(--magenta);color:#fff;border-color:#a82813}
+  #pv-nav,#pv-view{display:none}
+  body.pmode #pv-nav{display:block}
+  body.pmode #pv-view{display:block}
+  body.pmode #exo-content .progress-wrap,
+  body.pmode #exo-content .belt-legend,
+  body.pmode #exo-content #exo-list,
+  body.pmode #exo-content .panel-sep,
+  body.pmode #exo-content #server-status{display:none}
+  body.pmode #active-exo-container,
+  body.pmode #content-narrative,
+  body.pmode .fs-panel{display:none}
+
+  /* Nav projets (gauche) */
+  #pv-nav{padding:2px 2px 10px}
+  .pv-lvl{margin:12px 4px 4px}
+  .pv-lvl-head{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+  .pv-lvl-name{font-family:var(--font-mono);font-weight:800;font-size:.74rem;color:var(--text-1)}
+  .pv-lvl-metier{font-size:.66rem;color:var(--text-3);font-style:italic;margin:2px 0 6px}
+  .pv-pcard{display:flex;align-items:center;gap:9px;padding:8px 9px;margin:5px 0;border-radius:8px;
+    border:1px solid var(--border-light);background:var(--bg-card);cursor:pointer}
+  .pv-pcard:hover{border-color:var(--magenta)}
+  .pv-pcard.active{border-color:var(--magenta);box-shadow:inset 3px 0 0 var(--magenta)}
+  .pv-pcard.soon{opacity:.5;cursor:default}
+  .pv-pcard.soon:hover{border-color:var(--border-light)}
+  .pv-pcard-num{flex:0 0 26px;height:26px;border-radius:6px;background:var(--bg-elevated);
+    display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-weight:800;
+    font-size:.66rem;color:var(--magenta)}
+  .pv-pcard-title{font-size:.8rem;font-weight:700;color:var(--text-1);line-height:1.2}
+  .pv-pcard-sub{font-family:var(--font-mono);font-size:.58rem;color:var(--text-3);letter-spacing:.3px}
+
+  /* Vue détail (centre) */
+  #pv-view{padding:16px 18px;overflow-y:auto}
+  .pv-head{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;
+    position:relative;overflow:hidden;box-shadow:var(--shadow-sm)}
+  .pv-head::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--green)}
+  .pv-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+  .pv-num{font-family:var(--font-mono);font-weight:800;font-size:.66rem;letter-spacing:1px;color:#fff;
+    background:var(--magenta);border-radius:6px;padding:3px 8px}
+  .pv-guide{font-family:var(--font-mono);font-size:.6rem;color:var(--text-3);border:1px dashed var(--border);
+    border-radius:999px;padding:2px 8px}
+  .pv-title{font-size:1.4rem;font-weight:800;margin:2px 0 3px;color:var(--text-1)}
+  .pv-metier{font-style:italic;color:var(--green);font-size:.96rem}
+  .pv-metier b{font-style:normal}
+  .pv-prereq{margin-top:12px;background:var(--bg-card-2);border:1px solid var(--border-light);border-radius:9px;
+    padding:9px 12px;font-size:.85rem;color:var(--text-2)}
+  .pv-goal{margin-top:10px;font-size:.92rem;color:var(--text-1)}
+  .pv-sensei{display:flex;gap:12px;margin:16px 0;background:var(--terminal-bg);border-radius:12px;padding:15px}
+  .pv-sensei .ava{flex:0 0 40px;height:40px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,#ffcf6b,#c8341c);display:flex;align-items:center;justify-content:center;font-size:1.25rem}
+  .pv-sensei .txt{color:var(--terminal-text);font-size:.9rem;line-height:1.55}
+  .pv-sensei .txt b{color:#ffcf6b}
+  .pv-sensei .who{display:block;font-family:var(--font-mono);font-size:.56rem;letter-spacing:2px;color:#b9a97f;margin-bottom:4px}
+  .pv-step{background:var(--bg-card);border:1px solid var(--border);border-radius:11px;padding:14px 16px;margin:12px 0;box-shadow:var(--shadow-sm)}
+  .pv-shead{display:flex;align-items:flex-start;gap:11px;margin-bottom:5px}
+  .pv-sbadge{flex:0 0 30px;height:30px;border-radius:8px;background:var(--bg-elevated);border:1px solid var(--border);
+    display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-weight:800;color:var(--magenta)}
+  .pv-stitle{font-weight:700;font-size:1rem;margin-top:3px;color:var(--text-1)}
+  .pv-step p{margin:.35rem 0;font-size:.9rem;color:var(--text-2)}
+  #pv-view pre{background:var(--terminal-bg);color:var(--terminal-text);font-family:var(--font-mono);font-size:.82rem;
+    border-radius:8px;padding:11px 13px;overflow-x:auto;margin:.5rem 0;line-height:1.5;white-space:pre}
+  #pv-view pre .pv-pr{color:#9fd18f}
+  #pv-view pre .pv-cmt{color:#c8956b}
+  code.pv-k{font-family:var(--font-mono);background:var(--bg-elevated);border:1px solid var(--border-light);
+    border-radius:4px;padding:1px 5px;font-size:.85em;color:var(--red)}
+  .pv-check{margin-top:9px;background:rgba(30,90,61,.07);border:1px solid rgba(30,90,61,.28);
+    border-left:4px solid var(--green);border-radius:7px;padding:8px 11px;font-size:.86rem;color:var(--text-1)}
+  .pv-check b{color:var(--green)}
+  .pv-verify{margin-top:9px;background:var(--bg-card-2);border:1px solid var(--border);border-radius:8px;padding:9px 11px}
+  .pv-verify label{font-family:var(--font-mono);font-size:.62rem;letter-spacing:.4px;color:var(--text-3);display:block;margin-bottom:5px}
+  .pv-verify textarea{width:100%;min-height:50px;resize:vertical;font-family:var(--font-mono);font-size:.76rem;
+    border:1px solid var(--border);border-radius:6px;padding:7px;background:#fff;color:#1a1a1a}
+  .pv-verify .row{display:flex;gap:8px;align-items:center;margin-top:7px}
+  .pv-verify button{font-family:var(--font-mono);font-weight:700;font-size:.74rem;cursor:pointer;color:#fff;
+    background:var(--violet);border:1px solid #14283f;border-radius:6px;padding:6px 13px}
+  .pv-vres{font-family:var(--font-mono);font-size:.76rem;font-weight:700}
+  .pv-vres.ok{color:var(--green)}.pv-vres.no{color:var(--red)}
+  details.pv-hint{margin:.45rem 0;background:rgba(200,144,40,.07);border:1px solid rgba(200,144,40,.3);border-radius:7px;padding:1px 11px}
+  details.pv-hint summary{cursor:pointer;font-weight:700;color:var(--amber);font-size:.85rem;padding:7px 0;list-style:none}
+  details.pv-hint summary::-webkit-details-marker{display:none}
+  details.pv-hint summary::before{content:"💡 "}
+  details.pv-hint[open] summary::before{content:"🔽 "}
+  details.pv-hint p{font-size:.85rem;color:var(--text-2)}
+  .pv-done{margin-top:20px;background:var(--terminal-bg);color:var(--terminal-text);border-radius:12px;padding:18px 20px}
+  .pv-done h3{margin:.1rem 0 .5rem;color:#ffcf6b;font-size:1.1rem}
+  .pv-done ul{margin:.3rem 0 .7rem;padding-left:1.15rem}.pv-done li{margin:.2rem 0;font-size:.9rem}
+  .pv-unlock{font-style:italic;font-size:1.02rem;color:#9fd18f;border-top:1px solid #3a3f47;padding-top:11px;margin-top:5px}
+</style>
+<script>
+(function(){
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function fmt(s){s=esc(s);s=s.replace(/`([^`]+)`/g,'<code class="pv-k">$1</code>');s=s.replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>');return s;}
+
+  var LEVELS=[
+    {n:1,emoji:'🟢',belt:'beginner',metier:'Je sais administrer un petit serveur Linux.'},
+    {n:2,emoji:'🟡',belt:'intermediate',metier:'Je sais administrer un serveur.'},
+    {n:3,emoji:'🟠',belt:'advanced',metier:'Je sais automatiser plusieurs serveurs.'},
+    {n:4,emoji:'🔵',belt:'advanced',metier:'Je sais construire une infrastructure.'},
+    {n:5,emoji:'🟣',belt:'advanced',metier:'Je sais bâtir un datacenter miniature.'},
+    {n:6,emoji:'🔴',belt:'expert',metier:'Je sais concevoir une infrastructure.'},
+    {n:7,emoji:'🔴',belt:'expert',metier:'Je sais diagnostiquer une infra que je n’ai jamais vue.'}
+  ];
+  var BELTLABEL={beginner:'⬜ Fondation',intermediate:'🟩 Intermédiaire',advanced:'🟥 Avancé',expert:'⬛ Expert'};
+  var LNAME={1:'Je prends confiance',2:'Je deviens administrateur',3:'J’arrête de faire à la main',
+    4:'Infrastructure moderne',5:'Je passe au datacenter',6:'Ingénieur infrastructure',7:'Entreprise'};
+
+  // Roadmap complète (18) : les titres non encore rédigés s’affichent en « bientôt »
+  var ROADMAP={
+    1:['Mon premier Linux','Ma première VM','Mon premier serveur','Mon serveur personnel'],
+    2:['Hébergeur miniature','Serveur fiable','Serveur sécurisé','Supervision'],
+    3:['Automatisation avec Bash','Infrastructure as Code (Ansible)','Git + CI/CD'],
+    4:['Docker / conteneurs','Haute disponibilité'],
+    5:['Virtualisation (Proxmox)','Provisioning (Terraform)'],
+    6:['Kubernetes (k3s)'],
+    7:['Infrastructure d’entreprise multi-sites','🏆 Production — l’examen final']
+  };
+
+  var PROJECTS=[
+    { id:'p1', level:1, title:'Mon premier Linux', env:'terminal', prompt:'kai@dojo:~$',
+      guide:'🧭 guidé pas à pas', metier:'Je sais me débrouiller seul dans un terminal Linux.',
+      prereq:'Aucun. Se joue **dans le terminal du Dojo** (ou tout terminal Linux). Échauffement : chapitres 1 à 4 et 7.',
+      goal:'Le Sensei te confie l’atelier : te **repérer**, **ranger** un dossier de projet, **écrire** puis **protéger** un fichier, **surveiller** ce qui tourne, et apprendre à **demander au système lui-même**.',
+      sensei:'Premier jour dans l’atelier, Kaï. Avant de toucher à un vrai serveur, tu dois savoir **où tu es**, **qui tu es**, et **ranger derrière toi**. Aujourd’hui, pas de magie — juste des gestes propres, répétés jusqu’à devenir des réflexes. À la fin, tu ne seras plus jamais aveugle devant un terminal.',
+      steps:[
+        {title:'Se repérer — où suis-je, qui suis-je ?',intro:'Le premier réflexe d’un pro qui arrive sur une machine : faire le point.',
+          code:[{c:'pwd',k:'dans quel dossier suis-je ?'},{c:'whoami',k:'sous quelle identité ?'},{c:'ls -la',k:'même les fichiers cachés ?'}],
+          check:'`pwd` te renvoie ton dossier personnel, et `ls -la` liste tout, y compris `.` et `..`.'},
+        {title:'Ranger l’atelier — créer l’arborescence',intro:'Crée d’un coup la structure d’un petit projet, puis entre dedans :',
+          code:[{c:'mkdir -p atelier/scripts atelier/logs'},{c:'cd atelier'},{c:'ls -R',k:'l’arborescence, récursivement'}],
+          check:'Tu vois `atelier` contenant `scripts/` et `logs/`. Le `-p` a créé les parents en une fois.'},
+        {title:'Écrire et relire un fichier',intro:'Dépose un petit script dans scripts/, puis relis-le :',
+          code:[{c:"echo '#!/bin/bash' > scripts/hello.sh"},{c:"echo 'echo Bonjour' >> scripts/hello.sh"},{c:'cat scripts/hello.sh'}],
+          check:'`cat` affiche les **deux** lignes. Retiens : `>` écrase, `>>` ajoute à la suite.'},
+        {title:'Protéger — les permissions',intro:'Un script doit être exécutable. Regarde, modifie, revérifie :',
+          code:[{c:'ls -l scripts/hello.sh',k:'-rw-r--r-- : pas exécutable'},{c:'chmod +x scripts/hello.sh'},{c:'ls -l scripts/hello.sh',k:'-rwxr-xr-x : le x apparaît'}],
+          check:'Après `chmod +x`, les droits passent de `rw-r--r--` à `rwxr-xr-x`. Le **x** = droit d’exécuter.',
+          verify:{label:'Colle la sortie de **ls -l scripts/hello.sh** (après le chmod)',need:'rwx'}},
+        {title:'Surveiller — les processus',intro:'Une machine, c’est des programmes qui tournent. Apprends à les voir :',
+          code:[{c:'ps',k:'mes processus'},{c:'ps aux | head',k:'tous, en détail'},{c:'top',k:'temps réel — q pour quitter'}],
+          check:'Tu retrouves ton shell `bash`, et `top` montre la charge en direct. On quitte avec `q`.'},
+        {title:'Devenir autonome — demander au système',intro:'Le vrai réflexe : ne pas mémoriser, savoir chercher.',
+          code:[{c:'man ls',k:'le manuel complet — q pour sortir'},{c:'chmod --help',k:'l’aide rapide'}],
+          check:'Tu sais ouvrir le manuel de **n’importe quelle** commande. L’autonomie, c’est savoir **où regarder**.',
+          hint:{sum:'« man ls » ne s’ouvre pas / je suis coincé dedans',ps:['Indice 1. Pour sortir de `man` (ou `top`), tape la touche `q`.','Indice 2. Si `man` est limité, `ls --help` est l’équivalent court, toujours dispo.']}}
+      ],
+      done:{skills:['Te repérer : `pwd`, `whoami`, `ls -la`.','Organiser : `mkdir -p`, `cd`, `cat`.','Permissions : `ls -l`, `chmod +x`.','Processus : `ps`, `top`.','Te documenter : `man`, `--help`.'],
+        unlock:'Je sais me débrouiller seul dans un terminal Linux.',next:'Projet 2 — Ma première VM'} },
+
+    { id:'p2', level:1, title:'Ma première VM', env:'vm', prompt:'kai@dojo-vm:~$',
+      guide:'🧭 guidé pas à pas', metier:'Je sais créer et administrer ma propre machine virtuelle.',
+      prereq:'Un PC avec ~8 Go de RAM. **Sur ta vraie machine.** Échauffement : chapitres 11 (Réseau/SSH) et 18 (Virtualisation).',
+      goal:'Installer **VirtualBox**, créer une VM **Ubuntu Server**, la mettre en **réseau**, activer **SSH**, prendre un **snapshot**, et t’y connecter depuis ton PC.',
+      sensei:'Jusqu’ici tu vivais dans un terminal prêté, Kaï. Aujourd’hui tu forges **ta** machine. Une VM, c’est un ordinateur dans ton ordinateur : tu peux tout y casser, puis revenir en arrière d’un clic grâce aux **snapshots**. C’est le filet de sécurité du débutant courageux.',
+      steps:[
+        {title:'Installer VirtualBox',intro:'Télécharge VirtualBox depuis le site officiel (virtualbox.org) et installe-le comme n’importe quelle application.',
+          check:'VirtualBox s’ouvre et affiche sa fenêtre d’accueil « Bienvenue ».'},
+        {title:'Récupérer Ubuntu Server',intro:'Télécharge l’ISO **Ubuntu Server LTS** (ubuntu.com/download/server). C’est le CD d’installation.',
+          check:'Un fichier `.iso` (≈ 2 Go) est dans tes téléchargements.'},
+        {title:'Créer et installer la VM',intro:'Dans VirtualBox : Nouvelle → nom `dojo-vm`, type Linux/Ubuntu 64-bit, 2048 Mo de RAM, disque 20 Go. Charge l’ISO comme lecteur optique, démarre, et suis l’installateur.',
+          check:'Au redémarrage, la VM affiche un prompt `login:`. Connecte-toi avec le compte créé.'},
+        {title:'Vérifier le réseau',intro:'Dans la VM, regarde ton adresse IP. (Réseau en mode **Pont/Bridge** = IP sur ton LAN ; en **NAT**, ajoute une redirection de port 22.)',
+          code:[{c:'ip -4 addr show',k:'cherche la ligne inet'}],
+          check:'Tu obtiens une adresse `inet` (ex. `192.168.x.x`). Note-la.',
+          hint:{sum:'Pas d’IP / je ne peux pas joindre la VM',ps:['Indice 1. Éteins la VM, va dans Configuration → Réseau, passe l’adaptateur en **Accès par pont (Bridge)**.','Indice 2. En NAT, ajoute une règle de redirection : hôte 2222 → invité 22, puis `ssh -p 2222 user@localhost`.']}},
+        {title:'Activer SSH',intro:'Installe et démarre le serveur SSH pour piloter la VM à distance :',
+          code:[{c:'sudo apt update'},{c:'sudo apt install -y openssh-server'},{c:'sudo systemctl enable --now ssh'},{c:'systemctl status ssh'}],
+          check:'`systemctl status ssh` affiche `active (running)`.',
+          verify:{label:'Colle la sortie de **systemctl status ssh**',need:'active (running)'}},
+        {title:'Prendre un snapshot',intro:'Dans VirtualBox → onglet **Instantanés (Snapshots)** → Prendre. Nomme-le `base-propre`. C’est ton point de retour.',
+          check:'Un snapshot `base-propre` apparaît dans la liste. Tu pourras toujours y revenir.'},
+        {title:'Te connecter depuis ton PC',intro:'Depuis le terminal de ton PC (pas la VM), connecte-toi :',
+          code:[{c:'ssh utilisateur@<ip-de-la-vm>'}],
+          check:'Tu es dans la VM depuis ton propre terminal. 🎉 Ta première machine te répond.'}
+      ],
+      done:{skills:['Installer un hyperviseur (VirtualBox).','Créer et installer une VM Ubuntu Server.','Comprendre réseau Bridge vs NAT.','Activer SSH et t’y connecter à distance.','Sécuriser ton travail avec un snapshot.'],
+        unlock:'Je sais créer et administrer ma propre machine virtuelle.',next:'Projet 3 — Mon premier serveur'} },
+
+    { id:'p3', level:1, title:'Mon premier serveur', env:'vm', prompt:'kai@dojo-vm:~$',
+      guide:'🧭 guidé pas à pas', metier:'Je sais mettre un site en ligne sur un serveur Linux.',
+      prereq:'La VM du **Projet 2** qui tourne, accès SSH. Tout se fait **dans ta VM**. Échauffement : chapitres 10, 9, 12.',
+      goal:'Installer **Nginx**, publier **ta page HTML**, comprendre qui le redémarre tout seul (**systemd**), puis **ouvrir le pare-feu** pour y accéder depuis ton PC.',
+      sensei:'Un serveur web n’est pas magique, Kaï : c’est un programme qui écoute une porte et tend une page à qui frappe. Nous allons l’installer, lui confier **ta** page, puis nous assurer qu’il se relève seul s’il tombe. Un serveur qu’on rallume à la main n’est pas un serveur : c’est une bougie.',
+      steps:[
+        {title:'Installer Nginx',intro:'Installe le serveur web le plus répandu du monde :',
+          code:[{c:'sudo apt update'},{c:'sudo apt install -y nginx'}],
+          check:'La commande se termine sans erreur. Un paquet `nginx` est installé.'},
+        {title:'Vérifier qu’il tourne déjà',intro:'Nginx démarre tout seul. Demande son état, puis frappe à sa porte depuis la VM :',
+          code:[{c:'systemctl status nginx'},{c:'curl -I http://localhost'}],
+          check:'L’état affiche `active (running)`, et `curl` répond `HTTP/1.1 200 OK`.',
+          verify:{label:'Colle la sortie de **systemctl status nginx**',need:'active (running)'}},
+        {title:'Publier TA page',intro:'Nginx sert /var/www/html/index.html. Remplace-le par le tien :',
+          code:[{c:"echo '<h1>Le Dojo de Kai</h1>' | sudo tee /var/www/html/index.html"},{c:'curl http://localhost'}],
+          check:'`curl` renvoie **ton** texte.'},
+        {title:'Comprendre systemd (le gardien)',intro:'systemd surveille Nginx. Coupe-le, constate, relance, et demande le démarrage au boot :',
+          code:[{c:'sudo systemctl stop nginx',k:'il tombe'},{c:'curl http://localhost',k:'Connection refused'},{c:'sudo systemctl start nginx',k:'il se relève'},{c:'sudo systemctl enable nginx',k:'il reviendra au reboot'}],
+          check:'Tu as vu le site disparaître puis revenir. `enable` confirme « Created symlink ».',
+          hint:{sum:'curl marche encore alors que j’ai stoppé ?',ps:['Indice. Un autre serveur web (Apache) répond peut-être à sa place : `sudo ss -tlnp | grep :80`.','Solution. Un seul programme tient le port 80 : `sudo systemctl disable --now apache2`, puis reprends.']}},
+        {title:'Ouvrir le pare-feu',intro:'Depuis la VM tout marche ; depuis ton PC, le pare-feu bloque. Autorise le web :',
+          code:[{c:"sudo ufw allow 'Nginx HTTP'"},{c:'sudo ufw enable'},{c:'sudo ufw status'}],
+          check:'`ufw status` montre `Nginx HTTP … ALLOW`. Port 80 ouvert, le reste fermé.'},
+        {title:'Y accéder depuis ton navigateur',intro:'Trouve l’IP de la VM puis ouvre-la dans le navigateur de ton PC :',
+          code:[{c:'ip -4 addr show | grep inet'},{c:'# puis : http://<ip-de-la-vm>',k:''}],
+          check:'Ta page « Le Dojo de Kaï » s’affiche dans ton navigateur, servie par ta machine. 🎉',
+          verify:{label:'Colle la sortie de **curl -I http://<ip-de-la-vm>** (depuis ton PC)',need:'200'}}
+      ],
+      done:{skills:['Installer et piloter un service (Nginx).','Lire un statut systemd, gérer `start/stop/enable`.','Publier un contenu web et le tester avec `curl`.','Ouvrir un port au pare-feu sans tout exposer.'],
+        unlock:'Je sais mettre un site en ligne sur un serveur Linux.',next:'Projet 4 — Mon serveur personnel'} },
+
+    { id:'p4', level:1, title:'Mon serveur personnel', env:'vm', prompt:'kai@dojo-vm:~$',
+      guide:'🧭 guidé pas à pas', metier:'Je sais sécuriser et entretenir un serveur au quotidien.',
+      prereq:'La VM des projets précédents. **Dans ta VM.** Échauffement : chapitres 4, 8, 11, 19, 14.',
+      goal:'Créer un **utilisateur admin dédié**, poser une **clé SSH**, **durcir** l’accès, **planifier une sauvegarde**, et savoir **lire les logs** quand ça coince.',
+      sensei:'Un serveur, ça se possède comme un jardin, Kaï : on ne le laisse pas ouvert à tous les vents. Aujourd’hui tu cesses de vivre en `root`, tu fermes les portes inutiles, et tu apprends le geste qui sauve à 3h du matin : **lire les logs**. Un bon administrateur ne devine pas — il regarde ce que la machine a écrit.',
+      steps:[
+        {title:'Créer un utilisateur admin',intro:'Arrête de tout faire en root. Crée ton compte et donne-lui les droits sudo :',
+          code:[{c:'sudo adduser kai',k:'suis les invites (mot de passe…)'},{c:'sudo usermod -aG sudo kai'},{c:'id kai',k:'vérifie le groupe sudo'}],
+          check:'`id kai` affiche `sudo` parmi les groupes. Tu peux désormais administrer sans être root.',
+          verify:{label:'Colle la sortie de **id kai**',need:'sudo'}},
+        {title:'Poser une clé SSH',intro:'Depuis ton PC, génère une clé (si tu n’en as pas) et copie-la sur le serveur :',
+          code:[{c:'ssh-keygen -t ed25519',k:'sur ton PC, une seule fois'},{c:'ssh-copy-id kai@<ip-de-la-vm>'}],
+          check:'`ssh kai@<ip>` te connecte **sans mot de passe**. La clé a remplacé le mot de passe.'},
+        {title:'Durcir l’accès SSH',intro:'Édite /etc/ssh/sshd_config : mets `PermitRootLogin no` et `PasswordAuthentication no`, puis recharge :',
+          code:[{c:'sudo nano /etc/ssh/sshd_config'},{c:'sudo systemctl restart ssh'}],
+          check:'Root ne peut plus se connecter, et seul un détenteur de clé entre. Garde **une session ouverte** en testant, au cas où.',
+          hint:{sum:'Je me suis fait éjecter / je ne peux plus me connecter',ps:['Indice. Ne ferme jamais ta session actuelle avant d’avoir testé une nouvelle connexion dans un 2ᵉ terminal.','Solution. Reviens par la console VirtualBox (pas SSH), remets `PasswordAuthentication yes`, `restart ssh`, et recommence en douceur.']}},
+        {title:'Planifier une sauvegarde',intro:'Écris un petit script de sauvegarde, puis fais-le tourner chaque nuit avec cron :',
+          code:[{c:"echo 'tar -czf /home/kai/backup-$(date +%F).tar.gz /var/www' > ~/backup.sh"},{c:'chmod +x ~/backup.sh'},{c:'crontab -e',k:'ajoute : 0 3 * * * /home/kai/backup.sh'},{c:'crontab -l',k:'vérifie'}],
+          check:'`crontab -l` montre ta ligne planifiée à 3h. La sauvegarde tournera seule.'},
+        {title:'Lire les logs',intro:'Le réflexe de survie : quand ça coince, regarde ce que la machine a écrit.',
+          code:[{c:'journalctl -u ssh --no-pager | tail',k:'les événements SSH'},{c:'sudo tail /var/log/auth.log',k:'les connexions'}],
+          check:'Tu vois tes propres connexions (et les tentatives ratées). Tu sais où regarder quand un service tombe.'}
+      ],
+      done:{skills:['Créer un utilisateur sudo et quitter root.','Authentification par clé SSH.','Durcir sshd (no root, no password).','Sauvegarde planifiée avec cron + tar.','Lire les logs : `journalctl`, `/var/log`.'],
+        unlock:'Je sais sécuriser et entretenir un serveur au quotidien.',next:'Niveau 2 — Projet 5 : Hébergeur miniature'} }
+  ];
+
+  var byId={}; PROJECTS.forEach(function(p){byId[p.id]=p;});
+  var byLevelTitle={}; PROJECTS.forEach(function(p){byLevelTitle[p.level+'|'+p.title]=p;});
+
+  function codeBlock(prompt,lines){
+    var h='';
+    lines.forEach(function(l){
+      if(l.c && l.c.charAt(0)==='#'){ h+='<span class="pv-cmt">'+esc(l.c)+'</span>\n'; return; }
+      h+='<span class="pv-pr">'+esc(prompt)+'</span> '+esc(l.c);
+      if(l.k) h+='   <span class="pv-cmt"># '+esc(l.k)+'</span>';
+      h+='\n';
+    });
+    return '<pre>'+h.replace(/\n$/,'')+'</pre>';
+  }
+
+  function renderDetail(pid){
+    var p=byId[pid]; if(!p) return;
+    var envChip = p.env==='vm' ? '🖥️ vraie machine' : '🖥️ terminal du Dojo';
+    var gnum=globalNum(p);
+    var h='';
+    h+='<div class="pv-head"><div class="pv-top">';
+    h+='<span class="pv-num">PROJET '+gnum+'</span>';
+    h+='<span class="belt belt-'+LEVELS[p.level-1].belt+'">'+BELTLABEL[LEVELS[p.level-1].belt]+'</span>';
+    h+='<span class="pv-guide">'+p.guide+' · '+envChip+'</span></div>';
+    h+='<div class="pv-title">'+esc(p.title)+'</div>';
+    h+='<div class="pv-metier">À la fin : <b>« '+esc(p.metier)+' »</b></div>';
+    h+='<div class="pv-prereq"><b>Prérequis</b> — '+fmt(p.prereq)+'</div>';
+    h+='<div class="pv-goal">🎯 <b>Mission :</b> '+fmt(p.goal)+'</div></div>';
+    h+='<div class="pv-sensei"><div class="ava">🥋</div><div class="txt"><span class="who">SENSEI</span>« '+fmt(p.sensei)+' »</div></div>';
+    p.steps.forEach(function(s,i){
+      h+='<div class="pv-step"><div class="pv-shead"><div class="pv-sbadge">'+(i+1)+'</div><div class="pv-stitle">'+esc(s.title)+'</div></div>';
+      if(s.intro) h+='<p>'+fmt(s.intro)+'</p>';
+      if(s.code) h+=codeBlock(p.prompt,s.code);
+      if(s.check) h+='<div class="pv-check">✅ <b>Point de contrôle :</b> '+fmt(s.check)+'</div>';
+      if(s.verify) h+='<div class="pv-verify" data-need="'+esc(s.verify.need.toLowerCase())+'"><label>🔎 '+fmt(s.verify.label)+'</label><textarea></textarea><div class="row"><button>Vérifier</button><span class="pv-vres"></span></div></div>';
+      if(s.hint){ h+='<details class="pv-hint"><summary>'+esc(s.hint.sum)+'</summary>'; s.hint.ps.forEach(function(x){h+='<p>'+fmt(x)+'</p>';}); h+='</details>'; }
+      h+='</div>';
+    });
+    h+='<div class="pv-done"><h3>🏅 Ceinture validée — ce que tu sais faire</h3><ul>';
+    p.done.skills.forEach(function(x){h+='<li>'+fmt(x)+'</li>';});
+    h+='</ul><div class="pv-unlock">« '+esc(p.done.unlock)+' »<br>→ Prochaine marche : <b>'+esc(p.done.next)+'</b></div></div>';
+    var view=document.getElementById('pv-view');
+    view.innerHTML=h; view.scrollTop=0;
+    view.querySelectorAll('.pv-verify').forEach(function(box){
+      var need=(box.getAttribute('data-need')||''), ta=box.querySelector('textarea'),
+          btn=box.querySelector('button'), res=box.querySelector('.pv-vres');
+      btn.addEventListener('click',function(){
+        var v=(ta.value||'').toLowerCase();
+        if(!v.trim()){res.className='pv-vres no';res.textContent='↑ colle d’abord ta sortie';return;}
+        if(v.indexOf(need)!==-1){res.className='pv-vres ok';res.textContent='✅ validé — bien joué';}
+        else{res.className='pv-vres no';res.textContent='❌ je ne vois pas « '+need+' »';}
+      });
+    });
+    document.querySelectorAll('.pv-pcard').forEach(function(c){c.classList.toggle('active',c.getAttribute('data-pid')===pid);});
+    currentPid=pid;
+  }
+
+  function globalNum(p){
+    var n=0;
+    for(var lv=1;lv<=7;lv++){ var titles=ROADMAP[lv]||[];
+      for(var i=0;i<titles.length;i++){ n++; if(lv===p.level && titles[i]===p.title) return (n<10?'0':'')+n; } }
+    return '00';
+  }
+
+  var currentPid=null;
+  function renderNav(){
+    var nav=document.getElementById('pv-nav'); var h=''; var gn=0;
+    LEVELS.forEach(function(L){
+      h+='<div class="pv-lvl"><div class="pv-lvl-head"><span class="pv-lvl-name">'+L.emoji+' Niveau '+L.n+' — '+esc(LNAME[L.n])+'</span>';
+      h+='<span class="belt belt-'+L.belt+'">'+BELTLABEL[L.belt]+'</span></div>';
+      h+='<div class="pv-lvl-metier">« '+esc(L.metier)+' »</div>';
+      (ROADMAP[L.n]||[]).forEach(function(t){
+        gn++; var num=(gn<10?'0':'')+gn; var proj=byLevelTitle[L.n+'|'+t];
+        if(proj){ h+='<div class="pv-pcard" data-pid="'+proj.id+'"><div class="pv-pcard-num">'+num+'</div>'+
+          '<div><div class="pv-pcard-title">'+esc(t)+'</div><div class="pv-pcard-sub">'+(proj.env==='vm'?'vraie machine':'terminal')+' · guidé</div></div></div>'; }
+        else { h+='<div class="pv-pcard soon"><div class="pv-pcard-num">'+num+'</div>'+
+          '<div><div class="pv-pcard-title">'+esc(t)+'</div><div class="pv-pcard-sub">bientôt</div></div></div>'; }
+      });
+      h+='</div>';
+    });
+    nav.innerHTML=h;
+    nav.querySelectorAll('.pv-pcard[data-pid]').forEach(function(c){
+      c.addEventListener('click',function(){renderDetail(c.getAttribute('data-pid'));});
+    });
+  }
+
+  function setMode(mode){
+    var pm = mode==='projects';
+    document.body.classList.toggle('pmode',pm);
+    document.getElementById('pv-tab-exos').classList.toggle('active',!pm);
+    document.getElementById('pv-tab-proj').classList.toggle('active',pm);
+    if(pm && !currentPid) renderDetail('p1');
+  }
+
+  function build(){
+    var exoContent=document.getElementById('exo-content');
+    var contentPanel=document.getElementById('content-panel');
+    if(!exoContent||!contentPanel) return;
+    // Onglets
+    var tabs=document.createElement('div'); tabs.className='pv-tabs';
+    tabs.innerHTML='<div class="pv-tab active" id="pv-tab-exos">🥋 Exos</div><div class="pv-tab" id="pv-tab-proj">🏗️ Projets</div>';
+    exoContent.insertBefore(tabs, exoContent.firstChild);
+    // Conteneurs
+    var nav=document.createElement('div'); nav.id='pv-nav'; exoContent.appendChild(nav);
+    var view=document.createElement('div'); view.id='pv-view'; contentPanel.appendChild(view);
+    document.getElementById('pv-tab-exos').addEventListener('click',function(){setMode('exos');});
+    document.getElementById('pv-tab-proj').addEventListener('click',function(){setMode('projects');});
+    renderNav();
+  }
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',build);
+  else build();
+})();
+</script>
+<!-- ================== FIN MODE PROJETS ================== -->
+
 </body>
 </html>
