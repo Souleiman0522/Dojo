@@ -3047,7 +3047,8 @@ var QUESTS = [
         steps: [
           "Interroge ton serveur : `curl localhost`",
           "Le serveur te renvoie le contenu HTML de ta page",
-          "Si tu vois ton `<h1>`, c'est gagné : le site est officiellement en ligne 🎉"
+          "Si tu vois ton `<h1>`, c'est gagné : le site est officiellement en ligne 🎉",
+          "💡 **Les options de `curl` du quotidien** : `curl localhost` (affiche la page) · `curl -I localhost` (juste les en-têtes HTTP : code 200, type… sans le corps) · `curl -O https://.../fichier.zip` (télécharge et sauvegarde le fichier) · `curl -L url` (suit les redirections) · `curl -s url` (silencieux, idéal dans un script)."
         ],
         expected: "$ curl localhost\n<!DOCTYPE html>\n<html>\n<head><title>Mon site</title></head>\n<body><h1>Bienvenue !</h1></body>\n</html>",
         culture: "`curl` (*Client URL*) est le couteau suisse des requêtes réseau : tester une API, télécharger un fichier, vérifier qu'un service répond. `curl localhost` teste « depuis l'intérieur » (la machine se parle à elle-même). C'est le premier geste de diagnostic web : si `curl localhost` marche mais que le site est injoignable de l'extérieur, le problème n'est pas nginx — c'est le pare-feu ou le réseau.",
@@ -3428,7 +3429,8 @@ var QUESTS = [
         steps: [
           "Affiche-le : `cat /etc/crontab`",
           "Les 5 premiers champs = QUAND · le reste = QUI et QUOI",
-          "Décode l'exemple : `0 4 * * 0` = « à 4h00, chaque dimanche »"
+          "Décode l'exemple : `0 4 * * 0` = « à 4h00, chaque dimanche »",
+          "💡 **Gérer TES propres tâches** (différent du fichier système) : `crontab -l` (lister les tiennes) · `crontab -e` (les éditer dans un éditeur) · `crontab -r` (⚠️ tout supprimer d'un coup — attention, pas de confirmation !). Chaque utilisateur a son propre crontab."
         ],
         expected: "# m h dom mon dow user  command\n0 4 * * 0   root  /home/user/scripts/backup.sh",
         diagram: "Format cron :\n  *  *  *  *  *\n  │  │  │  │  │\n  │  │  │  │  └─ jour semaine (0-7)\n  │  │  │  └──── mois (1-12)\n  │  │  └─────── jour du mois\n  │  └────────── heure (0-23)\n  └───────────── minute (0-59)",
@@ -3457,7 +3459,8 @@ var QUESTS = [
         steps: [
           "Tape `date +%Y%m%d` (le `+` introduit un format ; `%Y`=année, `%m`=mois, `%d`=jour)",
           "Tu obtiens une date collée, ex. `20260315`",
-          "C'est ce qui donne à chaque archive un nom unique et daté"
+          "C'est ce qui donne à chaque archive un nom unique et daté",
+          "💡 **Les formats de `date` à connaître** : `date` (date + heure complètes) · `date +%Y-%m-%d` (`2026-03-15`, lisible) · `date +%H:%M:%S` (juste l'heure) · `date +%Y%m%d_%H%M%S` (date ET heure collées, pour des noms uniques à la seconde près) · `date +%s` (le *timestamp Unix* : les secondes écoulées depuis 1970)."
         ],
         expected: "$ date +%Y%m%d\n20260315",
         culture: "Nommer ses fichiers avec la date au format `%Y%m%d` (année-mois-jour) est une convention précieuse : ainsi triés, ils apparaissent automatiquement dans l'ordre chronologique (`backup-20260114` vient avant `backup-20260315`, même par tri alphabétique). L'ordre « grand vers petit » (année, puis mois, puis jour) n'est pas un hasard : c'est le seul qui rende le tri de texte identique au tri de dates.",
@@ -3892,7 +3895,8 @@ var QUESTS = [
         steps: [
           "Tape `w`",
           "La 1ʳᵉ ligne rappelle l'uptime et la charge",
-          "Chaque ligne suivante = une session : colonne `FROM` (d'où il vient) et `WHAT` (ce qu'il fait)"
+          "Chaque ligne suivante = une session : colonne `FROM` (d'où il vient) et `WHAT` (ce qu'il fait)",
+          "💡 **La famille « qui est là ? »** : `whoami` (moi, juste mon nom) · `who` (qui est connecté maintenant) · `w` (qui + ce qu'ils font + d'où) · `last` (l'historique des connexions passées, même les sessions déjà fermées)."
         ],
         expected: "10:30:42 up 2 days, load 0.05\nUSER  TTY   FROM           LOGIN@   IDLE  WHAT\nuser  pts/0 192.168.1.10   09:00    1m    bash",
         culture: "Voir une session inconnue dans `w` — un utilisateur que tu n'as pas invité, une adresse `FROM` étrangère — est l'un des premiers signaux d'une intrusion en cours. La colonne `FROM` révèle l'IP d'origine : une session admin légitime vient de ton réseau ; une venue d'une IP inconnue à l'autre bout du monde doit t'alerter immédiatement. `w` est le coup d'œil « qui est chez moi, là, maintenant ? ».",
