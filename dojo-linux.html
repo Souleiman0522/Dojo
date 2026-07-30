@@ -2402,16 +2402,17 @@ var QUESTS = [
         title: 'Copier — sauvegarder avant modif',
         context: "`cp` (de l'anglais *copy*) **duplique** un fichier : on écrit `cp source destination`. L'original reste intact, une copie identique est créée sous le nouveau nom. C'est LE geste de sécurité du métier : avant de modifier un fichier important, on en fait une copie de secours.",
         scene: "Tu vas modifier `rapport.txt`, mais tu veux d'abord garder l'original au cas où.",
-        mission: "Copie `rapport.txt` en `rapport_backup.txt`, dans le dossier Documents.",
+        mission: "Fais une copie de sauvegarde de `rapport.txt` dans le dossier Documents.",
         steps: [
           "Va dans le dossier du fichier : `cd ~/Documents`",
           "Duplique-le : `cp rapport.txt rapport_backup.txt` (d'abord la source, puis la destination)",
-          "Vérifie que les DEUX existent : `ls`"
+          "Vérifie que les DEUX existent : `ls`",
+          "💡 **L'astuce de pro** (même résultat) : `cp rapport.txt{,.bak}` — le shell développe en `cp rapport.txt rapport.txt.bak` (voir Culture 👇)"
         ],
         expected: "$ cp rapport.txt rapport_backup.txt\n$ ls\nrapport.txt  rapport_backup.txt",
-        culture: "Copier un fichier de config en `.bak` avant de le modifier est LE réflexe qui distingue le pro. La convention `.bak` (backup) n'a rien d'officiel — c'est juste une habitude universelle. Pour copier un dossier entier, il faut `cp -r` (récursif), comme pour `rm`. Astuce d'expert : `cp fichier{,.bak}` — le shell développe les accolades en `cp fichier fichier.bak`, un raccourci que tout admin chevronné utilise.",
+        culture: "**Plusieurs façons de sauvegarder un fichier** :\n\n① Nom explicite : `cp rapport.txt rapport_backup.txt`\n② Convention `.bak` : `cp rapport.txt rapport.txt.bak`\n③ L'astuce des accolades : `cp rapport.txt{,.bak}` → le shell développe en ② tout seul\n\nLa convention `.bak` (*backup*) n'a rien d'officiel, c'est une habitude universelle. Pour copier un **dossier entier**, il faut ajouter `-r` (récursif) : `cp -r monsite monsite_backup`. Copier avant de modifier est LE réflexe qui distingue le pro.",
         reflection: "Tu vas modifier `/etc/ssh/sshd_config`, un fichier critique. Quel est ton tout premier geste ?\n👉 `sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak`. AVANT toute modification. Si ta config casse SSH et te déconnecte du serveur distant, cette copie est ta seule bouée de sauvetage. « Copier avant de modifier » n'est pas de la prudence excessive — c'est le minimum vital du métier.",
-        check: function(s) { var d = getNode('/home/user/Documents'); return !!(d && d.children && d.children['rapport_backup.txt']); }
+        check: function(s) { var d = getNode('/home/user/Documents'); return !!(d && d.children && (d.children['rapport_backup.txt'] || d.children['rapport.txt.bak'])); }
       },
       {
         level: 'intermediate',
@@ -2763,7 +2764,7 @@ var QUESTS = [
         steps: [
           "Filtre le fichier : `grep ERROR /var/log/syslog`",
           "Seules les lignes contenant « ERROR » s'affichent",
-          "Astuce : `grep -i` ignore majuscules/minuscules, `grep -c` compte directement"
+          "💡 **Les options qui changent tout** : `-i` (ignore maj/min) · `-n` (numéro de ligne) · `-c` (compte les résultats) · `-v` (inverse : lignes qui NE contiennent PAS le motif) · `-r` (récursif dans tout un dossier)"
         ],
         expected: "Apr 28 12:06:01 dojo CRON[2105]: ERROR backup failed: disk full",
         culture: "`grep` est un acronyme merveilleusement obscur : **g/re/p**, pour *Global Regular Expression Print* — une commande de l'éditeur `ed` des années 70 que Ken Thompson a transformée en outil autonome. Le mot est devenu un **verbe** dans le jargon informatique : « je vais grep les logs ». Sa force cachée : il comprend les **expressions régulières**, un mini-langage de motifs. `grep -i` ignore la casse, `grep -r` cherche récursivement dans une arborescence, `grep -v` inverse (montre ce qui NE correspond PAS).",
@@ -4028,11 +4029,12 @@ var QUESTS = [
         steps: [
           "Place-toi chez toi : `cd ~`",
           "Crée l'archive : `tar -czf backup.tar.gz Documents` (c=créer, z=compresser, f=fichier)",
-          "Un seul fichier contient désormais tout le dossier, compressé"
+          "Un seul fichier contient désormais tout le dossier, compressé",
+          "💡 **Trois compresseurs au choix** : `-z` → `.tar.gz` (rapide, standard) · `-j` → `.tar.bz2` (plus petit, plus lent) · `-J` → `.tar.xz` (le plus petit). On garde `.tar.gz` 9 fois sur 10."
         ],
         expected: "$ tar -czf backup.tar.gz Documents\nArchive créée : backup.tar.gz",
         diagram: "  Documents/ ──tar -czf──▶ backup.tar.gz\n  (plusieurs fichiers)      (un seul, compressé)",
-        culture: "`tar` signifie **Tape ARchive** : il a été créé en 1979 pour écrire des fichiers sur des **bandes magnétiques**, où il fallait tout mettre bout à bout en un flux continu. Les bandes ont disparu, mais tar est resté — c'est pourquoi il n'a pas de compression native (les bandes ne compressaient pas). On lui adjoint `gzip` (1992) pour ça. Un demi-siècle plus tard, chaque sauvegarde Linux passe encore par cet outil vénérable.",
+        culture: "`tar` signifie **Tape ARchive** : il a été créé en 1979 pour écrire des fichiers sur des **bandes magnétiques**, où il fallait tout mettre bout à bout en un flux continu. Les bandes ont disparu, mais tar est resté — c'est pourquoi il n'a pas de compression native (les bandes ne compressaient pas). On lui adjoint un compresseur — `gzip` (`.gz`), `bzip2` (`.bz2`) ou `xz` (`.xz`) — pour ça. Un demi-siècle plus tard, chaque sauvegarde Linux passe encore par cet outil vénérable.",
         reflection: "Pourquoi met-on `f` en dernier dans `-czf` (juste avant le nom de l'archive) ?\n👉 Parce que `f` (file) attend le nom du fichier de sortie JUSTE après lui. `tar -czf backup.tar.gz` : le `f` \"pointe\" sur `backup.tar.gz`. Si tu oublies le `f`, tar croit que tu veux écrire sur une bande magnétique et se bloque — l'erreur de débutant classique.",
         check: function(s) { return Object.keys(sysState.archives).length > 0 || s.history.some(function(c) { return /tar\s+-c/.test(c); }); }
       },
@@ -5504,6 +5506,18 @@ function printFileLegend(fileName) {
   term.writeln('');
 }
 
+// Expansion d'accolades du shell : fichier{,.bak} -> [fichier, fichier.bak]
+function expandBraces(args) {
+  var out = [];
+  args.forEach(function(a) {
+    var m = a.match(/^(.*)\{([^}]*)\}(.*)$/);
+    if (m && m[2].indexOf(',') >= 0) {
+      m[2].split(',').forEach(function(p) { out.push(m[1] + p.trim() + m[3]); });
+    } else { out.push(a); }
+  });
+  return out;
+}
+
 function cmdMkdir(args) {
   if (!args.length) { term.writeln(C.red + 'mkdir: opérande manquante' + C.reset); return; }
   var parents = args.some(function(a) { return /^-\w*p/.test(a); });
@@ -5579,18 +5593,20 @@ function cmdRm(args) {
 }
 
 function cmdCp(args) {
+  args = expandBraces(args);
   if (args.length < 2) { term.writeln(C.red + 'cp: opérandes manquantes' + C.reset); return; }
   var src = args[0], dst = args[args.length - 1];
   var srcPath = resolvePath(src);
   var srcNode = getNode(srcPath);
   if (!srcNode) { term.writeln(C.red + 'cp: ' + src + ': introuvable' + C.reset); return; }
+  var srcName = srcPath.split('/').pop();
   // Determine dest
   var dstPath = resolvePath(dst);
   var dstNode = getNode(dstPath);
   if (dstNode && dstNode.type === 'dir') {
     // copy into dir, keep src name
-    var srcName = srcPath.split('/').pop();
     dstNode.children[srcName] = JSON.parse(JSON.stringify(srcNode));
+    if (FILE_CONTENTS[srcName] != null) FILE_CONTENTS[srcName] = FILE_CONTENTS[srcName];
     highlighted = srcName;
   } else {
     var parentPath = dstPath.split('/').slice(0, -1).join('/') || '/';
@@ -5600,6 +5616,7 @@ function cmdCp(args) {
       term.writeln(C.red + 'cp: dossier de destination introuvable' + C.reset); return;
     }
     parent.children[fileName] = JSON.parse(JSON.stringify(srcNode));
+    if (FILE_CONTENTS[srcName] != null) FILE_CONTENTS[fileName] = FILE_CONTENTS[srcName];
     highlighted = fileName;
   }
   renderFs();
