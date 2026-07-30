@@ -176,7 +176,7 @@
   <header class="hero">
     <div class="eyebrow">Ta feuille de route</div>
     <h1>Des projets qui font un vrai CV</h1>
-    <p>On commence <b>simple</b> — créer ta première VM, monter un serveur web — puis on grimpe <b>pas à pas</b> jusqu'à l'infra d'entreprise. 12 projets, du premier boot au datacenter, chacun avec son guide et ce qu'il prouve sur ton CV.</p>
+    <p>On commence <b>simple</b> — créer ta première VM, monter un serveur web — puis on grimpe <b>pas à pas</b> jusqu'à l'infra d'entreprise. 13 projets, du tout premier prompt Linux au datacenter, chacun avec son guide et ce qu'il prouve sur ton CV.</p>
   </header>
 
   <section class="section" style="margin-top:30px">
@@ -285,7 +285,7 @@
       </div>
 
     </div>
-    <p style="text-align:center;font-family:var(--font-mono);font-size:.8rem;color:var(--taupe);margin-top:4px">↓ Les 12 projets en détail, du plus simple au plus ambitieux ↓</p>
+    <p style="text-align:center;font-family:var(--font-mono);font-size:.8rem;color:var(--taupe);margin-top:4px">↓ Les 13 projets en détail, du plus simple au plus ambitieux ↓</p>
   </section>
 
   <div class="overall">
@@ -344,6 +344,49 @@
 
 <script>
   var PROJECTS = [
+  {
+    "ic": "🐧",
+    "title": "Goûter à Linux, sans rien installer",
+    "lvl": 1,
+    "tags": [
+      "WSL",
+      "Terminal",
+      "Live USB",
+      "premiers pas"
+    ],
+    "why": "Avant même de créer une VM, mets les mains dans un vrai Linux en cinq minutes — sans toucher à ton système. Zéro risque : juste apprivoiser le terminal et chasser la peur de l'écran noir.",
+    "cv": "Prouve : premier contact avec l'environnement Linux.",
+    "challenge": "Aucun piège, aucun risque : c'est la marche zéro, faite pour se débarrasser de l'appréhension du terminal. Le seul objectif : obtenir un prompt Linux et taper tes premières commandes, tranquillement.",
+    "steps": [
+      {
+        "t": "Sur Windows : installer WSL",
+        "do": "# Dans PowerShell (clic droit > Exécuter en administrateur) :\nwsl --install\n# Redémarre, puis ouvre l'appli « Ubuntu » dans le menu Démarrer.",
+        "verify": "Une fenêtre Ubuntu s'ouvre sur un prompt qui finit par « $ »."
+      },
+      {
+        "t": "Sur Mac / Linux : le terminal est déjà là",
+        "do": "# Mac : ouvre l'application « Terminal » (Spotlight > Terminal).\n# Linux : Ctrl+Alt+T.\n# (Sans rien du tout ? Le Dojo, ici même, tourne dans ton navigateur.)",
+        "verify": "Tu as un prompt qui attend tes commandes."
+      },
+      {
+        "t": "Option « vrai Linux » : le live USB",
+        "do": "# Le plus proche d'une vraie machine, toujours sans installer :\n# 1. Flashe une clé USB avec Ubuntu (logiciel balenaEtcher).\n# 2. Redémarre le PC sur la clé.\n# 3. Choisis « Essayer Ubuntu » (PAS « Installer »).",
+        "verify": "Un bureau Ubuntu tourne depuis la clé USB, sans rien écrire sur ton disque."
+      },
+      {
+        "t": "Tes toutes premières commandes",
+        "do": "pwd        # où suis-je ?\nls         # qu'y a-t-il ici ?\nwhoami     # qui suis-je ?\nuname -a   # quel système ?",
+        "verify": "Tu lis où tu es, qui tu es, et ta version de Linux — sans stress."
+      },
+      {
+        "t": "Prendre confiance dans le Dojo",
+        "do": "# Reviens dans le Dojo et fais le chapitre 1 « Les fondations ».\n# Objectif : enchaîner pwd → ls → ls -la sans réfléchir.",
+        "verify": "Le terminal ne te fait plus peur. Tu es prêt à créer ta VM."
+      }
+    ],
+    "test": "Tu as un prompt Linux devant toi (WSL, Terminal ou live USB) et tu tapes cinq commandes sans hésiter. La peur de l'écran noir a disparu.",
+    "deploy": "Pas de livrable ici — c'est l'échauffement. Prochaine étape : ta propre VM (projet suivant), un vrai serveur rien qu'à toi."
+  },
   {
     "ic": "🖥️",
     "title": "Créer ta première machine virtuelle",
