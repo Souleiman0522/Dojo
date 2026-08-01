@@ -7237,11 +7237,18 @@ if (document.readyState === 'loading') {
   body.pmode #content-narrative,
   body.pmode .fs-panel{display:none}
 
+  /* Ceintures spécifiques au parcours projets */
+  .belt.pv-belt-1{background:var(--bg-elevated);color:var(--text-2);border-color:var(--border)}
+  .belt.pv-belt-2{background:rgba(30,90,61,.10);color:var(--green);border-color:rgba(30,90,61,.32)}
+  .belt.pv-belt-3{background:rgba(200,144,40,.13);color:var(--amber);border-color:rgba(200,144,40,.34)}
+  .belt.pv-belt-4{background:rgba(200,60,20,.10);color:var(--magenta);border-color:rgba(200,60,20,.34)}
+  .belt.pv-belt-5{background:rgba(30,58,92,.12);color:var(--violet);border-color:rgba(30,58,92,.34)}
+
   /* Nav projets (gauche) */
   #pv-nav{padding:2px 2px 10px}
   .pv-lvl{margin:12px 4px 4px}
   .pv-lvl-head{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
-  .pv-lvl-name{font-family:var(--font-mono);font-weight:800;font-size:.74rem;color:var(--text-1)}
+  .pv-lvl-name{font-family:var(--font-mono);font-weight:800;font-size:.72rem;color:var(--text-1)}
   .pv-lvl-metier{font-size:.66rem;color:var(--text-3);font-style:italic;margin:2px 0 6px}
   .pv-pcard{display:flex;align-items:center;gap:9px;padding:8px 9px;margin:5px 0;border-radius:8px;
     border:1px solid var(--border-light);background:var(--bg-card);cursor:pointer}
@@ -7259,7 +7266,7 @@ if (document.readyState === 'loading') {
   #pv-view{padding:16px 18px;overflow-y:auto}
   .pv-head{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;
     position:relative;overflow:hidden;box-shadow:var(--shadow-sm)}
-  .pv-head::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--green)}
+  .pv-head::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--magenta)}
   .pv-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}
   .pv-num{font-family:var(--font-mono);font-weight:800;font-size:.66rem;letter-spacing:1px;color:#fff;
     background:var(--magenta);border-radius:6px;padding:3px 8px}
@@ -7317,28 +7324,24 @@ if (document.readyState === 'loading') {
   function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
   function fmt(s){s=esc(s);s=s.replace(/`([^`]+)`/g,'<code class="pv-k">$1</code>');s=s.replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>');return s;}
 
+  // 4 ceintures principales + 1 palier bonus optionnel
   var LEVELS=[
-    {n:1,emoji:'🟢',belt:'beginner',metier:'Je sais administrer un petit serveur Linux.'},
-    {n:2,emoji:'🟡',belt:'intermediate',metier:'Je sais administrer un serveur.'},
-    {n:3,emoji:'🟠',belt:'advanced',metier:'Je sais automatiser plusieurs serveurs.'},
-    {n:4,emoji:'🔵',belt:'advanced',metier:'Je sais construire une infrastructure.'},
-    {n:5,emoji:'🟣',belt:'advanced',metier:'Je sais bâtir un datacenter miniature.'},
-    {n:6,emoji:'🔴',belt:'expert',metier:'Je sais concevoir une infrastructure.'},
-    {n:7,emoji:'🔴',belt:'expert',metier:'Je sais diagnostiquer une infra que je n’ai jamais vue.'}
+    {n:1,emoji:'⬜',cls:'pv-belt-1',tier:'Fondation',metier:'Je sais administrer un petit serveur Linux.'},
+    {n:2,emoji:'🟩',cls:'pv-belt-2',tier:'Découverte',metier:'Je sais héberger mes propres services.'},
+    {n:3,emoji:'🟨',cls:'pv-belt-3',tier:'Intermédiaire',metier:'Je sais exposer et orchestrer mes services proprement.'},
+    {n:4,emoji:'🟧',cls:'pv-belt-4',tier:'Medium',metier:'Je sais faire tourner une vraie infra perso et la garder en vie.'},
+    {n:5,emoji:'⬛',cls:'pv-belt-5',tier:'Bonus',metier:'Je vais plus loin : haute dispo, conteneurs, réseau d’entreprise.'}
   ];
-  var BELTLABEL={beginner:'⬜ Fondation',intermediate:'🟩 Intermédiaire',advanced:'🟥 Avancé',expert:'⬛ Expert'};
-  var LNAME={1:'Je prends confiance',2:'Je deviens administrateur',3:'J’arrête de faire à la main',
-    4:'Infrastructure moderne',5:'Je passe au datacenter',6:'Ingénieur infrastructure',7:'Entreprise'};
+  var LNAME={1:'Fondation — je prends confiance',2:'Découverte — je m’auto-héberge',
+    3:'Intermédiaire — j’assemble proprement',4:'Medium costaud — le vrai truc',5:'Bonus avancé (optionnel)'};
 
-  // Roadmap complète (18) : les titres non encore rédigés s’affichent en « bientôt »
+  // Roadmap complète : titres non encore rédigés = « bientôt »
   var ROADMAP={
-    1:['Mon premier Linux','Ma première VM','Mon premier serveur','Mon serveur personnel'],
-    2:['Hébergeur miniature','Serveur fiable','Serveur sécurisé','Supervision'],
-    3:['Automatisation avec Bash','Infrastructure as Code (Ansible)','Git + CI/CD'],
-    4:['Docker / conteneurs','Haute disponibilité'],
-    5:['Virtualisation (Proxmox)','Provisioning (Terraform)'],
-    6:['Kubernetes (k3s)'],
-    7:['Infrastructure d’entreprise multi-sites','🏆 Production — l’examen final']
+    1:['Mon premier Linux','Ma première VM','Mon site perso en ligne','Mon serveur de fichiers'],
+    2:['Pi-hole — bloqueur de pub réseau','Mon cloud perso (Nextcloud)','Mon Netflix perso (Jellyfin)','Mon GitHub perso (Gitea)'],
+    3:['Mon coffre à mots de passe (Vaultwarden)','Mon VPN perso (WireGuard)','Nom de domaine + HTTPS auto (Caddy)','Tout dockeriser (Docker Compose)'],
+    4:['🏆 Mon serveur mail','Sauvegardes + supervision'],
+    5:['Haute disponibilité','Kubernetes (k3s)','Infra d’entreprise multi-sites','⚔️ Examen final « Production »']
   };
 
   var PROJECTS=[
@@ -7346,7 +7349,7 @@ if (document.readyState === 'loading') {
       guide:'🧭 guidé pas à pas', metier:'Je sais me débrouiller seul dans un terminal Linux.',
       prereq:'Aucun. Se joue **dans le terminal du Dojo** (ou tout terminal Linux). Échauffement : chapitres 1 à 4 et 7.',
       goal:'Le Sensei te confie l’atelier : te **repérer**, **ranger** un dossier de projet, **écrire** puis **protéger** un fichier, **surveiller** ce qui tourne, et apprendre à **demander au système lui-même**.',
-      sensei:'Premier jour dans l’atelier, Kaï. Avant de toucher à un vrai serveur, tu dois savoir **où tu es**, **qui tu es**, et **ranger derrière toi**. Aujourd’hui, pas de magie — juste des gestes propres, répétés jusqu’à devenir des réflexes. À la fin, tu ne seras plus jamais aveugle devant un terminal.',
+      sensei:'Premier jour dans l’atelier, Kaï. Avant de toucher à un vrai serveur, tu dois savoir **où tu es**, **qui tu es**, et **ranger derrière toi**. Aujourd’hui, pas de magie — juste des gestes propres, répétés jusqu’à devenir des réflexes.',
       steps:[
         {title:'Se repérer — où suis-je, qui suis-je ?',intro:'Le premier réflexe d’un pro qui arrive sur une machine : faire le point.',
           code:[{c:'pwd',k:'dans quel dossier suis-je ?'},{c:'whoami',k:'sous quelle identité ?'},{c:'ls -la',k:'même les fichiers cachés ?'}],
@@ -7376,36 +7379,36 @@ if (document.readyState === 'loading') {
       guide:'🧭 guidé pas à pas', metier:'Je sais créer et administrer ma propre machine virtuelle.',
       prereq:'Un PC avec ~8 Go de RAM. **Sur ta vraie machine.** Échauffement : chapitres 11 (Réseau/SSH) et 18 (Virtualisation).',
       goal:'Installer **VirtualBox**, créer une VM **Ubuntu Server**, la mettre en **réseau**, activer **SSH**, prendre un **snapshot**, et t’y connecter depuis ton PC.',
-      sensei:'Jusqu’ici tu vivais dans un terminal prêté, Kaï. Aujourd’hui tu forges **ta** machine. Une VM, c’est un ordinateur dans ton ordinateur : tu peux tout y casser, puis revenir en arrière d’un clic grâce aux **snapshots**. C’est le filet de sécurité du débutant courageux.',
+      sensei:'Jusqu’ici tu vivais dans un terminal prêté, Kaï. Aujourd’hui tu forges **ta** machine. Une VM, c’est un ordinateur dans ton ordinateur : tu peux tout y casser, puis revenir en arrière d’un clic grâce aux **snapshots**.',
       steps:[
         {title:'Installer VirtualBox',intro:'Télécharge VirtualBox depuis le site officiel (virtualbox.org) et installe-le comme n’importe quelle application.',
-          check:'VirtualBox s’ouvre et affiche sa fenêtre d’accueil « Bienvenue ».'},
+          check:'VirtualBox s’ouvre et affiche sa fenêtre d’accueil.'},
         {title:'Récupérer Ubuntu Server',intro:'Télécharge l’ISO **Ubuntu Server LTS** (ubuntu.com/download/server). C’est le CD d’installation.',
           check:'Un fichier `.iso` (≈ 2 Go) est dans tes téléchargements.'},
-        {title:'Créer et installer la VM',intro:'Dans VirtualBox : Nouvelle → nom `dojo-vm`, type Linux/Ubuntu 64-bit, 2048 Mo de RAM, disque 20 Go. Charge l’ISO comme lecteur optique, démarre, et suis l’installateur.',
-          check:'Au redémarrage, la VM affiche un prompt `login:`. Connecte-toi avec le compte créé.'},
-        {title:'Vérifier le réseau',intro:'Dans la VM, regarde ton adresse IP. (Réseau en mode **Pont/Bridge** = IP sur ton LAN ; en **NAT**, ajoute une redirection de port 22.)',
+        {title:'Créer et installer la VM',intro:'Dans VirtualBox : Nouvelle → nom `dojo-vm`, Linux/Ubuntu 64-bit, 2048 Mo de RAM, disque 20 Go. Charge l’ISO, démarre, suis l’installateur.',
+          check:'Au redémarrage, la VM affiche un prompt `login:`. Connecte-toi.'},
+        {title:'Vérifier le réseau',intro:'Dans la VM, regarde ton IP. (Mode **Pont/Bridge** = IP sur ton LAN ; en **NAT**, ajoute une redirection de port 22.)',
           code:[{c:'ip -4 addr show',k:'cherche la ligne inet'}],
           check:'Tu obtiens une adresse `inet` (ex. `192.168.x.x`). Note-la.',
-          hint:{sum:'Pas d’IP / je ne peux pas joindre la VM',ps:['Indice 1. Éteins la VM, va dans Configuration → Réseau, passe l’adaptateur en **Accès par pont (Bridge)**.','Indice 2. En NAT, ajoute une règle de redirection : hôte 2222 → invité 22, puis `ssh -p 2222 user@localhost`.']}},
+          hint:{sum:'Pas d’IP / je ne peux pas joindre la VM',ps:['Indice 1. Éteins la VM, Configuration → Réseau, passe l’adaptateur en **Accès par pont (Bridge)**.','Indice 2. En NAT, redirige : hôte 2222 → invité 22, puis `ssh -p 2222 user@localhost`.']}},
         {title:'Activer SSH',intro:'Installe et démarre le serveur SSH pour piloter la VM à distance :',
           code:[{c:'sudo apt update'},{c:'sudo apt install -y openssh-server'},{c:'sudo systemctl enable --now ssh'},{c:'systemctl status ssh'}],
           check:'`systemctl status ssh` affiche `active (running)`.',
           verify:{label:'Colle la sortie de **systemctl status ssh**',need:'active (running)'}},
-        {title:'Prendre un snapshot',intro:'Dans VirtualBox → onglet **Instantanés (Snapshots)** → Prendre. Nomme-le `base-propre`. C’est ton point de retour.',
-          check:'Un snapshot `base-propre` apparaît dans la liste. Tu pourras toujours y revenir.'},
-        {title:'Te connecter depuis ton PC',intro:'Depuis le terminal de ton PC (pas la VM), connecte-toi :',
+        {title:'Prendre un snapshot',intro:'VirtualBox → onglet **Instantanés (Snapshots)** → Prendre. Nomme-le `base-propre`. C’est ton point de retour.',
+          check:'Un snapshot `base-propre` apparaît. Tu pourras toujours y revenir.'},
+        {title:'Te connecter depuis ton PC',intro:'Depuis le terminal de ton PC (pas la VM) :',
           code:[{c:'ssh utilisateur@<ip-de-la-vm>'}],
           check:'Tu es dans la VM depuis ton propre terminal. 🎉 Ta première machine te répond.'}
       ],
       done:{skills:['Installer un hyperviseur (VirtualBox).','Créer et installer une VM Ubuntu Server.','Comprendre réseau Bridge vs NAT.','Activer SSH et t’y connecter à distance.','Sécuriser ton travail avec un snapshot.'],
-        unlock:'Je sais créer et administrer ma propre machine virtuelle.',next:'Projet 3 — Mon premier serveur'} },
+        unlock:'Je sais créer et administrer ma propre machine virtuelle.',next:'Projet 3 — Mon site perso en ligne'} },
 
-    { id:'p3', level:1, title:'Mon premier serveur', env:'vm', prompt:'kai@dojo-vm:~$',
-      guide:'🧭 guidé pas à pas', metier:'Je sais mettre un site en ligne sur un serveur Linux.',
-      prereq:'La VM du **Projet 2** qui tourne, accès SSH. Tout se fait **dans ta VM**. Échauffement : chapitres 10, 9, 12.',
-      goal:'Installer **Nginx**, publier **ta page HTML**, comprendre qui le redémarre tout seul (**systemd**), puis **ouvrir le pare-feu** pour y accéder depuis ton PC.',
-      sensei:'Un serveur web n’est pas magique, Kaï : c’est un programme qui écoute une porte et tend une page à qui frappe. Nous allons l’installer, lui confier **ta** page, puis nous assurer qu’il se relève seul s’il tombe. Un serveur qu’on rallume à la main n’est pas un serveur : c’est une bougie.',
+    { id:'p3', level:1, title:'Mon site perso en ligne', env:'vm', prompt:'kai@dojo-vm:~$',
+      guide:'🧭 guidé pas à pas', metier:'Je sais mettre mon site en ligne sur mon propre serveur.',
+      prereq:'La VM du **Projet 2**, accès SSH. Tout se fait **dans ta VM**. Échauffement : chapitres 10, 9, 12.',
+      goal:'Installer **Nginx**, publier **ta page perso** (ton portfolio), comprendre qui la sert au boot (**systemd**), puis **ouvrir le pare-feu** pour y accéder depuis ton PC.',
+      sensei:'Aujourd’hui, Kaï, tu existes sur le réseau. Un serveur web, c’est un programme qui écoute une porte et tend **ta** page à qui frappe. Bientôt, un ami tapera ton adresse et verra quelque chose que **toi** tu as mis en ligne. C’est un petit vertige — savoure-le.',
       steps:[
         {title:'Installer Nginx',intro:'Installe le serveur web le plus répandu du monde :',
           code:[{c:'sudo apt update'},{c:'sudo apt install -y nginx'}],
@@ -7414,54 +7417,85 @@ if (document.readyState === 'loading') {
           code:[{c:'systemctl status nginx'},{c:'curl -I http://localhost'}],
           check:'L’état affiche `active (running)`, et `curl` répond `HTTP/1.1 200 OK`.',
           verify:{label:'Colle la sortie de **systemctl status nginx**',need:'active (running)'}},
-        {title:'Publier TA page',intro:'Nginx sert /var/www/html/index.html. Remplace-le par le tien :',
-          code:[{c:"echo '<h1>Le Dojo de Kai</h1>' | sudo tee /var/www/html/index.html"},{c:'curl http://localhost'}],
-          check:'`curl` renvoie **ton** texte.'},
+        {title:'Publier TA page',intro:'Nginx sert /var/www/html/index.html. Mets-y ton contenu à toi :',
+          code:[{c:"echo '<h1>Portfolio de Kai</h1><p>Bienvenue sur mon serveur.</p>' | sudo tee /var/www/html/index.html"},{c:'curl http://localhost'}],
+          check:'`curl` renvoie **ton** texte. C’est officiellement ta page.'},
         {title:'Comprendre systemd (le gardien)',intro:'systemd surveille Nginx. Coupe-le, constate, relance, et demande le démarrage au boot :',
           code:[{c:'sudo systemctl stop nginx',k:'il tombe'},{c:'curl http://localhost',k:'Connection refused'},{c:'sudo systemctl start nginx',k:'il se relève'},{c:'sudo systemctl enable nginx',k:'il reviendra au reboot'}],
           check:'Tu as vu le site disparaître puis revenir. `enable` confirme « Created symlink ».',
-          hint:{sum:'curl marche encore alors que j’ai stoppé ?',ps:['Indice. Un autre serveur web (Apache) répond peut-être à sa place : `sudo ss -tlnp | grep :80`.','Solution. Un seul programme tient le port 80 : `sudo systemctl disable --now apache2`, puis reprends.']}},
+          hint:{sum:'curl marche encore alors que j’ai stoppé ?',ps:['Indice. Un autre serveur web (Apache) répond peut-être : `sudo ss -tlnp | grep :80`.','Solution. Un seul programme tient le port 80 : `sudo systemctl disable --now apache2`, puis reprends.']}},
         {title:'Ouvrir le pare-feu',intro:'Depuis la VM tout marche ; depuis ton PC, le pare-feu bloque. Autorise le web :',
           code:[{c:"sudo ufw allow 'Nginx HTTP'"},{c:'sudo ufw enable'},{c:'sudo ufw status'}],
           check:'`ufw status` montre `Nginx HTTP … ALLOW`. Port 80 ouvert, le reste fermé.'},
         {title:'Y accéder depuis ton navigateur',intro:'Trouve l’IP de la VM puis ouvre-la dans le navigateur de ton PC :',
           code:[{c:'ip -4 addr show | grep inet'},{c:'# puis : http://<ip-de-la-vm>',k:''}],
-          check:'Ta page « Le Dojo de Kaï » s’affiche dans ton navigateur, servie par ta machine. 🎉',
+          check:'Ta page « Portfolio de Kaï » s’affiche dans ton navigateur, servie par ta machine. 🎉',
           verify:{label:'Colle la sortie de **curl -I http://<ip-de-la-vm>** (depuis ton PC)',need:'200'}}
       ],
       done:{skills:['Installer et piloter un service (Nginx).','Lire un statut systemd, gérer `start/stop/enable`.','Publier un contenu web et le tester avec `curl`.','Ouvrir un port au pare-feu sans tout exposer.'],
-        unlock:'Je sais mettre un site en ligne sur un serveur Linux.',next:'Projet 4 — Mon serveur personnel'} },
+        unlock:'Je sais mettre mon site en ligne sur mon propre serveur.',next:'Projet 4 — Mon serveur de fichiers'} },
 
-    { id:'p4', level:1, title:'Mon serveur personnel', env:'vm', prompt:'kai@dojo-vm:~$',
-      guide:'🧭 guidé pas à pas', metier:'Je sais sécuriser et entretenir un serveur au quotidien.',
-      prereq:'La VM des projets précédents. **Dans ta VM.** Échauffement : chapitres 4, 8, 11, 19, 14.',
-      goal:'Créer un **utilisateur admin dédié**, poser une **clé SSH**, **durcir** l’accès, **planifier une sauvegarde**, et savoir **lire les logs** quand ça coince.',
-      sensei:'Un serveur, ça se possède comme un jardin, Kaï : on ne le laisse pas ouvert à tous les vents. Aujourd’hui tu cesses de vivre en `root`, tu fermes les portes inutiles, et tu apprends le geste qui sauve à 3h du matin : **lire les logs**. Un bon administrateur ne devine pas — il regarde ce que la machine a écrit.',
+    { id:'p4', level:1, title:'Mon serveur de fichiers', env:'vm', prompt:'kai@dojo-vm:~$',
+      guide:'🧭 guidé pas à pas', metier:'Je sais partager mes fichiers entre tous mes appareils.',
+      prereq:'La VM qui tourne, sur ton réseau. **Dans ta VM.** Échauffement : chapitres 3 (fichiers), 4 (permissions), 11 (réseau).',
+      goal:'Installer **Samba**, créer un **dossier partagé** protégé par mot de passe, et y accéder depuis ton **PC** (Windows, Mac ou Linux) — comme un Google Drive local.',
+      sensei:'Se passer une clé USB, c’est le Moyen Âge, Kaï. Aujourd’hui tes fichiers vivent à **un seul endroit** et te suivent sur tous tes écrans : ton téléphone, ton PC, la télé du salon. Un dossier, partout, à toi.',
       steps:[
-        {title:'Créer un utilisateur admin',intro:'Arrête de tout faire en root. Crée ton compte et donne-lui les droits sudo :',
-          code:[{c:'sudo adduser kai',k:'suis les invites (mot de passe…)'},{c:'sudo usermod -aG sudo kai'},{c:'id kai',k:'vérifie le groupe sudo'}],
-          check:'`id kai` affiche `sudo` parmi les groupes. Tu peux désormais administrer sans être root.',
-          verify:{label:'Colle la sortie de **id kai**',need:'sudo'}},
-        {title:'Poser une clé SSH',intro:'Depuis ton PC, génère une clé (si tu n’en as pas) et copie-la sur le serveur :',
-          code:[{c:'ssh-keygen -t ed25519',k:'sur ton PC, une seule fois'},{c:'ssh-copy-id kai@<ip-de-la-vm>'}],
-          check:'`ssh kai@<ip>` te connecte **sans mot de passe**. La clé a remplacé le mot de passe.'},
-        {title:'Durcir l’accès SSH',intro:'Édite /etc/ssh/sshd_config : mets `PermitRootLogin no` et `PasswordAuthentication no`, puis recharge :',
-          code:[{c:'sudo nano /etc/ssh/sshd_config'},{c:'sudo systemctl restart ssh'}],
-          check:'Root ne peut plus se connecter, et seul un détenteur de clé entre. Garde **une session ouverte** en testant, au cas où.',
-          hint:{sum:'Je me suis fait éjecter / je ne peux plus me connecter',ps:['Indice. Ne ferme jamais ta session actuelle avant d’avoir testé une nouvelle connexion dans un 2ᵉ terminal.','Solution. Reviens par la console VirtualBox (pas SSH), remets `PasswordAuthentication yes`, `restart ssh`, et recommence en douceur.']}},
-        {title:'Planifier une sauvegarde',intro:'Écris un petit script de sauvegarde, puis fais-le tourner chaque nuit avec cron :',
-          code:[{c:"echo 'tar -czf /home/kai/backup-$(date +%F).tar.gz /var/www' > ~/backup.sh"},{c:'chmod +x ~/backup.sh'},{c:'crontab -e',k:'ajoute : 0 3 * * * /home/kai/backup.sh'},{c:'crontab -l',k:'vérifie'}],
-          check:'`crontab -l` montre ta ligne planifiée à 3h. La sauvegarde tournera seule.'},
-        {title:'Lire les logs',intro:'Le réflexe de survie : quand ça coince, regarde ce que la machine a écrit.',
-          code:[{c:'journalctl -u ssh --no-pager | tail',k:'les événements SSH'},{c:'sudo tail /var/log/auth.log',k:'les connexions'}],
-          check:'Tu vois tes propres connexions (et les tentatives ratées). Tu sais où regarder quand un service tombe.'}
+        {title:'Installer Samba',intro:'Samba parle le langage de partage de Windows (SMB), compris par tout le monde :',
+          code:[{c:'sudo apt update'},{c:'sudo apt install -y samba'}],
+          check:'Le paquet `samba` s’installe. Le service `smbd` est présent.'},
+        {title:'Créer le dossier à partager',intro:'Crée le dossier qui contiendra les fichiers communs :',
+          code:[{c:'sudo mkdir -p /srv/partage'},{c:'sudo chown $USER:$USER /srv/partage'}],
+          check:'Le dossier `/srv/partage` existe et t’appartient.'},
+        {title:'Déclarer le partage',intro:'Ouvre la config Samba et ajoute une section pour ton dossier :',
+          code:[{c:'sudo nano /etc/samba/smb.conf',k:'ajoute les 4 lignes ci-dessous à la fin'},{c:'# [Partage]',k:''},{c:'#   path = /srv/partage',k:''},{c:'#   valid users = kai',k:''},{c:'#   read only = no',k:''},{c:'testparm',k:'vérifie la syntaxe'}],
+          check:'`testparm` affiche « Loaded services file OK » et liste ton partage `[Partage]`.'},
+        {title:'Créer ton utilisateur Samba',intro:'Samba a ses propres mots de passe, séparés de Linux :',
+          code:[{c:'sudo smbpasswd -a kai',k:'choisis un mot de passe de partage'}],
+          check:'L’utilisateur `kai` est ajouté à Samba (« Added user kai »).'},
+        {title:'Démarrer et ouvrir le pare-feu',intro:'Relance le service et autorise Samba sur le réseau :',
+          code:[{c:'sudo systemctl restart smbd'},{c:"sudo ufw allow Samba"},{c:'systemctl status smbd'}],
+          check:'`smbd` est `active (running)` et le pare-feu laisse passer Samba.',
+          verify:{label:'Colle la sortie de **systemctl status smbd**',need:'active (running)'}},
+        {title:'Accéder depuis ton PC',intro:'Depuis ta vraie machine, ouvre le partage : Windows → `\\\\<ip-vm>\\Partage` · Mac/Linux → `smb://<ip-vm>`. Identifie-toi avec `kai` et ton mot de passe Samba.',
+          check:'Tu vois le dossier, tu y déposes un fichier, il apparaît côté serveur. 🎉 Ton drive perso vit.',
+          hint:{sum:'« Accès refusé » / je ne vois pas le partage',ps:['Indice 1. Vérifie que `valid users = kai` correspond bien à l’utilisateur Samba créé avec `smbpasswd`.','Indice 2. Sur Windows, saisis l’identifiant sous la forme `<ip-vm>\\kai` pour forcer le bon compte.']}}
       ],
-      done:{skills:['Créer un utilisateur sudo et quitter root.','Authentification par clé SSH.','Durcir sshd (no root, no password).','Sauvegarde planifiée avec cron + tar.','Lire les logs : `journalctl`, `/var/log`.'],
-        unlock:'Je sais sécuriser et entretenir un serveur au quotidien.',next:'Niveau 2 — Projet 5 : Hébergeur miniature'} }
+      done:{skills:['Installer et configurer Samba (SMB).','Déclarer un partage dans `smb.conf` + `testparm`.','Gérer les comptes Samba (`smbpasswd`).','Ouvrir un service au réseau via le pare-feu.','Monter le partage depuis Windows/Mac/Linux.'],
+        unlock:'Je sais partager mes fichiers entre tous mes appareils.',next:'Niveau 2 — Pi-hole, ton bloqueur de pub réseau'} },
+
+    { id:'p5', level:2, title:'Pi-hole — bloqueur de pub réseau', env:'vm', prompt:'kai@dojo-vm:~$',
+      guide:'🧭 guidé pas à pas', metier:'Je sais bloquer la pub sur tout mon réseau.',
+      prereq:'La VM avec une **IP fixe** conseillée. **Dans ta VM.** Échauffement : chapitres 11 (Réseau/DNS), 9 (Services).',
+      goal:'Installer **Pi-hole**, en faire le **DNS** de tes appareils, et regarder les pubs et traqueurs **disparaître** — sur le téléphone, la TV, la console, tout.',
+      sensei:'La plupart des gens bloquent la pub sur **un** navigateur, Kaï. Toi, tu vas poser **un seul gardien à l’entrée du réseau** : tout ce qui demande une pub se fait refouler avant même d’arriver. C’est invisible, silencieux, et terriblement satisfaisant.',
+      steps:[
+        {title:'Lancer l’installateur Pi-hole',intro:'Pi-hole fournit un installateur guidé. Lance-le et laisse-toi guider (réseau, DNS amont, interface web) :',
+          code:[{c:'curl -sSL https://install.pi-hole.net | bash'}],
+          check:'L’installateur se termine et t’affiche l’**adresse du tableau de bord** + le **mot de passe admin**. Note-les précieusement.',
+          hint:{sum:'`curl` échoue / commande introuvable',ps:['Indice. Installe curl d’abord : `sudo apt install -y curl`, puis relance la commande.']}},
+        {title:'Ouvrir le tableau de bord',intro:'Depuis ton PC, ouvre l’interview d’administration dans le navigateur :',
+          code:[{c:'# http://<ip-de-la-vm>/admin',k:'connecte-toi avec le mot de passe noté'}],
+          check:'Le dashboard Pi-hole s’affiche : requêtes, blocages, graphiques. Pour l’instant, presque vide.'},
+        {title:'Pointer un appareil vers Pi-hole',intro:'Sur ton téléphone ou ton PC, remplace le serveur **DNS** par l’IP de la VM (Réglages Wi-Fi → DNS).',
+          code:[{c:'# DNS = <ip-de-la-vm>',k:'sur l’appareil de test'}],
+          check:'Recharge le dashboard : des **requêtes apparaissent** en direct dès que l’appareil navigue.'},
+        {title:'Constater le blocage',intro:'Depuis l’appareil de test, visite quelques sites chargés de pub, puis regarde le compteur.',
+          code:[{c:'pihole -c',k:'stats en direct dans le terminal — q pour quitter'}],
+          check:'Le compteur **« Queries Blocked »** grimpe. Les pubs et traqueurs sont refoulés à la source. 🎉',
+          verify:{label:'Colle une ligne du dashboard contenant le pourcentage bloqué (ex. « 12.3 % blocked »)',need:'block'}},
+        {title:'(Bonus) Protéger tout le réseau',intro:'Pour couvrir **tous** tes appareils d’un coup : dans ton routeur/box, mets le DNS du DHCP sur l’IP de la VM. Chaque appareil qui se connecte est protégé automatiquement.',
+          check:'Téléphone, TV, console : tout passe désormais par ton gardien, sans rien configurer sur chacun.',
+          hint:{sum:'Les requêtes n’apparaissent pas dans le dashboard',ps:['Indice 1. Beaucoup d’appareils gardent un DNS secondaire : mets Pi-hole en **seul** DNS (retire le 8.8.8.8 de secours).','Indice 2. Redémarre le Wi-Fi de l’appareil pour qu’il reprenne la nouvelle config DNS.']}}
+      ],
+      done:{skills:['Installer Pi-hole via son installateur guidé.','Comprendre le rôle du DNS dans le réseau.','Rediriger un appareil (ou tout le réseau) vers un DNS.','Lire un tableau de bord de filtrage en temps réel.'],
+        unlock:'Je sais bloquer la pub sur tout mon réseau.',next:'Projet 6 — Mon cloud perso (Nextcloud)'} }
   ];
 
   var byId={}; PROJECTS.forEach(function(p){byId[p.id]=p;});
   var byLevelTitle={}; PROJECTS.forEach(function(p){byLevelTitle[p.level+'|'+p.title]=p;});
+
+  function beltPill(level){var L=LEVELS[level-1];return '<span class="belt '+L.cls+'">'+L.emoji+' '+L.tier+'</span>';}
 
   function codeBlock(prompt,lines){
     var h='';
@@ -7474,14 +7508,20 @@ if (document.readyState === 'loading') {
     return '<pre>'+h.replace(/\n$/,'')+'</pre>';
   }
 
+  function globalNum(p){
+    var n=0;
+    for(var lv=1;lv<=LEVELS.length;lv++){ var titles=ROADMAP[lv]||[];
+      for(var i=0;i<titles.length;i++){ n++; if(lv===p.level && titles[i]===p.title) return (n<10?'0':'')+n; } }
+    return '00';
+  }
+
+  var currentPid=null;
   function renderDetail(pid){
     var p=byId[pid]; if(!p) return;
     var envChip = p.env==='vm' ? '🖥️ vraie machine' : '🖥️ terminal du Dojo';
-    var gnum=globalNum(p);
     var h='';
     h+='<div class="pv-head"><div class="pv-top">';
-    h+='<span class="pv-num">PROJET '+gnum+'</span>';
-    h+='<span class="belt belt-'+LEVELS[p.level-1].belt+'">'+BELTLABEL[LEVELS[p.level-1].belt]+'</span>';
+    h+='<span class="pv-num">PROJET '+globalNum(p)+'</span>'+beltPill(p.level);
     h+='<span class="pv-guide">'+p.guide+' · '+envChip+'</span></div>';
     h+='<div class="pv-title">'+esc(p.title)+'</div>';
     h+='<div class="pv-metier">À la fin : <b>« '+esc(p.metier)+' »</b></div>';
@@ -7516,19 +7556,11 @@ if (document.readyState === 'loading') {
     currentPid=pid;
   }
 
-  function globalNum(p){
-    var n=0;
-    for(var lv=1;lv<=7;lv++){ var titles=ROADMAP[lv]||[];
-      for(var i=0;i<titles.length;i++){ n++; if(lv===p.level && titles[i]===p.title) return (n<10?'0':'')+n; } }
-    return '00';
-  }
-
-  var currentPid=null;
   function renderNav(){
     var nav=document.getElementById('pv-nav'); var h=''; var gn=0;
     LEVELS.forEach(function(L){
       h+='<div class="pv-lvl"><div class="pv-lvl-head"><span class="pv-lvl-name">'+L.emoji+' Niveau '+L.n+' — '+esc(LNAME[L.n])+'</span>';
-      h+='<span class="belt belt-'+L.belt+'">'+BELTLABEL[L.belt]+'</span></div>';
+      h+='<span class="belt '+L.cls+'">'+L.emoji+' '+L.tier+'</span></div>';
       h+='<div class="pv-lvl-metier">« '+esc(L.metier)+' »</div>';
       (ROADMAP[L.n]||[]).forEach(function(t){
         gn++; var num=(gn<10?'0':'')+gn; var proj=byLevelTitle[L.n+'|'+t];
@@ -7557,11 +7589,9 @@ if (document.readyState === 'loading') {
     var exoContent=document.getElementById('exo-content');
     var contentPanel=document.getElementById('content-panel');
     if(!exoContent||!contentPanel) return;
-    // Onglets
     var tabs=document.createElement('div'); tabs.className='pv-tabs';
     tabs.innerHTML='<div class="pv-tab active" id="pv-tab-exos">🥋 Exos</div><div class="pv-tab" id="pv-tab-proj">🏗️ Projets</div>';
     exoContent.insertBefore(tabs, exoContent.firstChild);
-    // Conteneurs
     var nav=document.createElement('div'); nav.id='pv-nav'; exoContent.appendChild(nav);
     var view=document.createElement('div'); view.id='pv-view'; contentPanel.appendChild(view);
     document.getElementById('pv-tab-exos').addEventListener('click',function(){setMode('exos');});
