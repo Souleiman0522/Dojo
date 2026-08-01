@@ -2525,6 +2525,7 @@ var QUESTS = [
         expected: "$ cat README.md\n# Mon projet\nUn petit outil qui automatise mes sauvegardes.",
         culture: "Un bon README tient en quelques lignes et répond à **trois questions** : **c'est quoi ?** (une phrase de description), **comment je l'installe ?**, **comment je l'utilise ?**. Sur GitHub, ce fichier s'affiche automatiquement sur la page du projet — c'est ta vitrine. Beaucoup de projets géniaux sont ignorés faute d'un README clair : la doc fait partie du travail, pas un bonus. Pour un CV de projets (chapitre Projets !), un README soigné fait toute la différence.",
         reflection: "Pourquoi le tout premier fichier d'un projet sérieux est-il presque toujours un README ?\n👉 Parce qu'un projet que personne ne comprend est un projet mort. Le README est la porte d'entrée : en une courte description, il transforme un tas de fichiers obscurs en quelque chose qu'un humain (recruteur, collègue, ou toi dans six mois) peut comprendre et utiliser. Écrire cette carte d'identité dès le départ, c'est la marque des pros.",
+        setup: function() { ensureDir('/home/user/monprojet/src'); ensureDir('/home/user/monprojet/docs'); },
         check: function(s) { var p = getNode('/home/user/monprojet'); return !!(p && p.children && p.children['README.md']); }
       },
       {
@@ -2543,6 +2544,7 @@ var QUESTS = [
         diagram: "⚠️ rm -rf /  est l'erreur de carrière classique\n   (efface tout le système). Soyez prudents.",
         culture: "Le `-f` de `rm -rf` signifie **force** : il supprime sans jamais demander confirmation. Combiné à `-r` (récursif) et à un mauvais chemin, il a effacé des entreprises entières. En 2017, un ingénieur de **GitLab** a lancé un `rm -rf` sur le mauvais serveur de production et a effacé 300 Go de base de données live. La légende Unix veut qu'on ne tape JAMAIS `rm -rf` sans relire trois fois le chemin. Certains admins créent même un alias `rm -i` (interactif) pour se forcer à confirmer.",
         reflection: "Pourquoi Unix ne met-il pas de corbeille par défaut, contrairement à Windows ou macOS ?\n👉 Philosophie de confiance et de performance : Unix suppose que **tu sais ce que tu fais**. Une corbeille consommerait de l'espace disque et compliquerait les scripts automatiques. La contrepartie : la suppression est définitive, donc la prudence est ta seule corbeille. D'où l'importance de `cp` pour sauvegarder AVANT.",
+        setup: function() { ensureDir('/home/user/monprojet/src'); ensureDir('/home/user/monprojet/docs'); ensureFile('/home/user/monprojet/README.md', '48'); },
         check: function(s) { var h = getNode('/home/user'); return !!(h && h.children && !h.children.monprojet); }
       },
       {
@@ -4341,6 +4343,26 @@ function getNode(path) {
   }
   return node;
 }
+// Amorce idempotente de l'état attendu par un exercice (voir ex.setup).
+// Ne crée que ce qui manque : ne détruit jamais le travail de l'apprenant.
+function ensureDir(path) {
+  var parts = path.split('/').filter(function(p){ return p; });
+  var node = fs['/'];
+  for (var i = 0; i < parts.length; i++) {
+    if (!node.children) node.children = {};
+    if (!node.children[parts[i]]) node.children[parts[i]] = { type: 'dir', perms: 'drwxr-xr-x', owner: 'user', children: {} };
+    node = node.children[parts[i]];
+  }
+  return node;
+}
+function ensureFile(path, size) {
+  var i = path.lastIndexOf('/');
+  var dir = ensureDir(path.slice(0, i));
+  var name = path.slice(i + 1);
+  if (!dir.children) dir.children = {};
+  if (!dir.children[name]) dir.children[name] = { type: 'file', perms: '-rw-r--r--', owner: 'user', size: size || '0' };
+  return dir.children[name];
+}
 function normalizePath(p) {
   var parts = p.split('/').filter(function(s) { return s.length > 0; });
   var stack = [];
@@ -4769,6 +4791,9 @@ function loadExercise(idx) {
   exoStatus = null;
   // Auto-expand the quest containing this exercise
   var ex = EXERCISES[idx];
+  // Amorce l'état de départ attendu (dossiers/fichiers), même si l'apprenant
+  // arrive directement sur cet exo via la nav ou après un rechargement.
+  if (ex && typeof ex.setup === 'function') { try { ex.setup(); renderFs(); } catch (e) { console.error('setup', e); } }
   if (ex.questId) {
     expandedQuests.add(ex.questId);
     currentQuestId = ex.questId; // le récit de ce chapitre s'affiche au centre
