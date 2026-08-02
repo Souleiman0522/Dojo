@@ -163,6 +163,21 @@
     .hero,.card,.step,.about,.teaser,.join{ animation:rise .7s cubic-bezier(.2,.7,.3,1) both; }
     @keyframes rise{ from{opacity:0; transform:translateY(16px);} to{opacity:1; transform:none;} }
   }
+
+  /* Projets : deux modes + galerie + échelle */
+  .modes{ display:grid; grid-template-columns:1fr 1fr; gap:16px; max-width:760px; margin:0 auto 28px; }
+  .mode{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:22px 20px; box-shadow:var(--shadow); }
+  .mode .ic{ font-size:1.7rem; }
+  .mode h3{ font-family:var(--font-display); font-weight:700; font-size:1.2rem; margin:10px 0 6px; }
+  .mode p{ font-size:.9rem; color:var(--ink-soft); margin:0; }
+  .proj-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:26px; }
+  .proj{ background:var(--card-2); border:1px solid var(--line); border-radius:12px; padding:16px 18px; font-family:var(--font-display); font-weight:700; font-size:1.02rem; display:flex; flex-direction:column; gap:3px; box-shadow:var(--shadow); }
+  .proj span{ font-family:var(--font-mono); font-size:.66rem; font-weight:600; color:var(--taupe); letter-spacing:.05em; }
+  .ladder{ display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:9px; }
+  .ladder span{ background:var(--card); border:1px solid var(--line); border-radius:999px; padding:7px 14px; font-family:var(--font-mono); font-size:.74rem; color:var(--ink-soft); }
+  .ladder i{ color:var(--gold); font-style:normal; font-weight:700; }
+  @media (max-width:720px){ .modes{ grid-template-columns:1fr; } .proj-grid{ grid-template-columns:1fr 1fr; } }
+  @media (prefers-reduced-motion:no-preference){ .mode,.proj-grid,.ladder{ animation:rise .7s cubic-bezier(.2,.7,.3,1) both; } }
 </style>
 </head>
 <body>
@@ -187,7 +202,7 @@
     <div>
       <div class="eyebrow">道場 · Le Dojo du Linux</div>
       <h1>Apprends Linux comme un <em>art martial</em>.</h1>
-      <p class="lead">Un dojo interactif dans ton navigateur. Un vrai terminal, 19 chapitres, 121 exercices, et un Sensei qui te guide pas à pas — <b>sans rien installer</b>.</p>
+      <p class="lead">Un dojo interactif dans ton navigateur. <b>Apprends</b> les bases dans un vrai terminal — 121 exercices, un Sensei qui te guide — puis <b>construis</b> tes propres serveurs : cloud, média, mail… De débutant à ingénieur infra.</p>
       <div class="hero-cta">
         <a class="btn btn-primary btn-lg" href="dojo-linux.html">Commencer gratuitement →</a>
         <button class="btn btn-google btn-lg" onclick="googleConnect()">
@@ -219,6 +234,33 @@
     <div class="card"><div class="ic">💻</div><h3>Un vrai terminal</h3><p>Tape de vraies commandes et vois le résultat en direct, dans un terminal fidèle. Aucune installation.</p></div>
     <div class="card"><div class="ic">🗺️</div><h3>19 chapitres · 121 exos</h3><p>Des fondations (<code>pwd</code>, <code>ls</code>) jusqu'à <code>git</code>, les services, le réseau, la sécurité, le scripting et la virtualisation.</p></div>
     <div class="card"><div class="ic">📂</div><h3>Explorateur visuel</h3><p>Un panneau montre en temps réel ce que tes commandes font au système de fichiers.</p></div>
+  </div>
+</div></section>
+
+<!-- PROJETS -->
+<section id="projets-preview"><div class="wrap">
+  <div class="sec-head">
+    <div class="sec-eyebrow">Et après les bases ?</div>
+    <h2>Tu ne fais pas que réviser : tu construis pour de vrai</h2>
+    <p>Le Dojo a deux modes. Les exos pour ancrer les réflexes ; puis des projets guidés pour monter <b>tes propres serveurs</b>, sur ta vraie machine.</p>
+  </div>
+  <div class="modes">
+    <div class="mode"><div class="ic">🥋</div><h3>Exos simulés</h3><p>121 exercices dans un terminal fidèle, classés par <b>ceinture</b> — de la Fondation à l'Expert. Zéro installation.</p></div>
+    <div class="mode"><div class="ic">🏗️</div><h3>Projets vraie machine</h3><p><b>14 projets</b> guidés pas à pas : tu montes des services que tu gardes et que tu utilises vraiment.</p></div>
+  </div>
+  <div class="proj-grid">
+    <div class="proj">☁️ Ton cloud perso<span>Nextcloud</span></div>
+    <div class="proj">🎬 Ton Netflix<span>Jellyfin</span></div>
+    <div class="proj">🐙 Ton GitHub<span>Gitea</span></div>
+    <div class="proj">🔒 Ton VPN<span>WireGuard</span></div>
+    <div class="proj">🛡️ Bloqueur de pub<span>Pi-hole</span></div>
+    <div class="proj">📧 Ton serveur mail<span>le boss 🏆</span></div>
+  </div>
+  <div class="ladder">
+    <span>Je sais utiliser Linux</span><i>→</i><span>administrer un serveur</span><i>→</i><span>automatiser</span><i>→</i><span>construire une infra</span>
+  </div>
+  <div style="text-align:center;margin-top:28px">
+    <a class="btn btn-primary btn-lg" href="dojo-linux.html">Monter mon premier serveur →</a>
   </div>
 </div></section>
 
