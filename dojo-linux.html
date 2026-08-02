@@ -7414,17 +7414,19 @@ if (document.readyState === 'loading') {
     {n:1,emoji:'⬜',cls:'pv-belt-1',tier:'Fondation',metier:'Je sais administrer un petit serveur Linux.'},
     {n:2,emoji:'🟩',cls:'pv-belt-2',tier:'Découverte',metier:'Je sais héberger mes propres services.'},
     {n:3,emoji:'🟨',cls:'pv-belt-3',tier:'Intermédiaire',metier:'Je sais exposer et orchestrer mes services proprement.'},
-    {n:4,emoji:'🟧',cls:'pv-belt-4',tier:'Medium',metier:'Je sais faire tourner une vraie infra perso et la garder en vie.'}
+    {n:4,emoji:'🟧',cls:'pv-belt-4',tier:'Medium',metier:'Je sais faire tourner une vraie infra perso et la garder en vie.'},
+    {n:5,emoji:'🎁',cls:'pv-belt-5',tier:'Bonus',metier:'Je me fais une vraie collection de services maison.'}
   ];
   var LNAME={1:'Fondation — je prends confiance',2:'Découverte — je m’auto-héberge',
-    3:'Intermédiaire — j’assemble proprement',4:'Medium costaud — le vrai truc'};
+    3:'Intermédiaire — j’assemble proprement',4:'Medium costaud — le vrai truc',5:'Bonus — pour le plaisir'};
 
   // Roadmap complète : titres non encore rédigés = « bientôt »
   var ROADMAP={
     1:['Mon premier Linux','Ma première VM','Mon site perso en ligne','Mon serveur de fichiers'],
     2:['Pi-hole — bloqueur de pub réseau','Mon cloud perso (Nextcloud)','Mon Netflix perso (Jellyfin)','Mon GitHub perso (Gitea)'],
     3:['Mon VPN perso (WireGuard)','Nom de domaine + HTTPS auto (Caddy)','Tout dockeriser (Docker Compose)','Mon coffre à mots de passe (Vaultwarden)'],
-    4:['🏆 Mon serveur mail','Sauvegardes + supervision']
+    4:['🏆 Mon serveur mail','Sauvegardes + supervision'],
+    5:['🎮 Serveur Minecraft','📸 Mes photos (Immich)','🏠 Ma maison connectée (Home Assistant)','📊 Mon portail de services (Homepage)']
   };
 
   var PROJECTS=[
@@ -7817,7 +7819,100 @@ if (document.readyState === 'loading') {
           hint:{sum:'L’alerte ne se déclenche pas',ps:['Indice. Vérifie ton canal de notification (token Telegram / réglages mail) avec le bouton **Test** d’Uptime Kuma avant de compter dessus.']}}
       ],
       done:{skills:['Sauvegarder de façon chiffrée et incrémentale (restic).','Tester une restauration (la règle d’or).','Planifier les sauvegardes (cron).','Superviser ses services (Uptime Kuma).','Recevoir des alertes proactives.'],
-        unlock:'Je sais garder mon infra en vie et dormir tranquille.',next:'🎉 Bravo — parcours terminé ! Tu tiens ta propre infra.'} }
+        unlock:'Je sais garder mon infra en vie et dormir tranquille.',next:'🎁 Bonus « pour le plaisir » — 🎮 Serveur Minecraft'} },
+
+    { id:'p15', level:5, title:'🎮 Serveur Minecraft', env:'vm', prompt:'kai@dojo-vm:~$',
+      guide:'🧭 guidé pas à pas', metier:'Je sais héberger un serveur de jeu pour mes amis.',
+      prereq:'**Docker** (Projet 11) et ~2-3 Go de RAM libres. Échauffement : Projet 11.',
+      goal:'Monter un **serveur Minecraft** en conteneur et y jouer avec tes amis — sur TON serveur, sans payer d’hébergeur.',
+      sensei:'Rien ne motive autant qu’un serveur qu’on partage avec ses potes, Kaï. Aujourd’hui tu ne montes pas un service austère : tu montes un terrain de jeu. Le jour où un ami tape ton adresse et arrive dans ton monde, l’auto-hébergement devient une évidence.',
+      steps:[
+        {title:'Décrire le serveur',intro:'Un petit `docker-compose.yml` avec l’image de référence (accepte la licence via EULA) :',
+          code:[{c:'nano docker-compose.yml',k:'image: itzg/minecraft-server · EULA: "TRUE" · ports 25565:25565 · volume ./data:/data'},{c:'docker compose up -d'},{c:'docker compose ps'}],
+          check:'Le conteneur `mc` est `Up`.',
+          verify:{label:'Colle la sortie de **docker compose ps**',need:'up'}},
+        {title:'Attendre la génération du monde',intro:'Le premier démarrage crée le monde — suis les logs jusqu’à « Done » :',
+          code:[{c:'docker compose logs -f',k:'attends la ligne "Done" — Ctrl+C pour sortir'}],
+          check:'Les logs affichent `Done (…)! For help, type "help"`. Le serveur écoute.'},
+        {title:'Ouvrir le pare-feu',intro:'Le port de Minecraft est le 25565 :',
+          code:[{c:'sudo ufw allow 25565'}],
+          check:'`ufw status` laisse passer 25565.'},
+        {title:'Rejoindre ton monde',intro:'Dans Minecraft (Java) → Multijoueur → Ajouter un serveur → `IP-de-la-vm:25565`.',
+          check:'Tu apparais dans ton monde, servi par ta machine. 🎉',
+          hint:{sum:'Impossible de se connecter',ps:['Indice 1. La version du client doit correspondre à celle du serveur (variable VERSION du compose).','Indice 2. Pour jouer avec des amis hors de chez toi, redirige le port 25565 de ta box vers la VM.']}},
+        {title:'(Bonus) Inviter tes amis',intro:'Donne-leur ton IP publique (+ redirection du port 25565 sur ta box). Pense à sauvegarder le dossier `data` (Projet 14 !).',
+          check:'Tes amis jouent sur ton serveur. Tu es officiellement l’hébergeur de la bande.'}
+      ],
+      done:{skills:['Déployer un serveur de jeu via Docker.','Lire les logs jusqu’à l’état prêt.','Ouvrir un port de jeu.','Gérer versions et sauvegardes du monde.'],
+        unlock:'Je sais héberger un serveur de jeu pour mes amis.',next:'Projet 16 — 📸 Mes photos (Immich)'} },
+
+    { id:'p16', level:5, title:'📸 Mes photos (Immich)', env:'vm', prompt:'kai@dojo-vm:~$',
+      guide:'🧭 guidé pas à pas', metier:'Je sais sauvegarder mes photos automatiquement, sans le cloud des géants.',
+      prereq:'**Docker** (Projet 11), un peu d’espace disque. Échauffement : Projets 11 et 14.',
+      goal:'Déployer **Immich** — ton Google Photos privé : **sauvegarde automatique** des photos du téléphone, recherche, albums, timeline.',
+      sensei:'Tes souvenirs valent plus que tout, Kaï — et pourtant ils dorment chez des géants qui les scrutent. Aujourd’hui tu reprends la main : tes photos remontent toutes seules sur TON serveur, et personne d’autre ne les regarde.',
+      steps:[
+        {title:'Récupérer la stack Immich',intro:'Immich fournit un `docker-compose` officiel + un fichier `.env`. Récupère-les et règle le dossier de stockage :',
+          code:[{c:'wget https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml'},{c:'wget -O .env https://github.com/immich-app/immich/releases/latest/download/example.env'},{c:'nano .env',k:'règle UPLOAD_LOCATION'}],
+          check:'Les fichiers `docker-compose.yml` et `.env` sont prêts.'},
+        {title:'Lancer Immich',intro:'La stack embarque la base de données et le moteur de recherche :',
+          code:[{c:'docker compose up -d'},{c:'docker compose ps'}],
+          check:'Les conteneurs Immich sont `Up`.',
+          verify:{label:'Colle la sortie de **docker compose ps**',need:'up'}},
+        {title:'Créer ton compte',intro:'Ouvre `http://<ip-de-la-vm>:2283`, crée le compte admin (le tien) :',
+          code:[{c:'sudo ufw allow 2283'}],
+          check:'Tu arrives sur ta timeline (vide pour l’instant).'},
+        {title:'Sauvegarde auto du téléphone',intro:'Installe l’app **Immich** (iOS/Android), pointe-la sur ton URL, active la **sauvegarde automatique**.',
+          check:'Une photo prise sur ton téléphone apparaît dans Immich, sur ton serveur. 🎉 Ton Google Photos privé tourne.',
+          hint:{sum:'La sauvegarde ne démarre pas',ps:['Indice. Dans l’app → Sauvegarde : choisis l’album à sauvegarder et autorise l’app à tourner en arrière-plan.']}}
+      ],
+      done:{skills:['Déployer une stack multi-conteneurs (app + DB).','Configurer un stockage via `.env`.','Ouvrir un port applicatif.','Brancher une app mobile en sauvegarde auto.'],
+        unlock:'Je sais sauvegarder mes photos automatiquement, chez moi.',next:'Projet 17 — 🏠 Ma maison connectée (Home Assistant)'} },
+
+    { id:'p17', level:5, title:'🏠 Ma maison connectée (Home Assistant)', env:'vm', prompt:'kai@dojo-vm:~$',
+      guide:'🧭 guidé pas à pas', metier:'Je sais piloter ma maison depuis un tableau de bord à moi.',
+      prereq:'**Docker** (Projet 11). Idéalement un ou deux objets connectés (ampoule, prise). Échauffement : Projet 11.',
+      goal:'Déployer **Home Assistant** et transformer ta maison en tableau de bord : détecter tes appareils, les piloter, et créer ta première **automatisation**.',
+      sensei:'La domotique, c’est souvent un nuage étranger qui décide quand tes lampes s’allument, Kaï. Ici, c’est TOI le cerveau : tout reste chez toi, et tu écris tes propres règles. Ta maison t’obéit, à personne d’autre.',
+      steps:[
+        {title:'Lancer Home Assistant',intro:'Un conteneur, un volume pour la config, le réseau de l’hôte pour découvrir les appareils :',
+          code:[{c:'docker run -d --name homeassistant --restart=unless-stopped --network=host -v ha-config:/config ghcr.io/home-assistant/home-assistant:stable'},{c:'docker ps'}],
+          check:'Le conteneur `homeassistant` tourne.',
+          verify:{label:'Colle la sortie de **docker ps** (ligne homeassistant)',need:'homeassistant'}},
+        {title:'Créer ton compte',intro:'Ouvre `http://<ip-de-la-vm>:8123`, crée ton compte et ta « maison » :',
+          code:[{c:'sudo ufw allow 8123'}],
+          check:'Tu arrives sur ton tableau de bord Home Assistant.'},
+        {title:'Découvrir tes appareils',intro:'Home Assistant détecte souvent tout seul ce qui est sur ton réseau (ampoules, TV, prises). Ajoute-en un via **Paramètres → Appareils**.',
+          check:'Au moins un appareil apparaît et répond quand tu l’allumes/éteins depuis l’interface.'},
+        {title:'Ta première automatisation',intro:'Crée une règle simple : **au coucher du soleil, allumer une lampe** (Paramètres → Automatisations → Créer).',
+          check:'Le soir venu, la lampe s’allume seule. 🎉 Ta maison a un cerveau — et il est chez toi.',
+          hint:{sum:'Aucun appareil détecté',ps:['Indice. La découverte a besoin du même réseau : c’est le rôle de `--network=host`. Vérifie que la VM est en mode **Pont (Bridge)** sur ton LAN.']}}
+      ],
+      done:{skills:['Déployer Home Assistant en conteneur.','Comprendre `--network=host` pour la découverte.','Intégrer et piloter des appareils.','Écrire une automatisation.'],
+        unlock:'Je sais piloter ma maison depuis un tableau de bord à moi.',next:'Projet 18 — 📊 Mon portail de services (Homepage)'} },
+
+    { id:'p18', level:5, title:'📊 Mon portail de services (Homepage)', env:'vm', prompt:'kai@dojo-vm:~$',
+      guide:'🧭 guidé pas à pas', metier:'Je sais réunir tous mes services derrière un seul tableau de bord.',
+      prereq:'**Docker** (Projet 11) et quelques services déjà montés. Échauffement : tous les projets précédents.',
+      goal:'Déployer **Homepage** : une page d’accueil élégante qui **réunit tous tes services** (cloud, média, jeux, photos…) avec des raccourcis et des widgets d’état. Le tableau de bord qui couronne ta collection.',
+      sensei:'Tu as monté une vraie petite infrastructure, Kaï — mais elle est éparpillée sur des dizaines de ports. Ce dernier projet lui donne un **visage** : une seule page, la tienne, d’où tu accèdes à tout. Regarde-la : c’est le chemin parcouru.',
+      steps:[
+        {title:'Lancer Homepage',intro:'Un conteneur léger, avec un dossier de config à toi :',
+          code:[{c:'docker run -d --name homepage -p 3000:3000 -v homepage-config:/app/config ghcr.io/gethomepage/homepage:latest'},{c:'docker ps'}],
+          check:'Le conteneur `homepage` tourne.',
+          verify:{label:'Colle la sortie de **docker ps** (ligne homepage)',need:'homepage'}},
+        {title:'Ouvrir le portail',intro:'Ouvre `http://<ip-de-la-vm>:3000` :',
+          code:[{c:'sudo ufw allow 3000'}],
+          check:'La page Homepage s’affiche (avec des exemples).'},
+        {title:'Lister TES services',intro:'Édite `services.yaml` (dans le volume de config) pour ajouter tes services — chacun avec son nom, son icône et son lien :',
+          code:[{c:'# services.yaml — un bloc par service'},{c:'#   - Nextcloud: { href: http://ip:80, icon: nextcloud.png }'},{c:'#   - Jellyfin:  { href: http://ip:8096, icon: jellyfin.png }'}],
+          check:'Ta page liste tes vrais services et chaque tuile ouvre le bon service.'},
+        {title:'Admirer le résultat',intro:'Ajoute une image de fond, un titre à toi, et — pourquoi pas — mets Homepage derrière Caddy (Projet 10) pour une belle adresse.',
+          check:'Une seule page, la tienne, ouvre sur toute ton infra. 🎉 Bravo Kaï — tu es devenu ton propre hébergeur.',
+          hint:{sum:'Une tuile ne s’ouvre pas',ps:['Indice. Vérifie que le `href` pointe sur l’IP+port réels du service, et que ce service tourne bien (`docker ps`).']}}
+      ],
+      done:{skills:['Déployer un tableau de bord (Homepage).','Décrire ses services en YAML.','Réunir une infra derrière un portail unique.','(option) Le publier proprement via Caddy.'],
+        unlock:'Je sais réunir tous mes services derrière un seul tableau de bord.',next:'🎉 Tu as tout monté. Bienvenue chez les auto-hébergeurs, Kaï.'} }
   ];
 
   var byId={}; PROJECTS.forEach(function(p){byId[p.id]=p;});
