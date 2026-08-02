@@ -164,21 +164,20 @@
     @keyframes rise{ from{opacity:0; transform:translateY(16px);} to{opacity:1; transform:none;} }
   }
 
-  /* Projets : deux parcours + échelle */
-  .tracks{ display:grid; grid-template-columns:1fr 1fr; gap:18px; max-width:840px; margin:0 auto 26px; }
-  .track{ display:block; text-decoration:none; color:inherit; background:var(--card); border:1px solid var(--line); border-radius:16px; padding:26px 24px; box-shadow:var(--shadow); transition:transform .12s, border-color .15s; }
-  .track:hover{ transform:translateY(-2px); border-color:var(--vermilion); }
-  .track .ic{ font-size:2rem; }
-  .track h3{ font-family:var(--font-display); font-weight:700; font-size:1.35rem; margin:8px 0 6px; }
-  .track p{ font-size:.92rem; color:var(--ink-soft); margin:0 0 14px; }
-  .chips{ display:flex; flex-wrap:wrap; gap:7px; margin-bottom:16px; }
-  .chips span{ font-family:var(--font-mono); font-size:.68rem; background:var(--card-2); border:1px solid var(--line); border-radius:999px; padding:5px 10px; color:var(--ink-soft); }
-  .track-go{ font-family:var(--font-mono); font-size:.78rem; font-weight:600; color:var(--vermilion); }
+  /* Projets : deux modes + galerie + échelle */
+  .modes{ display:grid; grid-template-columns:1fr 1fr; gap:16px; max-width:760px; margin:0 auto 28px; }
+  .mode{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:22px 20px; box-shadow:var(--shadow); }
+  .mode .ic{ font-size:1.7rem; }
+  .mode h3{ font-family:var(--font-display); font-weight:700; font-size:1.2rem; margin:10px 0 6px; }
+  .mode p{ font-size:.9rem; color:var(--ink-soft); margin:0; }
+  .proj-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:26px; }
+  .proj{ background:var(--card-2); border:1px solid var(--line); border-radius:12px; padding:16px 18px; font-family:var(--font-display); font-weight:700; font-size:1.02rem; display:flex; flex-direction:column; gap:3px; box-shadow:var(--shadow); }
+  .proj span{ font-family:var(--font-mono); font-size:.66rem; font-weight:600; color:var(--taupe); letter-spacing:.05em; }
   .ladder{ display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:9px; }
   .ladder span{ background:var(--card); border:1px solid var(--line); border-radius:999px; padding:7px 14px; font-family:var(--font-mono); font-size:.74rem; color:var(--ink-soft); }
   .ladder i{ color:var(--gold); font-style:normal; font-weight:700; }
-  @media (max-width:720px){ .tracks{ grid-template-columns:1fr; } }
-  @media (prefers-reduced-motion:no-preference){ .track,.ladder{ animation:rise .7s cubic-bezier(.2,.7,.3,1) both; } }
+  @media (max-width:720px){ .modes{ grid-template-columns:1fr; } .proj-grid{ grid-template-columns:1fr 1fr; } }
+  @media (prefers-reduced-motion:no-preference){ .mode,.proj-grid,.ladder{ animation:rise .7s cubic-bezier(.2,.7,.3,1) both; } }
 </style>
 </head>
 <body>
@@ -242,30 +241,27 @@
 <section id="projets-preview"><div class="wrap">
   <div class="sec-head">
     <div class="sec-eyebrow">Et après les bases ?</div>
-    <h2>Deux parcours de projets, sur ta vraie machine</h2>
-    <p>Les exos ancrent les réflexes. Ensuite tu <b>construis pour de vrai</b> — choisis ta voie, ou fais les deux.</p>
+    <h2>Tu ne fais pas que réviser : tu construis pour de vrai</h2>
+    <p>Le Dojo a deux modes. Les exos pour ancrer les réflexes ; puis des projets guidés pour monter <b>tes propres serveurs</b>, sur ta vraie machine.</p>
   </div>
-  <div class="tracks">
-    <a class="track" href="projets.html">
-      <div class="ic">🏠</div>
-      <h3>S'auto-héberger</h3>
-      <p>Monte les services que tu utilises vraiment, chez toi. De débutant à medium.</p>
-      <div class="chips"><span>Nextcloud</span><span>Jellyfin</span><span>Gitea</span><span>VPN</span><span>Pi-hole</span><span>📧 serveur mail</span></div>
-      <span class="track-go">Voir le parcours →</span>
-    </a>
-    <a class="track" href="projets.html">
-      <div class="ic">🏰</div>
-      <h3>Ingénieur infra</h3>
-      <p>Construis une infra d'entreprise, brique par brique. Pour viser le métier.</p>
-      <div class="chips"><span>Haute dispo</span><span>Ansible</span><span>CI/CD</span><span>k3s</span><span>Proxmox</span><span>Cisco</span></div>
-      <span class="track-go">Voir le parcours →</span>
-    </a>
+  <div class="modes">
+    <div class="mode"><div class="ic">🥋</div><h3>Exos simulés</h3><p>121 exercices dans un terminal fidèle, classés par <b>ceinture</b> — de la Fondation à l'Expert. Zéro installation.</p></div>
+    <div class="mode"><div class="ic">🏗️</div><h3>Projets vraie machine</h3><p><b>14 projets</b> guidés pas à pas : tu montes des services que tu gardes et que tu utilises vraiment.</p></div>
+  </div>
+  <div class="proj-grid">
+    <div class="proj">☁️ Ton cloud perso<span>Nextcloud</span></div>
+    <div class="proj">🎬 Ton Netflix<span>Jellyfin</span></div>
+    <div class="proj">🐙 Ton GitHub<span>Gitea</span></div>
+    <div class="proj">🔒 Ton VPN<span>WireGuard</span></div>
+    <div class="proj">🛡️ Bloqueur de pub<span>Pi-hole</span></div>
+    <div class="proj">📧 Ton serveur mail<span>le boss 🏆</span></div>
   </div>
   <div class="ladder">
-    <span>Je sais utiliser Linux</span><i>→</i><span>administrer</span><i>→</i><span>automatiser</span><i>→</i><span>construire une infra</span>
+    <span>Je sais utiliser Linux</span><i>→</i><span>administrer un serveur</span><i>→</i><span>automatiser</span><i>→</i><span>construire une infra</span>
   </div>
   <div style="text-align:center;margin-top:28px">
-    <a class="btn btn-primary btn-lg" href="projets.html">Voir les deux parcours →</a>
+    <a class="btn btn-primary btn-lg" href="dojo-linux.html">Monter mon premier serveur →</a>
+    <a class="btn btn-ghost btn-lg" href="projets.html" style="margin-left:10px">Voir les deux parcours →</a>
   </div>
 </div></section>
 
