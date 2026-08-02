@@ -7701,7 +7701,61 @@ if (document.readyState === 'loading') {
           hint:{sum:'L’extension Bitwarden refuse de se connecter',ps:['Indice. Bitwarden exige du **HTTPS** : c’est tout l’intérêt de passer par Caddy (Projet 10). Vérifie que l’URL du serveur est bien en `https://`.']}}
       ],
       done:{skills:['Déployer un service via `docker-compose`.','Le placer derrière un reverse proxy HTTPS.','Assembler plusieurs briques (Docker + Caddy).','Sécuriser un service (couper les inscriptions).','Utiliser un gestionnaire de mots de passe auto-hébergé.'],
-        unlock:'Je sais déployer un service conteneurisé, derrière HTTPS.',next:'Niveau 4 — 🏆 Mon serveur mail'} }
+        unlock:'Je sais déployer un service conteneurisé, derrière HTTPS.',next:'Niveau 4 — 🏆 Mon serveur mail'} },
+
+    { id:'p13', level:4, title:'🏆 Mon serveur mail', env:'vm', prompt:'kai@dojo-vm:~$',
+      guide:'🧭 guidé pas à pas', metier:'Je sais héberger mon propre serveur mail — le graal de l’auto-hébergement.',
+      prereq:'**Docker** (P11) et un **domaine** (P10). Il faut aussi une **IP publique avec le port 25 non bloqué** et un **reverse DNS (PTR)** configurable — souvent un petit VPS plutôt que ta box. Échauffement : Projets 10 et 11.',
+      goal:'Monter un **serveur mail complet** (envoi SMTP + réception IMAP) avec **docker-mailserver**, créer ta boîte `toi@tondomaine`, et — le vrai défi — faire en sorte que tes mails **n’atterrissent pas en spam**.',
+      sensei:'Voici le boss de fin, Kaï. Le serveur mail est réputé le plus dur — non pas techniquement, mais parce que le monde entier se **méfie** d’un nouveau serveur mail (à cause des spammeurs). Ta mission n’est pas de l’allumer : c’est de **gagner la confiance** d’Internet, enregistrement DNS après enregistrement DNS.',
+      steps:[
+        {title:'Vérifier le terrain',intro:'Un serveur mail exige des conditions réseau précises : **port 25 sortant** ouvert, et un **reverse DNS** que tu peux définir chez ton hébergeur.',
+          code:[{c:'nc -zv gmail-smtp-in.l.google.com 25',k:'le port 25 sortant répond ?'}],
+          check:'Le port 25 est joignable et tu contrôles le reverse DNS.',
+          hint:{sum:'Le port 25 est bloqué',ps:['Indice. La plupart des box résidentielles bloquent le port 25. La solution standard : héberger le mail sur un **VPS** (quelques €/mois) où le 25 est ouvert et le reverse DNS configurable.']}},
+        {title:'Déployer docker-mailserver',intro:'Un `docker-compose` officiel embarque SMTP, IMAP, antispam et TLS. Récupère-le, règle ton domaine, lève-le :',
+          code:[{c:'wget https://raw.githubusercontent.com/docker-mailserver/docker-mailserver/master/compose.yaml'},{c:'nano mailserver.env',k:'renseigne ton domaine'},{c:'docker compose up -d'},{c:'docker compose ps'}],
+          check:'Le conteneur `mailserver` est `Up`.',
+          verify:{label:'Colle la sortie de **docker compose ps**',need:'up'}},
+        {title:'Créer ta boîte',intro:'Ajoute ton premier compte via l’outil fourni :',
+          code:[{c:'docker exec -it mailserver setup email add kai@mondomaine.fr'},{c:'docker exec -it mailserver setup email list'}],
+          check:'Ta boîte `kai@mondomaine.fr` apparaît dans la liste.'},
+        {title:'Gagner la confiance : SPF, DKIM, DMARC',intro:'Les **3 enregistrements DNS** qui distinguent un vrai serveur d’un spammeur. Génère la clé DKIM, puis ajoute les 3 entrées **TXT** chez ton registrar :',
+          code:[{c:'docker exec -it mailserver setup config dkim',k:'génère la clé à copier en DNS'}],
+          check:'Ton DNS contient **SPF** (qui a le droit d’envoyer), **DKIM** (signature) et **DMARC** (politique). C’est le sésame anti-spam.',
+          hint:{sum:'Mes mails partent en spam',ps:['Indice 1. 90 % du temps, c’est DKIM/SPF/PTR incomplets. Vérifie les 3 + le reverse DNS.','Indice 2. Teste ton score sur **mail-tester.com** : il liste précisément ce qui manque. Vise 10/10.']}},
+        {title:'L’épreuve du feu',intro:'Configure ta boîte dans un client (Thunderbird / téléphone : IMAP 993, SMTP 587), envoie un mail vers une adresse Gmail, et réponds-en un.',
+          check:'Ton mail arrive dans la **boîte de réception** (pas en spam), et tu reçois la réponse. 🎉 Tu tiens ton propre serveur mail. Chapeau bas.'}
+      ],
+      done:{skills:['Comprendre les contraintes réseau du mail (port 25, PTR).','Déployer une stack mail via Docker.','Créer et gérer des boîtes.','Configurer SPF, DKIM et DMARC.','Diagnostiquer la délivrabilité (mail-tester).'],
+        unlock:'Je sais héberger mon propre serveur mail.',next:'Projet 14 — Sauvegardes + supervision'} },
+
+    { id:'p14', level:4, title:'Sauvegardes + supervision', env:'vm', prompt:'kai@dojo-vm:~$',
+      guide:'🧭 guidé pas à pas', metier:'Je sais garder mon infra en vie et dormir tranquille.',
+      prereq:'Tes services précédents, Docker (P11). Échauffement : chapitres 15 (cron), 14 (monitoring), 19 (archives).',
+      goal:'Mettre en place des **sauvegardes automatiques** (avec restauration **testée**) et une **supervision** qui t’**alerte** quand un service tombe. Le projet qui transforme un bricolage en infra sur laquelle on **compte**.',
+      sensei:'Deux vérités dures, Kaï. Une : **une sauvegarde jamais restaurée n’est pas une sauvegarde** — c’est un espoir. Deux : **une infra que tu ne surveilles pas est déjà tombée**, tu ne le sais juste pas encore. Ce projet te donne les deux yeux qui manquaient : la mémoire, et la vigilance.',
+      steps:[
+        {title:'Installer restic et créer un dépôt',intro:'restic sauvegarde de façon chiffrée et incrémentale. Initialise un dépôt (disque externe ou stockage distant) :',
+          code:[{c:'sudo apt install -y restic'},{c:'restic init --repo /srv/backups'}],
+          check:'Le dépôt `/srv/backups` est initialisé et chiffré.'},
+        {title:'Ta première sauvegarde',intro:'Sauvegarde ce qui compte : les données de tes services (cloud, gitea, mail…) :',
+          code:[{c:'restic --repo /srv/backups backup /srv /var/lib/gitea'},{c:'restic --repo /srv/backups snapshots'}],
+          check:'`snapshots` liste ta sauvegarde datée.',
+          verify:{label:'Colle la sortie de **restic snapshots**',need:'snapshot'}},
+        {title:'LE test qui compte : restaurer',intro:'Une sauvegarde ne vaut que si elle se restaure. Prouve-le dans un dossier de test :',
+          code:[{c:'restic --repo /srv/backups restore latest --target /tmp/restore-test'},{c:'ls /tmp/restore-test'}],
+          check:'Tes fichiers réapparaissent intacts. **Maintenant** c’est une vraie sauvegarde.'},
+        {title:'Automatiser chaque nuit',intro:'Planifie la sauvegarde avec cron pour qu’elle tourne seule :',
+          code:[{c:'crontab -e',k:'0 2 * * *  restic --repo /srv/backups backup /srv /var/lib/gitea'},{c:'crontab -l'}],
+          check:'`crontab -l` montre la sauvegarde planifiée à 2h. Tu n’y penses plus.'},
+        {title:'Superviser + être alerté',intro:'Déploie **Uptime Kuma** (Docker) : un tableau de bord qui teste tes services et t’**alerte** (Telegram, mail…) dès qu’un tombe.',
+          code:[{c:'docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name uptime-kuma louislam/uptime-kuma:1'}],
+          check:'Sur `http://<ip>:3001`, tu ajoutes une sonde par service et une alerte. Coupe un service pour tester : **la notification tombe**. 🎉',
+          hint:{sum:'L’alerte ne se déclenche pas',ps:['Indice. Vérifie ton canal de notification (token Telegram / réglages mail) avec le bouton **Test** d’Uptime Kuma avant de compter dessus.']}}
+      ],
+      done:{skills:['Sauvegarder de façon chiffrée et incrémentale (restic).','Tester une restauration (la règle d’or).','Planifier les sauvegardes (cron).','Superviser ses services (Uptime Kuma).','Recevoir des alertes proactives.'],
+        unlock:'Je sais garder mon infra en vie et dormir tranquille.',next:'🎉 Parcours principal terminé ! (Bonus optionnel : Haute disponibilité)'} }
   ];
 
   var byId={}; PROJECTS.forEach(function(p){byId[p.id]=p;});
