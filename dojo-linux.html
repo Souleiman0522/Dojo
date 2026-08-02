@@ -576,6 +576,25 @@ window.addEventListener('error', function(e) {
 
   .active-exo-body { padding: 14px; }
 
+  /* ===== Coin feedback par exercice ===== */
+  .exo-feedback{margin-top:14px;padding:12px 14px;border:1px solid var(--border);border-radius:10px;
+    background:var(--bg-card-2);box-shadow:var(--shadow-sm)}
+  .exo-feedback-title{font-family:var(--font-mono);font-size:.72rem;font-weight:800;letter-spacing:.4px;
+    color:var(--text-2);margin-bottom:8px}
+  .exo-feedback-btns{display:flex;gap:8px;flex-wrap:wrap}
+  .fb-diff{cursor:pointer;font-size:.78rem;font-weight:700;padding:7px 12px;border-radius:999px;
+    border:1px solid var(--border);background:var(--bg-card);color:var(--text-2);transition:all .15s}
+  .fb-diff:hover{border-color:var(--magenta)}
+  .fb-diff.active{background:var(--magenta);color:#fff;border-color:#a82813}
+  .exo-feedback-comment{width:100%;box-sizing:border-box;margin-top:9px;min-height:44px;resize:vertical;
+    font-family:inherit;font-size:.82rem;border:1px solid var(--border);border-radius:7px;padding:8px;
+    background:var(--bg-card);color:var(--text-1)}
+  .exo-feedback-foot{display:flex;align-items:center;gap:10px;margin-top:9px;flex-wrap:wrap}
+  .fb-send{cursor:pointer;font-family:var(--font-mono);font-weight:700;font-size:.74rem;color:#fff;
+    background:var(--violet);border:1px solid #14283f;border-radius:7px;padding:7px 13px}
+  .fb-send:hover{filter:brightness(1.12)}
+  .fb-status{font-family:var(--font-mono);font-size:.7rem;color:var(--green);font-weight:700}
+
   .exo-quest-banner {
     background: rgba(200,144,40,0.06);
     border: 1px solid rgba(200,144,40,0.25);
@@ -1737,7 +1756,6 @@ window.addEventListener('error', function(e) {
   <a class="feedback-btn" href="accueil.html" style="margin-left:auto;text-decoration:none">🏠 Accueil</a>
   <a class="feedback-btn" href="projets.html" style="text-decoration:none">🚀 Projets</a>
   <a class="feedback-btn" href="comparatif.html" style="text-decoration:none">⚔️ Comparatif</a>
-  <button class="feedback-btn" id="feedback-btn" onclick="openFeedbackModal()">💬 Avis</button>
   <span class="user-badge" id="user-badge" onclick="openProfileModal()" style="display:none">
     <span id="user-pseudo">--</span>
     <span id="user-progress">0/80</span>
@@ -4674,6 +4692,40 @@ function renderChapterNarrative(qid) {
   });
 }
 
+// ===== Coin feedback par exercice (ressenti / difficulté) =====
+function getFbVotes(){ try { return JSON.parse(localStorage.getItem('dojo_fb_votes') || '{}'); } catch(e){ return {}; } }
+function setFbVote(idx, lvl){ var v = getFbVotes(); v[idx] = lvl; try { localStorage.setItem('dojo_fb_votes', JSON.stringify(v)); } catch(e){} }
+function renderExoFeedback(idx){
+  var cur = getFbVotes()[idx] || '';
+  function a(l){ return cur === l ? ' active' : ''; }
+  var h = '<div class="exo-feedback">';
+  h += '<div class="exo-feedback-title">💬 Cet exercice t\'a paru…</div>';
+  h += '<div class="exo-feedback-btns">';
+  h += '<button class="fb-diff' + a('facile') + '" data-lvl="facile" onclick="voteDifficulty(' + idx + ',\'facile\')">😌 Facile</button>';
+  h += '<button class="fb-diff' + a('ok') + '" data-lvl="ok" onclick="voteDifficulty(' + idx + ',\'ok\')">🙂 Correct</button>';
+  h += '<button class="fb-diff' + a('dur') + '" data-lvl="dur" onclick="voteDifficulty(' + idx + ',\'dur\')">😰 Difficile</button>';
+  h += '</div>';
+  h += '<textarea id="fb-comment" class="exo-feedback-comment" placeholder="Un mot pour le sensei ? (facultatif)"></textarea>';
+  h += '<div class="exo-feedback-foot"><button class="fb-send" onclick="sendExoFeedback(' + idx + ')">📨 Envoyer au sensei</button>';
+  h += '<span id="fb-status" class="fb-status">' + (cur ? '✔ noté « ' + cur + ' »' : '') + '</span></div>';
+  h += '</div>';
+  return h;
+}
+function voteDifficulty(idx, lvl){
+  setFbVote(idx, lvl);
+  document.querySelectorAll('.exo-feedback .fb-diff').forEach(function(b){ b.classList.toggle('active', b.getAttribute('data-lvl') === lvl); });
+  var s = document.getElementById('fb-status'); if (s) s.textContent = '✔ merci — noté « ' + lvl + ' » 🙏';
+}
+function sendExoFeedback(idx){
+  var lvl = getFbVotes()[idx] || '(non noté)';
+  var c = document.getElementById('fb-comment'); var comment = c ? (c.value || '').trim() : '';
+  var ex = EXERCISES[idx] || {}; var num = idx + 1;
+  var who = (typeof userPseudo !== 'undefined' && userPseudo) ? userPseudo : 'anonyme';
+  var text = ['Retour sur un exercice — Dojo Linux', '', 'Exo ' + num + ' : ' + (ex.title || ''), 'Difficulté ressentie : ' + lvl, 'Commentaire : ' + (comment || '(aucun)'), 'Apprenant : ' + who].join('\n');
+  window.location.href = 'mailto:' + FEEDBACK_EMAIL + '?subject=' + encodeURIComponent('Retour exo ' + num + ' - Dojo Linux') + '&body=' + encodeURIComponent(text);
+  if (typeof showToast === 'function') showToast('✉️ Merci ! Ouverture de ton app mail…');
+}
+
 function renderActiveExo() {
   var container = document.getElementById('active-exo-container');
   if (currentExoIdx < 0) { container.innerHTML = ''; return; }
@@ -4765,6 +4817,7 @@ function renderActiveExo() {
   html += '<button class="neo-btn success" onclick="checkExercise()">▶ Lancer les tests</button>';
   html += '<button class="neo-btn" onclick="skipExercise()">→ Passer</button>';
   html += '</div>';
+  html += renderExoFeedback(currentExoIdx);
   html += '</div>'; // body
   html += '</div>'; // active-exo
   container.innerHTML = html;
