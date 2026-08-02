@@ -1754,7 +1754,6 @@ window.addEventListener('error', function(e) {
     <div class="brand-sub" id="brand-sub">v3 · BUILD-1205 · 93 exos</div>
   </div>
   <a class="feedback-btn" href="accueil.html" style="margin-left:auto;text-decoration:none">🏠 Accueil</a>
-  <a class="feedback-btn" href="projets.html" style="text-decoration:none">🚀 Projets</a>
   <a class="feedback-btn" href="comparatif.html" style="text-decoration:none">⚔️ Comparatif</a>
   <button class="feedback-btn" id="community-btn" onclick="openCommunity()">💬 Communauté</button>
   <span class="user-badge" id="user-badge" onclick="openProfileModal()" style="display:none">
@@ -7415,19 +7414,17 @@ if (document.readyState === 'loading') {
     {n:1,emoji:'⬜',cls:'pv-belt-1',tier:'Fondation',metier:'Je sais administrer un petit serveur Linux.'},
     {n:2,emoji:'🟩',cls:'pv-belt-2',tier:'Découverte',metier:'Je sais héberger mes propres services.'},
     {n:3,emoji:'🟨',cls:'pv-belt-3',tier:'Intermédiaire',metier:'Je sais exposer et orchestrer mes services proprement.'},
-    {n:4,emoji:'🟧',cls:'pv-belt-4',tier:'Medium',metier:'Je sais faire tourner une vraie infra perso et la garder en vie.'},
-    {n:5,emoji:'⬛',cls:'pv-belt-5',tier:'Bonus',metier:'Je vais plus loin : haute dispo, conteneurs, réseau d’entreprise.'}
+    {n:4,emoji:'🟧',cls:'pv-belt-4',tier:'Medium',metier:'Je sais faire tourner une vraie infra perso et la garder en vie.'}
   ];
   var LNAME={1:'Fondation — je prends confiance',2:'Découverte — je m’auto-héberge',
-    3:'Intermédiaire — j’assemble proprement',4:'Medium costaud — le vrai truc',5:'Bonus avancé (optionnel)'};
+    3:'Intermédiaire — j’assemble proprement',4:'Medium costaud — le vrai truc'};
 
   // Roadmap complète : titres non encore rédigés = « bientôt »
   var ROADMAP={
     1:['Mon premier Linux','Ma première VM','Mon site perso en ligne','Mon serveur de fichiers'],
     2:['Pi-hole — bloqueur de pub réseau','Mon cloud perso (Nextcloud)','Mon Netflix perso (Jellyfin)','Mon GitHub perso (Gitea)'],
     3:['Mon VPN perso (WireGuard)','Nom de domaine + HTTPS auto (Caddy)','Tout dockeriser (Docker Compose)','Mon coffre à mots de passe (Vaultwarden)'],
-    4:['🏆 Mon serveur mail','Sauvegardes + supervision'],
-    5:['Haute disponibilité','Kubernetes (k3s)','Infra d’entreprise multi-sites','⚔️ Examen final « Production »']
+    4:['🏆 Mon serveur mail','Sauvegardes + supervision']
   };
 
   var PROJECTS=[
@@ -7820,7 +7817,7 @@ if (document.readyState === 'loading') {
           hint:{sum:'L’alerte ne se déclenche pas',ps:['Indice. Vérifie ton canal de notification (token Telegram / réglages mail) avec le bouton **Test** d’Uptime Kuma avant de compter dessus.']}}
       ],
       done:{skills:['Sauvegarder de façon chiffrée et incrémentale (restic).','Tester une restauration (la règle d’or).','Planifier les sauvegardes (cron).','Superviser ses services (Uptime Kuma).','Recevoir des alertes proactives.'],
-        unlock:'Je sais garder mon infra en vie et dormir tranquille.',next:'🎉 Parcours principal terminé ! (Bonus optionnel : Haute disponibilité)'} }
+        unlock:'Je sais garder mon infra en vie et dormir tranquille.',next:'🎉 Bravo — parcours terminé ! Tu tiens ta propre infra.'} }
   ];
 
   var byId={}; PROJECTS.forEach(function(p){byId[p.id]=p;});
