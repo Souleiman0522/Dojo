@@ -226,8 +226,16 @@
   .term-explain{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:20px 22px; box-shadow:var(--shadow); }
   .te-lbl{ font-family:var(--font-mono); font-size:.72rem; letter-spacing:.08em; text-transform:uppercase; color:var(--matcha); margin-bottom:13px; }
   .te-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:10px; }
-  .te-list li{ font-size:.9rem; color:var(--ink-soft); }
+  .te-list li{ display:flex; align-items:baseline; font-size:.9rem; color:var(--ink-soft); }
   .te-list b{ color:var(--ink); }
+  .te-txt{ flex:1; }
+  .te-num{ font-family:var(--font-mono); font-weight:700; font-size:1.1em; margin-left:10px; }
+  .n-u{ color:var(--matcha); } .n-g{ color:var(--indigo); } .n-o{ color:var(--gold); }
+  .te-calc{ margin-top:15px; padding-top:13px; border-top:1px dashed var(--line); display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-family:var(--font-mono); font-size:.82rem; color:var(--taupe); }
+  .te-calc b{ color:var(--ink); }
+  .te-total{ margin-left:auto; background:var(--ink); color:var(--paper); padding:4px 11px; border-radius:8px; font-weight:700; letter-spacing:.03em; }
+  .te-chmod{ margin-top:11px; font-family:var(--font-mono); font-size:.78rem; color:var(--ink-soft); }
+  .term-explain code{ font-family:var(--font-mono); font-size:.85em; background:rgba(200,52,28,.08); color:var(--vermilion); border:1px solid rgba(200,52,28,.16); border-radius:5px; padding:1px 6px; }
   .te-code{ font-family:var(--font-mono); font-size:.82em; font-weight:700; border-radius:5px; padding:1px 7px; margin-right:7px; border:1px solid; }
   .te-code.c-t{ color:#7a6f58; background:rgba(138,124,99,.12); border-color:rgba(138,124,99,.3); }
   .te-code.c-u{ color:var(--matcha); background:color-mix(in srgb,var(--matcha) 12%,transparent); border-color:color-mix(in srgb,var(--matcha) 34%,transparent); }
@@ -329,11 +337,13 @@
     <div class="term-explain">
       <div class="te-lbl">🧭 Le Dojo traduit</div>
       <ul class="te-list">
-        <li><span class="te-code c-t">-</span><b>Un fichier</b> (un dossier afficherait <code>d</code>)</li>
-        <li><span class="te-code c-u">rwx</span><b>Toi</b> : lire, écrire, exécuter</li>
-        <li><span class="te-code c-g">r-x</span><b>Ton groupe</b> : lire et exécuter</li>
-        <li><span class="te-code c-o">r--</span><b>Les autres</b> : lire seulement</li>
+        <li><span class="te-code c-t">-</span><span class="te-txt"><b>Un fichier</b> (un dossier afficherait <code>d</code>)</span></li>
+        <li><span class="te-code c-u">rwx</span><span class="te-txt"><b>Toi</b> : lire, écrire, exécuter</span><span class="te-num n-u">7</span></li>
+        <li><span class="te-code c-g">r-x</span><span class="te-txt"><b>Ton groupe</b> : lire et exécuter</span><span class="te-num n-g">5</span></li>
+        <li><span class="te-code c-o">r--</span><span class="te-txt"><b>Les autres</b> : lire seulement</span><span class="te-num n-o">4</span></li>
       </ul>
+      <div class="te-calc"><span><b>r</b>=4 · <b>w</b>=2 · <b>x</b>=1</span><span class="te-total">= 754</span></div>
+      <div class="te-chmod">👉 <code>chmod 754 mission.sh</code> applique exactement ces droits.</div>
     </div>
   </div>
 </div></section>
