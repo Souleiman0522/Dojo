@@ -7465,6 +7465,7 @@ if (document.readyState === 'loading') {
 
     { id:'p2', level:1, title:'Ma première VM', env:'vm', prompt:'kai@dojo-vm:~$',
       guide:'🧭 guidé pas à pas', metier:'Je sais créer et administrer ma propre machine virtuelle.',
+      diagram:'Ton PC (hôte)  ──▶  VirtualBox  ──▶  [ VM Ubuntu ]  ◀──SSH──  ton terminal',
       prereq:'Un PC avec ~8 Go de RAM. **Sur ta vraie machine.** Échauffement : chapitres 11 (Réseau/SSH) et 18 (Virtualisation).',
       goal:'Installer **VirtualBox**, créer une VM **Ubuntu Server**, la mettre en **réseau**, activer **SSH**, prendre un **snapshot**, et t’y connecter depuis ton PC.',
       sensei:'Jusqu’ici tu vivais dans un terminal prêté, Kaï. Aujourd’hui tu forges **ta** machine. Une VM, c’est un ordinateur dans ton ordinateur : tu peux tout y casser, puis revenir en arrière d’un clic grâce aux **snapshots**.',
@@ -7494,6 +7495,7 @@ if (document.readyState === 'loading') {
 
     { id:'p3', level:1, title:'Mon site perso en ligne', env:'vm', prompt:'kai@dojo-vm:~$',
       guide:'🧭 guidé pas à pas', metier:'Je sais mettre mon site en ligne sur mon propre serveur.',
+      diagram:'Internet / tes potes  ──HTTP(80)──▶  [ VM Nginx ]  ──▶  ta page',
       prereq:'La VM du **Projet 2**, accès SSH. Tout se fait **dans ta VM**. Échauffement : chapitres 10, 9, 12.',
       goal:'Installer **Nginx**, publier **ta page perso** (ton portfolio), comprendre qui la sert au boot (**systemd**), puis **ouvrir le pare-feu** pour y accéder depuis ton PC.',
       sensei:'Aujourd’hui, Kaï, tu existes sur le réseau. Un serveur web, c’est un programme qui écoute une porte et tend **ta** page à qui frappe. Bientôt, un ami tapera ton adresse et verra quelque chose que **toi** tu as mis en ligne. C’est un petit vertige — savoure-le.',
@@ -7525,6 +7527,7 @@ if (document.readyState === 'loading') {
 
     { id:'p4', level:1, title:'Mon serveur de fichiers', env:'vm', prompt:'kai@dojo-vm:~$',
       guide:'🧭 guidé pas à pas', metier:'Je sais partager mes fichiers entre tous mes appareils.',
+      diagram:'PC · téléphone · TV  ──(SMB)──▶  [ VM Samba ]  ──▶  /srv/partage\n\nUn seul dossier, présent sur tous tes écrans.',
       prereq:'La VM qui tourne, sur ton réseau. **Dans ta VM.** Échauffement : chapitres 3 (fichiers), 4 (permissions), 11 (réseau).',
       goal:'Installer **Samba**, créer un **dossier partagé** protégé par mot de passe, et y accéder depuis ton **PC** (Windows, Mac ou Linux) — comme un Google Drive local.',
       sensei:'Se passer une clé USB, c’est le Moyen Âge, Kaï. Aujourd’hui tes fichiers vivent à **un seul endroit** et te suivent sur tous tes écrans : ton téléphone, ton PC, la télé du salon. Un dossier, partout, à toi.',
@@ -7772,6 +7775,7 @@ if (document.readyState === 'loading') {
 
     { id:'p13', level:4, title:'🏆 Mon serveur mail', env:'vm', prompt:'kai@dojo-vm:~$',
       guide:'🧭 guidé pas à pas', metier:'Je sais héberger mon propre serveur mail — le graal de l’auto-hébergement.',
+      diagram:'[ docker-mailserver ]  +  SPF / DKIM / DMARC  (gagner la confiance)\n\n  A · VPS     ──▶  port 25 + reverse DNS  ──▶  délivre au monde\n  B · Relais  ──▶  envoie via un relais de confiance\n  C · Local   ──▶  reste sur ton réseau (apprentissage)',
       prereq:'**Docker** (P11) et un **domaine** (P10). ⚠️ Le mail a une contrainte unique (voir l’étape 1) — mais **il existe une voie pour chaque situation, aucun risque de rester bloqué**. Échauffement : Projets 10 et 11.',
       goal:'Monter un **serveur mail complet** (SMTP + IMAP) avec **docker-mailserver**, créer ta boîte, comprendre **SPF/DKIM/DMARC**, et l’utiliser pour de vrai — selon **la voie adaptée à ton cas**.',
       sensei:'Voici le boss de fin, Kaï — et sa première leçon est une leçon d’humilité. Le mail ne se dompte pas en force : le monde entier se **méfie** d’un nouveau serveur (à cause des spammeurs). Avant toute commande, tu vas d’abord **choisir ta voie**. Un bon ingénieur ne fonce pas dans un mur : il reconnaît le terrain, puis avance.',
@@ -7900,6 +7904,7 @@ if (document.readyState === 'loading') {
 
     { id:'p18', level:5, title:'📊 Mon portail de services (Homepage)', env:'vm', prompt:'kai@dojo-vm:~$',
       guide:'🧭 guidé pas à pas', metier:'Je sais réunir tous mes services derrière un seul tableau de bord.',
+      diagram:'                ┌─ Nextcloud\n                ├─ Jellyfin\n  [ Homepage ] ─┼─ Gitea\n                ├─ Minecraft\n                └─ … tous tes services',
       prereq:'**Docker** (Projet 11) et quelques services déjà montés. Échauffement : tous les projets précédents.',
       goal:'Déployer **Homepage** : une page d’accueil élégante qui **réunit tous tes services** (cloud, média, jeux, photos…) avec des raccourcis et des widgets d’état. Le tableau de bord qui couronne ta collection.',
       sensei:'Tu as monté une vraie petite infrastructure, Kaï — mais elle est éparpillée sur des dizaines de ports. Ce dernier projet lui donne un **visage** : une seule page, la tienne, d’où tu accèdes à tout. Regarde-la : c’est le chemin parcouru.',
