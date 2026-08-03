@@ -7379,6 +7379,9 @@ if (document.readyState === 'loading') {
     border-radius:8px;padding:11px 13px;overflow-x:auto;margin:.5rem 0;line-height:1.5;white-space:pre}
   #pv-view pre .pv-pr{color:#9fd18f}
   #pv-view pre .pv-cmt{color:#c8956b}
+  .pv-schema{margin:12px 0 4px}
+  .pv-schema-lbl{font-family:var(--font-mono);font-size:.6rem;font-weight:800;letter-spacing:.6px;color:var(--magenta);margin-bottom:5px}
+  #pv-view pre.pv-schema-pre{color:#cfe3d6;border:1px solid var(--border);border-left:3px solid var(--magenta)}
   code.pv-k{font-family:var(--font-mono);background:var(--bg-elevated);border:1px solid var(--border-light);
     border-radius:4px;padding:1px 5px;font-size:.85em;color:var(--red)}
   .pv-check{margin-top:9px;background:rgba(30,90,61,.07);border:1px solid rgba(30,90,61,.28);
@@ -7551,6 +7554,7 @@ if (document.readyState === 'loading') {
 
     { id:'p5', level:2, title:'Pi-hole — bloqueur de pub réseau', env:'vm', prompt:'kai@dojo-vm:~$',
       guide:'🧭 guidé pas à pas', metier:'Je sais bloquer la pub sur tout mon réseau.',
+      diagram:'Tes appareils  ──DNS──▶  [ Pi-hole ]  ──▶  Internet\n\nPi-hole intercepte : pub & traqueurs = BLOQUÉS ✗',
       prereq:'La VM avec une **IP fixe** conseillée. **Dans ta VM.** Échauffement : chapitres 11 (Réseau/DNS), 9 (Services).',
       goal:'Installer **Pi-hole**, en faire le **DNS** de tes appareils, et regarder les pubs et traqueurs **disparaître** — sur le téléphone, la TV, la console, tout.',
       sensei:'La plupart des gens bloquent la pub sur **un** navigateur, Kaï. Toi, tu vas poser **un seul gardien à l’entrée du réseau** : tout ce qui demande une pub se fait refouler avant même d’arriver. C’est invisible, silencieux, et terriblement satisfaisant.',
@@ -7663,6 +7667,7 @@ if (document.readyState === 'loading') {
 
     { id:'p9', level:3, title:'Mon VPN perso (WireGuard)', env:'vm', prompt:'kai@dojo-vm:~$',
       guide:'🧭 guidé pas à pas', metier:'Je sais accéder à mon réseau de n’importe où, en sécurité.',
+      diagram:'  Toi (4G / café)                      Chez toi\n  ┌───────────┐    tunnel chiffré    ┌──────────────┐\n  │ téléphone │ ═══════(51820)══════▶ │ VM WireGuard │ ──▶ ton réseau\n  └───────────┘                      └──────────────┘',
       prereq:'La VM, et le port **UDP 51820** ouvert/redirigé sur ta box. Échauffement : chapitre 11 (Réseau/SSH).',
       goal:'Monter un **VPN WireGuard** : un tunnel chiffré qui te laisse joindre ta VM et tout ton réseau **depuis l’extérieur** — café, 4G, hôtel — comme si tu étais à la maison.',
       sensei:'Un réseau ouvert sur Internet, c’est une porte, Kaï. Un VPN, c’est un **tunnel privé** creusé à travers le chaos : toi seul y entres, et tout ce qui y passe est chiffré. Où que tu sois, tu retrouves ta maison numérique.',
@@ -7690,6 +7695,7 @@ if (document.readyState === 'loading') {
 
     { id:'p10', level:3, title:'Nom de domaine + HTTPS auto (Caddy)', env:'vm', prompt:'kai@dojo-vm:~$',
       guide:'🧭 guidé pas à pas', metier:'Je sais exposer mes services avec un vrai nom et du HTTPS automatique.',
+      diagram:'Internet  ──HTTPS(443)──▶  [ Caddy ]  ──▶  Nextcloud · Jellyfin · Gitea\n\nCaddy obtient et renouvelle le certificat tout seul.',
       prereq:'Un nom de domaine (ou un **DuckDNS** gratuit) pointant sur ton IP publique, ports **80/443** redirigés. Échauffement : Projet 3.',
       goal:'Mettre **Caddy** en **reverse proxy** devant tes services : un vrai nom de domaine, et un **certificat HTTPS obtenu et renouvelé tout seul** (Let’s Encrypt). Fini le `http://192.168…:8096`.',
       sensei:'Une IP et un port, c’est bon pour toi, Kaï — pas pour partager. Un **nom** et un **cadenas vert**, ça change tout : propre, sûr, ça inspire confiance. Et le plus beau : Caddy s’occupe **seul** des certificats. Tu décris, il exécute.',
@@ -7715,6 +7721,7 @@ if (document.readyState === 'loading') {
 
     { id:'p11', level:3, title:'Tout dockeriser (Docker Compose)', env:'vm', prompt:'kai@dojo-vm:~$',
       guide:'🧭 guidé pas à pas', metier:'Je sais faire tourner mes services en conteneurs, décrits dans un fichier.',
+      diagram:'[ conteneur ]  ──(port)──▶  accessible sur le réseau\n[ volume ]     ───────────▶  données qui survivent au conteneur',
       prereq:'La VM. Échauffement : chapitre 9 (services), Projet 3 (web).',
       goal:'Installer **Docker**, comprendre **conteneurs**, **volumes** et **ports**, puis lancer une **stack complète** décrite dans un seul fichier `docker-compose.yml`.',
       sensei:'Installer, configurer, réparer à la main… c’est fragile, Kaï. Un **conteneur**, c’est un service emballé avec tout ce qu’il lui faut, identique partout. Et un fichier `compose`, c’est ta recette : une commande, et toute ton infra se lève. Tu passes de bricoleur à chef d’orchestre.',
@@ -7950,6 +7957,7 @@ if (document.readyState === 'loading') {
     h+='<div class="pv-metier">À la fin : <b>« '+esc(p.metier)+' »</b></div>';
     h+='<div class="pv-prereq"><b>Prérequis</b> — '+fmt(p.prereq)+'</div>';
     h+='<div class="pv-goal">🎯 <b>Mission :</b> '+fmt(p.goal)+'</div></div>';
+    if (p.diagram) h+='<div class="pv-schema"><div class="pv-schema-lbl">🗺️ Le schéma</div><pre class="pv-schema-pre">'+esc(p.diagram)+'</pre></div>';
     h+='<div class="pv-sensei"><div class="ava">🥋</div><div class="txt"><span class="who">SENSEI</span>« '+fmt(p.sensei)+' »</div></div>';
     p.steps.forEach(function(s,i){
       h+='<div class="pv-step"><div class="pv-shead"><div class="pv-sbadge">'+(i+1)+'</div><div class="pv-stitle">'+esc(s.title)+'</div></div>';
