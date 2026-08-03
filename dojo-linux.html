@@ -7536,6 +7536,12 @@ if (document.readyState === 'loading') {
   .pv-prereq{margin-top:12px;background:var(--bg-card-2);border:1px solid var(--border-light);border-radius:9px;
     padding:9px 12px;font-size:.85rem;color:var(--text-2)}
   .pv-goal{margin-top:10px;font-size:.92rem;color:var(--text-1)}
+  .pv-onboard{background:var(--bg-card);border:1px solid var(--border);border-left:5px solid var(--green);border-radius:12px;padding:15px 18px;margin-bottom:18px;box-shadow:var(--shadow-sm)}
+  .pv-onboard-t{font-weight:800;font-size:1.05rem;color:var(--text-1);margin-bottom:6px}
+  .pv-onboard p{margin:.4rem 0;font-size:.88rem;color:var(--text-2);line-height:1.55}
+  .pv-onboard b{color:var(--text-1)}
+  .pv-onboard-check{margin-top:11px;background:var(--bg-card-2);border:1px solid var(--border-light);border-radius:9px;padding:9px 12px;font-size:.82rem;color:var(--text-2)}
+  .pv-onboard-check code{font-family:var(--font-mono);background:var(--bg-elevated);border:1px solid var(--border);border-radius:4px;padding:1px 5px;color:var(--magenta);font-size:.85em}
   .pv-sensei{display:flex;gap:12px;margin:16px 0;background:var(--terminal-bg);border-radius:12px;padding:15px}
   .pv-sensei .ava{flex:0 0 40px;height:40px;border-radius:50%;
     background:radial-gradient(circle at 35% 30%,#ffcf6b,#c8341c);display:flex;align-items:center;justify-content:center;font-size:1.25rem}
@@ -8167,6 +8173,12 @@ if (document.readyState === 'loading') {
 
   function renderNav(){
     var nav=document.getElementById('pv-nav'); var h=''; var gn=0;
+    h+='<div class="pv-onboard">'+
+       '<div class="pv-onboard-t">🎯 Prêt pour les projets&nbsp;?</div>'+
+       '<p><b>Oui, dès que tu tiens les bases</b> (ceinture ⬜ Fondation — chapitres 1 à 4). Pas besoin d’avoir tout terminé&nbsp;!</p>'+
+       '<p>👉 Commence par le <b>Projet 1 « Mon premier Linux »</b> : il rejoue les bases sur ta propre machine, sans rien de neuf. Ensuite, chaque projet t’indique son <b>échauffement</b> (les chapitres utiles à revoir).</p>'+
+       '<div class="pv-onboard-check">Tu sais faire <code>cd</code>, <code>ls</code>, éditer un fichier, <code>sudo apt install</code> et démarrer un service&nbsp;? → tu peux construire.</div>'+
+       '</div>';
     LEVELS.forEach(function(L){
       h+='<div class="pv-lvl"><div class="pv-lvl-head"><span class="pv-lvl-name">'+L.emoji+' Niveau '+L.n+' — '+esc(LNAME[L.n])+'</span>';
       h+='<span class="belt '+L.cls+'">'+L.emoji+' '+L.tier+'</span></div>';
