@@ -211,6 +211,30 @@
   .rank-boss b{ color:var(--vermilion); }
   @media (max-width:720px){ .rank-track{ grid-template-columns:1fr 1fr; } }
   @media (prefers-reduced-motion:no-preference){ .rpg-hud,.rank-track{ animation:rise .7s cubic-bezier(.2,.7,.3,1) both; } }
+
+  /* Démo terminal */
+  .term-demo{ display:grid; grid-template-columns:1.15fr .85fr; gap:20px; max-width:920px; margin:0 auto; align-items:center; }
+  .term{ background:#14110c; border:1px solid #2a2419; border-radius:14px; overflow:hidden; box-shadow:0 14px 40px rgba(20,15,8,.28); font-family:var(--font-mono); }
+  .term-bar{ display:flex; align-items:center; gap:7px; padding:11px 14px; background:#1d1810; border-bottom:1px solid #2a2419; }
+  .td-dot{ width:11px; height:11px; border-radius:50%; }
+  .td-dot.r{ background:#e0533f; } .td-dot.y{ background:#e0a23f; } .td-dot.g{ background:#5fb35f; }
+  .term-title{ margin-left:9px; font-size:.72rem; color:#8a7c63; }
+  .term-body{ padding:18px 17px; font-size:.9rem; line-height:1.85; }
+  .tl{ color:#d9cdb4; white-space:pre-wrap; word-break:break-word; }
+  .tp{ color:#86bd84; } .tpath{ color:#8fb4d4; } .tc{ color:#fff; }
+  .seg-t{ color:#8a7c63; } .seg-u{ color:#86bd84; font-weight:700; } .seg-g{ color:#8fb4d4; font-weight:700; } .seg-o{ color:#e0a23f; font-weight:700; }
+  .term-explain{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:20px 22px; box-shadow:var(--shadow); }
+  .te-lbl{ font-family:var(--font-mono); font-size:.72rem; letter-spacing:.08em; text-transform:uppercase; color:var(--matcha); margin-bottom:13px; }
+  .te-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:10px; }
+  .te-list li{ font-size:.9rem; color:var(--ink-soft); }
+  .te-list b{ color:var(--ink); }
+  .te-code{ font-family:var(--font-mono); font-size:.82em; font-weight:700; border-radius:5px; padding:1px 7px; margin-right:7px; border:1px solid; }
+  .te-code.c-t{ color:#7a6f58; background:rgba(138,124,99,.12); border-color:rgba(138,124,99,.3); }
+  .te-code.c-u{ color:var(--matcha); background:color-mix(in srgb,var(--matcha) 12%,transparent); border-color:color-mix(in srgb,var(--matcha) 34%,transparent); }
+  .te-code.c-g{ color:var(--indigo); background:color-mix(in srgb,var(--indigo) 12%,transparent); border-color:color-mix(in srgb,var(--indigo) 34%,transparent); }
+  .te-code.c-o{ color:var(--gold); background:color-mix(in srgb,var(--gold) 14%,transparent); border-color:color-mix(in srgb,var(--gold) 36%,transparent); }
+  @media (max-width:720px){ .term-demo{ grid-template-columns:1fr; } }
+  @media (prefers-reduced-motion:no-preference){ .term-demo{ animation:rise .7s cubic-bezier(.2,.7,.3,1) both; } }
 </style>
 </head>
 <body>
@@ -284,6 +308,33 @@
     <div class="card"><div class="ic">💻</div><h3>Un vrai terminal</h3><p>Tape de vraies commandes et vois le résultat en direct, dans un terminal fidèle. Aucune installation.</p></div>
     <div class="card"><div class="ic">🗺️</div><h3>19 chapitres · 121 exos</h3><p>Des fondations (<code>pwd</code>, <code>ls</code>) jusqu'à <code>git</code>, les services, le réseau, la sécurité, le scripting et la virtualisation.</p></div>
     <div class="card"><div class="ic">📂</div><h3>Explorateur visuel</h3><p>Un panneau montre en temps réel ce que tes commandes font au système de fichiers.</p></div>
+  </div>
+</div></section>
+
+<!-- DÉMO TERMINAL -->
+<section id="demo"><div class="wrap">
+  <div class="sec-head">
+    <div class="sec-eyebrow">La différence</div>
+    <h2>Le terminal ne te laisse pas dans le noir</h2>
+    <p>Une sortie cryptique&nbsp;? Le Dojo la décode juste à côté, en français clair.</p>
+  </div>
+  <div class="term-demo">
+    <div class="term">
+      <div class="term-bar"><span class="td-dot r"></span><span class="td-dot y"></span><span class="td-dot g"></span><span class="term-title">kai@dojo : ~/mission</span></div>
+      <div class="term-body">
+        <div class="tl"><span class="tp">kai@dojo</span>:<span class="tpath">~/mission</span>$ <span class="tc">ls -l mission.sh</span></div>
+        <div class="tl"><span class="seg-t">-</span><span class="seg-u">rwx</span><span class="seg-g">r-x</span><span class="seg-o">r--</span>  1 kai  dojo  2048  3 août  mission.sh</div>
+      </div>
+    </div>
+    <div class="term-explain">
+      <div class="te-lbl">🧭 Le Dojo traduit</div>
+      <ul class="te-list">
+        <li><span class="te-code c-t">-</span><b>Un fichier</b> (un dossier afficherait <code>d</code>)</li>
+        <li><span class="te-code c-u">rwx</span><b>Toi</b> : lire, écrire, exécuter</li>
+        <li><span class="te-code c-g">r-x</span><b>Ton groupe</b> : lire et exécuter</li>
+        <li><span class="te-code c-o">r--</span><b>Les autres</b> : lire seulement</li>
+      </ul>
+    </div>
   </div>
 </div></section>
 
