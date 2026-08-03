@@ -86,8 +86,14 @@
   .hero p.lead { font-size:1.12rem; color:var(--ink-soft); max-width:46ch; margin:20px 0 28px; }
   .hero-cta { display:flex; flex-wrap:wrap; gap:12px; align-items:center; }
   .hero-note { font-size:.78rem; color:var(--taupe); margin-top:14px; font-family:var(--font-mono); }
-  .hero-price { font-size:.82rem; color:var(--ink-soft); margin-top:8px; font-family:var(--font-mono); }
-  .hero-price b { color:var(--vermilion); }
+  .hero-plans { display:flex; gap:12px; margin-top:16px; flex-wrap:wrap; }
+  .plan { position:relative; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 18px; box-shadow:var(--shadow); min-width:148px; }
+  .plan-year { border:2px solid var(--vermilion); }
+  .plan-badge { position:absolute; top:-11px; left:14px; background:var(--vermilion); color:#fff; font-family:var(--font-mono); font-size:.6rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase; padding:3px 9px; border-radius:999px; box-shadow:var(--shadow); white-space:nowrap; }
+  .plan-price { font-family:var(--font-display); font-weight:700; line-height:1; }
+  .plan-price b { font-size:1.75rem; color:var(--ink); }
+  .plan-price span { font-family:var(--font-mono); font-size:.8rem; font-weight:600; color:var(--taupe); margin-left:3px; }
+  .plan-sub { font-family:var(--font-mono); font-size:.68rem; color:var(--ink-soft); margin-top:5px; }
   .hero-art { position:relative; display:flex; justify-content:center; }
   .hero-art img { width:min(360px,80%); border-radius:50%; border:3px solid rgba(179,128,31,.5); box-shadow:var(--shadow); }
   .hero-seal { position:absolute; bottom:6px; right:8%; background:var(--vermilion); color:#fff; font-family:var(--font-mono); font-size:.64rem; letter-spacing:.12em; padding:7px 12px; border-radius:8px; transform:rotate(-5deg); box-shadow:var(--shadow); }
@@ -239,7 +245,17 @@
         <span class="rpg-stats"><b>⚔️ Quêtes</b><b>⭐ XP</b><b>🥋 Ceintures</b><b>🏆 Boss de fin</b></span>
       </div>
       <div class="hero-note">3 premiers chapitres offerts · Aucune installation · Fonctionne hors-ligne</div>
-      <div class="hero-price">Puis <b>6,50 €/mois</b> ou <b>70 €/an</b> — tous les chapitres + tous les projets.</div>
+      <div class="hero-plans">
+        <div class="plan">
+          <div class="plan-price"><b>6,50 €</b><span>/mois</span></div>
+          <div class="plan-sub">sans engagement</div>
+        </div>
+        <div class="plan plan-year">
+          <div class="plan-badge">🎁 1 mois offert</div>
+          <div class="plan-price"><b>70 €</b><span>/an</span></div>
+          <div class="plan-sub">soit 5,83 €/mois</div>
+        </div>
+      </div>
     </div>
     <div class="hero-art">
       <div class="hero-seal">道 · 3 CHAP. OFFERTS</div>
