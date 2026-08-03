@@ -525,6 +525,16 @@ window.addEventListener('error', function(e) {
     text-align: center; margin-top: 5px;
     font-family: var(--font-mono); font-weight: 600;
   }
+  .progress-xp{ text-align:center; margin-top:6px; font-family:var(--font-mono); font-weight:800; font-size:.72rem; color:var(--amber); letter-spacing:.5px; }
+
+  /* Récompense « Mission accomplie » */
+  #reward{ position:fixed; top:72px; left:50%; transform:translateX(-50%) translateY(-14px); opacity:0; pointer-events:none; z-index:300; transition:opacity .3s, transform .3s; }
+  #reward.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+  .reward-card{ display:flex; align-items:center; gap:12px; background:linear-gradient(135deg,var(--green),#123d29); color:#fff; padding:12px 20px; border-radius:14px; box-shadow:0 12px 34px rgba(20,40,25,.35); font-family:var(--font-mono); }
+  .reward-check{ flex:0 0 34px; height:34px; border-radius:50%; background:rgba(255,255,255,.16); display:flex; align-items:center; justify-content:center; font-size:1.05rem; animation:reward-pop .45s cubic-bezier(.2,1.5,.4,1); }
+  .reward-title{ font-weight:800; font-size:.95rem; white-space:nowrap; }
+  .reward-xp{ margin-left:2px; background:var(--amber); color:#1a1a1a; font-weight:800; padding:3px 11px; border-radius:999px; font-size:.85rem; animation:reward-pop .55s cubic-bezier(.2,1.5,.4,1); }
+  @keyframes reward-pop{ 0%{ transform:scale(.3); opacity:0 } 100%{ transform:scale(1); opacity:1 } }
 
   /* RICH ACTIVE EXERCISE CARD */
   .active-exo {
@@ -1780,6 +1790,7 @@ window.addEventListener('error', function(e) {
           <div class="progress-label">Progression</div>
           <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
           <div class="progress-text" id="progress-text">0 / 0</div>
+          <div class="progress-xp" id="progress-xp"></div>
         </div>
 
         <div class="panel-sep"></div>
@@ -4636,6 +4647,7 @@ function renderExercises() {
   var pct = total > 0 ? (done / total * 100) : 0;
   document.getElementById('progress-fill').style.width = pct + '%';
   document.getElementById('progress-text').textContent = done + ' / ' + total + ' complétés';
+  var xpEl = document.getElementById('progress-xp'); if (xpEl) xpEl.textContent = '⭐ ' + totalXP() + ' XP';
 
   renderChapterNarrative(currentQuestId);
   renderActiveExo();
@@ -4875,6 +4887,34 @@ function wakeExplorer() {
   if (fp) fp.classList.remove('fs-dormant');
 }
 
+// ===== Récompense / XP (feel « jeu ») =====
+var XP_BY_LEVEL = { beginner:10, intermediate:15, advanced:25, expert:40 };
+function xpForLevel(l){ return XP_BY_LEVEL[l] || 10; }
+function totalXP(){ var xp = 0; completed.forEach(function(i){ var e = EXERCISES[i]; if (e) xp += xpForLevel(e.level); }); return xp; }
+function playSuccessSound(){
+  try{
+    var Ctx = window.AudioContext || window.webkitAudioContext; if (!Ctx) return;
+    var ctx = new Ctx(), now = ctx.currentTime;
+    [[660,0],[880,0.08],[1320,0.16]].forEach(function(n){
+      var o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'sine'; o.frequency.value = n[0];
+      g.gain.setValueAtTime(0.0001, now + n[1]);
+      g.gain.exponentialRampToValueAtTime(0.10, now + n[1] + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + n[1] + 0.22);
+      o.connect(g); g.connect(ctx.destination);
+      o.start(now + n[1]); o.stop(now + n[1] + 0.25);
+    });
+  }catch(e){}
+}
+function showReward(ex){
+  var xp = xpForLevel(ex.level);
+  var el = document.getElementById('reward');
+  if (!el){ el = document.createElement('div'); el.id = 'reward'; document.body.appendChild(el); }
+  el.innerHTML = '<div class="reward-card"><div class="reward-check">✔</div><div class="reward-title">Mission accomplie&nbsp;!</div><div class="reward-xp">+' + xp + ' XP</div></div>';
+  void el.offsetWidth; el.className = 'show';
+  clearTimeout(el._t); el._t = setTimeout(function(){ el.className = ''; }, 2600);
+}
+
 function checkExercise() {
   if (currentExoIdx < 0) return;
   var ex = EXERCISES[currentExoIdx];
@@ -4894,6 +4934,8 @@ function checkExercise() {
       localStorage.setItem('dojo_linux_done_v2', JSON.stringify(arr));
     } catch (e) {}
     triggerConfetti();
+    showReward(ex);
+    playSuccessSound();
     setTimeout(function() {
       if (currentExoIdx < EXERCISES.length - 1) loadExercise(currentExoIdx + 1);
     }, 3500);
