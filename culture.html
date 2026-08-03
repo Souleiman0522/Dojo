@@ -120,6 +120,16 @@
   .tag.sec { background:rgba(122,59,106,.14); color:var(--plum); }
   .lvl { font-family:var(--font-mono); font-size:.72rem; color:var(--taupe); }
 
+  /* Usages */
+  .usages { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  .use { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:20px; box-shadow:var(--shadow); }
+  .use .ic { font-size:1.6rem; }
+  .use .k { font-family:var(--font-display); font-weight:700; font-size:1.4rem; color:var(--vermilion); margin:8px 0 2px; line-height:1.1; }
+  .use .t { font-weight:700; font-size:.94rem; margin-bottom:4px; }
+  .use .d { color:var(--ink-soft); font-size:.85rem; }
+  @media (max-width:820px){ .usages { grid-template-columns:1fr 1fr; } }
+  @media (max-width:520px){ .usages { grid-template-columns:1fr; } }
+
   /* Lexique */
   .lex { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; }
   .lex-card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px 20px; box-shadow:var(--shadow); }
@@ -273,6 +283,23 @@
     </div>
   </section>
 
+  <!-- USAGES -->
+  <section>
+    <div class="sec-head">
+      <div class="sec-eyebrow">L'invisible partout</div>
+      <h2>Où tourne Linux&nbsp;? À peu près partout</h2>
+      <p>On croit que Linux est « pour les geeks ». En réalité, tu t'en sers tous les jours sans le savoir.</p>
+    </div>
+    <div class="usages">
+      <div class="use"><div class="ic">🖥️</div><div class="k">9 serveurs sur 10</div><div class="t">Le cloud &amp; le web</div><div class="d">La grande majorité des serveurs du cloud et des sites web tournent sous Linux.</div></div>
+      <div class="use"><div class="ic">📱</div><div class="k">~3 milliards</div><div class="t">Android</div><div class="d">Chaque téléphone Android est bâti sur le noyau Linux. Il est déjà dans ta poche.</div></div>
+      <div class="use"><div class="ic">🏆</div><div class="k">100 %</div><div class="t">Supercalculateurs</div><div class="d">Les 500 machines les plus puissantes du monde tournent toutes sous Linux.</div></div>
+      <div class="use"><div class="ic">🌐</div><div class="k">Ta box</div><div class="t">Réseau domestique</div><div class="d">La plupart des box internet et des routeurs embarquent un petit Linux.</div></div>
+      <div class="use"><div class="ic">🚗</div><div class="k">Voitures &amp; TV</div><div class="t">L'embarqué</div><div class="d">Écrans de voiture, smart TV, objets connectés : du Linux caché partout.</div></div>
+      <div class="use"><div class="ic">🚀</div><div class="k">Jusqu'à Mars</div><div class="t">L'espace</div><div class="d">SpaceX, la Station spatiale, l'hélicoptère Ingenuity de la NASA : Linux décolle.</div></div>
+    </div>
+  </section>
+
   <!-- FAMILLES -->
   <section>
     <div class="sec-head">
@@ -365,6 +392,22 @@
       </table>
     </div>
     <p style="color:var(--ink-soft);font-size:.9rem;margin-top:16px">➕ Il existe aussi des formats <b>universels</b>, qui marchent sur (presque) toutes les distros : <b>Snap</b> (Canonical), <b>Flatpak</b> et <b>AppImage</b>. Pratiques pour les applis de bureau, un peu plus lourds. Côté conteneurs, Alpine utilise <code>apk</code>, ultra-léger.</p>
+  </section>
+
+  <!-- ÉCONOMIE -->
+  <section>
+    <div class="sec-head">
+      <div class="sec-eyebrow">La question qui revient</div>
+      <h2>Pourquoi c'est gratuit — et qui paie&nbsp;?</h2>
+      <p><b>« Libre » ne veut pas dire « sans valeur ».</b> Libre = tu peux le lire, le modifier, le partager (c'est une liberté). Et la plupart des distros sont aussi gratuites. Alors comment tout ce monde vit-il&nbsp;? Simple : on ne vend pas le logiciel — on vend le <b>service autour</b>.</p>
+    </div>
+    <div class="lex">
+      <div class="lex-card"><h4>🏢 Le support &amp; les services</h4><p>Red Hat (IBM), Canonical, SUSE vendent aux entreprises l'assistance, la garantie et les mises à jour longue durée. Le logiciel est gratuit ; la tranquillité, non.</p></div>
+      <div class="lex-card"><h4>☁️ Le cloud</h4><p>AWS, Google, Microsoft font tourner des millions de serveurs Linux et te vendent la puissance de calcul. Linux est le socle de toute l'industrie du cloud.</p></div>
+      <div class="lex-card"><h4>🤝 Les géants qui contribuent</h4><p>Google, Intel, Meta, Microsoft… <b>paient des développeurs</b> pour améliorer le noyau : ils en dépendent. La majorité du code du noyau vient de salariés d'entreprises.</p></div>
+      <div class="lex-card"><h4>🎓 Certifs, formations &amp; dons</h4><p>Les certifications (Red Hat, LPI), les formations et les dons aux fondations (Linux Foundation, Debian) financent aussi l'écosystème.</p></div>
+    </div>
+    <p style="color:var(--ink-soft);font-size:.9rem;margin-top:16px">🔁 <b>Le cercle vertueux :</b> chacun améliore le même bien commun au lieu de réinventer la roue dans son coin. Résultat : Linux avance souvent plus vite — et plus solidement — qu'un logiciel fermé.</p>
   </section>
 
   <!-- CERTIFICATIONS -->
