@@ -182,6 +182,25 @@
   .ladder i{ color:var(--gold); font-style:normal; font-weight:700; }
   @media (max-width:720px){ .modes{ grid-template-columns:1fr; } .proj-grid{ grid-template-columns:1fr 1fr; } }
   @media (prefers-reduced-motion:no-preference){ .mode,.proj-grid,.ladder{ animation:rise .7s cubic-bezier(.2,.7,.3,1) both; } }
+
+  /* RPG progression */
+  .rpg-hud{ max-width:620px; margin:0 auto 30px; background:var(--card); border:1px solid var(--line); border-radius:16px; padding:20px 22px; box-shadow:var(--shadow); }
+  .hud-row{ display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+  .hud-lvl{ font-family:var(--font-mono); font-size:.72rem; font-weight:700; letter-spacing:.08em; color:#fff; background:var(--indigo); padding:5px 10px; border-radius:7px; }
+  .hud-name{ font-family:var(--font-display); font-weight:700; font-size:1.15rem; }
+  .hud-xp{ margin-left:auto; font-family:var(--font-mono); font-size:.74rem; color:var(--taupe); }
+  .hud-bar{ height:12px; border-radius:999px; background:var(--card-2); border:1px solid var(--line); overflow:hidden; }
+  .hud-bar i{ display:block; height:100%; background:linear-gradient(90deg,var(--gold),var(--vermilion)); border-radius:999px; }
+  .hud-legend{ margin-top:11px; font-family:var(--font-mono); font-size:.7rem; color:var(--ink-soft); }
+  .rank-track{ display:grid; grid-template-columns:repeat(5,1fr); gap:12px; max-width:900px; margin:0 auto; }
+  .rank{ background:var(--card-2); border:1px solid var(--line); border-radius:14px; padding:16px 14px; text-align:center; box-shadow:var(--shadow); position:relative; }
+  .rank-belt{ font-size:1.5rem; width:40px; height:40px; line-height:40px; margin:0 auto 8px; border-radius:10px; background:var(--card); border:1px solid var(--line); }
+  .rank b{ display:block; font-family:var(--font-display); font-size:1.02rem; margin-bottom:4px; }
+  .rank span{ font-family:var(--font-mono); font-size:.66rem; color:var(--taupe); line-height:1.4; }
+  .rank-boss{ border-color:var(--vermilion); }
+  .rank-boss b{ color:var(--vermilion); }
+  @media (max-width:720px){ .rank-track{ grid-template-columns:1fr 1fr; } }
+  @media (prefers-reduced-motion:no-preference){ .rpg-hud,.rank-track{ animation:rise .7s cubic-bezier(.2,.7,.3,1) both; } }
 </style>
 </head>
 <body>
@@ -247,6 +266,26 @@
 </div></section>
 
 <!-- PROJETS -->
+<section id="rpg"><div class="wrap">
+  <div class="sec-head">
+    <div class="sec-eyebrow">🎮 Le principe</div>
+    <h2>Un parcours pensé comme un RPG</h2>
+    <p>Tu ne « suis pas un cours » : tu montes un personnage. Chaque exo réussi rapporte des <b>XP</b> et te rapproche de la ceinture suivante — jusqu'aux <b>boss</b>, les gros projets sur ta vraie machine.</p>
+  </div>
+  <div class="rpg-hud">
+    <div class="hud-row"><span class="hud-lvl">NIV. 3</span><span class="hud-name">Ceinture jaune</span><span class="hud-xp">640 / 1000 XP</span></div>
+    <div class="hud-bar"><i style="width:64%"></i></div>
+    <div class="hud-legend">⚔️ +10 à +40 XP par quête · 🥋 une nouvelle ceinture à chaque palier · 🏆 4 boss à vaincre</div>
+  </div>
+  <div class="rank-track">
+    <div class="rank"><div class="rank-belt">⬜</div><b>Blanche</b><span>Fondations — pwd, ls, cd</span></div>
+    <div class="rank"><div class="rank-belt">🟩</div><b>Verte</b><span>Fichiers, droits, process</span></div>
+    <div class="rank"><div class="rank-belt">🟨</div><b>Jaune</b><span>Réseau, services, scripts</span></div>
+    <div class="rank"><div class="rank-belt">🟧</div><b>Orange</b><span>Serveurs, Docker, sécurité</span></div>
+    <div class="rank rank-boss"><div class="rank-belt">🥷</div><b>Noire</b><span>Boss : mail, infra maison 🏆</span></div>
+  </div>
+</div></section>
+
 <section id="projets-preview"><div class="wrap">
   <div class="sec-head">
     <div class="sec-eyebrow">Et après les bases ?</div>
