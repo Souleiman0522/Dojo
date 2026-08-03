@@ -89,6 +89,10 @@
   .hero-art { position:relative; display:flex; justify-content:center; }
   .hero-art img { width:min(360px,80%); border-radius:50%; border:3px solid rgba(179,128,31,.5); box-shadow:var(--shadow); }
   .hero-seal { position:absolute; bottom:6px; right:8%; background:var(--vermilion); color:#fff; font-family:var(--font-mono); font-size:.64rem; letter-spacing:.12em; padding:7px 12px; border-radius:8px; transform:rotate(-5deg); box-shadow:var(--shadow); }
+  .rpg-banner { margin-top:20px; display:flex; flex-wrap:wrap; align-items:center; gap:12px; }
+  .rpg-tag { font-family:var(--font-mono); font-size:.7rem; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:#fff; background:linear-gradient(135deg,var(--vermilion),var(--gold)); padding:8px 14px; border-radius:999px; box-shadow:var(--shadow); white-space:nowrap; }
+  .rpg-stats { display:flex; flex-wrap:wrap; gap:6px 14px; font-family:var(--font-mono); font-size:.74rem; color:var(--taupe); }
+  .rpg-stats b { color:var(--indigo); font-weight:600; }
 
   /* Sections */
   section { padding:52px 0; }
@@ -209,6 +213,10 @@
           Continuer avec Google
         </button>
       </div>
+      <div class="rpg-banner">
+        <span class="rpg-tag">🎮 Pensé comme un RPG</span>
+        <span class="rpg-stats"><b>⚔️ Quêtes</b><b>⭐ XP</b><b>🥋 Ceintures</b><b>🏆 Boss de fin</b></span>
+      </div>
       <div class="hero-note">Gratuit · Aucune installation · Fonctionne hors-ligne</div>
     </div>
     <div class="hero-art">
@@ -228,6 +236,7 @@
     <p>Tout ce qu'il faut pour apprendre les vraies commandes Linux, dans un environnement bienveillant.</p>
   </div>
   <div class="cards">
+    <div class="card"><div class="ic">🎮</div><h3>Pensé comme un RPG</h3><p>Chaque exo est une <b>quête</b>. Tu gagnes des <b>XP</b>, tu montes de <b>ceinture</b> (blanche → noire), un petit <b>« Mission accomplie ! »</b> et un son fêtent chaque réussite. Le savoir se joue, il ne se subit pas.</p></div>
     <div class="card"><div class="ic">🥋</div><h3>Le Mode Sensei</h3><p>Chaque chapitre est une <b>scène de dialogue</b> à la RPG : le Sensei parle à Kaï, l'apprenti. Tu apprends en suivant une histoire, pas en lisant un manuel aride.</p></div>
     <div class="card"><div class="ic">📖</div><h3>Le terminal t'explique</h3><p>Une sortie cryptique (le fichier des comptes, les droits <code>-rwxr-xr--</code>, les colonnes de <code>ps</code>…) ? Le Dojo affiche la <b>traduction en clair</b>, juste en dessous.</p></div>
     <div class="card"><div class="ic">🎯</div><h3>Des exos qui vont au fond</h3><p><b>121 exercices, zéro jargon</b> : chaque terme est expliqué, chaque étape justifiée (le <i>pourquoi</i>), et un mini-défi clôt chaque chapitre.</p></div>
