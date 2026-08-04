@@ -7453,8 +7453,19 @@ function init() {
     clearTimeout(_fitRT);
     _fitRT = setTimeout(function() { try { fit.fit(); term.scrollToBottom(); } catch (e) {} }, 60);
   }
+  // Force xterm à RE-MESURER la taille d'une cellule (indispensable quand la police web
+  // JetBrains Mono arrive après coup) puis recalcule le nombre de lignes.
+  function remeasureAndFit() {
+    try {
+      var _fs = term.options.fontSize;
+      term.options.fontSize = _fs + 1;   // changement -> re-mesure
+      term.options.fontSize = _fs;       // retour -> re-mesure avec la police réellement affichée
+    } catch (e) {}
+    doFit();
+  }
   setTimeout(doFit, 60);
-  setTimeout(doFit, 300);   // deuxième passe une fois la mise en page stabilisée
+  setTimeout(remeasureAndFit, 350);
+  setTimeout(remeasureAndFit, 1200);  // filet de sécurité si la police est lente
 
   showWelcome();
   term.onData(handleTermInput);
@@ -7467,8 +7478,10 @@ function init() {
       new ResizeObserver(function() { doFit(); }).observe(document.getElementById('terminal'));
     }
   } catch (e) {}
-  // La police personnalisée peut charger après coup et changer la taille des cellules
-  try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(doFit); } catch (e) {}
+  // La police du terminal (JetBrains Mono) charge en async (Google Fonts, display=swap) :
+  // dès qu'elle est prête, on force une re-mesure de la cellule puis un re-fit.
+  try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(remeasureAndFit); } catch (e) {}
+  try { if (document.fonts && document.fonts.load) document.fonts.load('13px "JetBrains Mono"').then(remeasureAndFit).catch(function(){}); } catch (e) {}
   window.addEventListener('resize', doFit);
 
   renderFs();
