@@ -5143,9 +5143,10 @@ function writePrompt() {
   var prompt = sysState.isRoot ? C.brRed + 'root@dojo' : C.brGreen + 'user@dojo';
   var sym = sysState.isRoot ? '#' : '$';
   term.write(prompt + C.reset + ':' + C.brBlue + shortPath(cwd) + C.reset + sym + ' ');
+  try { term.scrollToBottom(); } catch (e) {}
 }
 
-function showWelcome() {
+function showBanner() {
   term.writeln('');
   term.writeln('  ' + C.brMagenta + C.bold + '道場' + C.reset + '   ' + C.brYellow + C.bold + 'DOJO DU LINUX' + C.reset);
   term.writeln('  ' + C.dim + '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━' + C.reset);
@@ -5155,12 +5156,16 @@ function showWelcome() {
   term.writeln('  ' + C.dim + EXERCISES.length + ' exercices · ' + QUESTS.length + ' chapitres' + C.reset);
   term.writeln('  ' + C.dim + 'Tapez ' + C.brYellow + 'help' + C.dim + ' pour les commandes' + C.reset);
   term.writeln('');
+}
+function showWelcome() {
+  showBanner();
   writePrompt();
 }
 
 function termClear() {
   if (!term) return;
-  term.clear();
+  term.write('\x1b[2J\x1b[3J\x1b[H');
+  showBanner();
   writePrompt();
   term.write(buffer);
 }
@@ -5360,7 +5365,7 @@ function runSingleCommand(cmd) {
     case 'id': cmdId(); break;
     case 'hostname': term.writeln(sysState.hostname); break;
     case 'date': cmdDate(args); break;
-    case 'clear': case 'cls': term.clear(); return;
+    case 'clear': case 'cls': term.write('\x1b[2J\x1b[3J\x1b[H'); showBanner(); return;
     case 'history': hist.slice(0, 20).forEach(function(h, i) { term.writeln('  ' + (i+1) + '  ' + h); }); break;
     case 'help': case '?': cmdHelp(); break;
     case 'chmod': cmdChmod(args); break;
