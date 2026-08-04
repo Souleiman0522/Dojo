@@ -5143,9 +5143,40 @@ function writePrompt() {
   if (!term) return;
   var prompt = sysState.isRoot ? C.brRed + 'root@dojo' : C.brGreen + 'user@dojo';
   var sym = sysState.isRoot ? '#' : '$';
-  term.write(prompt + C.reset + ':' + C.brBlue + shortPath(cwd) + C.reset + sym + ' ');
-  try { term.scrollToBottom(); } catch (e) {}
+  term.write(prompt + C.reset + ':' + C.brBlue + shortPath(cwd) + C.reset + sym + ' ',
+    function () { try { term.scrollToBottom(); } catch (e) {} });
 }
+
+// Commandes Linux RÉELLES mais non simulées ici : on explique au lieu de juste « introuvable ».
+// Chaque valeur se lit à la suite du nom : « init » + « change le niveau… ».
+var UNSIM_CMDS = {
+  init: 'change le niveau d’exécution du système (init 0 éteint, init 6 redémarre) — aujourd’hui c’est systemd qui gère ça.',
+  shutdown: 'éteint ou redémarre la machine : shutdown -h now (éteindre), shutdown -r now (redémarrer).',
+  reboot: 'redémarre la machine.',
+  poweroff: 'éteint la machine.',
+  halt: 'arrête le système.',
+  nano: 'est un éditeur de texte simple dans le terminal (le Dojo le couvre au chapitre Éditeurs).',
+  vim: 'est un éditeur de texte puissant, avec des modes insertion / commande (chapitre Éditeurs).',
+  vi: 'est l’ancêtre de vim, présent sur tout Unix.',
+  emacs: 'est un éditeur de texte extensible, rival historique de vim.',
+  apt: 'installe des logiciels sur Debian/Ubuntu : sudo apt install <paquet> (voir le mode Projets et la page Culture).',
+  'apt-get': 'est l’ancienne interface d’installation de paquets Debian/Ubuntu.',
+  dnf: 'installe des paquets sur Fedora/RHEL : sudo dnf install <paquet>.',
+  yum: 'est l’ancien gestionnaire de paquets de Red Hat.',
+  pacman: 'installe des paquets sur Arch Linux : sudo pacman -S <paquet>.',
+  snap: 'installe des applis « universelles » (Canonical).',
+  flatpak: 'installe des applis « universelles » (multi-distros).',
+  ssh: 'ouvre une session sur une machine distante, de façon sécurisée : ssh user@ip (chapitre Réseau & SSH).',
+  scp: 'copie des fichiers vers/depuis une machine distante via SSH.',
+  ping: 'teste si une machine répond sur le réseau : ping 8.8.8.8.',
+  ifconfig: 'affiche la configuration réseau (ancienne commande, remplacée par ip a).',
+  netstat: 'liste les connexions et ports ouverts (voisin moderne : ss).',
+  docker: 'lance des applications en conteneurs (tout un projet lui est dédié dans le Dojo).',
+  make: 'automatise la compilation d’un projet à partir d’un Makefile.',
+  htop: 'est un top en couleur, plus lisible (chapitre Monitoring).',
+  su: 'change d’utilisateur (su - pour devenir root).',
+  passwd: 'change le mot de passe d’un compte.'
+};
 
 function showBanner() {
   term.writeln('');
@@ -5434,9 +5465,12 @@ function runSingleCommand(cmd) {
         } else {
           term.writeln(C.red + 'bash: ' + command + ': introuvable' + C.reset);
         }
+      } else if (UNSIM_CMDS[command]) {
+        term.writeln(C.brYellow + command + C.reset + C.dim + ' — vraie commande Linux, mais non simulée dans le Dojo.' + C.reset);
+        term.writeln('  ' + C.brCyan + '↳ ' + command + ' ' + C.reset + C.dim + UNSIM_CMDS[command] + C.reset);
       } else {
         term.writeln(C.red + command + ': commande introuvable' + C.reset);
-        term.writeln(C.dim + 'Tapez ' + C.brYellow + 'help' + C.dim + ' pour la liste' + C.reset);
+        term.writeln(C.dim + 'Tapez ' + C.brYellow + 'help' + C.dim + ' pour la liste des commandes disponibles' + C.reset);
       }
   }
 }
