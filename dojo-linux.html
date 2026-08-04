@@ -7413,17 +7413,28 @@ function init() {
   var fit = new FitAddon.FitAddon();
   term.loadAddon(fit);
   term.open(document.getElementById('terminal'));
-  setTimeout(function() { try { fit.fit(); } catch (e) {} }, 100);
+  var _fitRT;
+  function doFit() {
+    clearTimeout(_fitRT);
+    _fitRT = setTimeout(function() { try { fit.fit(); term.scrollToBottom(); } catch (e) {} }, 60);
+  }
+  setTimeout(doFit, 60);
+  setTimeout(doFit, 300);   // deuxième passe une fois la mise en page stabilisée
 
   showWelcome();
   term.onData(handleTermInput);
   document.getElementById('terminal').addEventListener('click', function() { term.focus(); });
 
-  var rt;
-  window.addEventListener('resize', function() {
-    clearTimeout(rt);
-    rt = setTimeout(function() { try { fit.fit(); } catch (e) {} }, 100);
-  });
+  // Re-ajuste le nombre de lignes dès que le terminal change de taille
+  // (drag du resizer, changement de layout, clavier mobile, etc.)
+  try {
+    if (window.ResizeObserver) {
+      new ResizeObserver(function() { doFit(); }).observe(document.getElementById('terminal'));
+    }
+  } catch (e) {}
+  // La police personnalisée peut charger après coup et changer la taille des cellules
+  try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(doFit); } catch (e) {}
+  window.addEventListener('resize', doFit);
 
   renderFs();
   renderExercises();
