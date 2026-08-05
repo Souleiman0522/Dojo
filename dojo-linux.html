@@ -1499,6 +1499,31 @@ window.addEventListener('error', function(e) {
     to { opacity: 1; }
   }
   .modal-overlay.hidden { display: none; }
+  /* Aide-mémoire embarqué */
+  .modal.memo-modal { max-width: 940px; padding: 20px 22px; }
+  .memo-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; padding-right:34px; }
+  .memo-eyebrow { font-family:var(--font-mono); font-size:.62rem; letter-spacing:.2em; text-transform:uppercase; color:var(--magenta,#c8341c); }
+  .memo-title { font-family:var(--font-serif); font-weight:700; font-size:1.3rem; color:var(--text-1); }
+  .memo-print { font-family:var(--font-mono); font-size:.72rem; font-weight:600; border:1px solid var(--border); border-radius:8px; padding:7px 12px; background:var(--bg-card); color:var(--text-1); cursor:pointer; }
+  .memo-print:hover { border-color:var(--magenta,#c8341c); }
+  .memo-body { max-height:76vh; overflow-y:auto; column-count:2; column-gap:18px; padding-right:4px; }
+  @media (max-width:760px){ .memo-body{ column-count:1; max-height:80vh; } }
+  .memo-ch { break-inside:avoid; background:var(--bg-card); border:1px solid var(--border); border-radius:11px; padding:11px 13px; margin:0 0 13px; }
+  .memo-ch-h { display:flex; align-items:baseline; gap:8px; margin-bottom:7px; padding-bottom:6px; border-bottom:1px dashed var(--border); }
+  .memo-ch-n { font-family:var(--font-mono); font-weight:700; font-size:.6rem; color:#fff; background:var(--violet,#1e3a5c); border-radius:5px; padding:2px 6px; }
+  .memo-ch-t { font-family:var(--font-serif); font-weight:700; font-size:.98rem; color:var(--text-1); }
+  .memo-ch-belt { margin-left:auto; font-size:.8rem; }
+  .memo-row { display:flex; gap:8px; font-size:.78rem; padding:2px 0; align-items:baseline; }
+  .memo-row .k { flex:0 0 44%; }
+  .memo-row code { font-family:var(--font-mono); font-size:.74rem; color:var(--magenta,#c8341c); background:rgba(200,52,28,.07); border:1px solid rgba(200,52,28,.15); border-radius:4px; padding:1px 5px; white-space:nowrap; }
+  .memo-row .d { color:var(--text-2); }
+  @media print {
+    body.memo-open > *:not(#memo-modal){ display:none !important; }
+    #memo-modal{ position:static; background:none; backdrop-filter:none; padding:0; display:block !important; }
+    #memo-modal .modal{ box-shadow:none; border:none; max-width:none; padding:0; animation:none; }
+    #memo-modal .modal-close, .memo-print{ display:none !important; }
+    .memo-body{ max-height:none; overflow:visible; }
+  }
   .modal {
     position: relative;
     background: var(--bg-card-2);
@@ -1767,7 +1792,7 @@ window.addEventListener('error', function(e) {
   <a class="feedback-btn" href="accueil.html" style="margin-left:auto;text-decoration:none">🏠 Accueil</a>
   <a class="feedback-btn" href="comparatif.html" style="text-decoration:none">⚔️ Comparatif</a>
   <a class="feedback-btn" href="culture.html" style="text-decoration:none">📚 Culture</a>
-  <a class="feedback-btn" href="memo.html" style="text-decoration:none">📄 Mémo</a>
+  <button class="feedback-btn" onclick="openMemo()">📄 Mémo</button>
   <button class="feedback-btn" id="community-btn" onclick="openCommunity()">💬 Communauté</button>
   <span class="user-badge" id="user-badge" onclick="openProfileModal()" style="display:none">
     <span id="user-pseudo">--</span>
@@ -1915,6 +1940,21 @@ window.addEventListener('error', function(e) {
       <button class="modal-btn secondary" onclick="closeProfileModal()">Fermer</button>
       <button class="modal-btn" onclick="confirmReset()" style="background:linear-gradient(135deg,#ff5c8a,#c8341c)">🗑️ Reset</button>
     </div>
+  </div>
+</div>
+
+<!-- Aide-mémoire modal (embarqué) -->
+<div class="modal-overlay hidden" id="memo-modal">
+  <div class="modal memo-modal">
+    <button class="modal-close" onclick="closeMemo()" aria-label="Fermer">✕</button>
+    <div class="memo-head">
+      <div>
+        <div class="memo-eyebrow">道場 · Aide-mémoire</div>
+        <div class="memo-title">Toutes les commandes, par chapitre</div>
+      </div>
+      <button class="memo-print" onclick="window.print()">🖨️ Imprimer / PDF</button>
+    </div>
+    <div class="memo-body" id="memo-body"></div>
   </div>
 </div>
 
@@ -5202,6 +5242,42 @@ function termClear() {
   writePrompt();
   term.write(buffer);
 }
+
+// ===== Aide-mémoire embarqué (accessible via le bouton « 📄 Mémo ») =====
+var MEMO_DATA = [
+  {n:1,t:'Les fondations',b:'⬜',c:[['pwd','affiche le dossier courant'],['whoami','le nom de l’utilisateur courant'],['id','identité : uid, gid, groupes'],['ls','liste un dossier'],['ls -la','tout, caché + détails'],['man <cmd>','le manuel (q pour quitter)'],['<cmd> --help','l’aide rapide']]},
+  {n:2,t:'Navigation',b:'⬜',c:[['cd <dossier>','entre dans un dossier'],['cd ..','remonte d’un niveau'],['cd ~','retour au home (ou cd seul)'],['cd /','va à la racine'],['tree','affiche l’arborescence']]},
+  {n:3,t:'Fichiers & dossiers',b:'🟩',c:[['cat <f>','affiche le contenu'],['mkdir <nom>','crée un dossier (-p parents)'],['touch <f>','crée un fichier vide'],['cp src dest','copie'],['mv anc nouv','déplace ou renomme'],['rm <f>','supprime (rm -r pour un dossier)'],['* ? [abc]','jokers : rm *.log'],['find <où> -name','retrouve par nom']]},
+  {n:4,t:'Utilisateurs & permissions',b:'🟥',c:[['ls -l','lit les droits'],['chmod +x <f>','rend exécutable'],['chmod 755 <f>','droits en chiffres (r4 w2 x1)'],['chown user:grp <f>','change le propriétaire'],['sudo <cmd>','en administrateur']]},
+  {n:5,t:'Éditeurs (nano/vim)',b:'🟩',c:[['nano <f>','éditeur simple (Ctrl+O, Ctrl+X)'],['vim <f>','à modes (i, Échap, :wq)'],['echo "x" > f','écrit (écrase)'],['echo "x" >> f','ajoute à la fin']]},
+  {n:6,t:'Recherche & filtrage',b:'🟥',c:[['head/tail -n <f>','début / fin'],['tail -f <f>','suit un log en direct'],['grep <mot> <f>','cherche un texte'],['cmd1 | cmd2','le pipe : enchaîne'],['wc -l','compte les lignes'],['cmd > f   >> f','redirige la sortie']]},
+  {n:7,t:'Processus',b:'🟥',c:[['ps / ps aux','liste les processus'],['top','temps réel (q pour quitter)'],['kill <PID>','arrête (kill -9 force)']]},
+  {n:8,t:'Gestion des utilisateurs',b:'🟥',c:[['cat /etc/passwd','liste des comptes'],['sudo useradd -m <n>','crée un utilisateur'],['sudo passwd <n>','définit son mot de passe'],['groups','ses groupes'],['sudo groupadd <n>','crée un groupe'],['usermod -aG grp user','ajoute à un groupe'],['sudo userdel -r <n>','supprime un utilisateur']]},
+  {n:9,t:'Services & systemd',b:'🟧',c:[['systemctl status <s>','état d’un service'],['systemctl start/stop','démarre / arrête'],['systemctl enable','au démarrage'],['/etc/systemd/system/','les fichiers .service']]},
+  {n:10,t:'Déployer un site (nginx)',b:'🟧',c:[['systemctl status nginx','vérifie nginx'],['/etc/nginx/','la config'],['/var/www/html/','les fichiers du site'],['tail -f …/access.log','les visites en direct'],['curl http://localhost','teste le site']]},
+  {n:11,t:'Réseau & SSH',b:'🟧',c:[['ip a','adresse IP / réseau'],['ping <hôte>','teste la connexion'],['cat /etc/resolv.conf','les serveurs DNS'],['ssh-keygen','génère une clé SSH'],['ssh user@ip','connexion distante']]},
+  {n:12,t:'Sécurité & hardening',b:'🟧',c:[['sudo ufw status','état du pare-feu'],['ufw enable / allow','active / ouvre un port'],['grep Failed …/auth.log','tentatives SSH ratées'],['/etc/ssh/sshd_config','durcir SSH'],['sudo visudo','qui peut sudo']]},
+  {n:13,t:'Système & disque',b:'🟧',c:[['df -h','espace disque'],['du -sh <dossier>','taille d’un dossier'],['lscpu','infos CPU'],['free -h','mémoire (available)'],['uname -a','version du système']]},
+  {n:14,t:'Monitoring',b:'🟧',c:[['uptime','charge système'],['w / who','qui est connecté'],['last','historique des connexions'],['htop','top en couleur'],['vmstat','CPU / mém / disque']]},
+  {n:15,t:'Planification (cron)',b:'🟧',c:[['crontab -l','liste les tâches'],['crontab -e','édite (min h j m js cmd)'],['date','date/heure du système']]},
+  {n:16,t:'Scripting Bash',b:'🟥',c:[['#!/bin/bash','le shebang'],['VAR=x   $VAR','variables'],['./script.sh','lance (après chmod +x)'],['echo $?','code de retour (0 = ok)'],['$(commande)','substitution']]},
+  {n:17,t:'Git',b:'⬛',c:[['git init','crée un dépôt'],['git status','l’état des fichiers'],['git add <f>','ajoute à l’index (git add .)'],['git commit -m "x"','enregistre un instantané'],['git log','l’historique']]},
+  {n:18,t:'Virtualisation (KVM)',b:'⬛',c:[['egrep -c "vmx|svm" /proc/cpuinfo','CPU compatible ?'],['apt install qemu-kvm','installe l’hyperviseur'],['systemctl enable --now libvirtd','démarre le démon'],['virsh list --all','liste les VM'],['virsh start <vm>','démarre une VM']]},
+  {n:19,t:'Archives',b:'⬛',c:[['tar czf a.tar.gz <d>','crée une archive'],['tar xzf a.tar.gz','extrait'],['c x z f','créer, extraire, gzip, fichier']]}
+];
+function memoEsc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function renderMemo(){
+  var body=document.getElementById('memo-body'); if(!body || body._built) return;
+  var h='';
+  MEMO_DATA.forEach(function(ch){
+    h+='<div class="memo-ch"><div class="memo-ch-h"><span class="memo-ch-n">CH '+ch.n+'</span><span class="memo-ch-t">'+memoEsc(ch.t)+'</span><span class="memo-ch-belt">'+ch.b+'</span></div>';
+    ch.c.forEach(function(r){ h+='<div class="memo-row"><span class="k"><code>'+memoEsc(r[0])+'</code></span><span class="d">'+memoEsc(r[1])+'</span></div>'; });
+    h+='</div>';
+  });
+  body.innerHTML=h; body._built=true;
+}
+function openMemo(){ renderMemo(); document.body.classList.add('memo-open'); var m=document.getElementById('memo-modal'); if(m) m.classList.remove('hidden'); }
+function closeMemo(){ document.body.classList.remove('memo-open'); var m=document.getElementById('memo-modal'); if(m) m.classList.add('hidden'); }
 
 // Parse simple : sépare par | pour pipes, par > pour redirection
 function parseAndExecute(cmd) {
