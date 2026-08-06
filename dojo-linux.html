@@ -5263,14 +5263,16 @@ var MEMO_DATA = [
   {n:16,t:'Scripting Bash',b:'🟥',c:[['#!/bin/bash','le shebang'],['VAR=x   $VAR','variables'],['./script.sh','lance (après chmod +x)'],['echo $?','code de retour (0 = ok)'],['$(commande)','substitution']]},
   {n:17,t:'Git',b:'⬛',c:[['git init','crée un dépôt'],['git status','l’état des fichiers'],['git add <f>','ajoute à l’index (git add .)'],['git commit -m "x"','enregistre un instantané'],['git log','l’historique']]},
   {n:18,t:'Virtualisation (KVM)',b:'⬛',c:[['egrep -c "vmx|svm" /proc/cpuinfo','CPU compatible ?'],['apt install qemu-kvm','installe l’hyperviseur'],['systemctl enable --now libvirtd','démarre le démon'],['virsh list --all','liste les VM'],['virsh start <vm>','démarre une VM']]},
-  {n:19,t:'Archives',b:'⬛',c:[['tar czf a.tar.gz <d>','crée une archive'],['tar xzf a.tar.gz','extrait'],['c x z f','créer, extraire, gzip, fichier']]}
+  {n:19,t:'Archives',b:'⬛',c:[['tar czf a.tar.gz <d>','crée une archive'],['tar xzf a.tar.gz','extrait'],['c x z f','créer, extraire, gzip, fichier']]},
+  {n:'BONUS',t:'🧰 Boîte à outils',b:'🎁',c:[['cal','le calendrier du mois'],['seq 1 10','une suite de nombres'],['bc','calculatrice : echo "2+2" | bc'],['which <cmd>','où se trouve une commande'],['stat <f>','infos détaillées d’un fichier'],['file <f>','le type d’un fichier'],['sort / uniq','trie / dédoublonne des lignes'],['cut -d: -f1','extrait une colonne'],['tr a b','remplace des caractères'],['rev','inverse chaque ligne'],['factor 60','décompose en facteurs premiers'],['alias','tes raccourcis de commandes'],['cowsay txt','la vache qui parle 🐄']]}
 ];
 function memoEsc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function renderMemo(){
   var body=document.getElementById('memo-body'); if(!body || body._built) return;
   var h='';
   MEMO_DATA.forEach(function(ch){
-    h+='<div class="memo-ch"><div class="memo-ch-h"><span class="memo-ch-n">CH '+ch.n+'</span><span class="memo-ch-t">'+memoEsc(ch.t)+'</span><span class="memo-ch-belt">'+ch.b+'</span></div>';
+    var badge = (typeof ch.n === 'number') ? ('CH ' + ch.n) : ch.n;
+    h+='<div class="memo-ch"><div class="memo-ch-h"><span class="memo-ch-n">'+badge+'</span><span class="memo-ch-t">'+memoEsc(ch.t)+'</span><span class="memo-ch-belt">'+ch.b+'</span></div>';
     ch.c.forEach(function(r){ h+='<div class="memo-row"><span class="k"><code>'+memoEsc(r[0])+'</code></span><span class="d">'+memoEsc(r[1])+'</span></div>'; });
     h+='</div>';
   });
@@ -5353,6 +5355,140 @@ function parseAndExecute(cmd) {
 
 function stripAnsi(s) {
   return String(s).replace(/\x1b\[[0-9;]*m/g, '');
+}
+
+// ===== Boîte à outils — petites commandes utiles du quotidien =====
+function _rep(ch, n) { var s = ''; for (var i = 0; i < n; i++) s += ch; return s; }
+var KNOWN_CMDS = {};
+['ls','cat','cd','pwd','cp','mv','rm','mkdir','touch','chmod','chown','grep','find','ps','top','kill','man','tar','ssh','git','nano','vim','cal','seq','which','stat','file','factor','rev','bc','cowsay','sort','uniq','head','tail','wc','df','du','free','ping','curl','wget','systemctl','date','echo','uname','htop','ip','sudo','tree','id','whoami']
+  .forEach(function (k) { KNOWN_CMDS[k] = 1; });
+
+function cmdCal() {
+  var now = new Date(), y = now.getFullYear(), m = now.getMonth();
+  var months = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  var startDow = (new Date(y, m, 1).getDay() + 6) % 7;   // 0 = lundi
+  var days = new Date(y, m + 1, 0).getDate(), today = now.getDate();
+  var title = months[m] + ' ' + y, pad = Math.max(0, Math.floor((20 - title.length) / 2));
+  term.writeln(C.brYellow + _rep(' ', pad) + title + C.reset);
+  term.writeln(C.dim + 'lu ma me je ve sa di' + C.reset);
+  var line = _rep('   ', startDow);
+  for (var d = 1; d <= days; d++) {
+    var col = (startDow + d - 1) % 7;
+    var cell = (d < 10 ? ' ' + d : '' + d);
+    line += (d === today ? C.brGreen + cell + C.reset : cell) + ' ';
+    if (col === 6) { term.writeln(line.replace(/\s+$/, '')); line = ''; }
+  }
+  if (line.replace(/\s/g, '') !== '') term.writeln(line.replace(/\s+$/, ''));
+}
+function cmdSeq(args) {
+  var nums = (args || []).filter(function (a) { return /^-?\d+$/.test(a); }).map(Number);
+  var start = 1, step = 1, end;
+  if (nums.length === 1) end = nums[0];
+  else if (nums.length === 2) { start = nums[0]; end = nums[1]; }
+  else if (nums.length >= 3) { start = nums[0]; step = nums[1]; end = nums[2]; }
+  else { term.writeln(C.red + 'seq: usage: seq [début [pas]] fin' + C.reset); return; }
+  if (step === 0) return;
+  var count = 0;
+  for (var v = start; (step > 0 ? v <= end : v >= end); v += step) {
+    term.writeln('' + v);
+    if (++count > 500) { term.writeln(C.dim + '… (tronqué)' + C.reset); break; }
+  }
+}
+function cmdWhich(args) {
+  (args || []).forEach(function (a) {
+    if (a.charAt(0) === '-') return;
+    if (KNOWN_CMDS[a]) term.writeln('/usr/bin/' + a);
+    else term.writeln(C.dim + a + ': pas dans le PATH' + C.reset);
+  });
+}
+function _permOctal(p) {
+  if (!p) return '0644';
+  var s = p.slice(1), o = '';
+  for (var i = 0; i < 9; i += 3) o += (s.charAt(i) === 'r' ? 4 : 0) + (s.charAt(i + 1) === 'w' ? 2 : 0) + (s.charAt(i + 2) === 'x' ? 1 : 0);
+  return '0' + o;
+}
+function cmdStat(args) {
+  if (!args.length) { term.writeln(C.red + 'stat: opérande manquante' + C.reset); return; }
+  args.forEach(function (a) {
+    var node = getNode(resolvePath(a));
+    if (!node) { term.writeln(C.red + 'stat: ' + a + ': introuvable' + C.reset); return; }
+    var type = node.type === 'dir' ? 'répertoire' : (node.type === 'exec' ? 'fichier exécutable' : 'fichier');
+    term.writeln('  Fichier : ' + a);
+    term.writeln('   Taille : ' + (node.size || '0') + '        Type : ' + type);
+    term.writeln('    Accès : (' + _permOctal(node.perms) + '/' + (node.perms || '-rw-r--r--') + ')   Propriétaire : ' + (node.owner || 'user'));
+  });
+}
+function cmdFile(args) {
+  if (!args.length) { term.writeln(C.red + 'file: opérande manquante' + C.reset); return; }
+  args.forEach(function (a) {
+    var node = getNode(resolvePath(a));
+    if (!node) { term.writeln(C.red + a + ': introuvable' + C.reset); return; }
+    var d = node.type === 'dir' ? 'directory' : (node.type === 'exec' ? 'ELF 64-bit executable' : (/\.sh$/.test(a) ? 'Bourne-Again shell script, ASCII text' : 'ASCII text'));
+    term.writeln(a + ': ' + d);
+  });
+}
+function cmdFactor(args) {
+  (args || []).forEach(function (a) {
+    if (!/^\d+$/.test(a)) return;
+    var n = parseInt(a, 10), orig = n, f = [], d = 2;
+    while (d * d <= n) { while (n % d === 0) { f.push(d); n = n / d; } d++; }
+    if (n > 1) f.push(n);
+    term.writeln(orig + ': ' + (f.length ? f.join(' ') : '' + orig));
+  });
+}
+function _readFileArg(a) {
+  if (!a) return null;
+  var fn = a.split('/').pop();
+  if (FILE_CONTENTS[fn] != null) return FILE_CONTENTS[fn];
+  var node = getNode(resolvePath(a));
+  return node ? '' : null;
+}
+function cmdRev(args) {
+  var a = (args || []).filter(function (x) { return x.charAt(0) !== '-'; })[0];
+  if (!a) { term.writeln(C.dim + 'rev: donne un fichier (ex. rev notes.txt) ou utilise un pipe' + C.reset); return; }
+  var c = _readFileArg(a);
+  if (c == null) { term.writeln(C.red + 'rev: ' + a + ': introuvable' + C.reset); return; }
+  c.split('\n').forEach(function (l) { term.writeln(l.split('').reverse().join('')); });
+}
+function cmdSortFile(args) {
+  var a = (args || []).filter(function (x) { return x.charAt(0) !== '-'; })[0];
+  if (!a) { term.writeln(C.dim + 'sort: donne un fichier (ex. sort noms.txt)' + C.reset); return; }
+  var c = _readFileArg(a);
+  if (c == null) { term.writeln(C.red + 'sort: ' + a + ': introuvable' + C.reset); return; }
+  c.split('\n').sort().forEach(function (l) { term.writeln(l); });
+}
+function cmdUniqFile(args) {
+  var a = (args || []).filter(function (x) { return x.charAt(0) !== '-'; })[0];
+  if (!a) { term.writeln(C.dim + 'uniq: donne un fichier (ex. uniq noms.txt)' + C.reset); return; }
+  var c = _readFileArg(a);
+  if (c == null) { term.writeln(C.red + 'uniq: ' + a + ': introuvable' + C.reset); return; }
+  var prev = null;
+  c.split('\n').forEach(function (l) { if (l !== prev) term.writeln(l); prev = l; });
+}
+function cmdCowsay(args) {
+  var msg = (args.join(' ') || 'Meuh !');
+  term.writeln(' ' + _rep('_', msg.length + 2));
+  term.writeln('< ' + msg + ' >');
+  term.writeln(' ' + _rep('-', msg.length + 2));
+  term.writeln('        \\   ^__^');
+  term.writeln('         \\  (oo)\\_______');
+  term.writeln('            (__)\\       )\\/\\');
+  term.writeln('                ||----w |');
+  term.writeln('                ||     ||');
+}
+function cmdAlias() {
+  term.writeln("alias ll='ls -la'");
+  term.writeln("alias la='ls -A'");
+  term.writeln("alias ..='cd ..'");
+  term.writeln("alias grep='grep --color=auto'");
+  term.writeln(C.dim + '(exemples — un alias = un raccourci de commande, à mettre dans ~/.bashrc)' + C.reset);
+}
+function safeCalc(expr) {
+  expr = String(expr).trim();
+  if (expr === '') return null;
+  if (!/^[-+*/(). 0-9%]+$/.test(expr)) return null;   // uniquement des maths, jamais de code
+  try { var r = Function('"use strict";return (' + expr + ')')(); return (typeof r === 'number' && isFinite(r)) ? r : null; }
+  catch (e) { return null; }
 }
 
 function runCommandChain(cmd) {
@@ -5440,6 +5576,44 @@ function runCmdWithInput(cmd, input) {
     input.split('\n').sort().forEach(function(l) { term.writeln(l); });
     return;
   }
+  if (c === 'uniq') {
+    var uprev = null;
+    input.split('\n').forEach(function(l) { if (l !== uprev) term.writeln(l); uprev = l; });
+    return;
+  }
+  if (c === 'rev') {
+    input.split('\n').forEach(function(l) { term.writeln(l.split('').reverse().join('')); });
+    return;
+  }
+  if (c === 'tac') {
+    input.split('\n').reverse().forEach(function(l) { term.writeln(l); });
+    return;
+  }
+  if (c === 'nl') {
+    var ni = 0;
+    input.split('\n').forEach(function(l) { if (l.trim() !== '') { ni++; term.writeln((ni < 10 ? '     ' : '    ') + ni + '  ' + l); } else term.writeln(''); });
+    return;
+  }
+  if (c === 'bc') {
+    input.split('\n').forEach(function(l) { var r = safeCalc(l); if (r !== null) term.writeln('' + r); });
+    return;
+  }
+  if (c === 'cut') {
+    var dI = args.indexOf('-d'), fI = args.indexOf('-f');
+    var delim = (dI >= 0 && args[dI + 1]) ? args[dI + 1].replace(/['"]/g, '') : '\t';
+    var field = (fI >= 0 && args[fI + 1]) ? parseInt(args[fI + 1], 10) : 1;
+    input.split('\n').forEach(function(l) { var p = l.split(delim); term.writeln(p[field - 1] != null ? p[field - 1] : ''); });
+    return;
+  }
+  if (c === 'tr' && args.length >= 2) {
+    var from = args[args.length - 2], to = args[args.length - 1];
+    input.split('\n').forEach(function(l) {
+      var out = '';
+      for (var k = 0; k < l.length; k++) { var idx = from.indexOf(l.charAt(k)); out += (idx >= 0) ? (to.charAt(Math.min(idx, to.length - 1)) || l.charAt(k)) : l.charAt(k); }
+      term.writeln(out);
+    });
+    return;
+  }
   // Fallback : just print input
   term.writeln(input);
 }
@@ -5521,6 +5695,19 @@ function runSingleCommand(cmd) {
     case 'env': cmdEnv(); break;
     case 'su': sysState.isRoot = true; term.writeln('Mot de passe : (validé)'); break;
     case 'exit': sysState.isRoot = false; break;
+    case 'cal': cmdCal(); break;
+    case 'seq': cmdSeq(args); break;
+    case 'which': case 'type': cmdWhich(args); break;
+    case 'stat': cmdStat(args); break;
+    case 'file': cmdFile(args); break;
+    case 'factor': cmdFactor(args); break;
+    case 'rev': cmdRev(args); break;
+    case 'sort': cmdSortFile(args); break;
+    case 'uniq': cmdUniqFile(args); break;
+    case 'cowsay': cmdCowsay(args); break;
+    case 'alias': cmdAlias(); break;
+    case 'sleep': break;
+    case 'bc': term.writeln(C.dim + 'bc lit une expression : essaie  echo "2+2" | bc' + C.reset); break;
     default:
       // Lancement d'un script local : ./xxx
       if (command.indexOf('./') === 0) {
