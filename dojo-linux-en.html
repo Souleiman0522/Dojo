@@ -3712,137 +3712,137 @@ var QUESTS = [
     id: 'usermgmt',
     chapter: 8,
     icon: '👥',
-    title: 'Gestion des utilisateurs',
+    title: 'User management',
     color: '#8b2c2c',
-    desc: 'Créer, modifier, supprimer des comptes',
-    story: "« Tu as vu les processus, Kaï, et tu sais lire les permissions. Reste à savoir **qui** se cache derrière chaque identité. » Le Sensei ouvre un registre. « Un serveur n'est jamais seul. Des humains s'y connectent, des services y tournent sous des identités précises. **Chaque compte est une clé** qui ouvre certaines portes. En créer, en révoquer, les ranger en groupes : c'est le travail quotidien de l'administrateur. »\n\nIl te met en garde : « Le jour où un employé part, son compte doit disparaître — sinon c'est une porte laissée ouverte. Le jour où un stagiaire arrive, donne-lui JUSTE ce qu'il faut, Kaï, pas les clés du royaume. La gestion des comptes, c'est la gestion de la confiance. »",
-    mentor: "Gérer les comptes proprement (souvent avec sudo) :\n\n① `useradd` (ou `adduser`, plus convivial) crée un compte. `userdel` le supprime. `usermod` le modifie (ajouter à un groupe, changer le shell).\n② `passwd utilisateur` définit ou change son mot de passe. Sans argument, il change le tien.\n③ Les **groupes** simplifient les permissions : au lieu de donner un droit à 50 users un par un, on les met dans un groupe et on donne le droit au groupe. `groupadd`, puis `usermod -aG groupe user`.\n④ Le groupe `sudo` (ou `wheel`) est spécial : ses membres peuvent exécuter des commandes en root. **À accorder avec parcimonie** — c'est la clé maîtresse.",
+    desc: 'Create, modify, delete accounts',
+    story: "“You've seen processes, Kai, and you know how to read permissions. What's left is knowing **who** hides behind each identity.” The Sensei opens a ledger. “A server is never alone. Humans connect to it, services run under specific identities. **Each account is a key** that opens certain doors. Creating some, revoking others, sorting them into groups: that's the administrator's daily work.”\n\nHe warns you: “The day an employee leaves, their account must disappear — otherwise it's a door left open. The day an intern arrives, give them JUST what they need, Kai, not the keys to the kingdom. Managing accounts is managing trust.”",
+    mentor: "Managing accounts cleanly (often with sudo):\n\n① `useradd` (or `adduser`, friendlier) creates an account. `userdel` deletes it. `usermod` modifies it (add to a group, change the shell).\n② `passwd user` sets or changes their password. With no argument, it changes yours.\n③ **Groups** simplify permissions: instead of giving a right to 50 users one by one, you put them in a group and give the right to the group. `groupadd`, then `usermod -aG group user`.\n④ The `sudo` group (or `wheel`) is special: its members can run commands as root. **To be granted sparingly** — it's the master key.",
     challenge: {
-      title: "Le nouvel arrivant",
-      desc: "Un stagiaire rejoint l'équipe. **① Crée son compte** (`useradd`), **② donne-lui un mot de passe** (`passwd`), **③ ajoute-le à un groupe** existant (`usermod -aG`), **④ vérifie ses groupes** (`groups`). Puis, le stage terminé : **⑤ supprime son compte** (`userdel`). Le cycle de vie complet d'un utilisateur. Réflexion : pourquoi ne PAS mettre tout le monde dans le groupe sudo ?"
+      title: "The newcomer",
+      desc: "An intern joins the team. **① Create their account** (`useradd`), **② give them a password** (`passwd`), **③ add them to an existing group** (`usermod -aG`), **④ check their groups** (`groups`). Then, once the internship is over: **⑤ delete their account** (`userdel`). The complete life cycle of a user. Reflection: why NOT put everyone in the sudo group?"
     },
     exos: [
       {
         level: 'advanced',
-        title: 'Lister les comptes système',
-        context: "Tous les comptes de la machine sont listés dans le fichier `/etc/passwd`, **un par ligne**. Astuce pour les distinguer : les comptes avec un numéro (UID) **≥ 1000** sont des **humains** ; ceux en dessous sont des comptes **système** (services). Et ceux qui finissent par `nologin` n'ont pas le droit de se connecter. (Le Dojo décode chaque champ après le `cat`.)",
-        scene: "Tu hérites d'un serveur inconnu. Tu veux voir tous les comptes existants.",
-        mission: "Affiche `/etc/passwd` et repère les comptes humains.",
+        title: 'List the system accounts',
+        context: "All the machine's accounts are listed in the `/etc/passwd` file, **one per line**. Trick to tell them apart: accounts with a number (UID) **≥ 1000** are **humans**; those below are **system** accounts (services). And those ending in `nologin` aren't allowed to log in. (The Dojo decodes each field after the `cat`.)",
+        scene: "You inherit an unknown server. You want to see all the existing accounts.",
+        mission: "Display `/etc/passwd` and spot the human accounts.",
         steps: [
-          "Affiche le fichier : `cat /etc/passwd`",
-          "Repère les lignes avec un UID ≥ 1000 → ce sont les vrais utilisateurs",
-          "Ceux en `/usr/sbin/nologin` sont des comptes de services (pas d'humain)"
+          "Display the file: `cat /etc/passwd`",
+          "Spot the lines with a UID ≥ 1000 → those are the real users",
+          "The ones with `/usr/sbin/nologin` are service accounts (no human)"
         ],
         expected: "root:x:0:0:root:/root:/bin/bash\nwww-data:x:33:33:www-data:/var/www:/usr/sbin/nologin\nuser:x:1000:1000:user:/home/user:/bin/bash",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('passwd') >= 0; }); }
       },
       {
         level: 'expert',
-        title: 'Créer un utilisateur',
-        context: "useradd crée un compte. -m crée le home directory. -s définit le shell. -G ajoute aux groupes secondaires. Toujours suivi de passwd pour fixer le mot de passe.",
-        scene: "Un nouveau collègue arrive. Tu dois lui créer un compte 'alice' avec home et bash.",
-        mission: "Crée l'utilisateur alice avec son home directory.",
+        title: 'Create a user',
+        context: "useradd creates an account. -m creates the home directory. -s sets the shell. -G adds to secondary groups. Always followed by passwd to set the password.",
+        scene: "A new colleague arrives. You have to create an 'alice' account with a home and bash.",
+        mission: "Create the user alice with her home directory.",
         steps: [
           "`sudo useradd -m -s /bin/bash alice`",
-          "`-m` crée /home/alice",
-          "`-s /bin/bash` définit le shell",
-          "Vérifie : `cat /etc/passwd | grep alice`",
-          "💡 **Les deux commandes pour créer un compte** : `useradd -m -s /bin/bash alice` (bas niveau, précis, parfait pour un SCRIPT — n'oublie pas le `-m` !) · `adduser alice` (le script convivial de Debian/Ubuntu : crée le home, demande le mot de passe et pose les questions tout seul — parfait À LA MAIN)."
+          "`-m` creates /home/alice",
+          "`-s /bin/bash` sets the shell",
+          "Check: `cat /etc/passwd | grep alice`",
+          "💡 **The two commands to create an account**: `useradd -m -s /bin/bash alice` (low-level, precise, perfect for a SCRIPT — don't forget the `-m`!) · `adduser alice` (Debian/Ubuntu's friendly script: creates the home, asks for the password and asks the questions by itself — perfect BY HAND)."
         ],
         expected: "$ sudo useradd -m -s /bin/bash alice\n$ grep alice /etc/passwd\nalice:x:1001:1001::/home/alice:/bin/bash",
-        diagram: "useradd options :\n  -m  →  crée /home/<name>\n  -s  →  shell par défaut\n  -G  →  groupes additionnels\n  -u  →  UID forcé",
-        culture: "Attention à un piège célèbre : `useradd` (bas niveau, austère) ne crée PAS le home ni ne demande de mot de passe par défaut — d'où le `-m` obligatoire. Son cousin `adduser` (un script Perl convivial, Debian/Ubuntu) fait tout automatiquement et pose les questions de façon interactive. Beaucoup de tutos confondent les deux. Règle : `adduser` pour la main, `useradd` (précis, scriptable) pour l'automatisation.",
-        reflection: "Après `useradd -m alice`, Alice ne peut toujours pas se connecter. Que manque-t-il ?\n👉 Un **mot de passe** (ou une clé SSH). `useradd` crée le compte mais le laisse *verrouillé* — sans mot de passe, aucune connexion possible. Il faut `sudo passwd alice` pour lui en définir un. C'est un cycle en deux temps : créer le compte, PUIS l'activer avec un mot de passe. Oublier la seconde étape est l'erreur n°1 de la création de comptes.",
+        diagram: "useradd options:\n  -m  →  creates /home/<name>\n  -s  →  default shell\n  -G  →  additional groups\n  -u  →  forced UID",
+        culture: "Beware a famous trap: `useradd` (low-level, austere) does NOT create the home nor ask for a password by default — hence the mandatory `-m`. Its cousin `adduser` (a friendly Perl script, Debian/Ubuntu) does everything automatically and asks the questions interactively. Many tutorials confuse the two. Rule: `adduser` for by-hand, `useradd` (precise, scriptable) for automation.",
+        reflection: "After `useradd -m alice`, Alice still can't log in. What's missing?\n👉 A **password** (or an SSH key). `useradd` creates the account but leaves it *locked* — with no password, no login is possible. You need `sudo passwd alice` to set one. It's a two-step cycle: create the account, THEN activate it with a password. Forgetting the second step is the #1 mistake of account creation.",
         check: function(s) { return !!getNode('/home/alice'); }
       },
       {
         level: 'expert',
-        title: 'Définir un mot de passe',
-        context: "`passwd` définit ou change un mot de passe. Sans argument, il change **le tien** ; suivi d'un nom (`passwd alice`, réservé à l'admin), il change celui d'un autre. Le mot de passe n'est jamais stocké en clair : il est **haché** (transformé en une empreinte irréversible) dans `/etc/shadow`, lisible par root seul.",
-        scene: "Alice a un compte mais aucun mot de passe — elle ne peut donc pas se connecter.",
-        mission: "Définis le mot de passe du compte `alice`.",
+        title: 'Set a password',
+        context: "`passwd` sets or changes a password. With no argument, it changes **yours**; followed by a name (`passwd alice`, admin-only), it changes someone else's. The password is never stored in clear: it's **hashed** (turned into an irreversible fingerprint) in `/etc/shadow`, readable by root alone.",
+        scene: "Alice has an account but no password — so she can't log in.",
+        mission: "Set the password for the `alice` account.",
         steps: [
-          "Lance : `sudo passwd alice`",
-          "Le système demande le nouveau mot de passe (deux fois, pour éviter une faute de frappe)",
-          "L'empreinte est enregistrée dans `/etc/shadow` — le compte devient utilisable"
+          "Run: `sudo passwd alice`",
+          "The system asks for the new password (twice, to avoid a typo)",
+          "The fingerprint is saved in `/etc/shadow` — the account becomes usable"
         ],
-        expected: "$ sudo passwd alice\nNouveau mot de passe : ********\nRetapez : ********\npasswd: mot de passe mis à jour",
+        expected: "$ sudo passwd alice\nNew password: ********\nRetype it: ********\npasswd: password updated",
         check: function(s) { return s.history.some(function(c) { return /^(sudo\s+)?passwd\s+\w+/.test(c); }); }
       },
       {
         level: 'expert',
-        title: 'Lister les groupes',
-        context: "Un **groupe** rassemble plusieurs utilisateurs pour leur donner des droits en commun. La liste des groupes est dans `/etc/group`. Le plus important s'appelle `sudo` : **ses membres peuvent devenir administrateur**. Sur chaque ligne, les noms après le dernier `:` sont les membres du groupe. (Le Dojo décode ce fichier après le `cat`.)",
-        scene: "Tu veux savoir qui, sur ce serveur, a le droit d'utiliser sudo.",
-        mission: "Affiche `/etc/group`.",
+        title: 'List the groups',
+        context: "A **group** brings several users together to give them rights in common. The list of groups is in `/etc/group`. The most important is called `sudo`: **its members can become administrator**. On each line, the names after the last `:` are the group's members. (The Dojo decodes this file after the `cat`.)",
+        scene: "You want to know who, on this server, has the right to use sudo.",
+        mission: "Display `/etc/group`.",
         steps: [
-          "Affiche le fichier : `cat /etc/group`",
-          "Repère la ligne `sudo:x:27:user` → `user` est membre du groupe sudo",
-          "Les noms après le dernier `:` = les membres du groupe"
+          "Display the file: `cat /etc/group`",
+          "Spot the line `sudo:x:27:user` → `user` is a member of the sudo group",
+          "The names after the last `:` = the group's members"
         ],
         expected: "root:x:0:\nsudo:x:27:user\nwww-data:x:33:\nuser:x:1000:",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('group') >= 0; }); }
       },
       {
         level: 'expert',
-        title: 'Ajouter aux sudoers',
-        context: "Pour donner les privilèges sudo, on ajoute l'utilisateur au groupe sudo avec usermod -aG. ATTENTION : sans -a (append), -G remplace TOUS les groupes secondaires.",
-        scene: "Alice a besoin des droits sudo pour son travail.",
-        mission: "Ajoute alice au groupe sudo.",
-        steps: ["`sudo usermod -aG sudo alice`", "`-a` = append (ajouter)", "`-G sudo` = au groupe sudo", "Vérifie : `groups alice`"],
+        title: 'Add to the sudoers',
+        context: "To grant sudo privileges, you add the user to the sudo group with usermod -aG. WARNING: without -a (append), -G replaces ALL secondary groups.",
+        scene: "Alice needs sudo rights for her work.",
+        mission: "Add alice to the sudo group.",
+        steps: ["`sudo usermod -aG sudo alice`", "`-a` = append (add)", "`-G sudo` = to the sudo group", "Check: `groups alice`"],
         expected: "$ sudo usermod -aG sudo alice\n$ groups alice\nalice : alice sudo",
-        diagram: "Piège classique :\n  ❌ usermod -G sudo alice\n     → écrase tous les autres groupes\n  ✅ usermod -aG sudo alice\n     → ajoute (append) au groupe sudo",
-        culture: "Le `-a` (append) de `usermod -aG` a causé plus de catastrophes que n'importe quelle autre option. Sans `-a`, `usermod -G sudo alice` **REMPLACE** tous les groupes secondaires d'alice par le seul groupe `sudo` — elle perd d'un coup son appartenance à tous les autres (docker, www-data, dev...). Le résultat : des accès qui disparaissent mystérieusement, des services qui cassent. La règle gravée dans le marbre : `usermod -aG`, jamais `usermod -G` seul. Le `a` est vital.",
-        reflection: "Un développeur ajouté au groupe `docker` avec `usermod -aG` ne peut toujours pas lancer Docker. Pourquoi ?\n👉 Parce que l'appartenance à un groupe n'est chargée qu'à l'**ouverture de session**. Alice doit se **déconnecter et se reconnecter** (ou lancer `newgrp docker`) pour que son shell prenne en compte le nouveau groupe. Piège fréquent : « je l'ai bien ajouté au groupe mais ça ne marche pas » — il fallait juste rouvrir la session.",
+        diagram: "Classic trap:\n  ❌ usermod -G sudo alice\n     → overwrites all the other groups\n  ✅ usermod -aG sudo alice\n     → appends to the sudo group",
+        culture: "The `-a` (append) in `usermod -aG` has caused more disasters than any other option. Without `-a`, `usermod -G sudo alice` **REPLACES** all of alice's secondary groups with the single group `sudo` — she instantly loses her membership in all the others (docker, www-data, dev...). The result: access that mysteriously disappears, services that break. The rule set in stone: `usermod -aG`, never `usermod -G` alone. The `a` is vital.",
+        reflection: "A developer added to the `docker` group with `usermod -aG` still can't run Docker. Why?\n👉 Because group membership is only loaded at **login**. Alice must **log out and log back in** (or run `newgrp docker`) for her shell to take the new group into account. Frequent trap: “I did add them to the group but it doesn't work” — you just had to reopen the session.",
         check: function(s) { return s.history.some(function(c) { return /usermod.*-aG.*sudo/.test(c); }); }
       },
       {
         level: 'expert',
-        title: 'Créer un groupe',
-        context: "`groupadd` crée un nouveau groupe. L'intérêt : au lieu de donner un droit à 50 utilisateurs un par un, on crée UN groupe, on donne le droit au groupe, et on y ajoute les gens. Exemple typique : un groupe `devs` dont les membres partagent l'accès à `/var/www`.",
-        scene: "Ton équipe de développeurs doit partager des fichiers : tu leur prépares un groupe commun.",
-        mission: "Crée le groupe `devs`.",
+        title: 'Create a group',
+        context: "`groupadd` creates a new group. The point: instead of giving a right to 50 users one by one, you create ONE group, give the right to the group, and add the people to it. Typical example: a `devs` group whose members share access to `/var/www`.",
+        scene: "Your team of developers needs to share files: you prepare a common group for them.",
+        mission: "Create the `devs` group.",
         steps: [
-          "Crée le groupe : `sudo groupadd devs`",
-          "Vérifie qu'il existe : `cat /etc/group | grep devs`"
+          "Create the group: `sudo groupadd devs`",
+          "Check it exists: `cat /etc/group | grep devs`"
         ],
         expected: "$ sudo groupadd devs\n$ grep devs /etc/group\ndevs:x:1001:",
-        culture: "Gérer les droits **par groupe** plutôt que par personne est un principe d'administration fondamental. Quand un nouveau développeur arrive, on l'ajoute au groupe `devs` et il hérite instantanément de tous les accès de l'équipe. Quand il part, on le retire. Sans groupes, il faudrait revoir les droits de chaque fichier un par un — ingérable dès qu'on dépasse quelques personnes.",
-        reflection: "Pourquoi gérer les permissions par groupe plutôt que d'accorder les droits utilisateur par utilisateur ?\n👉 Parce que ça passe à l'échelle. 3 personnes, on peut bricoler ; 300, c'est impossible à la main. Un groupe centralise la décision : « les membres de `devs` accèdent à `/var/www` ». Ajouter ou retirer quelqu'un devient une seule commande, et les droits des fichiers ne changent jamais. Moins d'erreurs, moins d'oublis.",
+        culture: "Managing rights **by group** rather than by person is a fundamental administration principle. When a new developer arrives, you add them to the `devs` group and they instantly inherit all the team's access. When they leave, you remove them. Without groups, you'd have to review every file's rights one by one — unmanageable as soon as you exceed a few people.",
+        reflection: "Why manage permissions by group rather than granting rights user by user?\n👉 Because it scales. 3 people, you can improvise; 300, it's impossible by hand. A group centralizes the decision: “members of `devs` access `/var/www`”. Adding or removing someone becomes a single command, and the files' rights never change. Fewer errors, fewer oversights.",
         check: function(s) { return s.history.some(function(c) { return /^(sudo\s+)?groupadd\s+\w+/.test(c); }); }
       },
       {
         level: 'expert',
-        title: 'Supprimer un utilisateur',
-        context: "userdel supprime un compte. Sans option : garde le home. Avec -r : supprime aussi /home/<user> ET les mails. À utiliser avec précaution.",
-        scene: "Alice quitte la société. Tu dois supprimer son compte ET ses fichiers.",
-        mission: "Supprime alice avec son home directory.",
+        title: 'Delete a user',
+        context: "userdel deletes an account. Without an option: keeps the home. With -r: also deletes /home/<user> AND the mail. To be used with caution.",
+        scene: "Alice is leaving the company. You have to delete her account AND her files.",
+        mission: "Delete alice with her home directory.",
         steps: [
           "`sudo userdel -r alice`",
-          "`-r` = remove home et mail",
-          "Vérifie : `ls /home`",
-          "💡 **Les variantes de suppression** : `userdel alice` (supprime le compte mais GARDE `/home/alice` — utile pour archiver ses fichiers) · `userdel -r alice` (supprime AUSSI le home et les mails — le nettoyage complet) · `deluser --remove-home alice` (l'équivalent convivial Debian/Ubuntu)."
+          "`-r` = remove home and mail",
+          "Check: `ls /home`",
+          "💡 **The deletion variants**: `userdel alice` (deletes the account but KEEPS `/home/alice` — useful for archiving their files) · `userdel -r alice` (ALSO deletes the home and the mail — the complete cleanup) · `deluser --remove-home alice` (the friendly Debian/Ubuntu equivalent)."
         ],
         expected: "$ sudo userdel -r alice\n$ ls /home\nuser",
-        culture: "Supprimer un compte à un départ est une obligation de sécurité (un compte oublié = une porte ouverte), mais le `-r` (remove home) est à double tranchant. Il efface `/home/alice` ET les mails — parfois des données que l'entreprise doit ARCHIVER légalement. La bonne pratique en production n'est souvent pas de supprimer mais de **désactiver** (`usermod -L alice` verrouille le compte, ou `usermod -s /usr/sbin/nologin` interdit la connexion) : l'accès est coupé, mais les fichiers restent récupérables.",
-        reflection: "Faut-il toujours utiliser `userdel -r` quand un employé part ?\n👉 Pas forcément. Le `-r` détruit ses fichiers **définitivement** — or l'entreprise doit parfois les conserver (obligations légales, passation à un successeur). Souvent on **désactive** d'abord le compte (`usermod -L`), on archive le home, et on ne supprime qu'après. Couper l'accès immédiatement : oui. Détruire les données dans la foulée : à réfléchir. La révocation d'accès et la suppression de données sont deux décisions distinctes.",
+        culture: "Deleting an account when someone leaves is a security obligation (a forgotten account = an open door), but the `-r` (remove home) is double-edged. It erases `/home/alice` AND the mail — sometimes data the company must legally ARCHIVE. Best practice in production is often not to delete but to **disable** (`usermod -L alice` locks the account, or `usermod -s /usr/sbin/nologin` forbids login): access is cut, but the files remain recoverable.",
+        reflection: "Should you always use `userdel -r` when an employee leaves?\n👉 Not necessarily. The `-r` destroys their files **permanently** — yet the company must sometimes keep them (legal obligations, handover to a successor). Often you **disable** the account first (`usermod -L`), archive the home, and only delete afterward. Cutting access immediately: yes. Destroying the data right away: think about it. Access revocation and data deletion are two distinct decisions.",
         check: function(s) { return !getNode('/home/alice') && s.history.some(function(c) { return /userdel/.test(c); }); }
       },
       {
         level: 'expert',
-        title: 'Mini-défi : le cycle de vie d\'un compte',
-        context: "On assemble le chapitre en une seule mission d'admin : accueillir un arrivant, puis gérer son départ. Créer un compte utilisable, c'est **deux temps** (le compte PUIS le mot de passe) ; le supprimer proprement, c'en est un troisième.",
-        scene: "Un intérimaire, `bob`, arrive pour une courte mission. Tu l'onboardes, puis tu l'offboardes à la fin.",
-        mission: "Crée le compte `bob` (avec home + shell), donne-lui un mot de passe, puis supprime-le entièrement à son départ.",
+        title: 'Mini-challenge: an account\'s life cycle',
+        context: "We assemble the chapter into a single admin mission: welcome a newcomer, then handle their departure. Creating a usable account is **two steps** (the account THEN the password); deleting it cleanly is a third.",
+        scene: "A temp worker, `bob`, arrives for a short assignment. You onboard him, then offboard him at the end.",
+        mission: "Create the `bob` account (with home + shell), give him a password, then fully delete it when he leaves.",
         steps: [
-          "① Crée le compte : `sudo useradd -m -s /bin/bash bob` (`-m` crée /home/bob)",
-          "② Active-le : `sudo passwd bob` (sinon il ne peut pas se connecter)",
-          "③ Fin de mission : `sudo userdel -r bob` (`-r` supprime aussi son home)",
-          "Vérifie : `ls /home` → plus de `bob`"
+          "① Create the account: `sudo useradd -m -s /bin/bash bob` (`-m` creates /home/bob)",
+          "② Activate it: `sudo passwd bob` (otherwise he can't log in)",
+          "③ End of assignment: `sudo userdel -r bob` (`-r` also deletes his home)",
+          "Check: `ls /home` → no more `bob`"
         ],
         expected: "$ sudo useradd -m -s /bin/bash bob\n$ sudo passwd bob\n$ sudo userdel -r bob\n$ ls /home\nuser",
-        culture: "Ce cycle créer → activer → supprimer est le quotidien d'un admin système, et chaque étape a son piège : oublier le `passwd` (compte inutilisable), oublier le `-m` (pas de home), ou supprimer avec `-r` des données qu'il fallait archiver. En entreprise, tout ça est souvent automatisé par un script d'onboarding/offboarding — mais il faut d'abord comprendre les gestes à la main.",
-        reflection: "Pourquoi la création d'un compte utilisable se fait-elle en DEUX commandes (`useradd` puis `passwd`) ?\n👉 Parce que `useradd` crée le compte mais le laisse **verrouillé**, sans mot de passe : impossible de s'y connecter. C'est une sécurité — un compte n'existe vraiment qu'une fois qu'on lui a donné un moyen d'authentification. Créer, puis activer : deux gestes distincts, et oublier le second est l'erreur n°1 des débutants.",
+        culture: "This create → activate → delete cycle is a system admin's daily routine, and each step has its trap: forgetting the `passwd` (unusable account), forgetting the `-m` (no home), or deleting with `-r` data that needed archiving. In a company, all this is often automated by an onboarding/offboarding script — but you first have to understand the gestures by hand.",
+        reflection: "Why does creating a usable account take TWO commands (`useradd` then `passwd`)?\n👉 Because `useradd` creates the account but leaves it **locked**, with no password: impossible to log in. It's a safeguard — an account only truly exists once you've given it a means of authentication. Create, then activate: two distinct gestures, and forgetting the second is the #1 mistake of beginners.",
         check: function(s) { var created = s.history.some(function(c) { return /useradd.*\bbob\b/.test(c); }); var deleted = s.history.some(function(c) { return /userdel.*\bbob\b/.test(c); }); return created && deleted && !getNode('/home/bob'); }
       }
     ]
