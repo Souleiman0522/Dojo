@@ -2225,132 +2225,132 @@ var QUESTS = [
     id: 'fundamentals',
     chapter: 1,
     icon: '🌱',
-    title: 'Les fondations',
+    title: 'The Foundations',
     color: '#1e5a3d',
-    desc: 'Premiers pas dans le terminal',
-    story: "Premier jour. Le Sensei fait asseoir un nouvel apprenti devant un écran noir. « Ton nom ? » — « Kaï. » — « Bien. Retiens ce moment, **Kaï** : c'est ici que tout commence. » Pas d'icônes, pas de souris qui glisse — juste un curseur qui clignote et attend. « C'est là que vivent les vrais administrateurs. L'interface graphique, c'est la salle d'exposition. **Le terminal, c'est l'atelier.** »\n\nTu n'as pas encore tapé une seule lettre que déjà tu te sens perdu. Où es-tu ? Que contient ce dossier ? Le vieux sourit : « Avant de courir, on apprend à ouvrir les yeux, Kaï. Trois commandes, et tu ne seras plus jamais aveugle dans un système Unix. »",
-    mentor: "Trois réflexes pour ne jamais te sentir perdu, apprenti :\n\n① **Toujours savoir OÙ tu es** avant d'agir — `pwd` répond en une seconde.\n② **Toujours regarder AVANT de toucher** — `ls` puis `ls -la` te montrent le terrain, y compris les fichiers cachés.\n③ Les fichiers qui commencent par un point (`.bashrc`, `.ssh`) sont **cachés volontairement** : ce sont des configs, pas des secrets. `-a` les révèle.\n\nCes trois gestes, tu les feras des milliers de fois. Grave-les maintenant.",
+    desc: 'First steps in the terminal',
+    story: "Day one. The Sensei sits a new apprentice down in front of a black screen. “Your name?” — “Kai.” — “Good. Remember this moment, **Kai**: this is where it all begins.” No icons, no gliding mouse — just a cursor blinking and waiting. “This is where the real administrators live. The graphical interface is the showroom. **The terminal is the workshop.**”\n\nYou haven't typed a single letter yet and already you feel lost. Where are you? What's in this folder? The old man smiles: “Before you run, you learn to open your eyes, Kai. Three commands, and you'll never be blind in a Unix system again.”",
+    mentor: "Three reflexes so you never feel lost, apprentice:\n\n① **Always know WHERE you are** before acting — `pwd` answers in one second.\n② **Always look BEFORE you touch** — `ls` then `ls -la` show you the terrain, including hidden files.\n③ Files that start with a dot (`.bashrc`, `.ssh`) are **hidden on purpose**: they're configs, not secrets. `-a` reveals them.\n\nThese three gestures, you'll do thousands of times. Engrave them now.",
     challenge: {
-      title: "L'exploration à l'aveugle",
-      desc: "Le Sensei te bande les yeux (métaphoriquement). Depuis ton home, sans jamais utiliser d'explorateur graphique : **① trouve où tu es**, **② liste tout le contenu caché avec les permissions**, **③ repère le fichier `.bashrc` et lis ses permissions**. Trois commandes, dans l'ordre. Si tu hésites sur une, recommence la catégorie."
+      title: "Blind exploration",
+      desc: "The Sensei blindfolds you (metaphorically). From your home, without ever using a graphical file explorer: **① find where you are**, **② list all hidden content with permissions**, **③ locate the `.bashrc` file and read its permissions**. Three commands, in order. If you hesitate on one, redo the whole set."
     },
     exos: [
       {
         level: 'beginner',
-        title: 'Où suis-je ?',
-        context: "Un **terminal**, c'est une fenêtre où tu tapes des ordres à l'ordinateur, une ligne à la fois. Quand il s'ouvre, tu es « posé » quelque part dans l'arborescence des dossiers — exactement comme quand tu ouvres l'explorateur de fichiers, sauf qu'ici rien ne te montre le dossier en grand. Ce dossier où tu te trouves porte un nom : le **dossier courant** (ou *répertoire de travail*). Règle n°1 du métier : toujours savoir où l'on est avant d'agir.",
-        scene: "Tu viens d'ouvrir un terminal tout neuf. Avant de toucher à quoi que ce soit, tu veux savoir dans quel dossier tu as atterri.",
-        mission: "Affiche le chemin du dossier où tu te trouves en ce moment.",
+        title: 'Where am I?',
+        context: "A **terminal** is a window where you type orders to the computer, one line at a time. When it opens, you're “dropped” somewhere in the tree of folders — exactly like when you open your file explorer, except here nothing shows you the folder in a big window. The folder you're in has a name: the **current directory** (or *working directory*). Rule #1 of the trade: always know where you are before acting.",
+        scene: "You've just opened a brand-new terminal. Before touching anything, you want to know which folder you landed in.",
+        mission: "Show the path of the folder you're in right now.",
         steps: [
-          "Tape `pwd` puis Entrée — c'est LA commande qui répond à « où suis-je ? »",
-          "Lis le chemin renvoyé : chaque `/` sépare un dossier du suivant",
-          "`/home/user` se lit « dans le dossier home, mon dossier personnel user »"
+          "Type `pwd` then Enter — it's THE command that answers “where am I?”",
+          "Read the returned path: each `/` separates one folder from the next",
+          "`/home/user` reads as “inside the home folder, my personal folder user”"
         ],
         expected: "$ pwd\n/home/user",
-        diagram: "  /\n  ├── etc/\n  ├── var/\n  └── home/\n      └── user/  ← TU ES ICI",
-        culture: "`pwd` signifie **Print Working Directory** (« affiche le répertoire de travail »). Le terme date des premiers Unix des années 70 : chaque programme garde en mémoire UN dossier courant, et toutes les commandes partent de là. Ce n'est pas qu'un affichage — c'est un vrai état du système, que tu déplaces avec `cd`.",
-        reflection: "Pourquoi le terminal ne t'affiche-t-il pas ton dossier courant en permanence, en gros, comme un explorateur graphique ?\n👉 Parce qu'Unix suit la philosophie du minimalisme : le terminal ne montre QUE ce que tu demandes. Ton invite de commande (`user@dojo:~$`) contient déjà l'info en abrégé — le `~` veut dire /home/user.",
+        diagram: "  /\n  ├── etc/\n  ├── var/\n  └── home/\n      └── user/  ← YOU ARE HERE",
+        culture: "`pwd` stands for **Print Working Directory**. The term dates back to the first Unix systems of the 1970s: each program keeps ONE current directory in memory, and every command starts from there. It's not just a display — it's a real piece of system state that you move around with `cd`.",
+        reflection: "Why doesn't the terminal show your current folder permanently, roughly like a graphical explorer does?\n👉 Because Unix follows the philosophy of minimalism: the terminal shows ONLY what you ask for. Your command prompt (`user@dojo:~$`) already contains the info in shorthand — the `~` means /home/user.",
         check: function(s) { return s.history.indexOf('pwd') >= 0; }
       },
       {
         level: 'beginner',
-        title: 'Qui suis-je ?',
-        context: "Sur un système Linux, **plusieurs utilisateurs** coexistent : des humains, mais aussi des comptes qui font tourner des programmes. Chaque commande que tu tapes est exécutée « au nom » d'un utilisateur, avec ses droits à lui. Savoir sous quelle identité tu agis est aussi vital que savoir où tu es : ça décide de ce que tu as le droit de faire — ou de casser.",
-        scene: "Avant de modifier quoi que ce soit, tu veux vérifier sous quel compte tu es connecté.",
-        mission: "Affiche le nom de l'utilisateur avec lequel tu es connecté.",
+        title: 'Who am I?',
+        context: "On a Linux system, **several users** coexist: humans, but also accounts that run programs. Every command you type runs “in the name” of a user, with that user's own rights. Knowing which identity you're acting under is as vital as knowing where you are: it decides what you're allowed to do — or to break.",
+        scene: "Before changing anything, you want to check which account you're logged in as.",
+        mission: "Show the name of the user you're logged in as.",
         steps: [
-          "Tape `whoami` (littéralement « qui suis-je » en anglais)",
-          "Le terminal répond par ton nom de compte",
-          "Retiens-le : ici tu es `user`, un utilisateur normal — pas le chef `root`"
+          "Type `whoami` (literally “who am I”)",
+          "The terminal replies with your account name",
+          "Remember it: here you are `user`, a normal user — not the boss `root`"
         ],
         expected: "$ whoami\nuser",
-        culture: "`whoami` répond « qui suis-je ? » : le nom du compte courant. Sur un serveur, c'est un réflexe de sécurité, surtout avant une commande dangereuse. Es-tu `user` (droits limités, tu ne casses que tes propres affaires) ou `root` (le super-administrateur, qui peut TOUT effacer sans confirmation) ? Beaucoup de catastrophes viennent d'un `whoami` qu'on n'a pas fait : on se croyait simple utilisateur, on était root.",
-        reflection: "Pourquoi vérifier son identité avant une commande sensible ?\n👉 Parce que la même commande n'a pas les mêmes conséquences selon qui la lance. `rm -rf /truc` lancé par `user` échoue (pas les droits) ; lancé par `root`, il détruit sans broncher. Connaître son identité, c'est connaître son pouvoir de destruction.",
+        culture: "`whoami` answers “who am I?”: the name of the current account. On a server it's a security reflex, especially before a dangerous command. Are you `user` (limited rights, you only break your own things) or `root` (the super-administrator, who can erase EVERYTHING with no confirmation)? Many disasters come from a `whoami` that wasn't run: you thought you were a plain user, you were root.",
+        reflection: "Why check your identity before a sensitive command?\n👉 Because the same command doesn't have the same consequences depending on who runs it. `rm -rf /something` run by `user` fails (no rights); run by `root`, it destroys without flinching. Knowing your identity means knowing your power to destroy.",
         check: function(s) { return s.history.indexOf('whoami') >= 0; }
       },
       {
         level: 'beginner',
-        title: 'Faire parler le terminal',
-        context: "Le terminal ne fait pas que recevoir des ordres : il peut aussi **afficher** ce que tu lui donnes. La commande `echo` répète simplement le texte écrit après elle. Ça paraît inutile… mais c'est la brique de base pour vérifier une valeur, écrire dans un fichier, ou afficher un message dans un script. On commence par elle parce qu'elle rend le fonctionnement du terminal évident : tu donnes → il répond.",
-        scene: "Pour être sûr d'avoir compris comment donner un ordre, tu demandes au terminal d'afficher un message.",
-        mission: "Fais afficher un message de ton choix (par exemple : Bonjour).",
+        title: 'Make the terminal speak',
+        context: "The terminal doesn't only receive orders: it can also **display** what you give it. The `echo` command simply repeats the text written after it. It seems useless… but it's the building block for checking a value, writing into a file, or printing a message in a script. We start with it because it makes the terminal's logic obvious: you give → it replies.",
+        scene: "To be sure you've understood how to give an order, you ask the terminal to display a message.",
+        mission: "Display a message of your choice (for example: Hello).",
         steps: [
-          "Tape `echo Bonjour` — `echo` veut dire « répète »",
-          "Le terminal réaffiche exactement ce que tu as écrit",
-          "Essaie avec ton pseudo : `echo Salut Kaï`",
-          "💡 **Deux options utiles** : `echo -n Bonjour` (n'ajoute PAS de retour à la ligne à la fin) · `echo -e \"Ligne1\\nLigne2\"` (interprète `\\n` comme un vrai saut de ligne)."
+          "Type `echo Hello` — `echo` means “repeat”",
+          "The terminal displays exactly what you wrote back to you",
+          "Try it with your handle: `echo Hi Kai`",
+          "💡 **Two handy options**: `echo -n Hello` (does NOT add a line break at the end) · `echo -e \"Line1\\nLine2\"` (interprets `\\n` as a real line break)."
         ],
-        expected: "$ echo Bonjour\nBonjour",
-        culture: "`echo` (« écho ») répète son texte. Trivial ? C'est pourtant partout : `echo $PATH` affiche le contenu d'une variable, `echo \"texte\" > fichier` crée un fichier contenant ce texte, et dans un script chaque message à l'écran passe par `echo`. Les outils Unix les plus puissants sont souvent les plus simples… une fois assemblés entre eux.",
-        reflection: "À quoi peut bien servir une commande qui « ne fait que répéter » ?\n👉 À énormément de choses, une fois combinée : afficher la valeur d'une variable (`echo $HOME`), écrire dans un fichier (`echo ... > notes.txt`), ou parler à l'utilisateur dans un script. C'est la brique élémentaire de la sortie de texte sous Unix.",
+        expected: "$ echo Hello\nHello",
+        culture: "`echo` (“echo”) repeats its text. Trivial? Yet it's everywhere: `echo $PATH` shows the content of a variable, `echo \"text\" > file` creates a file containing that text, and in a script every on-screen message goes through `echo`. The most powerful Unix tools are often the simplest… once assembled together.",
+        reflection: "What good is a command that “only repeats”?\n👉 A great deal, once combined: showing a variable's value (`echo $HOME`), writing to a file (`echo ... > notes.txt`), or talking to the user in a script. It's the elementary building block of text output under Unix.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('echo') === 0; }); }
       },
       {
         level: 'beginner',
-        title: 'Ouvrir les yeux',
-        context: "Maintenant que tu sais OÙ tu es et QUI tu es, regarde ce qu'il y a autour. La commande `ls` (de l'anglais *list*, « lister ») affiche le contenu du dossier courant : ses fichiers et ses sous-dossiers. C'est, de très loin, la commande la plus tapée sous Linux — ton geste réflexe en arrivant quelque part.",
-        scene: "Tu es dans ton dossier personnel. Tu veux voir ce qu'il contient.",
-        mission: "Affiche la liste des fichiers et dossiers présents ici.",
+        title: 'Open your eyes',
+        context: "Now that you know WHERE you are and WHO you are, look at what's around. The `ls` command (from *list*) shows the content of the current folder: its files and its subfolders. It is, by far, the most-typed command on Linux — your reflex gesture whenever you arrive somewhere.",
+        scene: "You're in your personal folder. You want to see what it contains.",
+        mission: "Show the list of files and folders present here.",
         steps: [
-          "Tape `ls` puis Entrée",
-          "Chaque nom affiché est un fichier ou un dossier de l'endroit où tu es",
-          "Repère les **couleurs** : bleu = un dossier, vert = un programme exécutable"
+          "Type `ls` then Enter",
+          "Each name shown is a file or a folder of the place you're in",
+          "Spot the **colors**: blue = a folder, green = an executable program"
         ],
         expected: "$ ls\nDocuments  Downloads  Pictures  scripts  site",
-        culture: "`ls` (abréviation de *list*) est probablement la commande la plus tapée de l'histoire d'Unix. Elle existe depuis la toute première version en 1971. Les **couleurs** (bleu = dossier, vert = exécutable, cyan = lien) ne sont PAS dans `ls` d'origine : elles viennent d'une option `--color` ajoutée bien plus tard, activée par défaut sur les distributions modernes via un alias rangé dans ton `.bashrc`.",
-        reflection: "Pourquoi `ls` seul ne montre-t-il pas les fichiers comme `.bashrc` ?\n👉 Convention historique : tout fichier dont le nom commence par `.` est considéré « caché ». À l'origine, les premiers `ls` masquaient `.` et `..` (les raccourcis du dossier courant et parent), et le code masquait tout ce qui commençait par un point. La convention est restée : on y range les fichiers de configuration pour ne pas encombrer la vue.",
+        culture: "`ls` (short for *list*) is probably the most-typed command in Unix history. It has existed since the very first version in 1971. The **colors** (blue = folder, green = executable, cyan = link) are NOT in the original `ls`: they come from a `--color` option added much later, enabled by default on modern distributions via an alias stored in your `.bashrc`.",
+        reflection: "Why doesn't `ls` alone show files like `.bashrc`?\n👉 Historical convention: any file whose name starts with `.` is considered “hidden”. Originally, the first `ls` hid `.` and `..` (the shortcuts for the current and parent folder), and the code hid everything starting with a dot. The convention stuck: it's where we tuck configuration files so they don't clutter the view.",
         check: function(s) { return s.history.some(function(c) { return c === 'ls' || c.indexOf('ls ') === 0; }); }
       },
       {
         level: 'beginner',
-        title: 'Voir les détails cachés',
-        context: "`ls` tout seul ne montre que l'essentiel. On peut lui ajouter des **options** (de petites lettres précédées d'un `-`) pour en demander plus :\n• `-l` (comme *long*) → une ligne détaillée par fichier : droits, propriétaire, taille, date.\n• `-a` (comme *all*) → montre AUSSI les fichiers cachés (ceux qui commencent par un `.`).\nOn peut coller les deux : `-la` = `-l` + `-a`.",
-        scene: "Tu veux comprendre les droits de tes fichiers et vérifier s'il en existe des cachés.",
-        mission: "Affiche TOUT le contenu (fichiers cachés compris) avec les détails.",
+        title: 'See the hidden details',
+        context: "`ls` on its own shows only the essentials. You can add **options** (small letters preceded by a `-`) to ask for more:\n• `-l` (as in *long*) → one detailed line per file: rights, owner, size, date.\n• `-a` (as in *all*) → ALSO shows hidden files (those starting with a `.`).\nYou can stick them together: `-la` = `-l` + `-a`.",
+        scene: "You want to understand your files' permissions and check whether any hidden ones exist.",
+        mission: "Show ALL the content (hidden files included) with the details.",
         steps: [
-          "Tape `ls -la`",
-          "Repère le `.bashrc` : il était invisible avec `ls` simple (il commence par un point)",
-          "Regarde la colonne de gauche, `-rw-r--r--` : ce sont les **droits** du fichier (qui peut lire/écrire)",
-          "💡 **Les autres options qui servent tous les jours** : `ls -lh` (tailles lisibles : `4,0K`, `2,3M` au lieu d'octets bruts) · `ls -lt` (tri par date, le plus récent en haut) · `ls -R` (récursif : descend dans TOUS les sous-dossiers). On les combine : `ls -lhrt` = « détaillé, lisible, trié par date »."
+          "Type `ls -la`",
+          "Spot the `.bashrc`: it was invisible with a plain `ls` (it starts with a dot)",
+          "Look at the left-hand column, `-rw-r--r--`: these are the file's **rights** (who can read/write)",
+          "💡 **The other options you use every day**: `ls -lh` (readable sizes: `4.0K`, `2.3M` instead of raw bytes) · `ls -lt` (sorted by date, most recent on top) · `ls -R` (recursive: descends into ALL subfolders). Combine them: `ls -lhrt` = “detailed, readable, sorted by date”."
         ],
         expected: "drwxr-xr-x  user  4096  Documents/\n-rw-r--r--  user  3584  .bashrc",
-        diagram: "Droits :\n  d r w x r - x r - x\n  │ └─┬─┘ └─┬─┘ └─┬─┘\n  │  toi   groupe  autres\n  └─ d=dossier, -=fichier",
-        culture: "`ls -la` combine `-l` (long) et `-a` (all). Le format long révèle les **10 caractères de droits**, le propriétaire, le groupe, la taille et la date — la carte d'identité complète d'un fichier. C'est LA commande de diagnostic quand quelque chose coince : « qui a le droit de toucher ce fichier ? ».",
-        reflection: "Dans `-rw-r--r--`, comment savoir d'un coup d'œil si c'est un dossier ou un fichier ?\n👉 Le **tout premier caractère** : `-` = fichier ordinaire, `d` = dossier (*directory*), `l` = lien, `c`/`b` = périphérique. Les 9 caractères suivants sont 3 triplets de droits (toi, ton groupe, les autres). Lire cette ligne devient un réflexe en quelques jours, et te sert toute la vie.",
+        diagram: "Rights:\n  d r w x r - x r - x\n  │ └─┬─┘ └─┬─┘ └─┬─┘\n  │  you   group  others\n  └─ d=directory, -=file",
+        culture: "`ls -la` combines `-l` (long) and `-a` (all). The long format reveals the **10 permission characters**, the owner, the group, the size and the date — a file's complete ID card. It's THE diagnostic command when something is stuck: “who is allowed to touch this file?”.",
+        reflection: "In `-rw-r--r--`, how do you tell at a glance whether it's a directory or a file?\n👉 The **very first character**: `-` = ordinary file, `d` = directory, `l` = link, `c`/`b` = device. The 9 following characters are 3 triplets of rights (you, your group, others). Reading this line becomes a reflex within a few days, and serves you for life.",
         check: function(s) { return s.history.some(function(c) { return /^ls\s+(-la|-al|-l\s+-a|-a\s+-l)/.test(c); }); }
       },
       {
         level: 'beginner',
-        title: 'Demander de l\'aide',
-        context: "Personne ne connaît toutes les commandes par cœur — pas même les experts. Le vrai réflexe de survie, c'est de savoir **demander de l'aide au système lui-même**. Sur une vraie machine on tape `man <commande>` (pour *manual*, le manuel) ou `<commande> --help`. Ici, dans le Dojo, tape `help` pour voir les commandes disponibles.",
-        scene: "Tu es bloqué, tu ne sais plus quelle commande utiliser. Le bon réflexe : demander au terminal, pas à Google.",
-        mission: "Affiche la liste des commandes utilisables dans le Dojo.",
+        title: 'Ask for help',
+        context: "Nobody knows every command by heart — not even the experts. The real survival reflex is knowing how to **ask the system itself for help**. On a real machine you type `man <command>` (for *manual*) or `<command> --help`. Here, in the Dojo, type `help` to see the available commands.",
+        scene: "You're stuck, you no longer know which command to use. The right reflex: ask the terminal, not Google.",
+        mission: "Show the list of commands usable in the Dojo.",
         steps: [
-          "Tape `help`",
-          "Parcours la liste des commandes reconnues",
-          "Sur une vraie machine, tu ferais plutôt `man ls` ou `ls --help` pour l'aide d'UNE commande précise",
-          "💡 **Les différentes façons de se documenter** : `man ls` (le manuel complet, parfois long) · `ls --help` (le résumé rapide des options) · `tldr ls` (des exemples concrets, à installer) · `apropos copie` (retrouve une commande à partir d'un mot-clé quand tu as oublié son nom)."
+          "Type `help`",
+          "Skim the list of recognized commands",
+          "On a real machine, you'd rather do `man ls` or `ls --help` for help on ONE specific command",
+          "💡 **The different ways to look things up**: `man ls` (the full manual, sometimes long) · `ls --help` (the quick summary of options) · `tldr ls` (concrete examples, to install) · `apropos copy` (finds a command from a keyword when you've forgotten its name)."
         ],
-        expected: "$ help\n(la liste des commandes disponibles s'affiche)",
-        culture: "Le fameux `man` (*manual*) est l'encyclopédie intégrée d'Unix : `man ls` ouvre le mode d'emploi complet de `ls`. La blague culte « **RTFM** » (*Read The Fine Manual*, « lis donc le manuel ») en vient. Savoir lire un `man` — ou un `--help` — est LA compétence qui rend autonome : tu n'attends plus qu'on te donne la réponse, tu la trouves toi-même.",
-        reflection: "Vaut-il mieux mémoriser 500 commandes, ou savoir en retrouver une ?\n👉 Savoir chercher. Les experts ne retiennent pas tout : ils connaissent les grands réflexes et ouvrent `man` ou `--help` pour les détails (les options exactes, l'ordre des arguments). L'autonomie ne vient pas de la mémoire, mais de la capacité à se documenter vite.",
+        expected: "$ help\n(the list of available commands appears)",
+        culture: "The famous `man` (*manual*) is Unix's built-in encyclopedia: `man ls` opens the complete instructions for `ls`. The cult joke “**RTFM**” (*Read The Fine Manual*) comes from it. Knowing how to read a `man` — or a `--help` — is THE skill that makes you autonomous: you no longer wait for someone to give you the answer, you find it yourself.",
+        reflection: "Is it better to memorize 500 commands, or to know how to find one?\n👉 To know how to search. Experts don't remember everything: they know the big reflexes and open `man` or `--help` for the details (the exact options, the argument order). Autonomy comes not from memory, but from the ability to look things up fast.",
         check: function(s) { return s.history.some(function(c) { return c === 'help' || c === '?' || c.indexOf('--help') >= 0 || c.indexOf('man ') === 0; }); }
       },
       {
         level: 'intermediate',
-        title: 'Mini-défi : le réflexe de survie',
-        context: "On assemble tout. Face à un terminal inconnu, trois questions te sauvent, toujours dans cet ordre :\n**① Où suis-je ?** → `pwd`\n**② Qu'y a-t-il ici ?** → `ls`\n**③ Qu'est-ce qui se cache ?** → `ls -la`\nCe petit rituel, tu le referas des milliers de fois dans ta carrière.",
-        scene: "Le Sensei te dépose dans un terminal les yeux bandés. Débrouille-toi pour te situer complètement, seul, sans qu'on te guide.",
-        mission: "Enchaîne les trois gestes : repère ta position, liste le contenu visible, puis révèle TOUT (fichiers cachés + droits).",
+        title: 'Mini-challenge: the survival reflex',
+        context: "We put it all together. Facing an unknown terminal, three questions save you, always in this order:\n**① Where am I?** → `pwd`\n**② What's here?** → `ls`\n**③ What's hidden?** → `ls -la`\nThis little ritual, you'll repeat thousands of times in your career.",
+        scene: "The Sensei drops you into a terminal, blindfolded. Figure out how to locate yourself completely, alone, with no one guiding you.",
+        mission: "Chain the three gestures: spot your position, list the visible content, then reveal EVERYTHING (hidden files + rights).",
         steps: [
-          "① `pwd` — pour savoir où tu es",
-          "② `ls` — pour voir ce qui est visible",
-          "③ `ls -la` — pour tout voir : fichiers cachés ET droits",
-          "Les trois, dans l'ordre, sans aide extérieure"
+          "① `pwd` — to know where you are",
+          "② `ls` — to see what's visible",
+          "③ `ls -la` — to see it all: hidden files AND rights",
+          "All three, in order, with no outside help"
         ],
         expected: "$ pwd\n/home/user\n$ ls\nDocuments  ...\n$ ls -la\n-rw-r--r-- ... .bashrc",
-        culture: "Ce réflexe « pwd → ls → ls -la » a un surnom chez les administrateurs : **prendre ses marques**. Sur un serveur qu'on découvre en pleine panne, à 3h du matin, on ne tape jamais une commande dangereuse avant d'avoir fait ces trois-là. Se situer avant d'agir : c'est ce qui sépare l'artisan du bricoleur.",
-        reflection: "Pourquoi toujours faire ces trois gestes AVANT d'agir sur une machine inconnue ?\n👉 Parce qu'une commande se juge à son contexte. Supprimer un fichier, redémarrer un service, éditer une config : tout dépend d'où tu es, de ce qui t'entoure et de ce qui est caché. Trois secondes d'observation évitent des heures de réparation.",
+        culture: "This “pwd → ls → ls -la” reflex has a nickname among administrators: **getting your bearings**. On a server you're discovering mid-outage, at 3 a.m., you never type a dangerous command before doing those three. Locate yourself before acting: that's what separates the craftsman from the tinkerer.",
+        reflection: "Why always do these three gestures BEFORE acting on an unknown machine?\n👉 Because a command is judged by its context. Deleting a file, restarting a service, editing a config: it all depends on where you are, what surrounds you, and what's hidden. Three seconds of observation save hours of repair.",
         check: function(s) { var h = s.history; var hasPwd = h.indexOf('pwd') >= 0; var hasLs = h.some(function(c) { return c === 'ls' || c.indexOf('ls ') === 0; }); var hasLa = h.some(function(c) { return /^ls\s+(-la|-al|-l\s+-a|-a\s+-l)/.test(c); }); return hasPwd && hasLs && hasLa; }
       }
     ]
