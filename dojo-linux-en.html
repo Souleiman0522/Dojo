@@ -2708,128 +2708,128 @@ var QUESTS = [
     icon: '👤',
     title: 'Utilisateurs & permissions',
     color: '#8b2c2c',
-    desc: 'Qui peut quoi ?',
-    story: "« Tu sais créer et détruire des fichiers, Kaï. Mais une question t'a échappé : **à qui appartiennent-ils ?** » Le Sensei devient grave. « Ici commence la vraie responsabilité. En Unix, chaque fichier appartient à quelqu'un, et chaque fichier dit qui a le droit de le lire, de l'écrire, de l'exécuter. C'est le cœur de la sécurité du système. »\n\nIl te montre une ligne étrange : `-rwxr-xr--`. « Ces dix caractères racontent toute l'histoire d'un fichier : qui le possède, qui peut le toucher, ce qu'il est. Apprends à les lire comme une phrase, Kaï, et plus aucun système n'aura de secret pour toi. »",
-    mentor: "Les permissions, décodées une fois pour toutes :\n\n① Les 10 caractères : `d` (type) + `rwx` (propriétaire) + `r-x` (groupe) + `r--` (autres). `r`=lire, `w`=écrire, `x`=exécuter.\n② `chmod` change les permissions. Deux notations : symbolique (`chmod +x script.sh`) ou **numérique** (`chmod 755`). Le 755 = rwx pour le proprio, r-x pour les autres.\n③ Mémo numérique : `r=4`, `w=2`, `x=1`. On additionne : `7=rwx`, `6=rw-`, `5=r-x`. `chmod 600` = privé total (proprio lit/écrit, personne d'autre).\n④ `chown` change le propriétaire. Souvent réservé à root.",
+    desc: 'Who can do what?',
+    story: "“You know how to create and destroy files, Kai. But a question escaped you: **who do they belong to?**” The Sensei turns serious. “Here begins real responsibility. In Unix, every file belongs to someone, and every file says who has the right to read it, write it, execute it. It's the heart of the system's security.”\n\nHe shows you a strange line: `-rwxr-xr--`. “These ten characters tell a file's whole story: who owns it, who can touch it, what it is. Learn to read them like a sentence, Kai, and no system will keep a secret from you.”",
+    mentor: "Permissions, decoded once and for all:\n\n① The 10 characters: `d` (type) + `rwx` (owner) + `r-x` (group) + `r--` (others). `r`=read, `w`=write, `x`=execute.\n② `chmod` changes the permissions. Two notations: symbolic (`chmod +x script.sh`) or **numeric** (`chmod 755`). The 755 = rwx for the owner, r-x for the others.\n③ Numeric memo: `r=4`, `w=2`, `x=1`. You add them up: `7=rwx`, `6=rw-`, `5=r-x`. `chmod 600` = fully private (owner reads/writes, no one else).\n④ `chown` changes the owner. Often reserved for root.",
     challenge: {
-      title: "Le coffre-fort",
-      desc: "Tu prépares un script sensible : **① identifie qui tu es** (`whoami` et `id`), **② lis les permissions** d'un dossier de scripts (`ls -l`), **③ rends un script exécutable** (`chmod +x`), **④ verrouille un fichier de secrets** en `600` (rwx------) avec la notation numérique. À la fin, seul toi peux lire tes secrets, et ton script tourne."
+      title: "The safe",
+      desc: "You're preparing a sensitive script: **① identify who you are** (`whoami` and `id`), **② read the permissions** of a scripts folder (`ls -l`), **③ make a script executable** (`chmod +x`), **④ lock a secrets file** to `600` (rwx------) with numeric notation. In the end, only you can read your secrets, and your script runs."
     },
     exos: [
       {
         level: 'intermediate',
-        title: 'Sous quelle identité j\'agis ?',
-        context: "Tu as croisé `whoami` au chapitre 1. Ici il prend tout son sens : **les droits sur un fichier dépendent de QUI tu es**. Avant de parler permissions, on confirme donc ton identité. `whoami` donne ton nom ; `id` ira plus loin (ton numéro et tes groupes).",
-        scene: "Avant de toucher aux droits, tu vérifies sous quel compte tu agis.",
-        mission: "Confirme ton identité avec `whoami`.",
+        title: 'Which identity am I acting as?',
+        context: "You met `whoami` in chapter 1. Here it takes on its full meaning: **a file's rights depend on WHO you are**. Before talking permissions, we confirm your identity. `whoami` gives your name; `id` will go further (your number and your groups).",
+        scene: "Before touching rights, you check which account you're acting as.",
+        mission: "Confirm your identity with `whoami`.",
         steps: [
-          "Tape `whoami` → il affiche ton nom de compte",
-          "Pour le détail complet (numéro + groupes), enchaîne avec `id`"
+          "Type `whoami` → it shows your account name",
+          "For the full detail (number + groups), follow up with `id`"
         ],
         expected: "$ whoami\nuser\n$ id\nuid=1000(user) gid=1000(user) groups=1000(user),27(sudo)",
-        culture: "Derrière ton nom se cache un **numéro** : l'UID (User ID). Le tien est 1000 — le premier utilisateur humain (les distributions démarrent les comptes humains à 1000). Mais l'UID qui fait trembler, c'est le **0** : c'est **root**, le super-utilisateur qui peut TOUT faire, ignorer toutes les permissions. Le système ne connaît que les numéros ; les noms (`user`, `root`) ne sont qu'un confort humain traduit via `/etc/passwd`.",
-        reflection: "Comment le système sait-il que tu es « user » et pas quelqu'un d'autre ?\n👉 Chaque processus porte l'UID de qui l'a lancé. Ton shell tourne sous l'UID 1000, hérité de ta connexion. `whoami` lit juste cet UID et le traduit en nom. Quand tu fais `sudo`, tu demandes temporairement l'UID 0 (root) — d'où la question de mot de passe : le système vérifie que tu as le DROIT d'emprunter cette identité.",
+        culture: "Behind your name hides a **number**: the UID (User ID). Yours is 1000 — the first human user (distributions start human accounts at 1000). But the UID that makes people tremble is **0**: that's **root**, the super-user who can do EVERYTHING, ignore all permissions. The system only knows numbers; names (`user`, `root`) are just a human comfort translated via `/etc/passwd`.",
+        reflection: "How does the system know you're “user” and not someone else?\n👉 Every process carries the UID of whoever launched it. Your shell runs under UID 1000, inherited from your login. `whoami` just reads that UID and translates it into a name. When you run `sudo`, you temporarily request UID 0 (root) — hence the password prompt: the system checks that you have the RIGHT to borrow that identity.",
         check: function(s) { return s.history.indexOf('whoami') >= 0; }
       },
       {
         level: 'intermediate',
-        title: 'Identité complète (id)',
-        context: "`id` affiche ta carte d'identité complète : ton **UID** (numéro d'utilisateur), ton **GID** (groupe principal), et tous tes **groupes**. Le groupe le plus important à repérer est `sudo` : en faire partie, c'est avoir le droit de devenir administrateur.",
-        scene: "Tu veux savoir si tu as les droits d'administration (groupe sudo).",
-        mission: "Affiche ton identité détaillée avec `id`.",
+        title: 'Full identity (id)',
+        context: "`id` shows your complete ID card: your **UID** (user number), your **GID** (primary group), and all your **groups**. The most important group to spot is `sudo`: being part of it means having the right to become administrator.",
+        scene: "You want to know whether you have admin rights (the sudo group).",
+        mission: "Show your detailed identity with `id`.",
         steps: [
-          "Tape `id`",
-          "Repère `(sudo)` dans la liste des groupes — c'est ton passe admin",
-          "Note ton UID : `1000` = un humain ; `0` serait root"
+          "Type `id`",
+          "Spot `(sudo)` in the list of groups — it's your admin pass",
+          "Note your UID: `1000` = a human; `0` would be root"
         ],
         expected: "uid=1000(user) gid=1000(user) groups=1000(user),27(sudo)",
-        reflection: "Dans la sortie de `id`, que signifie la présence de `27(sudo)` dans les groupes ?\n👉 Tu es membre du groupe **sudo** (numéro 27). C'est le sésame de l'administration : ses membres peuvent lancer des commandes en tant que root via `sudo`. Sans ce groupe, `sudo apt install ...` te répondrait « user is not in the sudoers file ». Être dans le groupe sudo = détenir les clés du royaume. À accorder avec prudence.",
+        reflection: "In the output of `id`, what does the presence of `27(sudo)` in the groups mean?\n👉 You're a member of the **sudo** group (number 27). It's the key to administration: its members can run commands as root via `sudo`. Without this group, `sudo apt install ...` would answer “user is not in the sudoers file”. Being in the sudo group = holding the keys to the kingdom. To be granted with caution.",
         check: function(s) { return s.history.indexOf('id') >= 0 || s.history.some(function(c) { return c === 'id'; }); }
       },
       {
         level: 'advanced',
-        title: 'Lire les permissions',
-        context: "Chaque fichier affiche ses droits dans une suite de **10 caractères**, tout à gauche quand tu fais `ls -l` : par ex. `-rwxr-xr--`. Le 1er dit le type (`-` fichier, `d` dossier), puis 3 blocs de 3 : ce que peut faire **toi** (le propriétaire), puis **ton groupe**, puis **les autres**. `r`=lire, `w`=écrire, `x`=exécuter. (Le Dojo t'affiche un décodeur au tout premier `ls -l`.)",
-        scene: "Tu veux comprendre les droits de tes scripts.",
-        mission: "Affiche les droits des fichiers de `~/scripts` avec `ls -l`.",
+        title: 'Read the permissions',
+        context: "Each file shows its rights in a sequence of **10 characters**, on the far left when you do `ls -l`: e.g. `-rwxr-xr--`. The 1st gives the type (`-` file, `d` folder), then 3 blocks of 3: what **you** (the owner) can do, then **your group**, then **the others**. `r`=read, `w`=write, `x`=execute. (The Dojo shows you a decoder on the very first `ls -l`.)",
+        scene: "You want to understand your scripts' rights.",
+        mission: "Show the rights of the files in `~/scripts` with `ls -l`.",
         steps: [
-          "Va dans le dossier : `cd ~/scripts`",
-          "Affiche les droits : `ls -l`",
-          "Lis `-rw-r--r--` : toi tu lis + écris, ton groupe et les autres lisent seulement"
+          "Go to the folder: `cd ~/scripts`",
+          "Show the rights: `ls -l`",
+          "Read `-rw-r--r--`: you read + write, your group and the others only read"
         ],
         expected: "-rw-r--r--  user  user  234  install.sh\n-rw-r--r--  user  user  512  backup.sh",
-        diagram: "  -rwxr-xr-x\n  │└┬┘└┬┘└┬┘\n  │ u  g  o\n  └ type fichier",
-        culture: "Les permissions se lisent en **trois publics** : `u` (user, le propriétaire), `g` (group, son groupe), `o` (others, tout le reste). Chaque public a ses trois droits : `r`ead, `w`rite, e`x`ecute. Ce modèle date de 1971 et n'a quasiment pas changé — sa simplicité (3×3 bits) est sa force. Sur un dossier, les droits ont un sens légèrement différent : `x` = « droit d'entrer » (`cd`), `r` = « droit de lister le contenu ».",
-        reflection: "Un fichier `-rw-r--r--` : qui peut le modifier ?\n👉 **Seul le propriétaire** (`u` a `rw`). Le groupe (`g` a `r--`) et les autres (`o` a `r--`) peuvent seulement LIRE. C'est la permission par défaut de la plupart des fichiers créés : mon propriétaire écrit, le monde lit. Pour qu'un collègue puisse aussi écrire, il faudrait ajouter `w` au groupe (`chmod g+w`) et qu'il soit dans le bon groupe.",
+        diagram: "  -rwxr-xr-x\n  │└┬┘└┬┘└┬┘\n  │ u  g  o\n  └ file type",
+        culture: "Permissions are read as **three audiences**: `u` (user, the owner), `g` (group, its group), `o` (others, everyone else). Each audience has its three rights: `r`ead, `w`rite, e`x`ecute. This model dates from 1971 and has barely changed — its simplicity (3×3 bits) is its strength. On a folder, the rights have a slightly different meaning: `x` = “right to enter” (`cd`), `r` = “right to list the content”.",
+        reflection: "A file `-rw-r--r--`: who can modify it?\n👉 **Only the owner** (`u` has `rw`). The group (`g` has `r--`) and the others (`o` has `r--`) can only READ. It's the default permission of most created files: the owner writes, the world reads. For a colleague to also write, you'd need to add `w` to the group (`chmod g+w`) and for them to be in the right group.",
         check: function(s) { return s.cwd === '/home/user/scripts' && s.history.some(function(c) { return /^ls\s+-l/.test(c); }); }
       },
       {
         level: 'advanced',
-        title: 'Rendre exécutable (chmod +x)',
-        context: "Un fichier ne peut être **lancé** comme un programme que s'il a le droit `x` (exécuter). Un script fraîchement créé ne l'a pas → tu obtiens « Permission denied ». `chmod +x fichier` ajoute ce droit. `chmod` veut dire *change mode*, « changer les droits ».",
-        scene: "Ton `install.sh` est là mais refuse de se lancer : « Permission denied ».",
-        mission: "Ajoute le droit d'exécution à `install.sh`.",
+        title: 'Make executable (chmod +x)',
+        context: "A file can only be **launched** like a program if it has the `x` (execute) right. A freshly created script doesn't → you get “Permission denied”. `chmod +x file` adds this right. `chmod` means *change mode*, “change the rights”.",
+        scene: "Your `install.sh` is there but refuses to run: “Permission denied”.",
+        mission: "Add the execute right to `install.sh`.",
         steps: [
-          "Va dans `~/scripts` : `cd ~/scripts`",
-          "Ajoute le droit d'exécuter : `chmod +x install.sh` (`+x` = « ajoute exécuter »)",
-          "Vérifie avec `ls -l` : un `x` est apparu dans les droits",
-          "💡 **La notation symbolique complète** : on cible un public (`u`=toi, `g`=groupe, `o`=autres, `a`=tous) et on ajoute `+` / retire `-` un droit (`r`/`w`/`x`). Ex. : `chmod u+x` (exécuter, pour toi seul) · `chmod g-w` (retire l'écriture au groupe) · `chmod a+r` (lecture pour tout le monde). L'autre écriture, en chiffres, est juste en dessous 👇."
+          "Go to `~/scripts`: `cd ~/scripts`",
+          "Add the execute right: `chmod +x install.sh` (`+x` = “add execute”)",
+          "Check with `ls -l`: an `x` appeared in the rights",
+          "💡 **The full symbolic notation**: you target an audience (`u`=you, `g`=group, `o`=others, `a`=all) and add `+` / remove `-` a right (`r`/`w`/`x`). E.g.: `chmod u+x` (execute, for you alone) · `chmod g-w` (remove write from the group) · `chmod a+r` (read for everyone). The other form, in numbers, is just below 👇."
         ],
-        expected: "Avant : -rw-r--r--  install.sh\nAprès : -rwxr-xr-x  install.sh",
-        culture: "Sous Windows, un fichier est « exécutable » selon son extension (`.exe`, `.bat`). Sous Unix, l'extension ne veut RIEN dire : c'est le **bit d'exécution** (`x`) qui décide. Un fichier peut s'appeler `install.sh`, `install`, ou `install.txt` — s'il a le bit `x` et un shebang valide, il tourne. Cette séparation entre nom et permission est plus sûre : un fichier téléchargé n'est pas exécutable par accident, il faut explicitement lui donner le droit.",
-        reflection: "Tu télécharges un script mais `./script.sh` répond « Permission denied ». Pourquoi, et comment corriger ?\n👉 Le fichier n'a pas le bit d'exécution (`x`) — c'est la protection par défaut. `chmod +x script.sh` l'ajoute, et `./script.sh` fonctionne. C'est une sécurité voulue : rien de téléchargé ne s'exécute sans que tu l'autorises explicitement. Le réflexe : `chmod +x` puis lancer.",
+        expected: "Before: -rw-r--r--  install.sh\nAfter: -rwxr-xr-x  install.sh",
+        culture: "On Windows, a file is “executable” based on its extension (`.exe`, `.bat`). On Unix, the extension means NOTHING: it's the **execute bit** (`x`) that decides. A file can be called `install.sh`, `install`, or `install.txt` — if it has the `x` bit and a valid shebang, it runs. This separation between name and permission is safer: a downloaded file isn't executable by accident, you must explicitly grant it the right.",
+        reflection: "You download a script but `./script.sh` answers “Permission denied”. Why, and how do you fix it?\n👉 The file doesn't have the execute bit (`x`) — that's the default protection. `chmod +x script.sh` adds it, and `./script.sh` works. It's an intentional safeguard: nothing downloaded runs unless you explicitly authorize it. The reflex: `chmod +x` then run.",
         check: function(s) { var f = getNode('/home/user/scripts/install.sh'); return !!(f && f.perms && f.perms.indexOf('x') > 0); }
       },
       {
         level: 'advanced',
-        title: 'Permissions numériques',
-        context: "Au lieu de `+x`, on peut fixer TOUS les droits d'un coup avec **trois chiffres** : `chmod 700 fichier`. L'astuce : `r=4`, `w=2`, `x=1`, et on additionne par bloc. `7 = 4+2+1 = rwx` (tout), `5 = 4+0+1 = r-x`, `0 = ---` (rien). Donc `700` = tout pour toi, rien pour le groupe, rien pour les autres.",
-        scene: "`backup.sh` peut contenir des chemins sensibles : tu veux que toi seul puisses le toucher.",
-        mission: "Verrouille `backup.sh` en `700` (accès strictement privé).",
+        title: 'Numeric permissions',
+        context: "Instead of `+x`, you can set ALL the rights at once with **three digits**: `chmod 700 file`. The trick: `r=4`, `w=2`, `x=1`, and you add up per block. `7 = 4+2+1 = rwx` (everything), `5 = 4+0+1 = r-x`, `0 = ---` (nothing). So `700` = everything for you, nothing for the group, nothing for the others.",
+        scene: "`backup.sh` may contain sensitive paths: you want only you to be able to touch it.",
+        mission: "Lock `backup.sh` to `700` (strictly private access).",
         steps: [
-          "Va dans `~/scripts` : `cd ~/scripts`",
-          "Fixe les droits : `chmod 700 backup.sh` (7 = toi tout, 0 = groupe rien, 0 = autres rien)",
-          "Vérifie : `ls -l` → `-rwx------`",
-          "💡 **Les quatre chiffres qu'on tape 99 % du temps** : `644` (fichier normal : toi rw, les autres r) · `755` (dossier ou script partagé : toi rwx, les autres r-x) · `700` (privé total : toi seul) · `600` (fichier de secret : toi rw, personne d'autre). C'est exactement la même chose que la notation symbolique : `chmod 700` = `chmod u=rwx,go=`."
+          "Go to `~/scripts`: `cd ~/scripts`",
+          "Set the rights: `chmod 700 backup.sh` (7 = you everything, 0 = group nothing, 0 = others nothing)",
+          "Check: `ls -l` → `-rwx------`",
+          "💡 **The four numbers you type 99% of the time**: `644` (normal file: you rw, others r) · `755` (folder or shared script: you rwx, others r-x) · `700` (fully private: you alone) · `600` (secret file: you rw, no one else). It's exactly the same as symbolic notation: `chmod 700` = `chmod u=rwx,go=`."
         ],
         expected: "-rwx------  backup.sh",
-        diagram: "Tableau magique :\n  7=rwx  6=rw-  5=r-x\n  4=r--  2=-w-  1=--x\n  0=---",
-        culture: "Ces nombres sont de l'**octal** (base 8) : chaque chiffre code 3 bits de permission. `r=4, w=2, x=1` sont les valeurs des trois bits, et on les additionne. `7 = 4+2+1 = rwx`, `5 = 4+0+1 = r-x`, `6 = 4+2+0 = rw-`. Ce système vient directement des premiers Unix de 1971 et n'a jamais changé — un `chmod 755` tapé aujourd'hui est identique à celui de Ken Thompson il y a 50 ans. C'est l'une des interfaces les plus stables de l'informatique.",
-        reflection: "Quand utiliser `chmod 700` plutôt que `chmod 755` sur un script ?\n👉 `700` (rwx------) = **seul le propriétaire** peut lire, écrire, exécuter. Parfait pour un script contenant des secrets (mots de passe, clés). `755` (rwxr-xr-x) laisse les autres LIRE et EXÉCUTER — utile pour un outil partagé, dangereux pour un script sensible. Règle : le minimum de droits nécessaire, jamais plus.",
+        diagram: "Magic table:\n  7=rwx  6=rw-  5=r-x\n  4=r--  2=-w-  1=--x\n  0=---",
+        culture: "These numbers are **octal** (base 8): each digit encodes 3 permission bits. `r=4, w=2, x=1` are the values of the three bits, and you add them. `7 = 4+2+1 = rwx`, `5 = 4+0+1 = r-x`, `6 = 4+2+0 = rw-`. This system comes straight from the first Unix of 1971 and has never changed — a `chmod 755` typed today is identical to Ken Thompson's 50 years ago. It's one of the most stable interfaces in computing.",
+        reflection: "When should you use `chmod 700` rather than `chmod 755` on a script?\n👉 `700` (rwx------) = **only the owner** can read, write, execute. Perfect for a script containing secrets (passwords, keys). `755` (rwxr-xr-x) lets others READ and EXECUTE — useful for a shared tool, dangerous for a sensitive script. Rule: the minimum rights needed, never more.",
         check: function(s) { var f = getNode('/home/user/scripts/backup.sh'); return !!(f && f.perms === '-rwx------'); }
       },
       {
         level: 'expert',
-        title: 'Changer le propriétaire (chown)',
-        context: "`chown` (*change owner*) change **à qui appartient** un fichier. Réservé à l'administrateur (donc `sudo`). Format : `chown nouveau_propriétaire fichier`. Usage typique en hébergement web : donner les fichiers du site au compte du serveur web, `www-data`.",
-        scene: "Tu veux confier `~/site/index.html` au serveur web (`www-data`) pour qu'il puisse le servir.",
-        mission: "Change le propriétaire de `~/site/index.html` en `www-data`.",
+        title: 'Change the owner (chown)',
+        context: "`chown` (*change owner*) changes **who owns** a file. Reserved for the administrator (so `sudo`). Format: `chown new_owner file`. Typical use in web hosting: give the site's files to the web server's account, `www-data`.",
+        scene: "You want to entrust `~/site/index.html` to the web server (`www-data`) so it can serve it.",
+        mission: "Change the owner of `~/site/index.html` to `www-data`.",
         steps: [
-          "Cette action demande les droits admin, d'où le `sudo`",
-          "Change le propriétaire : `sudo chown www-data:www-data ~/site/index.html`",
-          "Vérifie : `ls -l ~/site` → le propriétaire est devenu `www-data`",
-          "💡 **Les formes de `chown`** : `chown user fichier` (change juste le propriétaire) · `chown user:group fichier` (propriétaire ET groupe d'un coup) · `chown -R www-data:www-data /var/www/monsite` (le `-R` applique à TOUT un dossier et son contenu — l'usage classique en hébergement). Pour ne changer que le groupe : `chgrp group fichier`."
+          "This action requires admin rights, hence the `sudo`",
+          "Change the owner: `sudo chown www-data:www-data ~/site/index.html`",
+          "Check: `ls -l ~/site` → the owner has become `www-data`",
+          "💡 **The forms of `chown`**: `chown user file` (changes just the owner) · `chown user:group file` (owner AND group at once) · `chown -R www-data:www-data /var/www/monsite` (the `-R` applies to a WHOLE folder and its content — the classic hosting use). To change only the group: `chgrp group file`."
         ],
-        expected: "Avant : -rw-r--r--  user       index.html\nAprès : -rw-r--r--  www-data   index.html",
-        culture: "Séparer **propriétaire** (`chown`) et **droits** (`chmod`) donne un contrôle très fin. En hébergement, la combinaison typique : les fichiers appartiennent à `www-data` avec des droits juste suffisants pour être lus par le serveur, jamais plus. Trop de droits sur un fichier web = une porte ouverte si le site est piraté.",
-        reflection: "Pourquoi donner un fichier de site web à `www-data` plutôt que de le laisser à `user` ?\n👉 Parce que c'est le serveur web (qui tourne sous le compte `www-data`) qui doit lire — et parfois écrire — ces fichiers. Lui donner la propriété, c'est lui accorder juste ce qu'il faut, sans ouvrir les droits à tout le monde. Principe du moindre privilège : chacun possède ce dont il a besoin, rien de plus.",
+        expected: "Before: -rw-r--r--  user       index.html\nAfter: -rw-r--r--  www-data   index.html",
+        culture: "Separating **owner** (`chown`) and **rights** (`chmod`) gives very fine control. In hosting, the typical combination: files belong to `www-data` with rights just sufficient to be read by the server, never more. Too many rights on a web file = an open door if the site is hacked.",
+        reflection: "Why give a website file to `www-data` rather than leaving it to `user`?\n👉 Because it's the web server (which runs under the `www-data` account) that must read — and sometimes write — these files. Giving it ownership grants it just what's needed, without opening the rights to everyone. Principle of least privilege: everyone owns what they need, nothing more.",
         check: function(s) { var f = getNode('/home/user/site/index.html'); return !!(f && f.owner === 'www-data'); }
       },
       {
         level: 'expert',
-        title: 'Mini-défi : verrouiller un secret',
-        context: "On combine identité + droits. Objectif concret d'admin : préparer un script qui doit tourner, ET protéger un fichier sensible pour que toi seul puisses le toucher. Le bon dosage des droits, c'est ça la sécurité au quotidien.",
-        scene: "Tu déposes un utilitaire et un script sensible. L'utilitaire doit être exécutable ; le sensible doit être illisible pour les autres.",
-        mission: "Rends `install.sh` exécutable, et verrouille `backup.sh` en accès strictement privé (700).",
+        title: 'Mini-challenge: lock down a secret',
+        context: "We combine identity + rights. A concrete admin goal: prepare a script that must run, AND protect a sensitive file so only you can touch it. The right dosing of rights is exactly what daily security is about.",
+        scene: "You drop a utility and a sensitive script. The utility must be executable; the sensitive one must be unreadable by others.",
+        mission: "Make `install.sh` executable, and lock `backup.sh` to strictly private access (700).",
         steps: [
-          "Va dans `~/scripts` : `cd ~/scripts`",
-          "Rends le script exécutable : `chmod +x install.sh`",
-          "Verrouille l'autre en privé total : `chmod 700 backup.sh`",
-          "Contrôle le résultat : `ls -l`"
+          "Go to `~/scripts`: `cd ~/scripts`",
+          "Make the script executable: `chmod +x install.sh`",
+          "Lock the other to fully private: `chmod 700 backup.sh`",
+          "Check the result: `ls -l`"
         ],
         expected: "-rwxr-xr-x  install.sh\n-rwx------  backup.sh",
-        culture: "« Le moindre privilège » est LA règle d'or de la sécurité : chaque fichier, chaque compte n'a que les droits strictement nécessaires. Un secret en `600`/`700`, un exécutable partagé en `755` : ce dosage fin des droits est ce qui empêche qu'une simple faille sur un service donne accès à tout le reste du système.",
-        reflection: "Pourquoi ne pas simplement tout mettre en `777` (tous les droits pour tout le monde) pour « éviter les soucis » ?\n👉 Parce que `777` = n'importe qui peut lire, modifier ET exécuter — un trou de sécurité béant. C'est la mauvaise habitude n°1 des débutants pressés. Les bons droits ne sont pas ceux qui « évitent les erreurs » sur le moment, mais ceux qui limitent les dégâts en cas de problème.",
+        culture: "“Least privilege” is THE golden rule of security: each file, each account has only the strictly necessary rights. A secret at `600`/`700`, a shared executable at `755`: this fine dosing of rights is what prevents a simple flaw in one service from giving access to the whole rest of the system.",
+        reflection: "Why not just set everything to `777` (all rights for everyone) to “avoid trouble”?\n👉 Because `777` = anyone can read, modify AND execute — a gaping security hole. It's the #1 bad habit of hurried beginners. Good rights aren't the ones that “avoid errors” in the moment, but the ones that limit the damage when a problem occurs.",
         check: function(s) { var i = getNode('/home/user/scripts/install.sh'); var b = getNode('/home/user/scripts/backup.sh'); return !!(i && i.perms && i.perms.indexOf('x') > 0) && !!(b && b.perms === '-rwx------'); }
       }
     ]
