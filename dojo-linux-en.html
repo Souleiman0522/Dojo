@@ -2608,7 +2608,7 @@ var QUESTS = [
         ],
         expected: "$ ls\naccess.log  app.log  data.csv  error.log  notes.txt  todo.txt\n$ ls *.log\naccess.log  app.log  error.log\n$ rm *.log\n$ ls\ndata.csv  notes.txt  todo.txt",
         diagram: "Le shell développe le joker AVANT d'exécuter :\n  tu tapes :      rm *.log\n  le shell voit : app.log  error.log  access.log\n  rm reçoit :     rm app.log error.log access.log",
-        culture: "Point crucial : ce n'est **pas** `rm` (ni `ls`, ni `cp`) qui comprend l'étoile — c'est **le shell** qui développe `*.log` en liste de noms AVANT de lancer la commande. La commande, elle, ne voit que des noms de fichiers normaux. Conséquence : si aucun fichier ne correspond, le motif est passé **tel quel** (`rm *.zip` sans aucun `.zip` → « *.zip : introuvable »). Autre piège célèbre : un espace de trop. `rm * .log` (avec l'espace) = `rm *` (TOUT le dossier) puis `rm .log` — on efface tout par accident. Le joker est puissant : on relit toujours avant Entrée.",
+        culture: "Point crucial : ce n'est **pas** `rm` (ni `ls`, ni `cp`) qui comprend l'étoile — c'est **le shell** qui développe `*.log` en liste de noms AVANT de lancer la commande. La commande, elle, ne voit que des noms de fichiers normaux. Conséquence : si aucun fichier ne correspond, le motif est passé **tel quel** (`rm *.zip` sans aucun `.zip` → « *.zip : not found »). Autre piège célèbre : un espace de trop. `rm * .log` (avec l'espace) = `rm *` (TOUT le dossier) puis `rm .log` — on efface tout par accident. Le joker est puissant : on relit toujours avant Entrée.",
         reflection: "Quelle différence entre `rm fichier*.txt` et `rm fichier?.txt` ?\n👉 `*` remplace **n'importe quelle suite** de caractères (y compris rien) : `fichier*.txt` attrape `fichier.txt`, `fichier1.txt`, `fichier_final.txt`… `?` remplace **exactement un** caractère : `fichier?.txt` attrape `fichier1.txt` mais PAS `fichier.txt` (zéro caractère) ni `fichier12.txt` (deux). `*` = « autant que tu veux », `?` = « un, ni plus ni moins ».",
         setup: function() {
           ensureDir('/home/user/atelier');
@@ -4882,9 +4882,9 @@ function navigateTo(path) {
 // Le niveau (level) existe déjà sur chaque exercice ; on l'expose ici en
 // ceintures FR lisibles, avec une pastille couleur qui monte comme au dojo.
 var BELTS = {
-  beginner:     { sq: '⬜', label: 'Fondation' },
-  intermediate: { sq: '🟩', label: 'Intermédiaire' },
-  advanced:     { sq: '🟥', label: 'Avancé' },
+  beginner:     { sq: '⬜', label: 'Foundation' },
+  intermediate: { sq: '🟩', label: 'Intermediate' },
+  advanced:     { sq: '🟥', label: 'Advanced' },
   expert:       { sq: '⬛', label: 'Expert' }
 };
 var BELT_RANK = { beginner: 1, intermediate: 2, advanced: 3, expert: 4 };
@@ -4986,7 +4986,7 @@ function renderChapterNarrative(qid) {
   var quest = null;
   for (var i = 0; i < QUESTS.length; i++) { if (QUESTS[i].id === qid) { quest = QUESTS[i]; break; } }
   if (!quest) {
-    el.innerHTML = '<div class="content-empty">← Choisis un chapitre à gauche pour lire son récit, puis un exercice.</div>';
+    el.innerHTML = '<div class="content-empty">← Pick a chapter on the left to read its story, then an exercise.</div>';
     return;
   }
   var html = '';
@@ -4996,7 +4996,7 @@ function renderChapterNarrative(qid) {
     var sCol = collapsedNarrative['story:' + quest.id];
     html += '<div class="rpg-scene quest-story' + (sCol ? ' collapsed' : '') + '">';
     html += '<div class="rpg-scene-bar">';
-    html += '<span class="quest-story-label narr-toggle" data-narr="story:' + quest.id + '"><span class="narr-chev">▼</span> 📖 Le récit' + (sCol ? '<span class="narr-read">lu ✓</span>' : '') + '</span>';
+    html += '<span class="quest-story-label narr-toggle" data-narr="story:' + quest.id + '"><span class="narr-chev">▼</span> 📖 The story' + (sCol ? '<span class="narr-read">read ✓</span>' : '') + '</span>';
     if (quest.chapter) html += '<span class="rpg-scene-chap">第' + kanjiNum(quest.chapter) + '章</span>';
     html += '</div>';
     html += '<div class="quest-story-body rpg-stage">';
@@ -5007,12 +5007,12 @@ function renderChapterNarrative(qid) {
   if (quest.mentor) {
     var mCol = collapsedNarrative['mentor:' + quest.id];
     html += '<div class="quest-mentor rpg-scroll' + (mCol ? ' collapsed' : '') + '">';
-    html += '<span class="quest-mentor-label narr-toggle" data-narr="mentor:' + quest.id + '"><span class="narr-chev">▼</span> 📜 La technique du Sensei</span>';
+    html += '<span class="quest-mentor-label narr-toggle" data-narr="mentor:' + quest.id + '"><span class="narr-chev">▼</span> 📜 The Sensei\'s technique</span>';
     html += '<div class="quest-mentor-body">' + formatTextWithCode(quest.mentor) + '</div></div>';
   }
   if (quest.challenge) {
     html += '<div class="quest-challenge rpg-quest">';
-    html += '<div class="quest-challenge-head"><span class="quest-challenge-icon">⚔️</span> Quête du chapitre</div>';
+    html += '<div class="quest-challenge-head"><span class="quest-challenge-icon">⚔️</span> Chapter quest</div>';
     html += '<div class="quest-challenge-title">' + escapeHtml(quest.challenge.title) + '</div>';
     html += '<div class="quest-challenge-body">' + formatTextWithCode(quest.challenge.desc) + '</div>';
     html += '</div>';
@@ -5036,31 +5036,31 @@ function renderExoFeedback(idx){
   var cur = getFbVotes()[idx] || '';
   function a(l){ return cur === l ? ' active' : ''; }
   var h = '<div class="exo-feedback">';
-  h += '<div class="exo-feedback-title">💬 Cet exercice t\'a paru…</div>';
+  h += '<div class="exo-feedback-title">💬 This exercise felt…</div>';
   h += '<div class="exo-feedback-btns">';
-  h += '<button class="fb-diff' + a('facile') + '" data-lvl="facile" onclick="voteDifficulty(' + idx + ',\'facile\')">😌 Facile</button>';
-  h += '<button class="fb-diff' + a('ok') + '" data-lvl="ok" onclick="voteDifficulty(' + idx + ',\'ok\')">🙂 Correct</button>';
-  h += '<button class="fb-diff' + a('dur') + '" data-lvl="dur" onclick="voteDifficulty(' + idx + ',\'dur\')">😰 Difficile</button>';
+  h += '<button class="fb-diff' + a('easy') + '" data-lvl="easy" onclick="voteDifficulty(' + idx + ',\'easy\')">😌 Easy</button>';
+  h += '<button class="fb-diff' + a('ok') + '" data-lvl="ok" onclick="voteDifficulty(' + idx + ',\'ok\')">🙂 OK</button>';
+  h += '<button class="fb-diff' + a('hard') + '" data-lvl="hard" onclick="voteDifficulty(' + idx + ',\'hard\')">😰 Hard</button>';
   h += '</div>';
-  h += '<textarea id="fb-comment" class="exo-feedback-comment" placeholder="Un mot pour le sensei ? (facultatif)"></textarea>';
-  h += '<div class="exo-feedback-foot"><button class="fb-send" onclick="sendExoFeedback(' + idx + ')">📨 Envoyer au sensei</button>';
-  h += '<span id="fb-status" class="fb-status">' + (cur ? '✔ noté « ' + cur + ' »' : '') + '</span></div>';
+  h += '<textarea id="fb-comment" class="exo-feedback-comment" placeholder="A word for the sensei? (optional)"></textarea>';
+  h += '<div class="exo-feedback-foot"><button class="fb-send" onclick="sendExoFeedback(' + idx + ')">📨 Send to the sensei</button>';
+  h += '<span id="fb-status" class="fb-status">' + (cur ? '✔ noted "' + cur + '"' : '') + '</span></div>';
   h += '</div>';
   return h;
 }
 function voteDifficulty(idx, lvl){
   setFbVote(idx, lvl);
   document.querySelectorAll('.exo-feedback .fb-diff').forEach(function(b){ b.classList.toggle('active', b.getAttribute('data-lvl') === lvl); });
-  var s = document.getElementById('fb-status'); if (s) s.textContent = '✔ merci — noté « ' + lvl + ' » 🙏';
+  var s = document.getElementById('fb-status'); if (s) s.textContent = '✔ thanks — noted "' + lvl + '" 🙏';
 }
 function sendExoFeedback(idx){
-  var lvl = getFbVotes()[idx] || '(non noté)';
+  var lvl = getFbVotes()[idx] || '(not rated)';
   var c = document.getElementById('fb-comment'); var comment = c ? (c.value || '').trim() : '';
   var ex = EXERCISES[idx] || {}; var num = idx + 1;
-  var who = (typeof userPseudo !== 'undefined' && userPseudo) ? userPseudo : 'anonyme';
-  var text = ['Retour sur un exercice — Dojo Linux', '', 'Exo ' + num + ' : ' + (ex.title || ''), 'Difficulté ressentie : ' + lvl, 'Commentaire : ' + (comment || '(aucun)'), 'Apprenant : ' + who].join('\n');
-  window.location.href = 'mailto:' + FEEDBACK_EMAIL + '?subject=' + encodeURIComponent('Retour exo ' + num + ' - Dojo Linux') + '&body=' + encodeURIComponent(text);
-  if (typeof showToast === 'function') showToast('✉️ Merci ! Ouverture de ton app mail…');
+  var who = (typeof userPseudo !== 'undefined' && userPseudo) ? userPseudo : 'anonymous';
+  var text = ['Feedback on an exercise — Linux Dojo', '', 'Exercise ' + num + ': ' + (ex.title || ''), 'Perceived difficulty: ' + lvl, 'Comment: ' + (comment || '(none)'), 'Learner: ' + who].join('\n');
+  window.location.href = 'mailto:' + FEEDBACK_EMAIL + '?subject=' + encodeURIComponent('Exercise ' + num + ' feedback - Linux Dojo') + '&body=' + encodeURIComponent(text);
+  if (typeof showToast === 'function') showToast('✉️ Thanks! Opening your mail app…');
 }
 
 function renderActiveExo() {
@@ -5091,7 +5091,7 @@ function renderActiveExo() {
 
   if (ex.context) {
     html += '<div class="exo-section context">';
-    html += '<span class="exo-section-label">📖 Contexte</span>';
+    html += '<span class="exo-section-label">📖 Context</span>';
     html += formatTextWithCode(ex.context);
     html += '</div>';
   }
@@ -5102,12 +5102,12 @@ function renderActiveExo() {
     html += '</div>';
   }
   html += '<div class="exo-section mission">';
-  html += '<span class="exo-section-label">🎯 Objectif</span>';
+  html += '<span class="exo-section-label">🎯 Objective</span>';
   html += formatTextWithCode(ex.mission || '');
   html += '</div>';
   if (ex.steps && ex.steps.length) {
     html += '<div class="exo-section steps">';
-    html += '<span class="exo-section-label">💡 Étapes guidées</span>';
+    html += '<span class="exo-section-label">💡 Guided steps</span>';
     html += '<ol>';
     ex.steps.forEach(function(step) {
       html += '<li>' + formatTextWithCode(step) + '</li>';
@@ -5117,32 +5117,32 @@ function renderActiveExo() {
   }
   if (ex.expected) {
     html += '<div class="exo-section expected">';
-    html += '<span class="exo-section-label">🖥️ Sortie attendue</span>';
+    html += '<span class="exo-section-label">🖥️ Expected output</span>';
     html += escapeHtml(ex.expected);
     html += '</div>';
   }
   if (ex.diagram) {
     html += '<div class="exo-section diagram">';
-    html += '<span class="exo-section-label">📐 Schéma</span>';
+    html += '<span class="exo-section-label">📐 Diagram</span>';
     html += escapeHtml(ex.diagram);
     html += '</div>';
   }
   if (ex.culture) {
     html += '<div class="exo-section culture">';
-    html += '<span class="exo-section-label">📜 Culture Unix</span>';
+    html += '<span class="exo-section-label">📜 Unix culture</span>';
     html += formatTextWithCode(ex.culture);
     html += '</div>';
   }
   if (ex.reflection) {
     html += '<div class="exo-section reflection">';
-    html += '<span class="exo-section-label">🧠 Réflexion</span>';
+    html += '<span class="exo-section-label">🧠 Reflection</span>';
     html += formatTextWithCode(ex.reflection);
     html += '</div>';
   }
 
   // CRITERIA section (linuxzoo style: how it will be tested)
   html += '<div class="exo-section criteria">';
-  html += '<span class="exo-section-label">✓ Critères de validation</span>';
+  html += '<span class="exo-section-label">✓ Validation criteria</span>';
   html += buildCriteriaText(ex);
   html += '</div>';
 
@@ -5151,8 +5151,8 @@ function renderActiveExo() {
 
   // ACTIONS
   html += '<div class="exo-actions">';
-  html += '<button class="neo-btn success" onclick="checkExercise()">▶ Lancer les tests</button>';
-  html += '<button class="neo-btn" onclick="skipExercise()">→ Passer</button>';
+  html += '<button class="neo-btn success" onclick="checkExercise()">▶ Run the tests</button>';
+  html += '<button class="neo-btn" onclick="skipExercise()">→ Skip</button>';
   html += '</div>';
   html += renderExoFeedback(currentExoIdx);
   html += '</div>'; // body
@@ -5171,7 +5171,7 @@ function buildCriteriaText(ex) {
   }
   // Default: show what will be tested
   return '<div style="font-size:0.74rem;color:var(--text-2);margin-top:4px">' +
-    'Le système vérifiera que tu as exécuté la commande correctement et que l\'état du système correspond à l\'objectif. Clique <strong>« Lancer les tests »</strong> pour voir le résultat détaillé.' +
+    'The system will check that you ran the command correctly and that the system state matches the objective. Click <strong>"Run the tests"</strong> to see the detailed result.' +
     '</div>';
 }
 
@@ -5204,7 +5204,7 @@ function loadExercise(idx) {
     if (typeof focusTerminal === 'function') focusTerminal();
     if (typeof updateTermHint === 'function') updateTermHint();
   }, 120);
-  showToast('📝 Exercice ' + (idx + 1) + ' chargé');
+  showToast('📝 Exercise ' + (idx + 1) + ' loaded');
   dimExplorer(); // le monde "dort" jusqu'à la première commande
 }
 
@@ -5240,7 +5240,7 @@ function showReward(ex){
   var xp = xpForLevel(ex.level);
   var el = document.getElementById('reward');
   if (!el){ el = document.createElement('div'); el.id = 'reward'; document.body.appendChild(el); }
-  el.innerHTML = '<div class="reward-card"><div class="reward-check">✔</div><div class="reward-title">Mission accomplie&nbsp;!</div><div class="reward-xp">+' + xp + ' XP</div></div>';
+  el.innerHTML = '<div class="reward-card"><div class="reward-check">✔</div><div class="reward-title">Mission complete!</div><div class="reward-xp">+' + xp + ' XP</div></div>';
   void el.offsetWidth; el.className = 'show';
   clearTimeout(el._t); el._t = setTimeout(function(){ el.className = ''; }, 2600);
 }
@@ -5282,7 +5282,7 @@ function showTestResults(ex, state, passed) {
   var tests = buildTestList(ex, state, passed);
 
   var html = '<div class="test-list">';
-  html += '<div class="test-list-title">Résultats des tests</div>';
+  html += '<div class="test-list-title">Test results</div>';
   tests.forEach(function(t, i) {
     html += '<div class="test-item ' + t.status + '" style="animation-delay:' + (i * 0.05) + 's">';
     html += '<span class="icon">' + (t.status === 'pass' ? '✓' : t.status === 'fail' ? '✗' : '·') + '</span>';
@@ -5292,9 +5292,9 @@ function showTestResults(ex, state, passed) {
   html += '</div>';
 
   if (passed) {
-    html += '<div class="exo-status success" style="margin-top:8px">✓ Lab validé · prochain lab dans 3s</div>';
+    html += '<div class="exo-status success" style="margin-top:8px">✓ Lab passed · next lab in 3s</div>';
   } else {
-    html += '<div class="exo-status fail" style="margin-top:8px">✗ Tests échoués · relis les étapes guidées</div>';
+    html += '<div class="exo-status fail" style="margin-top:8px">✗ Tests failed · re-read the guided steps</div>';
   }
   container.innerHTML = html;
 }
@@ -5411,46 +5411,46 @@ function writePrompt() {
     function () { try { term.scrollToBottom(); } catch (e) {} });
 }
 
-// Commandes Linux RÉELLES mais non simulées ici : on explique au lieu de juste « introuvable ».
-// Chaque valeur se lit à la suite du nom : « init » + « change le niveau… ».
+// REAL Linux commands but not simulated here: we explain instead of just saying "not found".
+// Each value reads right after the name: "init" + "changes the run level…".
 var UNSIM_CMDS = {
-  init: 'change le niveau d’exécution du système (init 0 éteint, init 6 redémarre) — aujourd’hui c’est systemd qui gère ça.',
-  shutdown: 'éteint ou redémarre la machine : shutdown -h now (éteindre), shutdown -r now (redémarrer).',
-  reboot: 'redémarre la machine.',
-  poweroff: 'éteint la machine.',
-  halt: 'arrête le système.',
-  nano: 'est un éditeur de texte simple dans le terminal (le Dojo le couvre au chapitre Éditeurs).',
-  vim: 'est un éditeur de texte puissant, avec des modes insertion / commande (chapitre Éditeurs).',
-  vi: 'est l’ancêtre de vim, présent sur tout Unix.',
-  emacs: 'est un éditeur de texte extensible, rival historique de vim.',
-  apt: 'installe des logiciels sur Debian/Ubuntu : sudo apt install <paquet> (voir le mode Projets et la page Culture).',
-  'apt-get': 'est l’ancienne interface d’installation de paquets Debian/Ubuntu.',
-  dnf: 'installe des paquets sur Fedora/RHEL : sudo dnf install <paquet>.',
-  yum: 'est l’ancien gestionnaire de paquets de Red Hat.',
-  pacman: 'installe des paquets sur Arch Linux : sudo pacman -S <paquet>.',
-  snap: 'installe des applis « universelles » (Canonical).',
-  flatpak: 'installe des applis « universelles » (multi-distros).',
-  ssh: 'ouvre une session sur une machine distante, de façon sécurisée : ssh user@ip (chapitre Réseau & SSH).',
-  scp: 'copie des fichiers vers/depuis une machine distante via SSH.',
-  ping: 'teste si une machine répond sur le réseau : ping 8.8.8.8.',
-  ifconfig: 'affiche la configuration réseau (ancienne commande, remplacée par ip a).',
-  netstat: 'liste les connexions et ports ouverts (voisin moderne : ss).',
-  docker: 'lance des applications en conteneurs (tout un projet lui est dédié dans le Dojo).',
-  make: 'automatise la compilation d’un projet à partir d’un Makefile.',
-  htop: 'est un top en couleur, plus lisible (chapitre Monitoring).',
-  su: 'change d’utilisateur (su - pour devenir root).',
-  passwd: 'change le mot de passe d’un compte.'
+  init: 'changes the system run level (init 0 powers off, init 6 reboots) — nowadays systemd handles this.',
+  shutdown: 'powers off or reboots the machine: shutdown -h now (power off), shutdown -r now (reboot).',
+  reboot: 'reboots the machine.',
+  poweroff: 'powers off the machine.',
+  halt: 'halts the system.',
+  nano: 'is a simple text editor in the terminal (the Dojo covers it in the Editors chapter).',
+  vim: 'is a powerful text editor, with insert / command modes (Editors chapter).',
+  vi: 'is the ancestor of vim, found on every Unix.',
+  emacs: 'is an extensible text editor, vim\'s historic rival.',
+  apt: 'installs software on Debian/Ubuntu: sudo apt install <package> (see the Projects mode and the Culture page).',
+  'apt-get': 'is the older Debian/Ubuntu package-install interface.',
+  dnf: 'installs packages on Fedora/RHEL: sudo dnf install <package>.',
+  yum: 'is Red Hat\'s old package manager.',
+  pacman: 'installs packages on Arch Linux: sudo pacman -S <package>.',
+  snap: 'installs "universal" apps (Canonical).',
+  flatpak: 'installs "universal" apps (cross-distro).',
+  ssh: 'opens a session on a remote machine, securely: ssh user@ip (Network & SSH chapter).',
+  scp: 'copies files to/from a remote machine over SSH.',
+  ping: 'tests whether a machine answers on the network: ping 8.8.8.8.',
+  ifconfig: 'shows the network configuration (old command, replaced by ip a).',
+  netstat: 'lists connections and open ports (modern cousin: ss).',
+  docker: 'runs applications in containers (a whole project is dedicated to it in the Dojo).',
+  make: 'automates building a project from a Makefile.',
+  htop: 'is a colorful top, more readable (Monitoring chapter).',
+  su: 'switches user (su - to become root).',
+  passwd: 'changes an account\'s password.'
 };
 
 function showBanner() {
   term.writeln('');
-  term.writeln('  ' + C.brMagenta + C.bold + '道場' + C.reset + '   ' + C.brYellow + C.bold + 'DOJO DU LINUX' + C.reset);
+  term.writeln('  ' + C.brMagenta + C.bold + '道場' + C.reset + '   ' + C.brYellow + C.bold + 'THE LINUX DOJO' + C.reset);
   term.writeln('  ' + C.dim + '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━' + C.reset);
-  term.writeln('  ' + C.dim + 'コマンドは力なり · La commande est puissance' + C.reset);
+  term.writeln('  ' + C.dim + 'コマンドは力なり · The command is power' + C.reset);
   term.writeln('');
-  term.writeln('  ' + C.dim + 'Apprentissage interactif — Ubuntu 22.04 (simulé)' + C.reset);
-  term.writeln('  ' + C.dim + EXERCISES.length + ' exercices · ' + QUESTS.length + ' chapitres' + C.reset);
-  term.writeln('  ' + C.dim + 'Tapez ' + C.brYellow + 'help' + C.dim + ' pour les commandes' + C.reset);
+  term.writeln('  ' + C.dim + 'Interactive learning — Ubuntu 22.04 (simulated)' + C.reset);
+  term.writeln('  ' + C.dim + EXERCISES.length + ' exercises · ' + QUESTS.length + ' chapters' + C.reset);
+  term.writeln('  ' + C.dim + 'Type ' + C.brYellow + 'help' + C.dim + ' for the commands' + C.reset);
   term.writeln('');
 }
 function showWelcome() {
@@ -5548,7 +5548,7 @@ function parseAndExecute(cmd) {
     var fileName = dstPath.split('/').pop();
     var parent = getNode(parentPath);
     if (!parent || !parent.children) {
-      term.writeln(C.red + 'redirection: dossier introuvable' + C.reset);
+      term.writeln(C.red + 'redirection: directory not found' + C.reset);
     } else {
       var existing = parent.children[fileName];
       if (redirOp === '>>' && existing) {
@@ -5631,10 +5631,10 @@ function _permOctal(p) {
   return '0' + o;
 }
 function cmdStat(args) {
-  if (!args.length) { term.writeln(C.red + 'stat: opérande manquante' + C.reset); return; }
+  if (!args.length) { term.writeln(C.red + 'stat: missing operand' + C.reset); return; }
   args.forEach(function (a) {
     var node = getNode(resolvePath(a));
-    if (!node) { term.writeln(C.red + 'stat: ' + a + ': introuvable' + C.reset); return; }
+    if (!node) { term.writeln(C.red + 'stat: ' + a + ': not found' + C.reset); return; }
     var type = node.type === 'dir' ? 'répertoire' : (node.type === 'exec' ? 'fichier exécutable' : 'fichier');
     term.writeln('  Fichier : ' + a);
     term.writeln('   Taille : ' + (node.size || '0') + '        Type : ' + type);
@@ -5642,10 +5642,10 @@ function cmdStat(args) {
   });
 }
 function cmdFile(args) {
-  if (!args.length) { term.writeln(C.red + 'file: opérande manquante' + C.reset); return; }
+  if (!args.length) { term.writeln(C.red + 'file: missing operand' + C.reset); return; }
   args.forEach(function (a) {
     var node = getNode(resolvePath(a));
-    if (!node) { term.writeln(C.red + a + ': introuvable' + C.reset); return; }
+    if (!node) { term.writeln(C.red + a + ': not found' + C.reset); return; }
     var d = node.type === 'dir' ? 'directory' : (node.type === 'exec' ? 'ELF 64-bit executable' : (/\.sh$/.test(a) ? 'Bourne-Again shell script, ASCII text' : 'ASCII text'));
     term.writeln(a + ': ' + d);
   });
@@ -5668,28 +5668,28 @@ function _readFileArg(a) {
 }
 function cmdRev(args) {
   var a = (args || []).filter(function (x) { return x.charAt(0) !== '-'; })[0];
-  if (!a) { term.writeln(C.dim + 'rev: donne un fichier (ex. rev notes.txt) ou utilise un pipe' + C.reset); return; }
+  if (!a) { term.writeln(C.dim + 'rev: give a file (e.g. rev notes.txt) or use a pipe' + C.reset); return; }
   var c = _readFileArg(a);
-  if (c == null) { term.writeln(C.red + 'rev: ' + a + ': introuvable' + C.reset); return; }
+  if (c == null) { term.writeln(C.red + 'rev: ' + a + ': not found' + C.reset); return; }
   c.split('\n').forEach(function (l) { term.writeln(l.split('').reverse().join('')); });
 }
 function cmdSortFile(args) {
   var a = (args || []).filter(function (x) { return x.charAt(0) !== '-'; })[0];
-  if (!a) { term.writeln(C.dim + 'sort: donne un fichier (ex. sort noms.txt)' + C.reset); return; }
+  if (!a) { term.writeln(C.dim + 'sort: give a file (e.g. sort names.txt)' + C.reset); return; }
   var c = _readFileArg(a);
-  if (c == null) { term.writeln(C.red + 'sort: ' + a + ': introuvable' + C.reset); return; }
+  if (c == null) { term.writeln(C.red + 'sort: ' + a + ': not found' + C.reset); return; }
   c.split('\n').sort().forEach(function (l) { term.writeln(l); });
 }
 function cmdUniqFile(args) {
   var a = (args || []).filter(function (x) { return x.charAt(0) !== '-'; })[0];
-  if (!a) { term.writeln(C.dim + 'uniq: donne un fichier (ex. uniq noms.txt)' + C.reset); return; }
+  if (!a) { term.writeln(C.dim + 'uniq: give a file (e.g. uniq names.txt)' + C.reset); return; }
   var c = _readFileArg(a);
-  if (c == null) { term.writeln(C.red + 'uniq: ' + a + ': introuvable' + C.reset); return; }
+  if (c == null) { term.writeln(C.red + 'uniq: ' + a + ': not found' + C.reset); return; }
   var prev = null;
   c.split('\n').forEach(function (l) { if (l !== prev) term.writeln(l); prev = l; });
 }
 function cmdCowsay(args) {
-  var msg = (args.join(' ') || 'Meuh !');
+  var msg = (args.join(' ') || 'Moo!');
   term.writeln(' ' + _rep('_', msg.length + 2));
   term.writeln('< ' + msg + ' >');
   term.writeln(' ' + _rep('-', msg.length + 2));
@@ -5704,7 +5704,7 @@ function cmdAlias() {
   term.writeln("alias la='ls -A'");
   term.writeln("alias ..='cd ..'");
   term.writeln("alias grep='grep --color=auto'");
-  term.writeln(C.dim + '(exemples — un alias = un raccourci de commande, à mettre dans ~/.bashrc)' + C.reset);
+  term.writeln(C.dim + '(examples — an alias = a command shortcut, put it in ~/.bashrc)' + C.reset);
 }
 function safeCalc(expr) {
   expr = String(expr).trim();
@@ -5767,7 +5767,7 @@ function runCmdWithInput(cmd, input) {
   var args = parts.slice(1);
   if (c === 'grep') {
     var pattern = args[0];
-    if (!pattern) { term.writeln(C.red + 'grep: pattern manquant' + C.reset); return; }
+    if (!pattern) { term.writeln(C.red + 'grep: missing pattern' + C.reset); return; }
     input.split('\n').forEach(function(line) {
       if (line.indexOf(pattern) >= 0) term.writeln(line);
     });
@@ -5956,13 +5956,13 @@ function runSingleCommand(cmd) {
             term.writeln(C.dim + 'Astuce : `chmod +x ' + fname + '` pour rendre exécutable' + C.reset);
           }
         } else {
-          term.writeln(C.red + 'bash: ' + command + ': introuvable' + C.reset);
+          term.writeln(C.red + 'bash: ' + command + ': not found' + C.reset);
         }
       } else if (UNSIM_CMDS[command]) {
         term.writeln(C.brYellow + command + C.reset + C.dim + ' — vraie commande Linux, mais non simulée dans le Dojo.' + C.reset);
         term.writeln('  ' + C.brCyan + '↳ ' + command + ' ' + C.reset + C.dim + UNSIM_CMDS[command] + C.reset);
       } else {
-        term.writeln(C.red + command + ': commande introuvable' + C.reset);
+        term.writeln(C.red + command + ': command not found' + C.reset);
         term.writeln(C.dim + 'Tapez ' + C.brYellow + 'help' + C.dim + ' pour la liste des commandes disponibles' + C.reset);
       }
   }
@@ -5977,7 +5977,7 @@ function cmdGit(args) {
     return;
   }
   if (sub === 'init') {
-    if (g.initialized) { term.writeln(C.yellow + "Dépôt Git déjà initialisé dans ce dossier" + C.reset); return; }
+    if (g.initialized) { term.writeln(C.yellow + "Git repository already initialized in this folder" + C.reset); return; }
     g.initialized = true;
     term.writeln(C.brGreen + "Initialized empty Git repository in " + cwd + "/.git/" + C.reset);
     return;
@@ -6043,7 +6043,7 @@ function cmdGit(args) {
   if (sub === 'commit') {
     var mi = args.indexOf('-m');
     if (mi < 0 || !args[mi + 1]) {
-      term.writeln(C.red + "Aborting commit: message manquant. Utilise git commit -m \"message\"" + C.reset);
+      term.writeln(C.red + "Aborting commit: missing message. Use git commit -m \"message\"" + C.reset);
       return;
     }
     if (!g.staged.length) {
@@ -6062,7 +6062,7 @@ function cmdGit(args) {
     return;
   }
   if (sub === 'log') {
-    if (!g.commits.length) { term.writeln(C.dim + "Aucun commit pour l'instant." + C.reset); return; }
+    if (!g.commits.length) { term.writeln(C.dim + "No commits yet." + C.reset); return; }
     g.commits.slice().reverse().forEach(function(c) {
       term.writeln(C.brYellow + "commit " + c.hash + c.hash + c.hash.slice(0,5) + C.reset);
       term.writeln("Author: user <user@dojo>");
@@ -6111,7 +6111,7 @@ function cmdTar(args) {
   if (list) {
     var a = sysState.archives[archive];
     if (a) a.forEach(function(f) { term.writeln(f); });
-    else term.writeln(C.red + "tar: " + archive + ": introuvable" + C.reset);
+    else term.writeln(C.red + "tar: " + archive + ": not found" + C.reset);
     return;
   }
   if (extract) {
@@ -6120,7 +6120,7 @@ function cmdTar(args) {
     if (a2) a2.forEach(function(f) { term.writeln(C.dim + "  " + f + C.reset); });
     return;
   }
-  term.writeln(C.dim + "usage: tar -czf archive.tar.gz fichiers…  |  -xzf  |  -tzf" + C.reset);
+  term.writeln(C.dim + "usage: tar -czf archive.tar.gz files…  |  -xzf  |  -tzf" + C.reset);
 }
 function cmdGzip(args) {
   var f = args[args.length - 1];
@@ -6183,7 +6183,7 @@ function cmdLs(args) {
     var files = [], dirs = [];
     nonFlag.forEach(function(t) {
       var nd = getNode(resolvePath(t));
-      if (!nd) { term.writeln(C.red + 'ls: ' + t + ': introuvable' + C.reset); }
+      if (!nd) { term.writeln(C.red + 'ls: ' + t + ': not found' + C.reset); }
       else if (nd.type === 'dir') dirs.push([t, nd]);
       else files.push([t, nd]);
     });
@@ -6202,7 +6202,7 @@ function cmdLs(args) {
   var target = nonFlag.length ? nonFlag[0] : cwd;
   var path = resolvePath(target);
   var node = getNode(path);
-  if (!node) { term.writeln(C.red + 'ls: ' + target + ': introuvable' + C.reset); return; }
+  if (!node) { term.writeln(C.red + 'ls: ' + target + ': not found' + C.reset); return; }
   if (node.type !== 'dir') { term.writeln(target); return; }
   lsDir(node, showAll, longFmt);
   // Le terminal pilote « le monde » : lister le dossier courant ré-anime l'explorateur
@@ -6213,18 +6213,18 @@ function cmdCd(args) {
   if (!args.length || args[0] === '~') { cwd = '/home/user'; renderFs(); return; }
   var newPath = resolvePath(args[0]);
   var node = getNode(newPath);
-  if (!node) { term.writeln(C.red + 'cd: ' + args[0] + ': introuvable' + C.reset); return; }
-  if (node.type !== 'dir') { term.writeln(C.red + 'cd: ' + args[0] + ': pas un dossier' + C.reset); return; }
+  if (!node) { term.writeln(C.red + 'cd: ' + args[0] + ': not found' + C.reset); return; }
+  if (node.type !== 'dir') { term.writeln(C.red + 'cd: ' + args[0] + ': not a directory' + C.reset); return; }
   cwd = newPath;
   renderFs();
 }
 
 function cmdCat(args) {
-  if (!args.length) { term.writeln(C.red + 'cat: opérande manquante' + C.reset); return; }
+  if (!args.length) { term.writeln(C.red + 'cat: missing operand' + C.reset); return; }
   args.forEach(function(arg) {
     var node = getNode(resolvePath(arg));
-    if (!node) { term.writeln(C.red + 'cat: ' + arg + ': introuvable' + C.reset); return; }
-    if (node.type === 'dir') { term.writeln(C.red + 'cat: ' + arg + ': est un dossier' + C.reset); return; }
+    if (!node) { term.writeln(C.red + 'cat: ' + arg + ': not found' + C.reset); return; }
+    if (node.type === 'dir') { term.writeln(C.red + 'cat: ' + arg + ': is a directory' + C.reset); return; }
     var fileName = arg.split('/').pop();
     var content = FILE_CONTENTS[fileName] || '(contenu binaire ou vide)';
     content.split('\n').forEach(function(l) { term.writeln(l); });
@@ -6419,10 +6419,10 @@ function expandBraces(args) {
 }
 
 function cmdMkdir(args) {
-  if (!args.length) { term.writeln(C.red + 'mkdir: opérande manquante' + C.reset); return; }
+  if (!args.length) { term.writeln(C.red + 'mkdir: missing operand' + C.reset); return; }
   var parents = args.some(function(a) { return /^-\w*p/.test(a); });
   var targets = args.filter(function(a) { return a.charAt(0) !== '-'; });
-  if (!targets.length) { term.writeln(C.red + 'mkdir: opérande manquante' + C.reset); return; }
+  if (!targets.length) { term.writeln(C.red + 'mkdir: missing operand' + C.reset); return; }
   // Expansion d'accolades : monprojet/{src,docs} -> monprojet/src monprojet/docs
   var expanded = [];
   targets.forEach(function(t) {
@@ -6443,12 +6443,12 @@ function cmdMkdir(args) {
       var name = parts[i];
       var isLast = (i === parts.length - 1);
       if (cur.children[name]) {
-        if (isLast && !parents) { term.writeln(C.red + 'mkdir: ' + path + ': existe déjà' + C.reset); }
+        if (isLast && !parents) { term.writeln(C.red + 'mkdir: ' + path + ': already exists' + C.reset); }
         cur = cur.children[name];
         if (!cur.children) return;
       } else {
         if (!isLast && !parents) {
-          term.writeln(C.red + 'mkdir: impossible de créer « ' + path +' » : dossier parent inexistant (utilise -p)' + C.reset);
+          term.writeln(C.red + 'mkdir: cannot create "' + path +'": parent directory does not exist (use -p)' + C.reset);
           return;
         }
         cur.children[name] = { type: 'dir', perms: 'drwxr-xr-x', owner: sysState.user, children: {} };
@@ -6462,7 +6462,7 @@ function cmdMkdir(args) {
 }
 
 function cmdTouch(args) {
-  if (!args.length) { term.writeln(C.red + 'touch: opérande manquante' + C.reset); return; }
+  if (!args.length) { term.writeln(C.red + 'touch: missing operand' + C.reset); return; }
   var node = getNode(cwd);
   if (!node || !node.children) return;
   args.forEach(function(name) {
@@ -6478,14 +6478,14 @@ function cmdTouch(args) {
 function cmdRm(args) {
   var force = args.some(function(a) { return /^-.*[rR]/.test(a); });
   var nonFlag = args.filter(function(a) { return a.charAt(0) !== '-'; });
-  if (!nonFlag.length) { term.writeln(C.red + 'rm: opérande manquante' + C.reset); return; }
+  if (!nonFlag.length) { term.writeln(C.red + 'rm: missing operand' + C.reset); return; }
   nonFlag.forEach(function(target) {
     var node = getNode(cwd);
     if (!node || !node.children || !node.children[target]) {
-      term.writeln(C.red + 'rm: ' + target + ': introuvable' + C.reset); return;
+      term.writeln(C.red + 'rm: ' + target + ': not found' + C.reset); return;
     }
     if (node.children[target].type === 'dir' && !force) {
-      term.writeln(C.red + 'rm: ' + target + ': dossier (utilisez -r)' + C.reset); return;
+      term.writeln(C.red + 'rm: ' + target + ': directory (use -r)' + C.reset); return;
     }
     delete node.children[target];
   });
@@ -6495,19 +6495,19 @@ function cmdRm(args) {
 function cmdCp(args) {
   args = expandBraces(args);
   args = args.filter(function(a) { return a.charAt(0) !== '-' || a === '-'; }); // on ignore les options (ex. -r)
-  if (args.length < 2) { term.writeln(C.red + 'cp: opérandes manquantes' + C.reset); return; }
+  if (args.length < 2) { term.writeln(C.red + 'cp: missing operands' + C.reset); return; }
   var dst = args[args.length - 1];
   var srcs = args.slice(0, -1);
   var dstPath = resolvePath(dst);
   var dstNode = getNode(dstPath);
   // Plusieurs sources (souvent issues d'un joker : cp *.txt sauv/) : la destination DOIT être un dossier
   if (srcs.length > 1 && !(dstNode && dstNode.type === 'dir')) {
-    term.writeln(C.red + 'cp: la cible « ' + dst + ' » doit être un dossier' + C.reset); return;
+    term.writeln(C.red + 'cp: target "' + dst + '" must be a directory' + C.reset); return;
   }
   srcs.forEach(function(src) {
     var srcPath = resolvePath(src);
     var srcNode = getNode(srcPath);
-    if (!srcNode) { term.writeln(C.red + 'cp: ' + src + ': introuvable' + C.reset); return; }
+    if (!srcNode) { term.writeln(C.red + 'cp: ' + src + ': not found' + C.reset); return; }
     var srcName = srcPath.split('/').pop();
     if (dstNode && dstNode.type === 'dir') {
       // copie dans un dossier, on garde le nom de la source
@@ -6518,7 +6518,7 @@ function cmdCp(args) {
       var fileName = dstPath.split('/').pop();
       var parent = getNode(parentPath);
       if (!parent || !parent.children) {
-        term.writeln(C.red + 'cp: dossier de destination introuvable' + C.reset); return;
+        term.writeln(C.red + 'cp: destination directory not found' + C.reset); return;
       }
       parent.children[fileName] = JSON.parse(JSON.stringify(srcNode));
       if (FILE_CONTENTS[srcName] != null) FILE_CONTENTS[fileName] = FILE_CONTENTS[srcName];
@@ -6529,14 +6529,14 @@ function cmdCp(args) {
 }
 
 function cmdMv(args) {
-  if (args.length < 2) { term.writeln(C.red + 'mv: opérandes manquantes' + C.reset); return; }
+  if (args.length < 2) { term.writeln(C.red + 'mv: missing operands' + C.reset); return; }
   var dst = args[args.length - 1];
   var srcs = args.slice(0, -1);
   var dstPath = resolvePath(dst);
   var dstNode = getNode(dstPath);
   // Plusieurs sources (souvent issues d'un joker : mv *.log archives/) : la destination DOIT être un dossier
   if (srcs.length > 1 && !(dstNode && dstNode.type === 'dir')) {
-    term.writeln(C.red + 'mv: la cible « ' + dst + ' » doit être un dossier' + C.reset); return;
+    term.writeln(C.red + 'mv: target "' + dst + '" must be a directory' + C.reset); return;
   }
   srcs.forEach(function(src) {
     var srcPath = resolvePath(src);
@@ -6544,7 +6544,7 @@ function cmdMv(args) {
     var srcName = srcPath.split('/').pop();
     var srcParent = getNode(srcParentPath);
     if (!srcParent || !srcParent.children || !srcParent.children[srcName]) {
-      term.writeln(C.red + 'mv: ' + src + ': introuvable' + C.reset); return;
+      term.writeln(C.red + 'mv: ' + src + ': not found' + C.reset); return;
     }
     if (dstNode && dstNode.type === 'dir') {
       dstNode.children[srcName] = srcParent.children[srcName];
@@ -6555,7 +6555,7 @@ function cmdMv(args) {
       var dstName = dstPath.split('/').pop();
       var dstParent = getNode(dstParentPath);
       if (!dstParent || !dstParent.children) {
-        term.writeln(C.red + 'mv: destination introuvable' + C.reset); return;
+        term.writeln(C.red + 'mv: destination not found' + C.reset); return;
       }
       dstParent.children[dstName] = srcParent.children[srcName];
       delete srcParent.children[srcName];
@@ -6568,7 +6568,7 @@ function cmdMv(args) {
 function cmdTree(args) {
   var startPath = args[0] ? resolvePath(args[0]) : cwd;
   var startNode = getNode(startPath);
-  if (!startNode) { term.writeln(C.red + 'tree: introuvable' + C.reset); return; }
+  if (!startNode) { term.writeln(C.red + 'tree: not found' + C.reset); return; }
   term.writeln(C.brBlue + startPath + C.reset);
   var dirs = 0, files = 0;
   function walk(node, prefix, depth) {
@@ -6605,7 +6605,7 @@ function cmdChmod(args) {
   var mode = args[0];
   var target = args[1];
   var node = getNode(resolvePath(target));
-  if (!node) { term.writeln(C.red + 'chmod: ' + target + ': introuvable' + C.reset); return; }
+  if (!node) { term.writeln(C.red + 'chmod: ' + target + ': not found' + C.reset); return; }
 
   var currentPerms = node.perms || '-rw-r--r--';
   var typeChar = currentPerms.charAt(0);
@@ -6658,7 +6658,7 @@ function cmdChown(args, sudo) {
   var ownership = args[0];
   var target = args[1];
   var node = getNode(resolvePath(target));
-  if (!node) { term.writeln(C.red + 'chown: ' + target + ': introuvable' + C.reset); return; }
+  if (!node) { term.writeln(C.red + 'chown: ' + target + ': not found' + C.reset); return; }
   var newOwner = ownership.split(':')[0];
   node.owner = newOwner;
   highlighted = target.split('/').pop();
@@ -6753,7 +6753,7 @@ function cmdKill(args) {
     return true;
   });
   if (!found) {
-    term.writeln(C.red + 'kill: (' + pid + '): processus introuvable' + C.reset);
+    term.writeln(C.red + 'kill: (' + pid + '): no such process' + C.reset);
   }
 }
 
@@ -6761,10 +6761,10 @@ function cmdGrep(args) {
   if (args.length < 1) { term.writeln(C.red + 'grep: pattern requis' + C.reset); return; }
   var pattern = args[0];
   var files = args.slice(1).filter(function(a) { return a.charAt(0) !== '-'; });
-  if (!files.length) { term.writeln(C.red + 'grep: fichier manquant' + C.reset); return; }
+  if (!files.length) { term.writeln(C.red + 'grep: missing file' + C.reset); return; }
   files.forEach(function(file) {
     var node = getNode(resolvePath(file));
-    if (!node) { term.writeln(C.red + 'grep: ' + file + ': introuvable' + C.reset); return; }
+    if (!node) { term.writeln(C.red + 'grep: ' + file + ': not found' + C.reset); return; }
     var fname = file.split('/').pop();
     var content = FILE_CONTENTS[fname] || '';
     content.split('\n').forEach(function(line) {
@@ -6783,10 +6783,10 @@ function cmdHead(args) {
   var files = args.filter(function(a, i) {
     return a.charAt(0) !== '-' && (iN < 0 || i !== iN + 1);
   });
-  if (!files.length) { term.writeln(C.red + 'head: fichier manquant' + C.reset); return; }
+  if (!files.length) { term.writeln(C.red + 'head: missing file' + C.reset); return; }
   var file = files[files.length - 1];
   var node = getNode(resolvePath(file));
-  if (!node) { term.writeln(C.red + 'head: ' + file + ': introuvable' + C.reset); return; }
+  if (!node) { term.writeln(C.red + 'head: ' + file + ': not found' + C.reset); return; }
   var fname = file.split('/').pop();
   var content = FILE_CONTENTS[fname] || '';
   content.split('\n').slice(0, n).forEach(function(l) { term.writeln(l); });
@@ -6799,10 +6799,10 @@ function cmdTail(args) {
   var files = args.filter(function(a, i) {
     return a.charAt(0) !== '-' && (iN < 0 || i !== iN + 1);
   });
-  if (!files.length) { term.writeln(C.red + 'tail: fichier manquant' + C.reset); return; }
+  if (!files.length) { term.writeln(C.red + 'tail: missing file' + C.reset); return; }
   var file = files[files.length - 1];
   var node = getNode(resolvePath(file));
-  if (!node) { term.writeln(C.red + 'tail: ' + file + ': introuvable' + C.reset); return; }
+  if (!node) { term.writeln(C.red + 'tail: ' + file + ': not found' + C.reset); return; }
   var fname = file.split('/').pop();
   var content = FILE_CONTENTS[fname] || '';
   var lines = content.split('\n');
@@ -6813,10 +6813,10 @@ function cmdWc(args) {
   var lOnly = args.indexOf('-l') >= 0;
   var wOnly = args.indexOf('-w') >= 0;
   var files = args.filter(function(a) { return a.charAt(0) !== '-'; });
-  if (!files.length) { term.writeln(C.red + 'wc: fichier manquant' + C.reset); return; }
+  if (!files.length) { term.writeln(C.red + 'wc: missing file' + C.reset); return; }
   var file = files[0];
   var node = getNode(resolvePath(file));
-  if (!node) { term.writeln(C.red + 'wc: ' + file + ': introuvable' + C.reset); return; }
+  if (!node) { term.writeln(C.red + 'wc: ' + file + ': not found' + C.reset); return; }
   var fname = file.split('/').pop();
   var content = FILE_CONTENTS[fname] || '';
   var lines = content.split('\n').length;
@@ -6832,7 +6832,7 @@ function cmdFind(args) {
   var nameIdx = args.indexOf('-name');
   var pattern = (nameIdx >= 0 && args[nameIdx + 1]) ? args[nameIdx + 1].replace(/['"]/g, '') : null;
   var startNode = getNode(startPath);
-  if (!startNode) { term.writeln(C.red + 'find: introuvable' + C.reset); return; }
+  if (!startNode) { term.writeln(C.red + 'find: not found' + C.reset); return; }
   function walk(node, path) {
     if (!node) return;
     if (!pattern || matchesGlob(path.split('/').pop(), pattern)) term.writeln(path);
@@ -6943,7 +6943,7 @@ function _virtPad(s, n) { s = String(s); while (s.length < n) s += ' '; return s
 
 function cmdVirsh(args, sudo) {
   if (!sysState.virt.installed) {
-    term.writeln(C.red + 'virsh : commande introuvable' + C.reset);
+    term.writeln(C.red + 'virsh: command not found' + C.reset);
     term.writeln(C.dim + "(installe d'abord : sudo apt install qemu-kvm libvirt-daemon-system)" + C.reset);
     return;
   }
@@ -7000,7 +7000,7 @@ function cmdVirsh(args, sudo) {
 }
 
 function cmdVirtInstall(args, sudo) {
-  if (!sysState.virt.installed) { term.writeln(C.red + 'virt-install : commande introuvable' + C.reset); return; }
+  if (!sysState.virt.installed) { term.writeln(C.red + 'virt-install: command not found' + C.reset); return; }
   var name = null;
   for (var i = 0; i < args.length; i++) {
     if (args[i] === '--name' && args[i + 1]) name = args[i + 1];
@@ -7064,7 +7064,7 @@ function cmdSystemctl(args, sudo) {
       term.writeln(s + '.service  ' + (sv.active ? 'active' : 'inactive') + '  ' + (sv.enabled ? 'enabled' : 'disabled'));
     });
   } else {
-    term.writeln(C.red + 'systemctl: action inconnue: ' + action + C.reset);
+    term.writeln(C.red + 'systemctl: unknown action: ' + action + C.reset);
   }
 }
 
@@ -7102,7 +7102,7 @@ function cmdUfw(args, sudo) {
   } else if (action === 'deny') {
     term.writeln('Rule added (deny)');
   } else {
-    term.writeln(C.red + 'ufw: action inconnue: ' + action + C.reset);
+    term.writeln(C.red + 'ufw: unknown action: ' + action + C.reset);
     term.writeln(C.dim + '(actions : status, enable, disable, allow, deny)' + C.reset);
   }
 }
@@ -7218,7 +7218,7 @@ function cmdEcho(args) {
 function cmdUseradd(args, sudo) {
   if (!sudo && !sysState.isRoot) { term.writeln(C.red + 'useradd: requires root (utilisez sudo)' + C.reset); return; }
   var name = args[args.length - 1];
-  if (!name || name.charAt(0) === '-') { term.writeln(C.red + 'useradd: nom utilisateur manquant' + C.reset); return; }
+  if (!name || name.charAt(0) === '-') { term.writeln(C.red + 'useradd: missing username' + C.reset); return; }
   var hasM = args.indexOf('-m') >= 0;
   var sIdx = args.indexOf('-s');
   var shell = sIdx >= 0 && args[sIdx + 1] ? args[sIdx + 1] : '/bin/sh';
@@ -7246,7 +7246,7 @@ function cmdUserdel(args, sudo) {
   if (!sudo && !sysState.isRoot) { term.writeln(C.red + 'userdel: requires root' + C.reset); return; }
   var force = args.indexOf('-r') >= 0;
   var name = args[args.length - 1];
-  if (!name || name.charAt(0) === '-') { term.writeln(C.red + 'userdel: nom utilisateur manquant' + C.reset); return; }
+  if (!name || name.charAt(0) === '-') { term.writeln(C.red + 'userdel: missing username' + C.reset); return; }
   // Remove from /etc/passwd
   var pw = FILE_CONTENTS['passwd'] || '';
   FILE_CONTENTS['passwd'] = pw.split('\n').filter(function(l) { return l.indexOf(name + ':') !== 0; }).join('\n');
@@ -7392,7 +7392,7 @@ function cmdVmstat(args) {
 
 function cmdNano(args) {
   var fname = args[0];
-  if (!fname) { term.writeln(C.dim + '(nano: ouvrir un fichier requis)' + C.reset); return; }
+  if (!fname) { term.writeln(C.dim + '(nano: a file to open is required)' + C.reset); return; }
   var path = resolvePath(fname);
   var node = getNode(path);
   term.writeln(C.brYellow + '╔══════════════════════════════════════════════════════════════════╗' + C.reset);
@@ -7403,7 +7403,7 @@ function cmdNano(args) {
     var lines = content.split('\n').slice(0, 5);
     lines.forEach(function(l) { term.writeln(C.brYellow + '║' + C.reset + ' ' + (l + '                                                                  ').slice(0, 64) + C.brYellow + ' ║' + C.reset); });
   } else {
-    term.writeln(C.brYellow + '║' + C.reset + C.dim + ' (nouveau fichier)                                                ' + C.brYellow + '║' + C.reset);
+    term.writeln(C.brYellow + '║' + C.reset + C.dim + ' (new file)                                                      ' + C.brYellow + '║' + C.reset);
   }
   term.writeln(C.brYellow + '╚══════════════════════════════════════════════════════════════════╝' + C.reset);
   term.writeln(C.dim + '^G Aide   ^O Écrire   ^X Quitter   ^W Chercher   ^K Couper' + C.reset);
@@ -7431,9 +7431,9 @@ function cmdVim(args) {
     term.writeln('"' + fname + '" ' + lines.length + 'L, ' + content.length + 'C                              1,1   All');
   } else {
     term.writeln(C.dim + '~' + C.reset);
-    term.writeln(C.dim + '"' + fname + '" [Nouveau fichier]' + C.reset);
+    term.writeln(C.dim + '"' + fname + '" [New file]' + C.reset);
   }
-  term.writeln(C.dim + '(simulation vim — modes : NORMAL → i pour INSERT, Esc → NORMAL, :q quit)' + C.reset);
+  term.writeln(C.dim + '(vim simulation — modes: NORMAL → i for INSERT, Esc → NORMAL, :q quit)' + C.reset);
 }
 
 function cmdEnv() {
@@ -7442,23 +7442,23 @@ function cmdEnv() {
   term.writeln('HOME=/home/' + sysState.user);
   term.writeln('PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin');
   term.writeln('PWD=' + cwd);
-  term.writeln('LANG=fr_FR.UTF-8');
+  term.writeln('LANG=en_US.UTF-8');
   term.writeln('TERM=xterm-256color');
 }
 
 function cmdHelp() {
   term.writeln('');
-  term.writeln(C.brMagenta + C.bold + '═══ Commandes disponibles ═══' + C.reset);
+  term.writeln(C.brMagenta + C.bold + '═══ Available commands ═══' + C.reset);
   var sections = [
-    ['NAVIGATION', [['pwd', 'chemin courant'], ['ls [-la]', 'liste'], ['cd <path>', 'change dossier'], ['tree [path]', 'arborescence']]],
-    ['FICHIERS', [['cat <file>', 'affiche'], ['mkdir <name>', 'crée dossier'], ['touch <file>', 'crée fichier'], ['rm [-r] <name>', 'supprime'], ['cp/mv', 'copie/déplace'], ['find [-name]', 'recherche']]],
-    ['LECTURE', [['head/tail [-n]', 'début/fin'], ['grep <pat> <f>', 'recherche'], ['wc [-l|-w]', 'compte'], ['less <file>', 'paginer']]],
-    ['PERMISSIONS', [['chmod [+x|755]', 'permissions'], ['chown user:grp', 'propriétaire'], ['whoami / id', 'identité'], ['sudo cmd', 'privilèges']]],
-    ['PROCESSUS', [['ps [aux]', 'liste'], ['top', 'temps réel'], ['kill <PID>', 'tue']]],
-    ['SERVICES', [['systemctl status', 'état service'], ['systemctl start/stop', 'gérer'], ['systemctl enable', 'au boot']]],
-    ['SYSTÈME', [['df -h / du -sh', 'disque'], ['ufw status', 'pare-feu'], ['ifconfig / ip', 'réseau'], ['date / hostname', 'infos']]],
-    ['BOÎTE À OUTILS', [['cal', 'calendrier du mois'], ['seq a b', 'suite de nombres'], ['which <cmd>', 'où est la commande'], ['stat/file <f>', 'infos fichier'], ['factor <n>', 'décompose en premiers'], ['bc', 'calculatrice (via pipe)'], ['sort/uniq/rev', 'trie/dédoublonne/inverse'], ['cut/tr/nl/tac', 'filtres de texte'], ['cowsay <txt>', 'la vache qui parle'], ['alias', 'raccourcis de commandes']]],
-    ['DIVERS', [['echo / clear', ''], ['history', 'historique'], ['help', 'cette aide']]]
+    ['NAVIGATION', [['pwd', 'current path'], ['ls [-la]', 'list'], ['cd <path>', 'change directory'], ['tree [path]', 'tree view']]],
+    ['FILES', [['cat <file>', 'show'], ['mkdir <name>', 'make directory'], ['touch <file>', 'create file'], ['rm [-r] <name>', 'delete'], ['cp/mv', 'copy/move'], ['find [-name]', 'search']]],
+    ['READING', [['head/tail [-n]', 'start/end'], ['grep <pat> <f>', 'search'], ['wc [-l|-w]', 'count'], ['less <file>', 'paginate']]],
+    ['PERMISSIONS', [['chmod [+x|755]', 'permissions'], ['chown user:grp', 'owner'], ['whoami / id', 'identity'], ['sudo cmd', 'privileges']]],
+    ['PROCESSES', [['ps [aux]', 'list'], ['top', 'real time'], ['kill <PID>', 'kill']]],
+    ['SERVICES', [['systemctl status', 'service state'], ['systemctl start/stop', 'manage'], ['systemctl enable', 'at boot']]],
+    ['SYSTEM', [['df -h / du -sh', 'disk'], ['ufw status', 'firewall'], ['ifconfig / ip', 'network'], ['date / hostname', 'info']]],
+    ['TOOLBOX', [['cal', 'month calendar'], ['seq a b', 'number sequence'], ['which <cmd>', 'where the command is'], ['stat/file <f>', 'file info'], ['factor <n>', 'prime factors'], ['bc', 'calculator (via pipe)'], ['sort/uniq/rev', 'sort/dedupe/reverse'], ['cut/tr/nl/tac', 'text filters'], ['cowsay <txt>', 'the talking cow'], ['alias', 'command shortcuts']]],
+    ['MISC', [['echo / clear', ''], ['history', 'history'], ['help', 'this help']]]
   ];
   sections.forEach(function(sec) {
     term.writeln('');
@@ -7469,7 +7469,7 @@ function cmdHelp() {
     });
   });
   term.writeln('');
-  term.writeln(C.dim + 'Pipes (|), redirection (>, >>) supportés' + C.reset);
+  term.writeln(C.dim + 'Pipes (|), redirection (>, >>) supported' + C.reset);
   term.writeln('');
 }
 
@@ -8339,7 +8339,7 @@ if (document.readyState === 'loading') {
         {title:'Lancer l’installateur Pi-hole',intro:'Pi-hole fournit un installateur guidé. Lance-le et laisse-toi guider (réseau, DNS amont, interface web) :',
           code:[{c:'curl -sSL https://install.pi-hole.net | bash'}],
           check:'L’installateur se termine et t’affiche l’**adresse du tableau de bord** + le **mot de passe admin**. Note-les précieusement.',
-          hint:{sum:'`curl` échoue / commande introuvable',ps:['Indice. Installe curl d’abord : `sudo apt install -y curl`, puis relance la commande.']}},
+          hint:{sum:'`curl` échoue / command not found',ps:['Indice. Installe curl d’abord : `sudo apt install -y curl`, puis relance la commande.']}},
         {title:'Ouvrir le tableau de bord',intro:'Depuis ton PC, ouvre l’interview d’administration dans le navigateur :',
           code:[{c:'# http://<ip-de-la-vm>/admin',k:'connecte-toi avec le mot de passe noté'}],
           check:'Le dashboard Pi-hole s’affiche : requêtes, blocages, graphiques. Pour l’instant, presque vide.'},
