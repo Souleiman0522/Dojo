@@ -4189,106 +4189,106 @@ var QUESTS = [
     id: 'git',
     chapter: 17,
     icon: '🔀',
-    title: 'Git — le versioning',
+    title: 'Git — version control',
     color: '#962617',
-    desc: 'Suivre et sauvegarder son code',
-    story: "« Tu écris des scripts, maintenant, Kaï. Et le jour où tu en casseras un, comment reviendras-tu à la version qui marchait ? » Le Sensei pose un carnet devant toi. « Chaque page est une version de ton travail. Tu peux revenir en arrière, comparer, reprendre une idée abandonnée. **Git, c'est ce carnet pour ton code.** »\n\nIl devient sérieux : « Un développeur sans Git, c'est un funambule sans filet. Une mauvaise manip, et des jours de travail s'envolent. Avec Git, chaque `commit` est un point de sauvegarde éternel. Tu vas apprendre le cycle sacré, Kaï : **modifier → ajouter → commiter.** Le geste que tu répéteras toute ta carrière. »",
-    mentor: "Le cycle de vie d'un fichier dans Git :\n\n① `git init` transforme un dossier ordinaire en dépôt Git (crée le dossier caché `.git`).\n② Trois zones : le **répertoire de travail** (tes fichiers), l'**index/staging** (`git add`), et le **dépôt** (`git commit`). Un fichier voyage de l'une à l'autre.\n③ Le cycle : tu modifies, tu `git add fichier` (prépare), tu `git commit -m \"message\"` (grave dans l'histoire). `git status` te dit toujours où en sont tes fichiers.\n④ Règle d'or du message de commit : décris le POURQUOI, pas le comment. \"Corrige le crash au démarrage\", pas \"modif ligne 42\".",
+    desc: 'Track and save your code',
+    story: "“You write scripts now, Kaï. And the day you break one, how will you get back to the version that worked?” The Sensei sets a notebook in front of you. “Each page is a version of your work. You can go back, compare, revive an abandoned idea. **Git is that notebook for your code.**”\n\nHe turns serious: “A developer without Git is a tightrope walker without a net. One wrong move, and days of work vanish. With Git, every `commit` is an eternal save point. You're going to learn the sacred cycle, Kaï: **edit → add → commit.** The gesture you'll repeat your whole career.”",
+    mentor: "The life cycle of a file in Git:\n\n① `git init` turns an ordinary folder into a Git repository (creates the hidden `.git` folder).\n② Three zones: the **working directory** (your files), the **index/staging area** (`git add`), and the **repository** (`git commit`). A file travels from one to the next.\n③ The cycle: you edit, you `git add file` (stage it), you `git commit -m \"message\"` (carve it into history). `git status` always tells you where your files stand.\n④ Golden rule of commit messages: describe the WHY, not the how. \"Fix the crash on startup\", not \"changed line 42\".",
     challenge: {
-      title: "Le premier commit",
-      desc: "Versionne un projet de zéro. **① Initialise un dépôt** (`git init`), **② vérifie l'état** (`git status` → fichiers non suivis), **③ ajoute un fichier à l'index** (`git add`), **④ grave ton premier commit** avec un message clair (`git commit -m \"...\"`), **⑤ relis l'historique** (`git log`). Cinq commandes, le cycle complet du versioning."
+      title: "The first commit",
+      desc: "Version a project from scratch. **① Initialize a repository** (`git init`), **② check the state** (`git status` → untracked files), **③ add a file to the index** (`git add`), **④ carve your first commit** with a clear message (`git commit -m \"...\"`), **⑤ re-read the history** (`git log`). Five commands, the full version-control cycle."
     },
     exos: [
       {
         level: 'beginner',
-        title: 'Initialiser un dépôt',
-        context: "`git init` crée un dépôt Git dans le dossier courant. Ça ajoute un dossier caché `.git/` qui contiendra tout l'historique. Le dossier lui-même ne change pas d'apparence.",
-        scene: "Tu démarres un nouveau projet et tu veux suivre son évolution dès le début.",
-        mission: "Initialise un dépôt Git dans le dossier courant.",
-        steps: ["Tape `git init`", "Git confirme la création du dépôt"],
+        title: 'Initialize a repository',
+        context: "`git init` creates a Git repository in the current folder. It adds a hidden `.git/` folder that will hold the entire history. The folder itself doesn't change in appearance.",
+        scene: "You're starting a new project and want to track its evolution from the very beginning.",
+        mission: "Initialize a Git repository in the current folder.",
+        steps: ["Type `git init`", "Git confirms the repository was created"],
         expected: "$ git init\nInitialized empty Git repository in /home/user/.git/",
-        diagram: "  dossier ordinaire  ──git init──▶  dépôt Git\n                                    └── .git/ (historique)",
-        culture: "Git a été créé en **2005 par Linus Torvalds** — le père de Linux lui-même — en à peine deux semaines, quand l'outil propriétaire qui gérait le code du noyau Linux est devenu payant. Furieux, Linus a écrit son propre système, distribué et ultra-rapide. Le nom ? En argot britannique, *git* veut dire \"sale type\" — Linus a plaisanté : \"je nomme tous mes projets d'après moi.\" Aujourd'hui Git gère la quasi-totalité du code de la planète.",
-        reflection: "Que se passe-t-il concrètement quand tu tapes `git init` dans un dossier ?\n👉 Git crée un sous-dossier caché `.git/` qui contient TOUTE la mécanique : l'historique, les branches, la config. Tes fichiers ne bougent pas. Si tu supprimes `.git/`, le dossier redevient ordinaire et tout l'historique est perdu — c'est là qu'il vit.",
+        diagram: "  ordinary folder  ──git init──▶  Git repository\n                                    └── .git/ (history)",
+        culture: "Git was created in **2005 by Linus Torvalds** — the father of Linux himself — in barely two weeks, when the proprietary tool that managed the Linux kernel's code started charging money. Furious, Linus wrote his own system, distributed and blazingly fast. The name? In British slang, *git* means \"unpleasant person\" — Linus joked: \"I name all my projects after myself.\" Today Git manages nearly all of the world's code.",
+        reflection: "What actually happens when you type `git init` in a folder?\n👉 Git creates a hidden `.git/` sub-folder that holds ALL the machinery: the history, the branches, the config. Your files don't move. If you delete `.git/`, the folder becomes ordinary again and the entire history is lost — that's where it lives.",
         check: function(s) { return sysState.git.initialized; }
       },
       {
         level: 'beginner',
-        title: "Vérifier l'état (status)",
-        context: "`git status` est ta boussole : il montre quels fichiers sont suivis, modifiés, prêts à commiter (staged) ou non suivis (untracked). C'est la commande que tu tapes le plus souvent.",
-        scene: "Tu as créé des fichiers mais tu ne sais plus lesquels Git connaît.",
-        mission: "Affiche l'état du dépôt.",
-        steps: ["`git status`", "Repère les 'Untracked files' en rouge"],
+        title: "Check the state (status)",
+        context: "`git status` is your compass: it shows which files are tracked, modified, ready to commit (staged) or untracked. It's the command you type most often.",
+        scene: "You've created some files but you can't remember which ones Git knows about.",
+        mission: "Display the state of the repository.",
+        steps: ["`git status`", "Spot the 'Untracked files' in red"],
         expected: "On branch main\n\nUntracked files:\n\tnotes.txt\n\nnothing added to commit but untracked files present",
-        culture: "Le vocabulaire de Git décrit un voyage : un fichier **untracked** (inconnu) devient **staged** (`git add`, préparé dans l'index) puis **committed** (gravé). L'index — aussi appelé *staging area* — est l'idée géniale de Git : il te laisse choisir EXACTEMENT ce qui entre dans un commit, fichier par fichier, ligne par ligne. Tu peux modifier 10 fichiers et n'en commiter que 3.",
-        reflection: "Pourquoi taper `git status` avant chaque `git add` et chaque `git commit` ?\n👉 Parce que c'est ta seule fenêtre sur l'état réel. Elle t'évite de commiter un fichier par erreur, d'oublier un fichier important, ou de croire qu'un changement est sauvé alors qu'il ne l'est pas. Les pros la tapent par réflexe, des dizaines de fois par jour.",
+        culture: "Git's vocabulary describes a journey: a file goes from **untracked** (unknown) to **staged** (`git add`, prepared in the index) to **committed** (carved in). The index — also called the *staging area* — is Git's brilliant idea: it lets you choose EXACTLY what goes into a commit, file by file, line by line. You can edit 10 files and commit only 3.",
+        reflection: "Why type `git status` before every `git add` and every `git commit`?\n👉 Because it's your only window onto the real state. It keeps you from committing a file by mistake, forgetting an important file, or believing a change is saved when it isn't. Pros type it by reflex, dozens of times a day.",
         check: function(s) { return sysState.git.initialized && s.history.some(function(c) { return c.indexOf('git status') === 0; }); }
       },
       {
         level: 'intermediate',
-        title: "Ajouter à l'index (add)",
-        context: "Avant de « graver » des changements dans l'histoire, Git te fait les **préparer** dans une zone d'attente : l'**index** (ou *staging area*). `git add fichier` y place un fichier ; `git add .` y met tout le dossier. C'est une étape exprès : elle te laisse choisir précisément CE qui entrera dans le prochain commit.",
-        scene: "Ton fichier `notes.txt` est prêt. Tu veux l'inclure dans le prochain commit.",
-        mission: "Ajoute `notes.txt` à l'index.",
+        title: "Add to the index (add)",
+        context: "Before you “carve” changes into history, Git makes you **stage** them in a waiting area: the **index** (or *staging area*). `git add file` puts a file there; `git add .` puts the whole folder there. It's a deliberate step: it lets you choose precisely WHAT will go into the next commit.",
+        scene: "Your `notes.txt` file is ready. You want to include it in the next commit.",
+        mission: "Add `notes.txt` to the index.",
         steps: [
-          "Prépare le fichier : `git add notes.txt`",
-          "Vérifie avec `git status` : il passe de rouge (untracked) à vert (staged)",
-          "Astuce : `git add .` prépare TOUT le dossier d'un coup",
-          "💡 **Les façons de préparer** : `git add fichier.txt` (un fichier précis) · `git add .` (tout le dossier courant) · `git add -A` (tout le dépôt, y compris les suppressions) · `git add -p` (interactif : Git te montre chaque morceau et te demande si tu l'inclus — pour des commits chirurgicaux)."
+          "Stage the file: `git add notes.txt`",
+          "Check with `git status`: it moves from red (untracked) to green (staged)",
+          "Tip: `git add .` stages the WHOLE folder at once",
+          "💡 **The ways to stage** : `git add file.txt` (a specific file) · `git add .` (the whole current folder) · `git add -A` (the whole repo, including deletions) · `git add -p` (interactive: Git shows you each chunk and asks if you include it — for surgical commits)."
         ],
         expected: "$ git add notes.txt\n$ git status\nChanges to be committed:\n\tnew file:   notes.txt",
-        culture: "Cette **zone d'attente** entre « modifié » et « gravé » est LA particularité de Git. Elle te permet de faire des commits propres et cohérents : tu peux modifier 10 fichiers mais n'en préparer que 3 pour un commit « Corrige le bug de connexion », puis les 7 autres pour un commit « Met à jour la doc ». Un historique lisible se construit ici, fichier par fichier, plutôt que de tout jeter en vrac.",
-        reflection: "Tu as modifié 5 fichiers, mais un seul concerne le bug que tu corriges. Comment faire un commit propre ?\n👉 `git add le_bon_fichier` (lui seul), puis `git commit`. Les 4 autres restent hors de ce commit, prêts pour un autre. C'est tout l'intérêt de l'index : un commit = un changement cohérent, pas un fourre-tout. `git add .` (tout ajouter) est pratique mais fait perdre cette finesse : à utiliser en connaissance de cause.",
+        culture: "This **waiting area** between “modified” and “carved in” is THE distinctive feature of Git. It lets you make clean, coherent commits: you can edit 10 files but stage only 3 for a “Fix the login bug” commit, then the other 7 for an “Update the docs” commit. A readable history is built here, file by file, rather than dumping everything in bulk.",
+        reflection: "You've edited 5 files, but only one relates to the bug you're fixing. How do you make a clean commit?\n👉 `git add the_right_file` (only it), then `git commit`. The other 4 stay out of this commit, ready for another. That's the whole point of the index: one commit = one coherent change, not a grab-bag. `git add .` (add everything) is handy but loses that finesse: use it knowingly.",
         check: function(s) { return sysState.git.staged.length > 0 || sysState.git.committed.length > 0; }
       },
       {
         level: 'intermediate',
-        title: 'Graver un commit',
-        context: "`git commit -m \"message\"` enregistre définitivement les fichiers de l'index dans l'historique. Le `-m` fournit le message qui décrit le changement. Sans message, Git refuse.",
-        scene: "Ton fichier est dans l'index. Il est temps de le graver dans l'histoire.",
-        mission: "Crée un commit avec un message clair.",
+        title: 'Carve a commit',
+        context: "`git commit -m \"message\"` permanently records the files in the index into the history. The `-m` provides the message that describes the change. Without a message, Git refuses.",
+        scene: "Your file is in the index. It's time to carve it into history.",
+        mission: "Create a commit with a clear message.",
         steps: [
-          "`git commit -m \"Ajoute mes notes\"`",
-          "Git renvoie un identifiant de commit (hash)",
-          "💡 **Les variantes** : `git commit -m \"msg\"` (message en ligne) · `git commit` (ouvre un éditeur pour un message long) · `git commit -am \"msg\"` (fait le `add` des fichiers DÉJÀ suivis ET le commit d'un coup) · `git commit --amend` (corrige le DERNIER commit : message ou fichiers oubliés)."
+          "`git commit -m \"Add my notes\"`",
+          "Git returns a commit identifier (hash)",
+          "💡 **The variants** : `git commit -m \"msg\"` (inline message) · `git commit` (opens an editor for a long message) · `git commit -am \"msg\"` (does the `add` of ALREADY-tracked files AND the commit in one go) · `git commit --amend` (fixes the LAST commit: message or forgotten files)."
         ],
-        expected: "[main a1b2c3d] Ajoute mes notes\n 1 file(s) changed",
-        culture: "Chaque commit reçoit un **hash SHA-1** (ex : `a1b2c3d`) : une empreinte unique de 40 caractères calculée à partir du contenu, de l'auteur, de la date ET du commit précédent. Cet enchaînement rend l'historique **infalsifiable** : changer un vieux commit changerait tous les hashes suivants. C'est la même idée que la blockchain — inventée par Git dix ans avant le Bitcoin.",
-        reflection: "Pourquoi Git impose-t-il un message à chaque commit ?\n👉 Parce que l'historique se lit comme un journal de bord. Dans six mois, `git log` doit te raconter l'histoire du projet : ce qui a changé et POURQUOI. Un bon message (\"Corrige la fuite mémoire au démarrage\") vaut de l'or ; un mauvais (\"maj\", \"fix\", \"truc\") rend l'historique inutile.",
+        expected: "[main a1b2c3d] Add my notes\n 1 file(s) changed",
+        culture: "Each commit receives a **SHA-1 hash** (e.g. `a1b2c3d`): a unique 40-character fingerprint computed from the content, the author, the date AND the previous commit. This chaining makes the history **tamper-proof**: changing an old commit would change every following hash. It's the same idea as the blockchain — invented by Git ten years before Bitcoin.",
+        reflection: "Why does Git require a message on every commit?\n👉 Because the history reads like a logbook. In six months, `git log` must tell you the project's story: what changed and WHY. A good message (\"Fix the memory leak on startup\") is worth its weight in gold; a bad one (\"upd\", \"fix\", \"stuff\") makes the history useless.",
         check: function(s) { return sysState.git.commits.length > 0; }
       },
       {
         level: 'advanced',
-        title: "Relire l'histoire (log)",
-        context: "`git log` affiche l'historique des commits, du plus récent au plus ancien : hash, auteur, date, message. C'est la mémoire du projet.",
-        scene: "Tu veux voir tous les commits déjà réalisés.",
-        mission: "Affiche l'historique des commits.",
+        title: "Re-read the history (log)",
+        context: "`git log` shows the commit history, from most recent to oldest: hash, author, date, message. It's the project's memory.",
+        scene: "You want to see all the commits made so far.",
+        mission: "Display the commit history.",
         steps: [
           "`git log`",
-          "Chaque bloc = un commit avec son hash et son message",
-          "💡 **Les vues qui rendent `git log` lisible** : `git log --oneline` (une ligne par commit, compact) · `git log -3` (les 3 derniers seulement) · `git log --graph --oneline --all` (l'arbre des branches en ASCII) · `git log --stat` (avec la liste des fichiers modifiés à chaque commit)."
+          "Each block = a commit with its hash and message",
+          "💡 **The views that make `git log` readable** : `git log --oneline` (one line per commit, compact) · `git log -3` (the last 3 only) · `git log --graph --oneline --all` (the branch tree in ASCII) · `git log --stat` (with the list of files changed in each commit)."
         ],
-        expected: "commit a1b2c3d...\nAuthor: user <user@dojo>\nDate:   ...\n\n    Ajoute mes notes",
-        culture: "`git log` est la mémoire du projet, mais brut il est vite illisible. Les pros vivent avec `git log --oneline --graph` : d'un coup d'œil, ils voient l'enchaînement des commits et des branches. Autre trésor : `git log --oneline fichier.txt` montre TOUTE l'histoire d'un seul fichier, et `git log --author=\"Marie\"` filtre par personne. Savoir interroger l'historique, c'est savoir enquêter : « qui a changé cette ligne, et pourquoi ? ».",
-        reflection: "L'historique est devenu énorme et illisible avec `git log`. Comment le rendre exploitable ?\n👉 `git log --oneline` le condense à une ligne par commit (hash court + message). Ajoute `--graph --all` pour visualiser les branches, ou `-5` pour ne voir que les 5 derniers. Pour enquêter sur UN fichier : `git log --oneline fichier`. Le brut `git log` répond rarement à la vraie question — ce sont ses options qui en font un outil d'enquête.",
+        expected: "commit a1b2c3d...\nAuthor: user <user@dojo>\nDate:   ...\n\n    Add my notes",
+        culture: "`git log` is the project's memory, but raw it quickly becomes unreadable. Pros live with `git log --oneline --graph`: at a glance, they see the chain of commits and branches. Another treasure: `git log --oneline file.txt` shows the ENTIRE history of a single file, and `git log --author=\"Marie\"` filters by person. Knowing how to query the history is knowing how to investigate: “who changed this line, and why?”.",
+        reflection: "The history has become huge and unreadable with `git log`. How do you make it usable?\n👉 `git log --oneline` condenses it to one line per commit (short hash + message). Add `--graph --all` to visualize the branches, or `-5` to see only the last 5. To investigate ONE file: `git log --oneline file`. Raw `git log` rarely answers the real question — it's its options that make it an investigation tool.",
         check: function(s) { return sysState.git.commits.length > 0 && s.history.some(function(c) { return c.indexOf('git log') === 0; }); }
       },
       {
         level: 'intermediate',
-        title: 'Mini-défi : le cycle Git complet',
-        context: "On enchaîne les quatre gestes qui font 99% de l'usage quotidien de Git : **modifier → préparer (`add`) → graver (`commit`) → relire (`log`)**. Ce cycle, tu le referas des dizaines de fois par jour dans ta carrière. C'est le rythme de tout travail versionné.",
-        scene: "Le Sensei te confie un dépôt vide : « fais-y vivre un fichier, du néant jusqu'à l'historique. »",
-        mission: "Crée un fichier, prépare-le, commite-le avec un message clair, puis relis l'historique.",
+        title: 'Mini-challenge: the complete Git cycle',
+        context: "We chain the four gestures that make up 99% of daily Git use: **edit → stage (`add`) → carve (`commit`) → re-read (`log`)**. This cycle, you'll do it dozens of times a day throughout your career. It's the rhythm of all version-controlled work.",
+        scene: "The Sensei hands you an empty repository: “bring a file to life in it, from nothing all the way to the history.”",
+        mission: "Create a file, stage it, commit it with a clear message, then re-read the history.",
         steps: [
-          "① Assure-toi d'avoir un dépôt : `git init` (si ce n'est pas déjà fait)",
-          "② Crée un fichier : `echo \"# Mon journal\" > journal.md`",
-          "③ Prépare-le : `git add journal.md`",
-          "④ Grave-le : `git commit -m \"Ajoute le journal\"`",
-          "⑤ Relis l'histoire : `git log`"
+          "① Make sure you have a repository: `git init` (if not done already)",
+          "② Create a file: `echo \"# My journal\" > journal.md`",
+          "③ Stage it: `git add journal.md`",
+          "④ Carve it: `git commit -m \"Add the journal\"`",
+          "⑤ Re-read the history: `git log`"
         ],
-        expected: "$ git add journal.md\n$ git commit -m \"Ajoute le journal\"\n[main a1b2c3d] Ajoute le journal\n$ git log\ncommit a1b2c3d... Ajoute le journal",
-        culture: "Ce cycle add → commit → (push) est le battement de cœur du développement moderne. En équipe, on ajoute une 5ᵉ étape : `git push` envoie tes commits sur un serveur partagé (GitHub, GitLab), où les collègues les récupèrent avec `git pull`. Mais tout part d'ici : des commits petits, fréquents et bien décrits valent mille fois mieux qu'un énorme commit « tout le projet » une fois par mois.",
-        reflection: "Vaut-il mieux faire un gros commit par jour, ou plusieurs petits commits ciblés ?\n👉 Plusieurs **petits commits ciblés**, chacun autour d'un seul changement cohérent. Avantages : un historique lisible (`git log` raconte vraiment l'évolution), et la possibilité d'annuler UN changement précis sans tout défaire. Un commit géant « travail du jour » mélange tout : impossible à relire, impossible à annuler proprement. La règle : un commit = une idée.",
+        expected: "$ git add journal.md\n$ git commit -m \"Add the journal\"\n[main a1b2c3d] Add the journal\n$ git log\ncommit a1b2c3d... Add the journal",
+        culture: "This add → commit → (push) cycle is the heartbeat of modern development. On a team, you add a 5th step: `git push` sends your commits to a shared server (GitHub, GitLab), where colleagues fetch them with `git pull`. But it all starts here: small, frequent, well-described commits are worth a thousand times more than one huge “the whole project” commit once a month.",
+        reflection: "Is it better to make one big commit per day, or several small targeted commits?\n👉 Several **small targeted commits**, each around a single coherent change. Benefits: a readable history (`git log` genuinely tells the story of the evolution), and the ability to undo ONE specific change without unravelling everything. A giant “day's work” commit mixes everything together: impossible to re-read, impossible to undo cleanly. The rule: one commit = one idea.",
         check: function(s) { return sysState.git.commits.length > 0 && s.history.some(function(c) { return c.indexOf('git log') === 0; }); }
       }
     ]
@@ -4299,63 +4299,63 @@ var QUESTS = [
     icon: '📦',
     title: 'Archives & compression',
     color: '#c89028',
-    desc: 'tar, gzip — empaqueter et compresser',
-    story: "« Nous voici au bout du chemin, Kaï. » Le Sensei te regarde autrement — comme un pair. « Tu sauvegardes ton code avec Git. Reste à savoir déplacer des montagnes de fichiers d'un serveur à l'autre. Les envoyer un par un ? Une folie. On les **empaquette** en un seul fichier, on le **compresse** pour qu'il pèse moins, on l'envoie, on le **dépaquette** à l'arrivée. C'est le geste des sauvegardes, des déploiements, des transferts. »\n\nIl brandit un fichier `.tar.gz` : « Ceci est l'archive reine d'Unix. `tar` empaquette, `gzip` compresse. Ensemble, ils font le célèbre **tarball**. Maîtrise ses trois lettres magiques — `czf` pour créer, `xzf` pour extraire — et tu déplaceras des montagnes de fichiers d'un geste. »\n\nLe Sensei se tait un instant, puis : « Ce jour-là, Kaï, tu ne seras plus l'apprenti devant l'écran noir. Tu seras l'administrateur. Et un autre débutant s'assiéra à ta place, les yeux perdus devant le curseur qui clignote. »",
-    mentor: "L'art d'empaqueter avec tar :\n\n① `tar` (Tape ARchive) regroupe plusieurs fichiers en UN seul `.tar`. Il ne compresse pas tout seul — c'est `gzip` qui réduit la taille, d'où le `.tar.gz` (empaqueté PUIS compressé).\n② Les 3 lettres à graver : **c**reate, e**x**tract, lis**t**. Toujours suivies de `z` (gzip) et `f` (fichier). Donc :\n   `tar -czf save.tar.gz dossier/` → crée l'archive\n   `tar -xzf save.tar.gz` → extrait\n   `tar -tzf save.tar.gz` → liste le contenu sans extraire\n③ Moyen mnémotechnique : **c**réer / e**x**traire, et `zf` = **z**ippé dans un **f**ichier.\n④ Piège classique : oublier le `f` — tar cherche alors une bande magnétique (héritage de 1979 !) et se bloque.",
+    desc: 'tar, gzip — bundle and compress',
+    story: "“Here we are at the end of the road, Kaï.” The Sensei looks at you differently now — as a peer. “You save your code with Git. What remains is knowing how to move mountains of files from one server to another. Send them one by one? Madness. You **bundle** them into a single file, you **compress** it so it weighs less, you send it, you **unbundle** it on arrival. It's the gesture of backups, deployments, transfers.”\n\nHe holds up a `.tar.gz` file: “This is Unix's royal archive. `tar` bundles, `gzip` compresses. Together, they make the famous **tarball**. Master its three magic letters — `czf` to create, `xzf` to extract — and you'll move mountains of files with a single gesture.”\n\nThe Sensei falls silent a moment, then: “On that day, Kaï, you'll no longer be the apprentice before the black screen. You'll be the administrator. And another beginner will sit in your place, eyes lost before the blinking cursor.”",
+    mentor: "The art of bundling with tar:\n\n① `tar` (Tape ARchive) gathers several files into ONE single `.tar`. It doesn't compress on its own — it's `gzip` that reduces the size, hence the `.tar.gz` (bundled THEN compressed).\n② The 3 letters to carve in: **c**reate, e**x**tract, lis**t**. Always followed by `z` (gzip) and `f` (file). So:\n   `tar -czf save.tar.gz folder/` → creates the archive\n   `tar -xzf save.tar.gz` → extracts\n   `tar -tzf save.tar.gz` → lists the contents without extracting\n③ Mnemonic: **c**reate / e**x**tract, and `zf` = **z**ipped in a **f**ile.\n④ Classic trap: forgetting the `f` — tar then looks for a magnetic tape (a 1979 legacy!) and hangs.",
     challenge: {
-      title: "Le grand déménagement",
-      desc: "Sauvegarde et restaure un dossier. **① Crée une archive compressée** d'un dossier avec `tar -czf sauvegarde.tar.gz ...`, **② liste son contenu** sans l'extraire (`tar -tzf`), **③ extrais-la** (`tar -xzf`). Réflexion : pourquoi le format s'appelle `.tar.gz` en deux extensions plutôt qu'une seule ?"
+      title: "The great move",
+      desc: "Back up and restore a folder. **① Create a compressed archive** of a folder with `tar -czf backup.tar.gz ...`, **② list its contents** without extracting them (`tar -tzf`), **③ extract it** (`tar -xzf`). Reflection: why is the format called `.tar.gz` with two extensions rather than a single one?"
     },
     exos: [
       {
         level: 'intermediate',
-        title: 'Créer une archive compressée',
-        context: "Pour transporter ou sauvegarder plein de fichiers d'un coup, on les réunit dans **une seule archive**, qu'on **compresse** pour qu'elle pèse moins lourd. L'outil roi est `tar`, avec trois lettres à retenir : `c` (*create*, créer), `z` (compresser en gzip), `f` (le nom du **f**ichier de sortie). Donc `tar -czf backup.tar.gz Documents` = « crée, compresse, dans backup.tar.gz, le dossier Documents ».",
-        scene: "Tu veux sauvegarder ton dossier Documents en un seul fichier compressé.",
-        mission: "Crée une archive compressée `backup.tar.gz` de ton dossier Documents.",
+        title: 'Create a compressed archive',
+        context: "To transport or back up lots of files at once, you gather them into **a single archive**, which you **compress** so it weighs less. The king tool is `tar`, with three letters to remember: `c` (*create*), `z` (compress with gzip), `f` (the name of the output **f**ile). So `tar -czf backup.tar.gz Documents` = “create, compress, into backup.tar.gz, the Documents folder”.",
+        scene: "You want to back up your Documents folder into a single compressed file.",
+        mission: "Create a compressed archive `backup.tar.gz` of your Documents folder.",
         steps: [
-          "Place-toi chez toi : `cd ~`",
-          "Crée l'archive : `tar -czf backup.tar.gz Documents` (c=créer, z=compresser, f=fichier)",
-          "Un seul fichier contient désormais tout le dossier, compressé",
-          "💡 **Trois compresseurs au choix** : `-z` → `.tar.gz` (rapide, standard) · `-j` → `.tar.bz2` (plus petit, plus lent) · `-J` → `.tar.xz` (le plus petit). On garde `.tar.gz` 9 fois sur 10."
+          "Go home: `cd ~`",
+          "Create the archive: `tar -czf backup.tar.gz Documents` (c=create, z=compress, f=file)",
+          "A single file now holds the whole folder, compressed",
+          "💡 **Three compressors to choose from** : `-z` → `.tar.gz` (fast, standard) · `-j` → `.tar.bz2` (smaller, slower) · `-J` → `.tar.xz` (the smallest). We keep `.tar.gz` 9 times out of 10."
         ],
-        expected: "$ tar -czf backup.tar.gz Documents\nArchive créée : backup.tar.gz",
-        diagram: "  Documents/ ──tar -czf──▶ backup.tar.gz\n  (plusieurs fichiers)      (un seul, compressé)",
-        culture: "`tar` signifie **Tape ARchive** : il a été créé en 1979 pour écrire des fichiers sur des **bandes magnétiques**, où il fallait tout mettre bout à bout en un flux continu. Les bandes ont disparu, mais tar est resté — c'est pourquoi il n'a pas de compression native (les bandes ne compressaient pas). On lui adjoint un compresseur — `gzip` (`.gz`), `bzip2` (`.bz2`) ou `xz` (`.xz`) — pour ça. Un demi-siècle plus tard, chaque sauvegarde Linux passe encore par cet outil vénérable.",
-        reflection: "Pourquoi met-on `f` en dernier dans `-czf` (juste avant le nom de l'archive) ?\n👉 Parce que `f` (file) attend le nom du fichier de sortie JUSTE après lui. `tar -czf backup.tar.gz` : le `f` \"pointe\" sur `backup.tar.gz`. Si tu oublies le `f`, tar croit que tu veux écrire sur une bande magnétique et se bloque — l'erreur de débutant classique.",
+        expected: "$ tar -czf backup.tar.gz Documents\nArchive created: backup.tar.gz",
+        diagram: "  Documents/ ──tar -czf──▶ backup.tar.gz\n  (several files)           (one, compressed)",
+        culture: "`tar` stands for **Tape ARchive**: it was created in 1979 to write files onto **magnetic tapes**, where everything had to be laid end to end in a continuous stream. Tapes have vanished, but tar remains — which is why it has no native compression (tapes didn't compress). You pair it with a compressor — `gzip` (`.gz`), `bzip2` (`.bz2`) or `xz` (`.xz`) — for that. Half a century later, every Linux backup still passes through this venerable tool.",
+        reflection: "Why is `f` placed last in `-czf` (right before the archive name)?\n👉 Because `f` (file) expects the output file name RIGHT after it. `tar -czf backup.tar.gz`: the `f` \"points at\" `backup.tar.gz`. If you forget the `f`, tar thinks you want to write to a magnetic tape and hangs — the classic beginner's mistake.",
         check: function(s) { return Object.keys(sysState.archives).length > 0 || s.history.some(function(c) { return /tar\s+-c/.test(c); }); }
       },
       {
         level: 'advanced',
-        title: 'Extraire une archive',
-        context: "À l'arrivée, on **dépaquette** l'archive pour retrouver les fichiers d'origine. Même commande `tar`, on change juste la 1ʳᵉ lettre : `x` (*extract*, extraire). Et un réflexe de sécurité : `t` (*list*) montre le contenu SANS rien extraire — pour inspecter une archive avant de l'ouvrir.",
-        scene: "Tu as reçu une archive `backup.tar.gz` et tu veux en récupérer les fichiers.",
-        mission: "Vérifie puis extrais l'archive `backup.tar.gz`.",
+        title: 'Extract an archive',
+        context: "On arrival, you **unbundle** the archive to get the original files back. Same `tar` command, you just change the 1st letter: `x` (*extract*). And a safety reflex: `t` (*list*) shows the contents WITHOUT extracting anything — to inspect an archive before opening it.",
+        scene: "You've received a `backup.tar.gz` archive and want to recover its files.",
+        mission: "Check, then extract, the `backup.tar.gz` archive.",
         steps: [
-          "Vérifie d'abord le contenu : `tar -tzf backup.tar.gz` (t=lister, sans extraire)",
-          "Puis extrais : `tar -xzf backup.tar.gz` (x=extraire)",
-          "Les fichiers d'origine réapparaissent dans le dossier courant",
-          "💡 **Les variantes d'extraction** : `tar -xzf archive.tar.gz` (extrait ici) · `tar -xzf archive.tar.gz -C /tmp/restore` (extrait DANS un dossier précis, avec `-C`) · `tar -xzf archive.tar.gz Documents/notes.txt` (extrait UN seul fichier de l'archive). Pour du `.tar.bz2` ou `.tar.xz`, remplace `z` par `j` ou `J`."
+          "First check the contents: `tar -tzf backup.tar.gz` (t=list, without extracting)",
+          "Then extract: `tar -xzf backup.tar.gz` (x=extract)",
+          "The original files reappear in the current folder",
+          "💡 **The extraction variants** : `tar -xzf archive.tar.gz` (extracts here) · `tar -xzf archive.tar.gz -C /tmp/restore` (extracts INTO a specific folder, with `-C`) · `tar -xzf archive.tar.gz Documents/notes.txt` (extracts ONE single file from the archive). For `.tar.bz2` or `.tar.xz`, replace `z` with `j` or `J`."
         ],
-        expected: "$ tar -xzf backup.tar.gz\nExtraction de backup.tar.gz...\n  Documents",
-        culture: "Les trois lettres de tête de `tar` forment un mini-langage : **c**reate (créer), e**x**tract (extraire), lis**t** (`t`). Toujours suivies de `z` (gzip) et `f` (fichier). Beaucoup de systèmes de sauvegarde professionnels ne sont, au fond, qu'un `tar -czf` horodaté lancé par cron et envoyé sur un stockage distant. L'outil de 1979 est encore le socle des sauvegardes modernes.",
-        reflection: "Avant d'extraire une archive reçue d'un inconnu, quelle commande taper d'abord, et pourquoi ?\n👉 `tar -tzf archive.tar.gz` liste le contenu SANS rien écrire. Ça te protège des archives piégées qui écrasent des fichiers système (une archive peut contenir des chemins absolus comme `/etc/passwd`). Vérifier avant d'extraire = réflexe de sécurité.",
+        expected: "$ tar -xzf backup.tar.gz\nExtracting backup.tar.gz...\n  Documents",
+        culture: "The three lead letters of `tar` form a mini-language: **c**reate, e**x**tract, lis**t** (`t`). Always followed by `z` (gzip) and `f` (file). Many professional backup systems are, at heart, nothing but a timestamped `tar -czf` launched by cron and sent to remote storage. The 1979 tool is still the bedrock of modern backups.",
+        reflection: "Before extracting an archive received from a stranger, what command should you type first, and why?\n👉 `tar -tzf archive.tar.gz` lists the contents WITHOUT writing anything. It protects you from booby-trapped archives that overwrite system files (an archive can contain absolute paths like `/etc/passwd`). Check before extracting = safety reflex.",
         check: function(s) { return s.history.some(function(c) { return /tar\s+-[xt]/.test(c); }); }
       },
       {
         level: 'advanced',
-        title: 'Mini-défi : sauvegarde et restauration',
-        context: "Le dernier geste du parcours : le **cycle complet de sauvegarde**. Empaqueter + compresser, vérifier, restaurer. C'est ce que fait, au fond, toute stratégie de backup — de ton petit serveur perso jusqu'aux datacenters.",
-        scene: "Le Sensei te confie une dernière épreuve : sauvegarder un dossier, et prouver que tu sais le restaurer intact.",
-        mission: "Archive `Documents`, vérifie le contenu de l'archive sans l'extraire, puis restaure-la.",
+        title: 'Mini-challenge: backup and restore',
+        context: "The last gesture of the journey: the **complete backup cycle**. Bundle + compress, verify, restore. It's what, at heart, every backup strategy does — from your little personal server all the way to datacenters.",
+        scene: "The Sensei gives you a final trial: back up a folder, and prove you can restore it intact.",
+        mission: "Archive `Documents`, check the archive's contents without extracting them, then restore it.",
         steps: [
-          "① Empaquette + compresse : `tar -czf sauvegarde.tar.gz Documents`",
-          "② Vérifie AVANT d'ouvrir : `tar -tzf sauvegarde.tar.gz` (liste sans rien écrire)",
-          "③ Restaure : `tar -xzf sauvegarde.tar.gz`"
+          "① Bundle + compress: `tar -czf backup.tar.gz Documents`",
+          "② Verify BEFORE opening: `tar -tzf backup.tar.gz` (list without writing anything)",
+          "③ Restore: `tar -xzf backup.tar.gz`"
         ],
-        expected: "$ tar -czf sauvegarde.tar.gz Documents\n$ tar -tzf sauvegarde.tar.gz\nDocuments/\n$ tar -xzf sauvegarde.tar.gz\nExtraction...",
-        culture: "Une sauvegarde qu'on n'a jamais testée n'en est pas une. La règle d'or des admins : « un backup non restauré est un backup mort ». Savoir vérifier (`-tzf`) puis restaurer (`-xzf`) vaut autant que savoir créer l'archive. Bien des entreprises ont découvert, le jour d'un crash, que leurs sauvegardes étaient corrompues depuis des mois. Tester la restauration fait partie du geste — c'est là que finit ton apprentissage, et que commence le métier.",
-        reflection: "Pourquoi le format s'appelle-t-il `.tar.gz` en DEUX extensions, et pas une seule ?\n👉 Parce que ce sont DEUX opérations successives, faites par deux outils : `tar` **empaquette** plusieurs fichiers en un seul `.tar`, puis `gzip` le **compresse** en `.tar.gz`. Chaque extension raconte une étape. C'est aussi pourquoi existent les `.tar.bz2` ou `.tar.xz` : même empaquetage tar, mais un compresseur différent. tar assemble, le second réduit.",
+        expected: "$ tar -czf backup.tar.gz Documents\n$ tar -tzf backup.tar.gz\nDocuments/\n$ tar -xzf backup.tar.gz\nExtracting...",
+        culture: "A backup that's never been tested isn't one. The admins' golden rule: “an unrestored backup is a dead backup”. Knowing how to verify (`-tzf`) then restore (`-xzf`) is worth as much as knowing how to create the archive. Many companies discovered, on the day of a crash, that their backups had been corrupt for months. Testing the restore is part of the gesture — that's where your apprenticeship ends, and the profession begins.",
+        reflection: "Why is the format called `.tar.gz` with TWO extensions, and not a single one?\n👉 Because they're TWO successive operations, done by two tools: `tar` **bundles** several files into a single `.tar`, then `gzip` **compresses** it into `.tar.gz`. Each extension tells a step. That's also why `.tar.bz2` or `.tar.xz` exist: same tar bundling, but a different compressor. tar assembles, the second one shrinks.",
         check: function(s) { var created = Object.keys(sysState.archives).length > 0 || s.history.some(function(c) { return /tar\s+-c/.test(c); }); var listed = s.history.some(function(c) { return /tar\s+-t/.test(c); }); var extracted = s.history.some(function(c) { return /tar\s+-x/.test(c); }); return created && listed && extracted; }
       }
     ]
@@ -4365,112 +4365,112 @@ var QUESTS = [
     id: 'virtualization',
     chapter: 18,
     icon: '🖥️',
-    title: 'Virtualisation (KVM)',
+    title: 'Virtualization (KVM)',
     color: '#1e3a5c',
-    desc: 'Faire tourner des machines dans ta machine',
-    story: "« Tu sais versionner ton travail, Kaï. Voici maintenant un art de maître : faire tourner des ordinateurs entiers… à l'intérieur du tien. » Le Sensei dessine un carré dans un carré. « On appelle ça la **virtualisation**. Un logiciel — l'**hyperviseur** — crée des machines virtuelles : chacune se croit un vrai serveur, avec son système, sa mémoire, son disque. »\n\n« Sur Linux, l'hyperviseur roi s'appelle **KVM**, piloté par **libvirt** et sa baguette `virsh`. Un seul serveur physique peut en héberger dix. C'est le fondement de tout le cloud, Kaï. »",
-    mentor: "La virtualisation, dans l'ordre :\n\n① **Vérifie le support du CPU** — `lscpu | grep Virtualization` doit montrer `VT-x` (Intel) ou `AMD-V` (AMD). Sans lui, pas de KVM rapide.\n② **Installe la pile** — `qemu-kvm` (le moteur) + `libvirt-daemon-system` (le gestionnaire).\n③ **Démarre le démon `libvirtd`** — c'est lui qui parle à l'hyperviseur. `virsh` ne répond que s'il tourne.\n④ **Pilote tes VM avec `virsh`** — `list --all`, `start`, `shutdown`. C'est le `systemctl` des machines entières.",
+    desc: 'Run machines inside your machine',
+    story: "“You know how to version your work, Kaï. Here now is a master's art: running entire computers… inside your own.” The Sensei draws a square within a square. “It's called **virtualization**. A piece of software — the **hypervisor** — creates virtual machines: each one believes it's a real server, with its own system, memory, disk.”\n\n“On Linux, the king hypervisor is called **KVM**, driven by **libvirt** and its wand `virsh`. A single physical server can host ten of them. It's the foundation of the entire cloud, Kaï.”",
+    mentor: "Virtualization, in order:\n\n① **Check CPU support** — `lscpu | grep Virtualization` must show `VT-x` (Intel) or `AMD-V` (AMD). Without it, no fast KVM.\n② **Install the stack** — `qemu-kvm` (the engine) + `libvirt-daemon-system` (the manager).\n③ **Start the `libvirtd` daemon** — it's the one that talks to the hypervisor. `virsh` only responds if it's running.\n④ **Drive your VMs with `virsh`** — `list --all`, `start`, `shutdown`. It's the `systemctl` of whole machines.",
     challenge: {
-      title: "Le maître des mondes",
-      desc: "Depuis zéro : **① vérifie** le support CPU, **② installe** `qemu-kvm` + `libvirt-daemon-system`, **③ démarre** `libvirtd`, **④ crée** une VM nommée `dojo-vm` avec `virt-install`, puis **⑤ prouve** qu'elle tourne avec `virsh list`. L'ordre compte : sans le démon, rien ne répond."
+      title: "The master of worlds",
+      desc: "From scratch: **① check** CPU support, **② install** `qemu-kvm` + `libvirt-daemon-system`, **③ start** `libvirtd`, **④ create** a VM named `dojo-vm` with `virt-install`, then **⑤ prove** it's running with `virsh list`. Order matters: without the daemon, nothing responds."
     },
     exos: [
       {
         level: 'beginner',
-        title: 'Le CPU est-il partant ?',
-        context: "Avant d'installer un hyperviseur, le processeur doit supporter la virtualisation matérielle : **VT-x** (Intel) ou **AMD-V** (AMD). Sans elle, les VM seraient d'une lenteur inutilisable.",
-        scene: "Tu veux savoir si cette machine peut faire tourner des VM.",
-        mission: "Vérifie le support de virtualisation du processeur.",
-        steps: ["Tape `lscpu`", "Cherche la ligne `Virtualization: VT-x`", "Variante ciblée : `lscpu | grep Virtualization`"],
+        title: 'Is the CPU up for it?',
+        context: "Before installing a hypervisor, the processor must support hardware virtualization: **VT-x** (Intel) or **AMD-V** (AMD). Without it, VMs would be unusably slow.",
+        scene: "You want to know whether this machine can run VMs.",
+        mission: "Check the processor's virtualization support.",
+        steps: ["Type `lscpu`", "Look for the line `Virtualization: VT-x`", "Targeted variant: `lscpu | grep Virtualization`"],
         expected: "$ lscpu\n...\nVirtualization:          VT-x",
-        culture: "**KVM** (*Kernel-based Virtual Machine*) est intégré au noyau Linux depuis 2007. Il transforme Linux lui-même en hyperviseur, en s'appuyant sur les instructions matérielles **VT-x**/**AMD-V** du CPU. C'est pour ça qu'une VM KVM est presque aussi rapide qu'une machine réelle : le processeur exécute quasi directement le code de la VM.",
-        reflection: "Pourquoi vérifier VT-x AVANT d'installer KVM ?\n👉 Sans virtualisation matérielle, QEMU peut encore émuler un CPU en pur logiciel — mais c'est **10 à 50× plus lent**. VT-x/AMD-V laisse la VM utiliser directement le processeur. Sur un vrai serveur, cette option se (dés)active parfois dans le BIOS.",
+        culture: "**KVM** (*Kernel-based Virtual Machine*) has been built into the Linux kernel since 2007. It turns Linux itself into a hypervisor, relying on the CPU's hardware instructions **VT-x**/**AMD-V**. That's why a KVM VM is almost as fast as a real machine: the processor runs the VM's code nearly directly.",
+        reflection: "Why check VT-x BEFORE installing KVM?\n👉 Without hardware virtualization, QEMU can still emulate a CPU in pure software — but it's **10 to 50× slower**. VT-x/AMD-V lets the VM use the processor directly. On a real server, this option is sometimes (dis)abled in the BIOS.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('lscpu') >= 0; }); }
       },
       {
         level: 'beginner',
-        title: "Installer l'hyperviseur",
-        context: "La pile KVM sous Ubuntu : `qemu-kvm` (le moteur d'exécution) et `libvirt-daemon-system` (le service qui gère les VM). On les installe avec `apt`.",
-        scene: "Le CPU est compatible. Installe de quoi créer des VM.",
-        mission: "Installe qemu-kvm et libvirt-daemon-system.",
+        title: "Install the hypervisor",
+        context: "The KVM stack on Ubuntu: `qemu-kvm` (the execution engine) and `libvirt-daemon-system` (the service that manages the VMs). You install them with `apt`.",
+        scene: "The CPU is compatible. Install what you need to create VMs.",
+        mission: "Install qemu-kvm and libvirt-daemon-system.",
         steps: [
           "`sudo apt install qemu-kvm libvirt-daemon-system`",
-          "Attends la fin de l'installation",
-          "💡 **Les commandes `apt` du quotidien** : `apt update` (rafraîchit la liste des paquets disponibles) · `apt upgrade` (met à jour ceux installés) · `apt install <paquet>` (installe) · `apt remove <paquet>` (désinstalle) · `apt search <mot>` (cherche un paquet). Le réflexe avant d'installer : toujours `apt update` d'abord."
+          "Wait for the installation to finish",
+          "💡 **The everyday `apt` commands** : `apt update` (refreshes the list of available packages) · `apt upgrade` (updates the installed ones) · `apt install <package>` (installs) · `apt remove <package>` (uninstalls) · `apt search <word>` (searches for a package). The reflex before installing: always `apt update` first."
         ],
         expected: "$ sudo apt install qemu-kvm libvirt-daemon-system\nSetting up qemu-kvm ...\nSetting up libvirt-daemon-system ...\nDone.",
-        culture: "**libvirt** est une couche d'abstraction : la même commande `virsh` pilote KVM, mais aussi Xen, VMware ou des conteneurs LXC. Tu apprends `virsh` une seule fois, et tu commandes n'importe quel hyperviseur. C'est le `systemctl` du monde des VM.",
-        reflection: "Différence entre `qemu-kvm` et `libvirt` ?\n👉 **QEMU/KVM** = le moteur qui *fait tourner* la VM (CPU, RAM, disque virtuels). **libvirt** = le chef d'orchestre qui *gère* les VM (démarrer, arrêter, lister, cloner) via son démon `libvirtd` et l'outil `virsh`. L'un exécute, l'autre organise.",
+        culture: "**libvirt** is an abstraction layer: the same `virsh` command drives KVM, but also Xen, VMware or LXC containers. You learn `virsh` once, and you command any hypervisor. It's the `systemctl` of the VM world.",
+        reflection: "Difference between `qemu-kvm` and `libvirt`?\n👉 **QEMU/KVM** = the engine that *runs* the VM (virtual CPU, RAM, disk). **libvirt** = the conductor that *manages* the VMs (start, stop, list, clone) via its `libvirtd` daemon and the `virsh` tool. One executes, the other organizes.",
         check: function(s) { return sysState.virt.installed === true; }
       },
       {
         level: 'beginner',
-        title: 'Réveiller le démon',
-        context: "`libvirtd` est le service qui parle à l'hyperviseur. Tant qu'il ne tourne pas, `virsh` ne peut se connecter à rien et renvoie une erreur de socket.",
-        scene: "Tout est installé. Il faut démarrer le gestionnaire.",
-        mission: "Démarre le service libvirtd et vérifie qu'il tourne.",
-        steps: ["`sudo systemctl start libvirtd`", "`systemctl status libvirtd` → cherche `active (running)`"],
+        title: 'Wake the daemon',
+        context: "`libvirtd` is the service that talks to the hypervisor. As long as it isn't running, `virsh` can't connect to anything and returns a socket error.",
+        scene: "Everything is installed. You need to start the manager.",
+        mission: "Start the libvirtd service and check that it's running.",
+        steps: ["`sudo systemctl start libvirtd`", "`systemctl status libvirtd` → look for `active (running)`"],
         expected: "$ sudo systemctl start libvirtd\n$ systemctl status libvirtd\n● Active: active (running)",
-        culture: "Un **démon** (*daemon*) est un programme qui tourne en arrière-plan, sans écran ni utilisateur, en attendant des requêtes. Leur nom finit souvent par un **d** : `libvirtd`, `sshd`, `httpd`, `systemd`. `libvirtd` écoute sur une *socket* (`/var/run/libvirt/libvirt-sock`) à laquelle `virsh` se connecte.",
-        reflection: "`virsh list` te renvoie « failed to connect to the hypervisor ». Que faire ?\n👉 Le démon `libvirtd` n'est pas démarré. `sudo systemctl start libvirtd` (et `enable` pour qu'il revienne au boot). C'est l'équivalent virtuel de « le serveur ne répond pas » → on vérifie d'abord que le service tourne.",
+        culture: "A **daemon** is a program that runs in the background, with no screen or user, waiting for requests. Their name often ends in a **d**: `libvirtd`, `sshd`, `httpd`, `systemd`. `libvirtd` listens on a *socket* (`/var/run/libvirt/libvirt-sock`) that `virsh` connects to.",
+        reflection: "`virsh list` returns “failed to connect to the hypervisor”. What do you do?\n👉 The `libvirtd` daemon isn't started. `sudo systemctl start libvirtd` (and `enable` so it comes back at boot). It's the virtual equivalent of “the server isn't responding” → you first check that the service is running.",
         check: function(s) { return !!(sysState.services.libvirtd && sysState.services.libvirtd.active); }
       },
       {
         level: 'intermediate',
-        title: "Faire l'appel",
-        context: "`virsh list` montre les VM actives ; `virsh list --all` montre TOUTES les VM, y compris éteintes. C'est ton `ls` du monde virtuel.",
-        scene: "Le démon tourne. Vois quelles machines existent sur l'hôte.",
-        mission: "Liste toutes les VM, même éteintes.",
-        steps: ["`virsh list --all`", "Observe la colonne State : `shut off` ou `running`"],
+        title: "Take the roll call",
+        context: "`virsh list` shows the active VMs; `virsh list --all` shows ALL the VMs, including the powered-off ones. It's your `ls` of the virtual world.",
+        scene: "The daemon is running. See which machines exist on the host.",
+        mission: "List all the VMs, even the powered-off ones.",
+        steps: ["`virsh list --all`", "Watch the State column: `shut off` or `running`"],
         expected: "$ virsh list --all\n Id   Name                State\n -    ubuntu-serveur      shut off\n -    web-prod            shut off",
-        culture: "Chaque VM gérée par libvirt s'appelle un **domaine** (*domain*) — c'est le vocabulaire hérité de Xen. D'où `virsh` (*virtualization shell*) et ses sous-commandes `dominfo`, `domrename`… Un domaine est défini par un fichier XML que `virsh` lit et applique.",
-        reflection: "Pourquoi `virsh list` seul n'affiche rien au début ?\n👉 Sans `--all`, il ne montre que les VM **actives**. Au départ elles sont toutes `shut off`, donc la liste est vide. `--all` révèle aussi les endormies — exactement comme `ls -a` révèle les fichiers cachés.",
+        culture: "Each VM managed by libvirt is called a **domain** — it's the vocabulary inherited from Xen. Hence `virsh` (*virtualization shell*) and its sub-commands `dominfo`, `domrename`… A domain is defined by an XML file that `virsh` reads and applies.",
+        reflection: "Why does `virsh list` alone show nothing at first?\n👉 Without `--all`, it only shows the **active** VMs. At the start they're all `shut off`, so the list is empty. `--all` also reveals the sleeping ones — exactly like `ls -a` reveals hidden files.",
         check: function(s) { return !!(sysState.virt.installed && sysState.services.libvirtd && sysState.services.libvirtd.active) && s.history.some(function(c) { return c.indexOf('virsh list') >= 0; }); }
       },
       {
         level: 'intermediate',
-        title: 'Allumer une machine',
-        context: "`virsh start <nom>` démarre une VM éteinte : elle passe de `shut off` à `running`, comme un vrai serveur qu'on allume. `virsh shutdown <nom>` fait l'inverse, proprement.",
-        scene: "Réveille la VM ubuntu-serveur.",
-        mission: "Démarre la VM `ubuntu-serveur`, puis confirme qu'elle tourne.",
+        title: 'Power on a machine',
+        context: "`virsh start <name>` starts a powered-off VM: it moves from `shut off` to `running`, like a real server being switched on. `virsh shutdown <name>` does the reverse, cleanly.",
+        scene: "Wake the ubuntu-serveur VM.",
+        mission: "Start the `ubuntu-serveur` VM, then confirm it's running.",
         steps: [
           "`virsh start ubuntu-serveur`",
-          "`virsh list` → elle apparaît en `running`",
-          "💡 **La télécommande d'une VM (le `systemctl` des machines)** : `virsh start nom` (allumer) · `virsh shutdown nom` (éteindre poliment) · `virsh reboot nom` (redémarrer) · `virsh suspend`/`virsh resume` (mettre en pause / reprendre) · `virsh destroy nom` (couper le courant en force — ne SUPPRIME pas la VM, malgré le nom)."
+          "`virsh list` → it appears as `running`",
+          "💡 **A VM's remote control (the `systemctl` of machines)** : `virsh start name` (power on) · `virsh shutdown name` (shut down politely) · `virsh reboot name` (restart) · `virsh suspend`/`virsh resume` (pause / resume) · `virsh destroy name` (cut the power by force — does NOT DELETE the VM, despite the name)."
         ],
         expected: "$ virsh start ubuntu-serveur\nDomain 'ubuntu-serveur' started",
-        culture: "Différence subtile mais vitale : `virsh shutdown` demande **poliment** à l'OS invité de s'éteindre (comme le bouton power), alors que `virsh destroy` **coupe le courant** brutalement (comme arracher la prise). `destroy` ne détruit PAS la VM — il la force juste à s'arrêter. Mauvais nom, piège classique.",
-        reflection: "Tu fais `virsh shutdown` mais la VM reste `running`. Pourquoi ?\n👉 `shutdown` envoie un signal à l'OS *invité*, qui doit coopérer (avoir les agents ACPI). S'il ne répond pas, la VM ne s'éteint pas. En dernier recours : `virsh destroy` (arrêt forcé). Comme un PC figé qu'on éteint par le bouton maintenu.",
+        culture: "A subtle but vital difference: `virsh shutdown` asks the guest OS **politely** to power off (like the power button), whereas `virsh destroy` **cuts the power** brutally (like yanking the plug). `destroy` does NOT destroy the VM — it just forces it to stop. Bad name, classic trap.",
+        reflection: "You run `virsh shutdown` but the VM stays `running`. Why?\n👉 `shutdown` sends a signal to the *guest* OS, which has to cooperate (have the ACPI agents). If it doesn't respond, the VM doesn't power off. As a last resort: `virsh destroy` (forced stop). Like a frozen PC you switch off by holding the button.",
         check: function(s) { return sysState.virt.vms.some(function(v) { return v.state === 'running'; }); }
       },
       {
         level: 'advanced',
-        title: 'Créer un monde',
-        context: "`virt-install` crée une VM de zéro : nom, mémoire, CPU, disque, image d'installation. C'est l'équivalent de `useradd`, mais pour des machines entières.",
-        scene: "Fais naître ta propre machine virtuelle.",
-        mission: "Crée une VM nommée `dojo-vm`, puis vérifie sa présence.",
-        steps: ["`virt-install --name dojo-vm --memory 1024 --vcpus 1 --disk size=10 --cdrom ubuntu.iso`", "`virsh list` → `dojo-vm` doit tourner"],
-        expected: "$ virt-install --name dojo-vm --memory 1024 --vcpus 1 ...\nDomain 'dojo-vm' créée et démarrée.",
-        culture: "En vrai, on ne recrée pas 50 VM à la main : on les **clone** depuis un modèle (`virt-clone`), ou on les décrit dans du code avec des outils comme **Terraform** ou **Vagrant**. C'est l'*Infrastructure as Code* : ta flotte de serveurs devient un fichier texte versionné avec Git. La boucle est bouclée, Kaï.",
-        reflection: "Pourquoi préférer `virt-install`/l'Infrastructure as Code plutôt que cliquer dans une interface ?\n👉 Parce que c'est **reproductible et versionnable**. Une VM créée à la main est un flocon de neige unique, impossible à recréer à l'identique. Décrite en commande ou en fichier, elle se recrée en une seconde, se relit, se partage, se versionne. C'est toute la philosophie Unix appliquée aux serveurs.",
+        title: 'Create a world',
+        context: "`virt-install` creates a VM from scratch: name, memory, CPU, disk, installation image. It's the equivalent of `useradd`, but for whole machines.",
+        scene: "Bring your own virtual machine into being.",
+        mission: "Create a VM named `dojo-vm`, then verify its presence.",
+        steps: ["`virt-install --name dojo-vm --memory 1024 --vcpus 1 --disk size=10 --cdrom ubuntu.iso`", "`virsh list` → `dojo-vm` should be running"],
+        expected: "$ virt-install --name dojo-vm --memory 1024 --vcpus 1 ...\nDomain 'dojo-vm' created and started.",
+        culture: "In reality, you don't recreate 50 VMs by hand: you **clone** them from a template (`virt-clone`), or describe them in code with tools like **Terraform** or **Vagrant**. That's *Infrastructure as Code*: your fleet of servers becomes a text file versioned with Git. The loop is closed, Kaï.",
+        reflection: "Why prefer `virt-install`/Infrastructure as Code over clicking in an interface?\n👉 Because it's **reproducible and versionable**. A VM created by hand is a unique snowflake, impossible to recreate identically. Described in a command or a file, it recreates in a second, re-reads, shares, versions. It's the whole Unix philosophy applied to servers.",
         check: function(s) { return sysState.virt.vms.some(function(v) { return v.name === 'dojo-vm'; }); }
       },
       {
         level: 'advanced',
-        title: 'Mini-défi : de zéro à une VM',
-        context: "On assemble toute la pile, dans l'ordre. Chaque étage repose sur le précédent : le CPU (VT-x) porte le moteur (`qemu-kvm`), piloté par le démon (`libvirtd`), commandé par l'outil (`virsh`). Si un maillon manque, rien ne tourne.",
-        scene: "Le Sensei te confie une machine vierge : « fais-en un hyperviseur, et fais-y naître une VM. » Sans filet.",
-        mission: "Depuis zéro : vérifie le CPU, installe la pile, démarre le démon, crée une VM `dojo-vm`, et prouve qu'elle tourne.",
+        title: 'Mini-challenge: from zero to a VM',
+        context: "You assemble the whole stack, in order. Each floor rests on the previous one: the CPU (VT-x) carries the engine (`qemu-kvm`), driven by the daemon (`libvirtd`), commanded by the tool (`virsh`). If one link is missing, nothing runs.",
+        scene: "The Sensei hands you a blank machine: “make it a hypervisor, and bring a VM to life in it.” No net.",
+        mission: "From scratch: check the CPU, install the stack, start the daemon, create a `dojo-vm` VM, and prove it's running.",
         steps: [
-          "① Vérifie le support CPU : `lscpu | grep Virtualization`",
-          "② Installe la pile : `sudo apt install qemu-kvm libvirt-daemon-system`",
-          "③ Démarre le démon : `sudo systemctl start libvirtd`",
-          "④ Crée et lance la VM : `virt-install --name dojo-vm --memory 1024 --vcpus 1 --disk size=10 --cdrom ubuntu.iso`",
-          "⑤ Prouve qu'elle tourne : `virsh list`"
+          "① Check CPU support: `lscpu | grep Virtualization`",
+          "② Install the stack: `sudo apt install qemu-kvm libvirt-daemon-system`",
+          "③ Start the daemon: `sudo systemctl start libvirtd`",
+          "④ Create and launch the VM: `virt-install --name dojo-vm --memory 1024 --vcpus 1 --disk size=10 --cdrom ubuntu.iso`",
+          "⑤ Prove it's running: `virsh list`"
         ],
         expected: "$ virsh list\n Id   Name       State\n 1    dojo-vm    running",
-        culture: "Tu viens de reproduire, à la main, ce qui se cache derrière CHAQUE serveur cloud (AWS, OVH, Azure) : un hyperviseur qui découpe une grosse machine physique en dizaines de VM isolées. À grande échelle, tout est automatisé (Terraform, Ansible) et facturé à la minute — mais le geste de fond, vérifier → installer → démarrer le démon → créer la VM, est exactement celui-ci.",
-        reflection: "L'ordre compte : que se passe-t-il si tu tapes `virsh list` AVANT de démarrer `libvirtd` ?\n👉 `virsh` échoue (« failed to connect to the hypervisor »). `virsh` n'est qu'une télécommande : sans le démon `libvirtd` allumé pour la recevoir, elle ne parle à personne. Chaque étage de la pile repose sur le précédent — sauter une étape casse la chaîne. On monte toujours du matériel vers l'outil, jamais l'inverse.",
+        culture: "You've just reproduced, by hand, what hides behind EVERY cloud server (AWS, OVH, Azure): a hypervisor that carves a big physical machine into dozens of isolated VMs. At scale, everything is automated (Terraform, Ansible) and billed by the minute — but the underlying gesture, check → install → start the daemon → create the VM, is exactly this one.",
+        reflection: "Order matters: what happens if you type `virsh list` BEFORE starting `libvirtd`?\n👉 `virsh` fails (“failed to connect to the hypervisor”). `virsh` is just a remote control: without the `libvirtd` daemon switched on to receive it, it talks to no one. Each floor of the stack rests on the previous one — skipping a step breaks the chain. You always build up from hardware to tool, never the reverse.",
         check: function(s) { return sysState.virt.installed && !!(sysState.services.libvirtd && sysState.services.libvirtd.active) && sysState.virt.vms.some(function(v) { return v.state === 'running'; }); }
       }
     ]
@@ -4480,47 +4480,47 @@ var QUESTS = [
     chapter: 20,
     bonus: true,
     icon: '🧰',
-    title: 'Boîte à outils',
+    title: 'Toolbox',
     color: '#c89028',
-    desc: 'Les petites commandes qui font sourire',
-    story: "Fin de journée au Dojo. Les grands combats sont derrière toi : tu navigues, tu lis, tu écris, tu gères des droits et des services. Le Sensei pose une petite boîte en bois sur la table. « Ce ne sont pas des armes, Kaï. Ce sont des **outils**. » Il l'ouvre : dedans, une poignée de commandes que personne ne t'a jamais montrées en cours. Un calendrier de poche. Une calculatrice cachée. Une machine à décortiquer les nombres. Et même… une vache qui parle.\n\n« Un vrai artisan connaît ses gros outils **et** ses petits, sourit-il. Ce sont eux qui, un jour de rush, te font gagner cinq minutes — ou te font sourire à 3h du matin devant un serveur en panne. » Ce chapitre est un **bonus** : rien d'obligatoire, tout de plaisant. Ouvre la boîte.",
-    mentor: "Ces commandes ont trois points communs, apprenti :\n\n① Elles sont **petites et sûres** : aucune ne détruit rien. Tu peux toutes les essayer sans peur.\n② Elles brillent **combinées** avec un tuyau `|`. `seq 5 | tac`, `sort noms.txt | uniq`, `echo \"3*7\" | bc` : chacune fait une chose, tu les enchaînes.\n③ Elles t'apprennent le vrai esprit Unix : **un outil = une tâche**. Ni usine à gaz, ni bouton magique. Des briques que tu assembles toi-même.\n\nGarde-les dans un coin de ta tête. Le jour où tu en auras besoin, tu te souviendras qu'elles existent — et ça, c'est déjà la moitié du métier.",
+    desc: 'The little commands that make you smile',
+    story: "End of the day at the Dojo. The great battles are behind you: you navigate, you read, you write, you manage permissions and services. The Sensei sets a little wooden box on the table. “These aren't weapons, Kaï. They're **tools**.” He opens it: inside, a handful of commands nobody ever showed you in class. A pocket calendar. A hidden calculator. A machine for taking numbers apart. And even… a talking cow.\n\n“A true craftsman knows his big tools **and** his small ones,” he smiles. “They're the ones that, on a hectic day, save you five minutes — or make you smile at 3 a.m. in front of a broken server.” This chapter is a **bonus**: nothing mandatory, everything pleasant. Open the box.",
+    mentor: "These commands have three things in common, apprentice:\n\n① They're **small and safe**: none of them destroys anything. You can try them all without fear.\n② They shine **combined** with a pipe `|`. `seq 5 | tac`, `sort names.txt | uniq`, `echo \"3*7\" | bc`: each does one thing, you chain them together.\n③ They teach you the true Unix spirit: **one tool = one task**. No gas factory, no magic button. Bricks you assemble yourself.\n\nKeep them in a corner of your mind. The day you need one, you'll remember it exists — and that, already, is half the job.",
     challenge: {
-      title: "L'artisan et sa boîte",
-      desc: "Sans jamais rien casser, sors chaque outil de la boîte au moins une fois : **le calendrier** (`cal`), **la suite de nombres** (`seq`), **la décomposition** (`factor`), **la calculatrice** (`| bc`), **le localisateur** (`which`), **le trieur** (`sort` + `uniq`), **le découpeur** (`cut`) et, pour finir en beauté, **la vache** (`cowsay`). Huit outils, huit gestes — l'atelier au complet."
+      title: "The craftsman and his box",
+      desc: "Without ever breaking anything, take each tool out of the box at least once: **the calendar** (`cal`), **the number sequence** (`seq`), **the decomposition** (`factor`), **the calculator** (`| bc`), **the locator** (`which`), **the sorter** (`sort` + `uniq`), **the cutter** (`cut`) and, to finish in style, **the cow** (`cowsay`). Eight tools, eight gestures — the whole workshop."
     },
     exos: [
       {
         level: 'beginner',
-        title: 'Le calendrier de poche',
-        context: "Première surprise de la boîte : le terminal sait afficher un **calendrier**. La commande `cal` (pour *calendar*) dessine le mois courant en un clin d'œil, avec la date du jour mise en évidence. Pas besoin d'ouvrir une appli ni de sortir ton téléphone : la réponse à « on est quel jour, déjà ? » est à une commande.",
-        scene: "Tu prépares une sauvegarde planifiée et tu veux jeter un œil au mois en cours pour choisir une date.",
-        mission: "Affiche le calendrier du mois courant.",
+        title: 'The pocket calendar',
+        context: "First surprise from the box: the terminal can display a **calendar**. The `cal` command (for *calendar*) draws the current month in the blink of an eye, with today's date highlighted. No need to open an app or pull out your phone: the answer to “what day is it again?” is one command away.",
+        scene: "You're setting up a scheduled backup and want to glance at the current month to pick a date.",
+        mission: "Display the calendar for the current month.",
         steps: [
-          "Tape `cal` puis Entrée",
-          "Le mois s'affiche : les jours en colonnes (lu, ma, me…), la date du jour est surlignée",
-          "💡 Sur une vraie machine : `cal 2026` affiche l'année entière, `cal 12 2025` un mois précis, et `ncal` propose une disposition verticale."
+          "Type `cal` then Enter",
+          "The month appears: the days in columns (Su, Mo, Tu…), today's date is highlighted",
+          "💡 On a real machine: `cal 2026` shows the whole year, `cal 12 2025` a specific month, and `ncal` offers a vertical layout."
         ],
-        expected: "$ cal\n     août 2026\nlu ma me je ve sa di\n             1  2  3\n 4  5  6  7  8  9 10\n...",
-        culture: "`cal` existe depuis les tout premiers Unix des années 70. Détail amusant : le calendrier de `cal` gère le **basculement de 1752**, l'année où l'Angleterre est passée du calendrier julien au grégorien en supprimant 11 jours. Tape `cal 9 1752` sur une vraie machine : il manque le 3 au 13 septembre ! Un bug ? Non — c'est l'Histoire, fidèlement reproduite.",
-        reflection: "Pourquoi un système fait pour des serveurs embarque-t-il un calendrier ?\n👉 Parce qu'administrer, c'est jongler avec le **temps** : planifier des tâches (`cron`), dater des sauvegardes, lire des logs horodatés. Un petit `cal` sous la main évite de se tromper d'un jour dans une commande qui, elle, ne pardonne pas.",
+        expected: "$ cal\n    August 2026\nSu Mo Tu We Th Fr Sa\n                   1\n 2  3  4  5  6  7  8\n...",
+        culture: "`cal` has existed since the very first Unixes of the 70s. Fun detail: the `cal` calendar handles the **1752 switchover**, the year England moved from the Julian to the Gregorian calendar by deleting 11 days. Type `cal 9 1752` on a real machine: September 3rd to 13th are missing! A bug? No — it's History, faithfully reproduced.",
+        reflection: "Why does a system built for servers ship with a calendar?\n👉 Because administering is juggling with **time**: scheduling tasks (`cron`), dating backups, reading timestamped logs. A little `cal` on hand keeps you from being a day off in a command that, itself, doesn't forgive.",
         check: function(s) { return s.history.some(function(c) { return /^cal(\s|$)/.test(c.trim()); }); }
       },
       {
         level: 'beginner',
-        title: 'Compter sans se fatiguer',
-        context: "Deuxième outil : `seq` (pour *sequence*). Il **génère une suite de nombres**, un par ligne. Trivial ? Pas tant : dès qu'on veut répéter quelque chose N fois, numéroter des fichiers, ou nourrir une boucle, `seq` est la source la plus simple. C'est le robinet à nombres du terminal.",
-        scene: "Tu veux une liste bien nette des nombres de 1 à 10 pour l'utiliser ensuite dans un petit script.",
-        mission: "Génère la suite des nombres de 1 à 10.",
+        title: 'Counting without the effort',
+        context: "Second tool: `seq` (for *sequence*). It **generates a sequence of numbers**, one per line. Trivial? Not so much: whenever you want to repeat something N times, number files, or feed a loop, `seq` is the simplest source. It's the terminal's number tap.",
+        scene: "You want a clean list of the numbers from 1 to 10 to use afterward in a little script.",
+        mission: "Generate the sequence of numbers from 1 to 10.",
         steps: [
-          "Tape `seq 10` — avec un seul nombre, `seq` compte de 1 jusqu'à lui",
-          "Chaque nombre apparaît sur sa propre ligne",
-          "💡 Deux nombres = début et fin (`seq 5 8` → 5 6 7 8). Trois nombres = début, **pas**, fin (`seq 0 2 10` → 0 2 4 6 8 10).",
-          "💡 Combiné à un tuyau, il devient puissant : `seq 5 | tac` compte à l'envers (5 4 3 2 1)."
+          "Type `seq 10` — with a single number, `seq` counts from 1 up to it",
+          "Each number appears on its own line",
+          "💡 Two numbers = start and end (`seq 5 8` → 5 6 7 8). Three numbers = start, **step**, end (`seq 0 2 10` → 0 2 4 6 8 10).",
+          "💡 Combined with a pipe, it becomes powerful: `seq 5 | tac` counts backward (5 4 3 2 1)."
         ],
         expected: "$ seq 10\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10",
-        culture: "`seq` illustre à merveille la philosophie Unix : « fais UNE chose, mais fais-la bien ». Il ne sait que compter — mais couplé aux tuyaux et aux boucles, il devient un moteur. `for i in $(seq 1 100); do ...; done` répète une action cent fois. Les outils modernes préfèrent `{1..100}` (expansion du shell), mais `seq` reste le plus lisible pour un débutant.",
-        reflection: "Pourquoi générer des nombres sur des lignes séparées plutôt que sur une seule ligne ?\n👉 Parce que sous Unix, la **ligne** est l'unité de base du texte : presque tous les outils (`sort`, `grep`, `wc`, une boucle `while read`) traitent leur entrée ligne par ligne. Un nombre par ligne, c'est le format que tous les autres outils savent avaler directement.",
+        culture: "`seq` perfectly illustrates the Unix philosophy: “do ONE thing, but do it well”. It only knows how to count — but coupled with pipes and loops, it becomes an engine. `for i in $(seq 1 100); do ...; done` repeats an action a hundred times. Modern tools prefer `{1..100}` (shell expansion), but `seq` stays the most readable for a beginner.",
+        reflection: "Why generate numbers on separate lines rather than on a single line?\n👉 Because under Unix, the **line** is the basic unit of text: nearly all tools (`sort`, `grep`, `wc`, a `while read` loop) process their input line by line. One number per line is the format every other tool knows how to swallow directly.",
         check: function(s) {
           return s.history.some(function(c) {
             var p = c.trim().split(/\s+/);
@@ -4537,36 +4537,36 @@ var QUESTS = [
       },
       {
         level: 'intermediate',
-        title: 'Anatomie d\'un nombre',
-        context: "Troisième outil, plus pointu : `factor`. Donne-lui un nombre, il te le **décompose en facteurs premiers** — les briques indivisibles qui, multipliées, le reconstituent. `factor 12` répond `12: 2 2 3` (car 2 × 2 × 3 = 12). C'est un clin d'œil aux origines mathématiques d'Unix, écrit par et pour des chercheurs.",
-        scene: "Curieux, tu veux voir de quoi est fait le nombre 360 — celui des degrés d'un cercle.",
-        mission: "Décompose le nombre 360 en ses facteurs premiers.",
+        title: 'Anatomy of a number',
+        context: "Third tool, sharper: `factor`. Give it a number, it **breaks it down into prime factors** — the indivisible bricks that, multiplied, rebuild it. `factor 12` answers `12: 2 2 3` (because 2 × 2 × 3 = 12). It's a nod to Unix's mathematical origins, written by and for researchers.",
+        scene: "Curious, you want to see what the number 360 is made of — the number of degrees in a circle.",
+        mission: "Break down the number 360 into its prime factors.",
         steps: [
-          "Tape `factor 360`",
-          "Lis la décomposition renvoyée après les deux-points",
-          "Vérifie mentalement : multiplie les facteurs entre eux, tu dois retomber sur 360",
-          "💡 Essaie un nombre premier, comme `factor 17` : il n'a que lui-même comme facteur (`17: 17`)."
+          "Type `factor 360`",
+          "Read the decomposition returned after the colon",
+          "Check mentally: multiply the factors together, you should land back on 360",
+          "💡 Try a prime number, like `factor 17`: it has only itself as a factor (`17: 17`)."
         ],
         expected: "$ factor 360\n360: 2 2 2 3 3 5",
-        culture: "`factor` fait partie des **GNU coreutils**, la trousse de base de tout Linux. Sa présence rappelle qu'Unix est né dans un labo (les Bell Labs) où mathématiciens et informaticiens partageaient les mêmes machines. Aujourd'hui, la factorisation en nombres premiers n'est pas qu'un jeu : c'est le **cœur de la cryptographie** (RSA). La difficulté à factoriser de très grands nombres est ce qui protège tes paiements en ligne.",
-        reflection: "Pourquoi est-il si difficile pour un ordinateur de factoriser un nombre de 300 chiffres, alors que `factor 360` est instantané ?\n👉 Parce que le temps de calcul **explose** avec la taille du nombre. Pour de petits nombres, on teste tous les diviseurs en un éclair. Pour d'énormes nombres, il faudrait des milliards d'années. Toute la sécurité de RSA repose sur cet écart : facile à vérifier, quasi impossible à casser.",
+        culture: "`factor` is part of the **GNU coreutils**, the base kit of every Linux. Its presence recalls that Unix was born in a lab (Bell Labs) where mathematicians and computer scientists shared the same machines. Today, prime factorization isn't just a game: it's the **heart of cryptography** (RSA). The difficulty of factoring very large numbers is what protects your online payments.",
+        reflection: "Why is it so hard for a computer to factor a 300-digit number, when `factor 360` is instant?\n👉 Because the computation time **explodes** with the size of the number. For small numbers, you test every divisor in a flash. For huge numbers, it would take billions of years. All of RSA's security rests on this gap: easy to verify, nearly impossible to break.",
         check: function(s) { return s.history.some(function(c) { var p = c.trim().split(/\s+/); return p[0] === 'factor' && p.indexOf('360') >= 0; }); }
       },
       {
         level: 'beginner',
-        title: 'La calculatrice cachée',
-        context: "Quatrième outil, et pas des moindres : le terminal sait **calculer**. La commande `bc` (*basic calculator*) évalue des expressions mathématiques. La façon la plus simple de la nourrir : lui envoyer l'expression par un tuyau avec `echo`. `echo \"2 + 2\" | bc` répond `4`. Fini d'ouvrir la calculatrice de Windows.",
-        scene: "Tu veux savoir combien de secondes contient une journée entière, sans sortir de ton terminal.",
-        mission: "Calcule 24 × 60 × 60 (heures × minutes × secondes) à l'aide de `bc`.",
+        title: 'The hidden calculator',
+        context: "Fourth tool, and not the least: the terminal can **calculate**. The `bc` command (*basic calculator*) evaluates mathematical expressions. The simplest way to feed it: send the expression through a pipe with `echo`. `echo \"2 + 2\" | bc` answers `4`. No more opening the Windows calculator.",
+        scene: "You want to know how many seconds a whole day contains, without leaving your terminal.",
+        mission: "Compute 24 × 60 × 60 (hours × minutes × seconds) using `bc`.",
         steps: [
-          "Tape `echo \"24 * 60 * 60\" | bc` — le `*` est le signe « multiplié »",
-          "Le tuyau `|` envoie l'expression écrite par `echo` dans `bc`, qui la calcule",
-          "Le résultat, 86400, est le nombre de secondes dans une journée",
-          "💡 `bc` connaît `+ - * / ( )` et le reste `%`. Pour les décimales : `echo \"10 / 3\" | bc -l`."
+          "Type `echo \"24 * 60 * 60\" | bc` — the `*` is the “times” sign",
+          "The pipe `|` sends the expression written by `echo` into `bc`, which computes it",
+          "The result, 86400, is the number of seconds in a day",
+          "💡 `bc` knows `+ - * / ( )` and the remainder `%`. For decimals: `echo \"10 / 3\" | bc -l`."
         ],
         expected: "$ echo \"24 * 60 * 60\" | bc\n86400",
-        culture: "`bc` est un vrai langage de calcul, avec variables, boucles et précision arbitraire : il peut manipuler des nombres de milliers de chiffres, là où une calculatrice classique sature. Son ancêtre `dc` (*desk calculator*, 1970) utilise la notation polonaise inversée. Sur les serveurs, `bc` sert à faire des maths dans des scripts — car le shell, lui, ne sait compter qu'avec des entiers.",
-        reflection: "Pourquoi passer par `echo \"...\" | bc` plutôt que de taper l'opération directement dans le shell ?\n👉 Parce que le shell (bash) ne fait que de l'arithmétique **entière** et limitée. `echo $((10/3))` donne `3`, pas `3.33`. Dès qu'on veut des décimales ou de gros nombres, on délègue à un vrai outil de calcul : `bc`. Chaque outil son métier — le shell orchestre, `bc` calcule.",
+        culture: "`bc` is a real calculation language, with variables, loops and arbitrary precision: it can handle numbers thousands of digits long, where a classic calculator chokes. Its ancestor `dc` (*desk calculator*, 1970) uses reverse Polish notation. On servers, `bc` is used to do math inside scripts — because the shell itself can only count with integers.",
+        reflection: "Why go through `echo \"...\" | bc` rather than typing the operation directly in the shell?\n👉 Because the shell (bash) only does **integer** arithmetic, and limited at that. `echo $((10/3))` gives `3`, not `3.33`. As soon as you want decimals or big numbers, you delegate to a real calculation tool: `bc`. Each tool its trade — the shell orchestrates, `bc` calculates.",
         check: function(s) {
           return s.history.some(function(c) {
             if (!/\|\s*bc\b/.test(c)) return false;
@@ -4580,36 +4580,36 @@ var QUESTS = [
       },
       {
         level: 'intermediate',
-        title: 'Où vit une commande ?',
-        context: "Cinquième outil : `which`. Quand tu tapes `sort`, comment le système sait-il QUEL programme lancer ? Il cherche dans une liste de dossiers, le fameux `PATH`. `which <commande>` te dit **exactement quel fichier** sera exécuté — son chemin complet sur le disque. Indispensable le jour où deux versions d'un outil se disputent la place.",
-        scene: "Avant d'écrire un script, tu veux vérifier que la commande `sort` est bien installée et savoir d'où elle vient.",
-        mission: "Trouve le chemin complet de la commande `sort`.",
+        title: 'Where does a command live?',
+        context: "Fifth tool: `which`. When you type `sort`, how does the system know WHICH program to launch? It searches a list of folders, the famous `PATH`. `which <command>` tells you **exactly which file** will be executed — its full path on disk. Indispensable the day two versions of a tool fight over the spot.",
+        scene: "Before writing a script, you want to check that the `sort` command is indeed installed and know where it comes from.",
+        mission: "Find the full path of the `sort` command.",
         steps: [
-          "Tape `which sort`",
-          "Le terminal répond par le chemin du programme (ex. `/usr/bin/sort`)",
-          "Essaie avec une commande qui n'existe pas, `which brouette` : rien n'est trouvé",
-          "💡 Cousin utile : `type sort` dit AUSSI si c'est un alias, une fonction ou un programme."
+          "Type `which sort`",
+          "The terminal answers with the program's path (e.g. `/usr/bin/sort`)",
+          "Try it with a command that doesn't exist, `which wheelbarrow`: nothing is found",
+          "💡 Handy cousin: `type sort` ALSO tells you whether it's an alias, a function or a program."
         ],
         expected: "$ which sort\n/usr/bin/sort",
-        culture: "`which` parcourt ton `PATH` (la variable qui liste les dossiers de programmes : `/usr/bin`, `/bin`…) et renvoie le premier fichier correspondant. C'est un outil de **diagnostic** clé : « pourquoi ma commande se comporte bizarrement ? » — souvent parce qu'une vieille version traîne plus tôt dans le PATH. Les shells modernes préfèrent `command -v`, plus fiable, mais `which` reste le réflexe universel.",
-        reflection: "Pourquoi le système a-t-il besoin d'un `PATH` plutôt que de chercher les programmes partout sur le disque ?\n👉 Pour la **vitesse** et la **sécurité**. Fouiller tout le disque à chaque commande serait horriblement lent. Et n'exécuter que les programmes rangés dans des dossiers de confiance (`/usr/bin`…) évite qu'un fichier piégé, déposé dans ton dossier courant, se fasse passer pour `ls`. Le PATH, c'est une liste blanche d'endroits sûrs.",
+        culture: "`which` walks your `PATH` (the variable that lists the program folders: `/usr/bin`, `/bin`…) and returns the first matching file. It's a key **diagnostic** tool: “why is my command behaving strangely?” — often because an old version lurks earlier in the PATH. Modern shells prefer `command -v`, more reliable, but `which` stays the universal reflex.",
+        reflection: "Why does the system need a `PATH` rather than searching for programs everywhere on the disk?\n👉 For **speed** and **security**. Scouring the whole disk on every command would be horribly slow. And running only the programs stored in trusted folders (`/usr/bin`…) keeps a booby-trapped file, dropped in your current folder, from passing itself off as `ls`. The PATH is a whitelist of safe places.",
         check: function(s) { return s.history.some(function(c) { var p = c.trim().split(/\s+/); return (p[0] === 'which' || p[0] === 'type') && p.indexOf('sort') >= 0; }); }
       },
       {
         level: 'intermediate',
-        title: 'Trier et dédoublonner',
-        context: "Sixième outil, en réalité deux qui travaillent en duo : `sort` (trie les lignes) et `uniq` (supprime les doublons **consécutifs**). Le piège classique : `uniq` ne voit que les doublons qui se suivent. Pour nettoyer une vraie liste en désordre, il faut donc **d'abord trier, puis dédoublonner** — le combo `sort … | uniq`. C'est l'un des enchaînements les plus utiles du métier.",
-        scene: "On t'a laissé un fichier `disciples.txt` : une liste de noms saisie à la va-vite, en désordre et avec des doublons. Tu veux la version propre : triée, chaque nom une seule fois.",
-        mission: "Depuis `~/atelier-outils`, affiche le contenu de `disciples.txt` trié et sans doublons.",
+        title: 'Sort and deduplicate',
+        context: "Sixth tool, really two working as a duo: `sort` (sorts the lines) and `uniq` (removes **consecutive** duplicates). The classic trap: `uniq` only sees the duplicates that follow one another. So to clean up a truly messy list, you must **first sort, then deduplicate** — the `sort … | uniq` combo. It's one of the most useful chains in the trade.",
+        scene: "You've been left a file `disciples.txt`: a list of names typed in a hurry, out of order and with duplicates. You want the clean version: sorted, each name only once.",
+        mission: "From `~/atelier-outils`, display the contents of `disciples.txt` sorted and without duplicates.",
         steps: [
-          "Va dans l'atelier : `cd ~/atelier-outils`",
-          "Regarde le désordre : `cat disciples.txt`",
-          "Trie d'abord, dédoublonne ensuite : `sort disciples.txt | uniq`",
-          "💡 Observe pourquoi l'ordre compte : `uniq disciples.txt` seul (sans trier) laisse passer des doublons éloignés. Il faut les rendre voisins d'abord."
+          "Go to the workshop: `cd ~/atelier-outils`",
+          "Look at the mess: `cat disciples.txt`",
+          "Sort first, deduplicate after: `sort disciples.txt | uniq`",
+          "💡 Notice why order matters: `uniq disciples.txt` alone (without sorting) lets far-apart duplicates slip through. You have to make them neighbors first."
         ],
         expected: "$ sort disciples.txt | uniq\nAiko\nBao\nKenji\nMei\nRen",
-        culture: "Le duo `sort | uniq` est un monument de la culture Unix : compter les visiteurs uniques d'un log, dédupliquer une liste d'e-mails, repérer les doublons… `sort | uniq -c | sort -rn` (trier, compter, re-trier par fréquence) est LE réflexe pour répondre à « qu'est-ce qui revient le plus souvent ? ». Deux petits outils, assemblés, valent un tableur.",
-        reflection: "Pourquoi `uniq` ne supprime-t-il que les doublons **qui se suivent**, au lieu de tous les doublons ?\n👉 Par choix de conception : pour repérer un doublon « où qu'il soit », `uniq` devrait garder TOUTE la liste en mémoire. En ne comparant qu'à la ligne précédente, il traite des fichiers de milliards de lignes sans effort. Le prix de cette légèreté : on doit trier avant. Encore la philosophie Unix — chaque outil reste simple, on les combine.",
+        culture: "The `sort | uniq` duo is a monument of Unix culture: counting a log's unique visitors, deduplicating an email list, spotting duplicates… `sort | uniq -c | sort -rn` (sort, count, re-sort by frequency) is THE reflex for answering “what comes up most often?”. Two little tools, assembled, are worth a spreadsheet.",
+        reflection: "Why does `uniq` only remove the duplicates **that follow one another**, instead of all duplicates?\n👉 By design choice: to spot a duplicate “wherever it is”, `uniq` would have to keep the WHOLE list in memory. By comparing only to the previous line, it handles files of billions of lines effortlessly. The price of that lightness: you must sort first. The Unix philosophy again — each tool stays simple, you combine them.",
         setup: function() {
           ensureDir('/home/user/atelier-outils');
           ensureFile('/home/user/atelier-outils/disciples.txt', '48');
@@ -4623,20 +4623,20 @@ var QUESTS = [
       },
       {
         level: 'intermediate',
-        title: 'Découper en colonnes',
-        context: "Septième outil : `cut`. Beaucoup de fichiers rangent leurs données en **colonnes** séparées par un caractère : un `:` dans `/etc/passwd`, une virgule dans un CSV, une tabulation ailleurs. `cut` extrait la colonne qui t'intéresse. Tu lui dis le séparateur (`-d`) et le numéro de champ (`-f`), il te sort juste ce que tu veux.",
-        scene: "Une fiche d'inscription arrive au format compact `nom:année:grade`. Tu ne veux que le grade — la troisième colonne.",
-        mission: "À partir de la ligne `kenji:1998:ninja`, extrais le troisième champ (le grade) avec `cut`.",
+        title: 'Cut into columns',
+        context: "Seventh tool: `cut`. Many files arrange their data in **columns** separated by a character: a `:` in `/etc/passwd`, a comma in a CSV, a tab elsewhere. `cut` extracts the column you care about. You tell it the separator (`-d`) and the field number (`-f`), it hands you exactly what you want.",
+        scene: "A registration record arrives in the compact format `name:year:rank`. You only want the rank — the third column.",
+        mission: "From the line `kenji:1998:ninja`, extract the third field (the rank) with `cut`.",
         steps: [
-          "Tape `echo \"kenji:1998:ninja\" | cut -d: -f3`",
-          "`-d:` dit « les colonnes sont séparées par un deux-points »",
-          "`-f3` dit « donne-moi le champ numéro 3 »",
-          "Le terminal répond `ninja`",
-          "💡 Change juste `-f` pour viser une autre colonne : `-f1` → le nom, `-f2` → l'année."
+          "Type `echo \"kenji:1998:ninja\" | cut -d: -f3`",
+          "`-d:` says “the columns are separated by a colon”",
+          "`-f3` says “give me field number 3”",
+          "The terminal answers `ninja`",
+          "💡 Just change `-f` to aim at another column: `-f1` → the name, `-f2` → the year."
         ],
         expected: "$ echo \"kenji:1998:ninja\" | cut -d: -f3\nninja",
-        culture: "`cut` est le découpeur de colonnes du quotidien : extraire tous les noms d'utilisateurs de `/etc/passwd` tient en `cut -d: -f1 /etc/passwd`. Pour des découpages plus fins (colonnes à largeur variable, réordonner, calculer), les administrateurs passent à `awk`, un mini-langage dédié. Mais pour « donne-moi juste la colonne 3 », `cut` est imbattable de simplicité.",
-        reflection: "Que se passe-t-il si tu oublies de préciser le séparateur avec `-d` ?\n👉 Par défaut, `cut` découpe sur la **tabulation**. Si ton fichier utilise des `:` ou des virgules, `cut` ne trouvera aucune tabulation et te renverra la ligne entière, intacte. D'où l'importance de toujours dire à `cut` quel caractère sépare tes colonnes — sinon il découpe au mauvais endroit… ou nulle part.",
+        culture: "`cut` is the everyday column cutter: extracting all the usernames from `/etc/passwd` fits in `cut -d: -f1 /etc/passwd`. For finer cutting (variable-width columns, reordering, computing), administrators move to `awk`, a dedicated mini-language. But for “just give me column 3”, `cut` is unbeatably simple.",
+        reflection: "What happens if you forget to specify the separator with `-d`?\n👉 By default, `cut` cuts on the **tab**. If your file uses `:` or commas, `cut` will find no tab and hand you back the whole line, intact. Hence the importance of always telling `cut` which character separates your columns — otherwise it cuts in the wrong place… or nowhere.",
         check: function(s) {
           return s.history.some(function(c) {
             if (!/\|\s*cut\b/.test(c)) return false;
@@ -4646,19 +4646,19 @@ var QUESTS = [
       },
       {
         level: 'beginner',
-        title: 'La vache qui parle',
-        context: "Dernier tiroir de la boîte, et le plus inutile-mais-délicieux : `cowsay`. Une **vache en ASCII** qui répète ton message dans une bulle. Zéro utilité sérieuse… et pourtant elle est installée sur des millions de serveurs. Parce qu'un métier exigeant a aussi besoin de respirer. C'est ta récompense : tu as ouvert toute la boîte.",
-        scene: "Tu termines le chapitre. Le Sensei sourit : « Fais dire quelque chose à la vache, Kaï. Tu l'as bien mérité. »",
-        mission: "Fais afficher un message de ton choix par la vache avec `cowsay`.",
+        title: 'The talking cow',
+        context: "The last drawer of the box, and the most useless-but-delightful: `cowsay`. An **ASCII cow** that repeats your message in a speech bubble. Zero serious use… and yet it's installed on millions of servers. Because a demanding trade also needs to breathe. It's your reward: you've opened the whole box.",
+        scene: "You're finishing the chapter. The Sensei smiles: “Make the cow say something, Kaï. You've earned it.”",
+        mission: "Make the cow display a message of your choice with `cowsay`.",
         steps: [
-          "Tape `cowsay Le Dojo` (ou le message que tu veux)",
-          "La vache apparaît, ton texte dans une bulle au-dessus d'elle",
-          "💡 Pour le grand final, combine avec un autre outil : `factor 42 | cowsay` fait dire la décomposition à la vache !",
-          "💡 Sa cousine `alias` te montre comment créer des raccourcis (`ll` pour `ls -la`) : tape `alias` pour voir des exemples."
+          "Type `cowsay The Dojo` (or whatever message you want)",
+          "The cow appears, your text in a bubble above it",
+          "💡 For the grand finale, combine with another tool: `factor 42 | cowsay` makes the cow say the decomposition!",
+          "💡 Its cousin `alias` shows you how to create shortcuts (`ll` for `ls -la`): type `alias` to see examples."
         ],
-        expected: "$ cowsay Le Dojo\n _________\n< Le Dojo >\n ---------\n        \\   ^__^\n         \\  (oo)\\_______\n            (__)\\       )\\/\\\n                ||----w |\n                ||     ||",
-        culture: "`cowsay` a été écrit en 1999 en Perl par Tony Monroe. Culte au point d'avoir des dizaines de variantes (`cowsay -l` liste d'autres animaux) et un cousin `fortune` qui débite des citations au hasard : `fortune | cowsay` fait dire une pensée aléatoire à la vache à chaque ouverture de session. C'est un morceau de la **culture hacker** : la preuve qu'un système sérieux garde le sens de l'humour.",
-        reflection: "Pourquoi une commande aussi inutile que `cowsay` a-t-elle survécu 25 ans et est-elle packagée sur toutes les distributions ?\n👉 Parce que la culture compte autant que la technique. Les outils « pour le fun » (`cowsay`, `sl`, `fortune`) créent une communauté, transmettent une histoire, et rappellent qu'on a le droit de prendre du plaisir à maîtriser sa machine. Un débutant qui rit devant une vache ASCII est un débutant qui reste. Le sérieux n'exclut pas le sourire.",
+        expected: "$ cowsay The Dojo\n __________\n< The Dojo >\n ----------\n        \\   ^__^\n         \\  (oo)\\_______\n            (__)\\       )\\/\\\n                ||----w |\n                ||     ||",
+        culture: "`cowsay` was written in 1999 in Perl by Tony Monroe. So iconic it has dozens of variants (`cowsay -l` lists other animals) and a cousin `fortune` that spits out random quotes: `fortune | cowsay` makes the cow say a random thought at every login. It's a piece of **hacker culture**: proof that a serious system keeps its sense of humor.",
+        reflection: "Why has a command as useless as `cowsay` survived 25 years and gets packaged on every distribution?\n👉 Because culture counts as much as technique. The “for fun” tools (`cowsay`, `sl`, `fortune`) create a community, pass down a history, and remind us we're allowed to take pleasure in mastering our machine. A beginner who laughs at an ASCII cow is a beginner who stays. Seriousness doesn't rule out a smile.",
         check: function(s) { return s.history.some(function(c) { return /^cowsay\s+\S/.test(c.trim()); }); }
       }
     ]
