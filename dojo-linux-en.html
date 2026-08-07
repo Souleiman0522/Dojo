@@ -3633,77 +3633,77 @@ var QUESTS = [
     id: 'cron',
     chapter: 15,
     icon: '⏰',
-    title: 'Planification (cron)',
+    title: 'Scheduling (cron)',
     color: '#1e5a3d',
-    desc: 'Tâches automatiques',
-    story: "« Tu veilles sur ta machine, Kaï. Mais tu ne peux pas rester éveillé toutes les nuits. » Le Sensei sourit. « Le meilleur administrateur est **paresseux**. Pas fainéant — malin. Il ne fait jamais deux fois à la main ce qu'une machine peut faire toute seule. La sauvegarde de minuit, le nettoyage des logs du dimanche, le rapport du lundi matin — tout ça tourne sans lui, pendant qu'il dort. »\n\nIl te montre un fichier plein de chiffres mystérieux : `0 2 * * *`. « Ça, c'est du **cron**, Kaï. Cinq nombres qui disent QUAND une tâche doit s'exécuter. Maîtrise-les, et ta machine travaillera pour toi 24h/24, sans jamais oublier. »",
-    mentor: "Automatiser avec cron :\n\n① `crontab -l` liste tes tâches planifiées, `crontab -e` les édite. Le fichier système est `/etc/crontab`.\n② Les **5 champs** : `minute heure jour-du-mois mois jour-de-semaine` puis la commande. `*` veut dire 'chaque'. Exemple : `0 2 * * *` = tous les jours à 2h00.\n③ Exemples utiles : `*/15 * * * *` = toutes les 15 min ; `0 0 * * 0` = chaque dimanche minuit ; `30 6 1 * *` = le 1er du mois à 6h30.\n④ Piège : cron a un environnement minimal. **Utilise toujours des chemins absolus** dans tes commandes (`/usr/bin/backup.sh`, pas `backup.sh`), sinon la tâche échoue en silence.",
+    desc: 'Automated tasks',
+    story: "“You watch over your machine, Kai. But you can't stay awake every night.” The Sensei smiles. “The best administrator is **lazy**. Not idle — clever. He never does by hand twice what a machine can do on its own. The midnight backup, the Sunday log cleanup, the Monday-morning report — all of it runs without him, while he sleeps.”\n\nHe shows you a file full of mysterious numbers: `0 2 * * *`. “That's **cron**, Kai. Five numbers that say WHEN a task must run. Master them, and your machine will work for you 24/7, never forgetting.”",
+    mentor: "Automating with cron:\n\n① `crontab -l` lists your scheduled tasks, `crontab -e` edits them. The system file is `/etc/crontab`.\n② The **5 fields**: `minute hour day-of-month month day-of-week` then the command. `*` means 'every'. Example: `0 2 * * *` = every day at 2:00.\n③ Useful examples: `*/15 * * * *` = every 15 min; `0 0 * * 0` = every Sunday at midnight; `30 6 1 * *` = the 1st of the month at 6:30.\n④ Trap: cron has a minimal environment. **Always use absolute paths** in your commands (`/usr/bin/backup.sh`, not `backup.sh`), otherwise the task fails silently.",
     challenge: {
-      title: "Le majordome invisible",
-      desc: "Programme la machine pour qu'elle travaille seule. **① Lis le crontab système** (`cat /etc/crontab`), **② décode un horaire** cron existant (que signifie `0 3 * * 1` ?), **③ liste tes propres tâches** (`crontab -l`). Réflexion : pourquoi une tâche cron qui marche à la main échoue-t-elle parfois une fois planifiée ? (Indice : chemins absolus.)"
+      title: "The invisible butler",
+      desc: "Program the machine to work on its own. **① Read the system crontab** (`cat /etc/crontab`), **② decode an existing** cron schedule (what does `0 3 * * 1` mean?), **③ list your own tasks** (`crontab -l`). Reflection: why does a cron task that works by hand sometimes fail once scheduled? (Hint: absolute paths.)"
     },
     exos: [
       {
         level: 'expert',
-        title: 'Lire le crontab système',
-        context: "**cron** est le programmateur de Linux : il exécute des tâches automatiquement, à heures fixes, sans que personne ne soit là. La liste des tâches système est dans `/etc/crontab`. Chaque ligne commence par **5 champs** qui disent QUAND (`minute heure jour-du-mois mois jour-de-semaine`), puis qui l'exécute et la commande. (Le Dojo décode chaque champ après le `cat`.)",
-        scene: "Tu veux savoir ce qui s'exécute tout seul sur la machine, notamment la nuit.",
-        mission: "Affiche `/etc/crontab`.",
+        title: 'Read the system crontab',
+        context: "**cron** is Linux's scheduler: it runs tasks automatically, at fixed times, with no one around. The list of system tasks is in `/etc/crontab`. Each line starts with **5 fields** that say WHEN (`minute hour day-of-month month day-of-week`), then who runs it and the command. (The Dojo decodes each field after the `cat`.)",
+        scene: "You want to know what runs on its own on the machine, especially at night.",
+        mission: "Display `/etc/crontab`.",
         steps: [
-          "Affiche-le : `cat /etc/crontab`",
-          "Les 5 premiers champs = QUAND · le reste = QUI et QUOI",
-          "Décode l'exemple : `0 4 * * 0` = « à 4h00, chaque dimanche »",
-          "💡 **Gérer TES propres tâches** (différent du fichier système) : `crontab -l` (lister les tiennes) · `crontab -e` (les éditer dans un éditeur) · `crontab -r` (⚠️ tout supprimer d'un coup — attention, pas de confirmation !). Chaque utilisateur a son propre crontab."
+          "Display it: `cat /etc/crontab`",
+          "The first 5 fields = WHEN · the rest = WHO and WHAT",
+          "Decode the example: `0 4 * * 0` = “at 4:00, every Sunday”",
+          "💡 **Managing YOUR own tasks** (different from the system file): `crontab -l` (list yours) · `crontab -e` (edit them in an editor) · `crontab -r` (⚠️ delete everything at once — careful, no confirmation!). Each user has their own crontab."
         ],
         expected: "# m h dom mon dow user  command\n0 4 * * 0   root  /home/user/scripts/backup.sh",
-        diagram: "Format cron :\n  *  *  *  *  *\n  │  │  │  │  │\n  │  │  │  │  └─ jour semaine (0-7)\n  │  │  │  └──── mois (1-12)\n  │  │  └─────── jour du mois\n  │  └────────── heure (0-23)\n  └───────────── minute (0-59)",
-        culture: "Le nom **cron** vient du grec *chronos* (le temps). Le démon `cron` tourne en permanence depuis les premiers Unix (1975) et se réveille chaque minute pour vérifier s'il y a une tâche à lancer. Subtilité célèbre : le champ `jour-du-mois` ET le champ `jour-de-semaine` sont en **OU** logique, pas ET — `0 0 13 * 5` se déclenche le 13 du mois OU chaque vendredi, pas « le vendredi 13 ». Un piège qui a surpris des générations d'admins.",
-        reflection: "Que signifie l'horaire cron `*/15 * * * *` ?\n👉 « Toutes les 15 minutes ». Le `*/15` dans le champ minute veut dire « chaque multiple de 15 » (0, 15, 30, 45). Le `*` dans les autres champs = « chaque ». Autres exemples : `0 * * * *` = chaque heure pile ; `0 0 * * *` = chaque jour à minuit ; `0 9 * * 1` = chaque lundi à 9h.",
+        diagram: "cron format:\n  *  *  *  *  *\n  │  │  │  │  │\n  │  │  │  │  └─ day of week (0-7)\n  │  │  │  └──── month (1-12)\n  │  │  └─────── day of month\n  │  └────────── hour (0-23)\n  └───────────── minute (0-59)",
+        culture: "The name **cron** comes from Greek *chronos* (time). The `cron` daemon has run permanently since the first Unix (1975) and wakes up every minute to check whether there's a task to launch. Famous subtlety: the `day-of-month` field AND the `day-of-week` field are in logical **OR**, not AND — `0 0 13 * 5` fires on the 13th of the month OR every Friday, not “Friday the 13th”. A trap that has surprised generations of admins.",
+        reflection: "What does the cron schedule `*/15 * * * *` mean?\n👉 “Every 15 minutes”. The `*/15` in the minute field means “every multiple of 15” (0, 15, 30, 45). The `*` in the other fields = “every”. Other examples: `0 * * * *` = every hour on the hour; `0 0 * * *` = every day at midnight; `0 9 * * 1` = every Monday at 9.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('crontab') >= 0; }); }
       },
       {
         level: 'expert',
-        title: 'Le script de backup',
-        context: "Les scripts cron sont du shell classique. Le shebang `#!/bin/bash` indique l'interpréteur. `tar -czf` crée une archive compressée gzip.",
-        scene: "Tu veux comprendre ce que fait le backup planifié.",
-        mission: "Affiche ~/scripts/backup.sh.",
-        steps: ["`cat ~/scripts/backup.sh`", "Lis chaque ligne : DATE puis tar"],
+        title: 'The backup script',
+        context: "cron scripts are plain shell. The shebang `#!/bin/bash` indicates the interpreter. `tar -czf` creates a gzip-compressed archive.",
+        scene: "You want to understand what the scheduled backup does.",
+        mission: "Display ~/scripts/backup.sh.",
+        steps: ["`cat ~/scripts/backup.sh`", "Read each line: DATE then tar"],
         expected: "#!/bin/bash\nDATE=$(date +%Y%m%d)\ntar -czf /tmp/backup-$DATE.tar.gz /home/user",
-        culture: "La syntaxe `DATE=$(date +%Y%m%d)` s'appelle une **substitution de commande** : `$(...)` exécute la commande à l'intérieur et remplace le tout par son résultat. Ici, `date +%Y%m%d` produit `20260315`, stocké dans la variable `DATE`. Résultat : chaque sauvegarde a un nom horodaté unique (`backup-20260315.tar.gz`), sans jamais écraser la précédente. C'est le motif de base de tout script de backup professionnel.",
-        reflection: "Pourquoi ce script utilise-t-il des **chemins absolus** (`/tmp/...`, `/home/user`) plutôt que relatifs ?\n👉 Parce qu'il est lancé par cron, dans un environnement minimal où le « dossier courant » n'est pas celui que tu crois. Un chemin relatif comme `backup.tar.gz` finirait Dieu sait où (souvent `/` ou le home de root). Règle d'or des scripts automatisés : **toujours des chemins absolus**, jamais de suppositions sur le répertoire courant.",
+        culture: "The syntax `DATE=$(date +%Y%m%d)` is called a **command substitution**: `$(...)` runs the command inside and replaces the whole thing with its result. Here, `date +%Y%m%d` produces `20260315`, stored in the `DATE` variable. Result: each backup has a unique timestamped name (`backup-20260315.tar.gz`), never overwriting the previous one. It's the basic pattern of every professional backup script.",
+        reflection: "Why does this script use **absolute paths** (`/tmp/...`, `/home/user`) rather than relative ones?\n👉 Because it's launched by cron, in a minimal environment where the “current folder” isn't the one you think. A relative path like `backup.tar.gz` would end up God knows where (often `/` or root's home). Golden rule of automated scripts: **always absolute paths**, never assumptions about the current directory.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('backup.sh') >= 0; }); }
       },
       {
         level: 'expert',
-        title: 'L\'horodatage (date)',
-        context: "Le script de backup nomme ses archives avec la **date du jour**, pour ne jamais écraser la précédente. La commande `date` donne l'heure ; avec un format `+%Y%m%d`, elle produit une date compacte comme `20260315`. C'est ce petit bout qui rend chaque sauvegarde unique.",
-        scene: "Tu veux voir concrètement ce que produit le `date +%Y%m%d` utilisé dans le script.",
-        mission: "Affiche la date au format compact `AAAAMMJJ`.",
+        title: 'The timestamp (date)',
+        context: "The backup script names its archives with the **current date**, to never overwrite the previous one. The `date` command gives the time; with a format `+%Y%m%d`, it produces a compact date like `20260315`. It's this little piece that makes each backup unique.",
+        scene: "You want to see concretely what the `date +%Y%m%d` used in the script produces.",
+        mission: "Display the date in the compact format `YYYYMMDD`.",
         steps: [
-          "Tape `date +%Y%m%d` (le `+` introduit un format ; `%Y`=année, `%m`=mois, `%d`=jour)",
-          "Tu obtiens une date collée, ex. `20260315`",
-          "C'est ce qui donne à chaque archive un nom unique et daté",
-          "💡 **Les formats de `date` à connaître** : `date` (date + heure complètes) · `date +%Y-%m-%d` (`2026-03-15`, lisible) · `date +%H:%M:%S` (juste l'heure) · `date +%Y%m%d_%H%M%S` (date ET heure collées, pour des noms uniques à la seconde près) · `date +%s` (le *timestamp Unix* : les secondes écoulées depuis 1970)."
+          "Type `date +%Y%m%d` (the `+` introduces a format; `%Y`=year, `%m`=month, `%d`=day)",
+          "You get a joined date, e.g. `20260315`",
+          "That's what gives each archive a unique, dated name",
+          "💡 **The `date` formats to know**: `date` (full date + time) · `date +%Y-%m-%d` (`2026-03-15`, readable) · `date +%H:%M:%S` (just the time) · `date +%Y%m%d_%H%M%S` (date AND time joined, for names unique to the second) · `date +%s` (the *Unix timestamp*: the seconds elapsed since 1970)."
         ],
         expected: "$ date +%Y%m%d\n20260315",
-        culture: "Nommer ses fichiers avec la date au format `%Y%m%d` (année-mois-jour) est une convention précieuse : ainsi triés, ils apparaissent automatiquement dans l'ordre chronologique (`backup-20260114` vient avant `backup-20260315`, même par tri alphabétique). L'ordre « grand vers petit » (année, puis mois, puis jour) n'est pas un hasard : c'est le seul qui rende le tri de texte identique au tri de dates.",
-        reflection: "Pourquoi horodater une sauvegarde en `AAAAMMJJ` plutôt qu'en `JJMMAAAA` (le format « français ») ?\n👉 Parce que `AAAAMMJJ` se **trie tout seul** dans l'ordre chronologique, même comme simple texte. En `JJMMAAAA`, `31012026` (31 jan) apparaîtrait avant `01032025` (1er mars 2025) — le tri serait faux. Mettre l'unité la plus grande en premier (année) est LA règle pour que des noms de fichiers datés restent ordonnés.",
+        culture: "Naming your files with the date in `%Y%m%d` format (year-month-day) is a precious convention: sorted this way, they automatically appear in chronological order (`backup-20260114` comes before `backup-20260315`, even by alphabetical sort). The “big to small” order (year, then month, then day) is no accident: it's the only one that makes text sorting identical to date sorting.",
+        reflection: "Why timestamp a backup as `YYYYMMDD` rather than `DDMMYYYY` (the “French” format)?\n👉 Because `YYYYMMDD` **sorts itself** into chronological order, even as plain text. In `DDMMYYYY`, `31012026` (Jan 31) would appear before `01032025` (March 1, 2025) — the sort would be wrong. Putting the largest unit first (year) is THE rule for dated filenames to stay ordered.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('date') === 0 && c.indexOf('%') >= 0; }); }
       },
       {
         level: 'expert',
-        title: 'Mini-défi : comprendre l\'automate',
-        context: "On relie les pièces : cron déclenche une commande À UNE HEURE (le QUAND), et cette commande est un script qui fait le travail (le QUOI). Comprendre une automatisation, c'est suivre ce fil du planning jusqu'au script.",
-        scene: "Le Sensei te confie un serveur : « une sauvegarde tourne toute seule. Retrouve QUAND elle part et CE qu'elle fait. »",
-        mission: "Remonte la chaîne : lis le planning (`/etc/crontab`), puis le script qu'il déclenche (`~/scripts/backup.sh`).",
+        title: 'Mini-challenge: understand the automaton',
+        context: "We link the pieces: cron triggers a command AT A TIME (the WHEN), and this command is a script that does the work (the WHAT). Understanding an automation is following this thread from the schedule to the script.",
+        scene: "The Sensei hands you a server: “a backup runs on its own. Find WHEN it fires and WHAT it does.”",
+        mission: "Trace the chain: read the schedule (`/etc/crontab`), then the script it triggers (`~/scripts/backup.sh`).",
         steps: [
-          "① Le planning : `cat /etc/crontab` → repère l'heure ET le script appelé",
-          "② Le script : `cat ~/scripts/backup.sh` → vois ce qu'il fait vraiment",
-          "③ Relie : « chaque dimanche 4h, cron lance backup.sh, qui archive /home/user »"
+          "① The schedule: `cat /etc/crontab` → spot the time AND the called script",
+          "② The script: `cat ~/scripts/backup.sh` → see what it really does",
+          "③ Link it: “every Sunday at 4, cron launches backup.sh, which archives /home/user”"
         ],
         expected: "$ cat /etc/crontab\n0 4 * * 0  root  /home/user/scripts/backup.sh\n$ cat ~/scripts/backup.sh\n#!/bin/bash\nDATE=$(date +%Y%m%d)\ntar -czf /tmp/backup-$DATE.tar.gz /home/user",
-        culture: "Suivre cette chaîne planning → script est le réflexe de tout admin qui découvre une tâche automatique : le crontab dit QUAND et QUEL script, le script dit QUOI. Beaucoup d'incidents en production viennent d'une tâche cron oubliée (un backup qui remplit le disque, un script qui échoue en silence chaque nuit). Savoir remonter ce fil, c'est pouvoir auditer et réparer l'invisible.",
-        reflection: "Une tâche cron « marche à la main » mais échoue une fois planifiée. Le premier suspect ?\n👉 Les **chemins** et l'**environnement**. cron s'exécute dans un environnement minimal : pas le même `$PATH`, pas le même dossier courant, pas forcément les variables de ton shell. Un script qui suppose « je suis dans mon home » ou appelle `backup.sh` sans chemin complet casse. La règle : chemins absolus partout, et tester le script tel que cron le lancera.",
+        culture: "Following this schedule → script chain is the reflex of every admin discovering an automated task: the crontab says WHEN and WHICH script, the script says WHAT. Many production incidents come from a forgotten cron task (a backup that fills the disk, a script that fails silently every night). Knowing how to trace this thread is being able to audit and repair the invisible.",
+        reflection: "A cron task “works by hand” but fails once scheduled. The first suspect?\n👉 The **paths** and the **environment**. cron runs in a minimal environment: not the same `$PATH`, not the same current folder, not necessarily your shell's variables. A script that assumes “I'm in my home” or calls `backup.sh` without a full path breaks. The rule: absolute paths everywhere, and test the script the way cron will launch it.",
         check: function(s) { var h = s.history; var cron = h.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('crontab') >= 0; }); var bak = h.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('backup.sh') >= 0; }); return cron && bak; }
       }
     ]
