@@ -3284,63 +3284,63 @@ var QUESTS = [
     id: 'security',
     chapter: 12,
     icon: '🛡️',
-    title: 'Sécurité & hardening',
+    title: 'Security & hardening',
     color: '#8b2c2c',
-    desc: 'Protéger le système',
-    story: "« Tu ouvres maintenant ta machine au réseau, Kaï. Réfléchis à ce que cela signifie. » Le Sensei baisse la voix. « Ton serveur est en ligne. Ça veut dire que **le monde entier peut frapper à ta porte** — y compris ceux qui veulent entrer par effraction. Un administrateur qui ne sécurise pas son système est un gardien qui laisse les portes ouvertes. »\n\nIl énumère les points faibles : « Un pare-feu qui filtre qui peut entrer. Un SSH qui refuse le compte root. Des mots de passe qui expirent. Des logs qu'on surveille. La sécurité n'est pas un produit qu'on installe, Kaï — **c'est une discipline qu'on pratique**, chaque jour. »",
-    mentor: "Le durcissement (hardening) — les bases vitales :\n\n① **Pare-feu** : `ufw` (Uncomplicated Firewall) contrôle qui peut se connecter. `ufw allow 22` ouvre SSH, `ufw enable` active le mur. Principe : tout fermer, puis ouvrir SEULEMENT ce qui est nécessaire.\n② **SSH** : désactive la connexion root directe (`PermitRootLogin no`), préfère les clés aux mots de passe. Un attaquant qui teste 'root' à l'aveugle doit échouer d'office.\n③ **Surveillance** : `/var/log/auth.log` enregistre chaque tentative de connexion. `grep 'Failed' auth.log` révèle les intrus qui frappent.\n④ Règle d'or : **le moindre privilège**. Chaque service, chaque user n'a QUE les droits dont il a besoin. Rien de plus.",
+    desc: 'Protect the system',
+    story: "“You're now opening your machine to the network, Kai. Think about what that means.” The Sensei lowers his voice. “Your server is online. That means **the whole world can knock on your door** — including those who want to break in. An administrator who doesn't secure their system is a guard who leaves the doors open.”\n\nHe lists the weak points: “A firewall that filters who can enter. An SSH that refuses the root account. Passwords that expire. Logs you watch. Security isn't a product you install, Kai — **it's a discipline you practice**, every day.”",
+    mentor: "Hardening — the vital basics:\n\n① **Firewall**: `ufw` (Uncomplicated Firewall) controls who can connect. `ufw allow 22` opens SSH, `ufw enable` turns on the wall. Principle: close everything, then open ONLY what's necessary.\n② **SSH**: disable direct root login (`PermitRootLogin no`), prefer keys over passwords. An attacker blindly testing 'root' must fail from the start.\n③ **Monitoring**: `/var/log/auth.log` records every connection attempt. `grep 'Failed' auth.log` reveals the intruders knocking.\n④ Golden rule: **least privilege**. Each service, each user has ONLY the rights they need. Nothing more.",
     challenge: {
-      title: "Verrouiller la forteresse",
-      desc: "Ton serveur doit résister. **① Inspecte les règles du pare-feu** (`ufw status`), **② autorise uniquement SSH et HTTP**, **③ chasse les tentatives de connexion échouées** dans `/var/log/auth.log` avec grep, **④ vérifie qu'aucun login root direct n'est permis**. Réflexion : pourquoi 'tout fermer puis ouvrir le minimum' est plus sûr que 'tout ouvrir puis fermer les risques' ?"
+      title: "Lock down the fortress",
+      desc: "Your server must resist. **① Inspect the firewall rules** (`ufw status`), **② allow only SSH and HTTP**, **③ hunt the failed connection attempts** in `/var/log/auth.log` with grep, **④ check that no direct root login is allowed**. Reflection: why is 'close everything then open the minimum' safer than 'open everything then close the risks'?"
     },
     exos: [
       {
         level: 'expert',
-        title: 'État du pare-feu',
-        context: "Un **pare-feu** (*firewall*) contrôle qui a le droit de se connecter à ta machine, **port par port**. Sur Ubuntu, l'outil simple s'appelle `ufw` (*Uncomplicated Firewall*). `ufw status` te dit s'il est actif et quelles connexions il laisse passer. `inactive` = aucune protection, tout est ouvert.",
-        scene: "Tu hérites d'un serveur exposé et tu veux vérifier s'il est protégé.",
-        mission: "Vérifie l'état du pare-feu avec `ufw`.",
+        title: 'Firewall state',
+        context: "A **firewall** controls who is allowed to connect to your machine, **port by port**. On Ubuntu, the simple tool is called `ufw` (*Uncomplicated Firewall*). `ufw status` tells you whether it's active and which connections it lets through. `inactive` = no protection, everything is open.",
+        scene: "You inherit an exposed server and you want to check whether it's protected.",
+        mission: "Check the firewall state with `ufw`.",
         steps: [
-          "Vérifie l'état : `sudo ufw status`",
-          "`inactive` = pas de protection · `active` = les règles autorisées s'affichent",
-          "C'est le premier réflexe d'audit d'une machine en ligne"
+          "Check the state: `sudo ufw status`",
+          "`inactive` = no protection · `active` = the allowed rules are shown",
+          "It's the first audit reflex for an online machine"
         ],
         expected: "$ sudo ufw status\nStatus: inactive",
-        culture: "Un **port** est comme une porte numérotée sur ta machine : chaque service écoute sur le sien (SSH sur 22, HTTP sur 80, HTTPS sur 443…). Le pare-feu décide, porte par porte, qui peut entrer. Sans lui, tous les ports ouverts par des services sont joignables depuis Internet — autant de portes qu'un attaquant peut essayer une à une.",
-        reflection: "Que signifie concrètement un pare-feu `inactive` sur un serveur exposé à Internet ?\n👉 Que TOUS les ports ouverts par des services sont accessibles depuis le monde entier, sans filtre. Si un service mal configuré écoute sur un port oublié, il est exposé aux scans automatiques. Sur une machine en ligne, un pare-feu inactif est une invitation. Le premier geste de durcissement : le configurer PUIS l'activer.",
+        culture: "A **port** is like a numbered door on your machine: each service listens on its own (SSH on 22, HTTP on 80, HTTPS on 443…). The firewall decides, door by door, who can enter. Without it, all the ports opened by services are reachable from the Internet — as many doors as an attacker can try one by one.",
+        reflection: "What does an `inactive` firewall concretely mean on a server exposed to the Internet?\n👉 That ALL the ports opened by services are accessible from the whole world, unfiltered. If a misconfigured service listens on a forgotten port, it's exposed to automated scans. On an online machine, an inactive firewall is an invitation. The first hardening gesture: configure it THEN activate it.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('ufw') >= 0 && c.indexOf('status') >= 0; }); }
       },
       {
         level: 'expert',
-        title: 'Activer le pare-feu',
-        context: "ATTENTION : avant d'activer ufw sur un serveur distant, autorise SSH (port 22) sinon tu te coupes l'accès. Toujours `ufw allow 22` avant `ufw enable`.",
-        scene: "Tu veux activer le pare-feu sans te bloquer.",
-        mission: "Autorise SSH puis active le pare-feu.",
+        title: 'Enable the firewall',
+        context: "WARNING: before enabling ufw on a remote server, allow SSH (port 22) or you cut off your own access. Always `ufw allow 22` before `ufw enable`.",
+        scene: "You want to enable the firewall without locking yourself out.",
+        mission: "Allow SSH then enable the firewall.",
         steps: [
           "`sudo ufw allow 22`",
           "`sudo ufw enable`",
-          "`sudo ufw status` pour confirmer",
-          "💡 **Les façons d'écrire une règle** : `ufw allow 22` (par numéro de port) · `ufw allow ssh` (par nom de service, ufw connaît les ports usuels) · `ufw allow 80/tcp` (port + protocole) · `ufw deny 23` (bloquer explicitement) · `ufw delete allow 22` (retirer une règle). Pour voir les règles numérotées : `ufw status numbered`."
+          "`sudo ufw status` to confirm",
+          "💡 **The ways to write a rule**: `ufw allow 22` (by port number) · `ufw allow ssh` (by service name, ufw knows the usual ports) · `ufw allow 80/tcp` (port + protocol) · `ufw deny 23` (explicitly block) · `ufw delete allow 22` (remove a rule). To see the numbered rules: `ufw status numbered`."
         ],
         expected: "$ sudo ufw allow 22\nRule added\n$ sudo ufw enable\nFirewall is active",
-        culture: "Autoriser le port 22 AVANT d'activer le pare-feu est l'une des règles de survie les plus importantes de l'admin distant. Le scénario cauchemar : tu es connecté en SSH sur un serveur à l'autre bout du monde, tu tapes `ufw enable` sans avoir autorisé SSH → le pare-feu **coupe ta propre connexion** et tu es verrouillé dehors, sans moyen de revenir. Des milliers d'admins ont vécu ce moment de panique. `ufw` te met même en garde par un avertissement. La règle : `allow 22` d'abord, TOUJOURS.",
-        reflection: "Pourquoi la philosophie « tout bloquer, puis ouvrir le minimum » est-elle plus sûre que l'inverse ?\n👉 Parce qu'un pare-feu en **liste blanche** (deny par défaut, allow ciblé) ne laisse passer QUE ce que tu as explicitement autorisé. Tout nouveau service, tout port oublié reste fermé par défaut — donc protégé. L'approche inverse (tout ouvert, fermer les risques) t'oblige à connaître et bloquer CHAQUE menace, une par une : impossible. Le refus par défaut est le fondement de toute sécurité réseau.",
+        culture: "Allowing port 22 BEFORE enabling the firewall is one of the most important survival rules of the remote admin. The nightmare scenario: you're connected over SSH to a server on the other side of the world, you type `ufw enable` without having allowed SSH → the firewall **cuts your own connection** and you're locked out, with no way back in. Thousands of admins have lived this moment of panic. `ufw` even warns you with a message. The rule: `allow 22` first, ALWAYS.",
+        reflection: "Why is the “block everything, then open the minimum” philosophy safer than the other way around?\n👉 Because a **whitelist** firewall (deny by default, targeted allow) only lets through what you've explicitly authorized. Any new service, any forgotten port stays closed by default — so protected. The opposite approach (everything open, close the risks) forces you to know and block EACH threat, one by one: impossible. Deny by default is the foundation of all network security.",
         check: function(s) { return sysState.firewall.enabled === true && sysState.firewall.rules.indexOf(22) >= 0; }
       },
       {
         level: 'expert',
-        title: 'Détecter les attaques SSH',
-        context: "Tout serveur exposé à Internet subit en permanence des tentatives d'intrusion automatisées : des robots essaient des milliers de mots de passe. Chaque échec laisse une trace « Failed password » dans `/var/log/auth.log`. Les compter, c'est mesurer l'intensité des attaques — exactement la technique du chapitre Recherche & filtrage.",
-        scene: "Tu veux savoir combien de tentatives d'intrusion SSH ton serveur a essuyé.",
-        mission: "Compte les lignes « Failed » dans `/var/log/auth.log`.",
+        title: 'Detect SSH attacks',
+        context: "Every server exposed to the Internet constantly suffers automated intrusion attempts: bots try thousands of passwords. Each failure leaves a “Failed password” trace in `/var/log/auth.log`. Counting them is measuring the intensity of the attacks — exactly the technique from the Search & filtering chapter.",
+        scene: "You want to know how many SSH intrusion attempts your server has endured.",
+        mission: "Count the “Failed” lines in `/var/log/auth.log`.",
         steps: [
-          "Compte les échecs : `grep Failed /var/log/auth.log | wc -l`",
-          "Le chiffre = le nombre de tentatives ratées",
-          "Une même IP qui revient des dizaines de fois = une attaque par force brute à bannir"
+          "Count the failures: `grep Failed /var/log/auth.log | wc -l`",
+          "The number = the count of failed attempts",
+          "The same IP coming back dozens of times = a brute-force attack to ban"
         ],
         expected: "$ grep Failed /var/log/auth.log | wc -l\n2",
-        culture: "C'est exactement ce que fait l'outil **fail2ban** : il surveille `auth.log`, et dès qu'une IP dépasse un seuil de « Failed password », il la bannit automatiquement via le pare-feu. Un durcissement quasi indispensable sur tout serveur SSH exposé. Le savoir-faire manuel (grep les logs) devient un automatisme confié à un outil.",
-        reflection: "Tu vois 5000 « Failed password » depuis 200 IP différentes en une nuit. Faut-il paniquer ?\n👉 Non, c'est le **bruit de fond** normal d'Internet : des botnets scannent en permanence tous les serveurs SSH du monde. Tant que tu as désactivé le login root, imposé les clés SSH et installé fail2ban, ces tentatives échouent toutes. Ce qui doit alerter, c'est un « Accepted » inattendu, ou un pic ciblé depuis UNE seule IP — pas le bruit ambiant.",
+        culture: "It's exactly what the **fail2ban** tool does: it watches `auth.log`, and as soon as an IP exceeds a threshold of “Failed password”, it automatically bans it via the firewall. A nearly indispensable hardening on any exposed SSH server. The manual know-how (grep the logs) becomes an automatism entrusted to a tool.",
+        reflection: "You see 5000 “Failed password” from 200 different IPs in one night. Should you panic?\n👉 No, it's the normal **background noise** of the Internet: botnets constantly scan every SSH server in the world. As long as you've disabled root login, enforced SSH keys and installed fail2ban, these attempts all fail. What should alert you is an unexpected “Accepted”, or a targeted spike from ONE single IP — not the ambient noise.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('grep') >= 0 && c.indexOf('Failed') >= 0 && (c.indexOf('|') >= 0 || c.indexOf('wc') >= 0); }); }
       },
       {
@@ -3357,31 +3357,31 @@ var QUESTS = [
       },
       {
         level: 'expert',
-        title: 'Voir les sudoers',
-        context: "/etc/sudoers liste qui peut utiliser sudo. À ne JAMAIS éditer avec un éditeur classique (utiliser visudo). Lecture pour audit OK.",
-        scene: "Tu audites les privilèges sudo.",
-        mission: "Affiche /etc/sudoers.",
-        steps: ["`sudo cat /etc/sudoers`", "Note les lignes %sudo et user"],
+        title: 'View the sudoers',
+        context: "/etc/sudoers lists who can use sudo. NEVER edit it with a regular editor (use visudo). Reading it for audit is fine.",
+        scene: "You audit the sudo privileges.",
+        mission: "Display /etc/sudoers.",
+        steps: ["`sudo cat /etc/sudoers`", "Note the %sudo and user lines"],
         expected: "root ALL=(ALL:ALL) ALL\n%sudo ALL=(ALL:ALL) ALL",
-        culture: "Le fichier `/etc/sudoers` est si critique qu'on ne l'édite JAMAIS directement — on utilise `visudo`, qui **vérifie la syntaxe avant d'enregistrer**. La raison : une seule faute de frappe dans ce fichier peut casser `sudo` pour tout le monde, y compris toi — et tu ne pourras plus le réparer, puisque le réparer demande... sudo. `visudo` refuse de sauver un fichier invalide, t'évitant ce piège fatal. La ligne `%sudo ALL=(ALL:ALL) ALL` dit : « tout membre du groupe sudo peut tout faire ».",
-        reflection: "Que signifie le `%` devant `%sudo` dans le fichier sudoers ?\n👉 Le `%` désigne un **groupe**, pas un utilisateur. `%sudo` = « tous les membres du groupe sudo ». Sans le `%`, `sudo` serait interprété comme un nom d'utilisateur. Cette distinction permet de gérer les privilèges par groupe (ajouter un admin = le mettre dans le groupe sudo) plutôt que d'éditer sudoers pour chaque personne. Plus simple, plus sûr.",
+        culture: "The `/etc/sudoers` file is so critical that you NEVER edit it directly — you use `visudo`, which **checks the syntax before saving**. The reason: a single typo in this file can break `sudo` for everyone, including you — and you won't be able to fix it, since fixing it requires... sudo. `visudo` refuses to save an invalid file, saving you from this fatal trap. The line `%sudo ALL=(ALL:ALL) ALL` says: “any member of the sudo group can do anything”.",
+        reflection: "What does the `%` before `%sudo` mean in the sudoers file?\n👉 The `%` denotes a **group**, not a user. `%sudo` = “all members of the sudo group”. Without the `%`, `sudo` would be interpreted as a username. This distinction lets you manage privileges by group (adding an admin = putting them in the sudo group) rather than editing sudoers for each person. Simpler, safer.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('sudoers') >= 0; }); }
       },
       {
         level: 'expert',
-        title: 'Mini-défi : verrouiller la forteresse',
-        context: "On assemble le durcissement de base. La règle d'or d'un pare-feu : **tout fermer par défaut, puis ouvrir uniquement le strict nécessaire**. Pour un serveur web, ça veut dire deux portes : SSH (pour l'administrer) et HTTP (pour servir le site), et rien d'autre.",
-        scene: "Ton serveur est en ligne, sans pare-feu. Tu le verrouilles proprement, sans te couper l'accès.",
-        mission: "Autorise SSH (port 22) et HTTP (port 80), puis active le pare-feu.",
+        title: 'Mini-challenge: lock down the fortress',
+        context: "We assemble the basic hardening. The golden rule of a firewall: **close everything by default, then open only the strict essentials**. For a web server, that means two doors: SSH (to administer it) and HTTP (to serve the site), and nothing else.",
+        scene: "Your server is online, with no firewall. You lock it down cleanly, without cutting your own access.",
+        mission: "Allow SSH (port 22) and HTTP (port 80), then enable the firewall.",
         steps: [
-          "① Autorise SSH AVANT tout (sinon tu te coupes l'accès distant) : `sudo ufw allow 22`",
-          "② Autorise le web : `sudo ufw allow 80`",
-          "③ Active le mur : `sudo ufw enable`",
-          "④ Vérifie : `sudo ufw status`"
+          "① Allow SSH BEFORE anything (otherwise you cut your remote access): `sudo ufw allow 22`",
+          "② Allow the web: `sudo ufw allow 80`",
+          "③ Turn on the wall: `sudo ufw enable`",
+          "④ Check: `sudo ufw status`"
         ],
         expected: "$ sudo ufw allow 22\n$ sudo ufw allow 80\n$ sudo ufw enable\nFirewall is active\n$ sudo ufw status\nStatus: active\n22   ALLOW\n80   ALLOW",
-        culture: "Ce jeu de règles minimal — SSH + HTTP, tout le reste fermé — est la base de tout serveur web. Chaque port ouvert est une surface d'attaque potentielle : on n'en ouvre donc AUCUN « au cas où ». Si demain tu ajoutes HTTPS, tu ouvriras le 443 explicitement. La discipline : un port ouvert = un besoin justifié, jamais un oubli.",
-        reflection: "Pourquoi ouvrir le port 22 (SSH) AVANT de taper `ufw enable`, et jamais après ?\n👉 Parce que `ufw enable` applique immédiatement la politique « tout fermer sauf les règles existantes ». Si SSH n'est pas encore autorisé au moment de l'activation, ta propre connexion SSH est coupée net — et sur un serveur distant, tu es verrouillé dehors sans retour. L'ordre est vital : on autorise son propre accès, PUIS on ferme le reste.",
+        culture: "This minimal rule set — SSH + HTTP, everything else closed — is the base of any web server. Each open port is a potential attack surface: so you open NONE “just in case”. If tomorrow you add HTTPS, you'll open 443 explicitly. The discipline: an open port = a justified need, never an oversight.",
+        reflection: "Why open port 22 (SSH) BEFORE typing `ufw enable`, and never after?\n👉 Because `ufw enable` immediately applies the “close everything except existing rules” policy. If SSH isn't allowed yet at the moment of activation, your own SSH connection is cut clean — and on a remote server, you're locked out with no return. The order is vital: you allow your own access, THEN you close the rest.",
         check: function(s) { return sysState.firewall.enabled === true && sysState.firewall.rules.indexOf(22) >= 0 && sysState.firewall.rules.indexOf(80) >= 0; }
       }
     ]
