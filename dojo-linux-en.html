@@ -2921,81 +2921,81 @@ var QUESTS = [
     id: 'pipes',
     chapter: 6,
     icon: '🔗',
-    title: 'Recherche & filtrage',
+    title: 'Search & filtering',
     color: '#1e3a5c',
-    desc: 'grep, pipes et redirections',
-    story: "« Tu crées des fichiers, tu les édites. Mais quand il y en aura mille, Kaï, tu ne les liras pas un par un. » Le Sensei baisse la voix comme s'il partageait un trésor. « Voici le secret le mieux gardé d'Unix. Chaque commande fait UNE chose. Mais tu peux les **enchaîner** — la sortie de l'une devient l'entrée de la suivante. C'est le `|`, le **pipe**. C'est ce qui transforme dix petites commandes en un outil surpuissant. »\n\nIl écrit au tableau : `cat log | grep ERROR | wc -l`. « Lis ça comme une phrase, Kaï : prends le fichier, garde les lignes qui contiennent ERROR, compte-les. Trois outils simples, une réponse précise. **C'est ça, penser en Unix.** »",
-    mentor: "L'art de composer les commandes :\n\n① `grep MOT fichier` cherche un motif. `head` / `tail` montrent le début / la fin (parfait pour les logs : `tail -f` suit en direct).\n② Le pipe `|` connecte : `commande1 | commande2` envoie la sortie de 1 dans 2. On peut en chaîner autant qu'on veut.\n③ `wc -l` compte les lignes. `sort`, `uniq`, `cut` transforment le flux au passage.\n④ **Rediriger** au lieu d'afficher : `>` écrit dans un fichier (écrase), `>>` ajoute à la fin. `commande > fichier.txt` capture le résultat.",
+    desc: 'grep, pipes and redirections',
+    story: "“You create files, you edit them. But when there are a thousand, Kai, you won't read them one by one.” The Sensei lowers his voice as if sharing a treasure. “Here is Unix's best-kept secret. Each command does ONE thing. But you can **chain** them — the output of one becomes the input of the next. That's the `|`, the **pipe**. It's what turns ten small commands into a super-powerful tool.”\n\nHe writes on the board: `cat log | grep ERROR | wc -l`. “Read it like a sentence, Kai: take the file, keep the lines that contain ERROR, count them. Three simple tools, one precise answer. **That's thinking in Unix.**”",
+    mentor: "The art of composing commands:\n\n① `grep WORD file` searches for a pattern. `head` / `tail` show the start / the end (perfect for logs: `tail -f` follows live).\n② The pipe `|` connects: `command1 | command2` sends the output of 1 into 2. You can chain as many as you want.\n③ `wc -l` counts lines. `sort`, `uniq`, `cut` transform the stream along the way.\n④ **Redirect** instead of displaying: `>` writes into a file (overwrites), `>>` appends at the end. `command > file.txt` captures the result.",
     challenge: {
-      title: "Le détective des logs",
-      desc: "Un fichier de log cache des erreurs. **① Affiche les premières lignes** pour comprendre le format, **② les dernières** pour voir l'activité récente, **③ filtre les lignes contenant `ERROR`** avec grep, **④ compte-les** avec un pipe vers `wc -l`, **⑤ sauvegarde le résultat** dans un fichier avec `>`. Une seule ligne de pipe pour les étapes 3-4 : `grep ERROR log | wc -l`."
+      title: "The log detective",
+      desc: "A log file hides errors. **① Show the first lines** to understand the format, **② the last ones** to see recent activity, **③ filter the lines containing `ERROR`** with grep, **④ count them** with a pipe to `wc -l`, **⑤ save the result** into a file with `>`. A single pipe line for steps 3-4: `grep ERROR log | wc -l`."
     },
     exos: [
       {
         level: 'intermediate',
-        title: 'Premières lignes',
-        context: "Un fichier de log peut faire des dizaines de milliers de lignes — impossible à lire d'un bloc. `head` n'en montre que le **début** (10 lignes par défaut). Avec l'option `-n 5`, tu en demandes exactement 5. Son jumeau `tail` fera pareil pour la **fin**.",
-        scene: "Un fichier de log fait 50 000 lignes. Tu veux juste un aperçu du début.",
-        mission: "Affiche les 5 premières lignes de `/var/log/syslog`.",
+        title: 'First lines',
+        context: "A log file can be tens of thousands of lines — impossible to read all at once. `head` shows only the **start** (10 lines by default). With the `-n 5` option, you ask for exactly 5. Its twin `tail` will do the same for the **end**.",
+        scene: "A log file is 50,000 lines. You just want a glimpse of the start.",
+        mission: "Show the first 5 lines of `/var/log/syslog`.",
         steps: [
-          "Affiche le début : `head -n 5 /var/log/syslog` (`-n 5` = « 5 lignes »)",
-          "Tu obtiens un aperçu instantané, sans charger le fichier entier",
-          "💡 **Les variantes** : `head fichier` (10 lignes par défaut) · `head -n 20 fichier` (20 lignes) · `head -c 100 fichier` (les 100 premiers octets). En bout de pipe : `ls -lS | head -3` = les 3 plus gros fichiers."
+          "Show the start: `head -n 5 /var/log/syslog` (`-n 5` = “5 lines”)",
+          "You get an instant preview, without loading the whole file",
+          "💡 **The variants**: `head file` (10 lines by default) · `head -n 20 file` (20 lines) · `head -c 100 file` (the first 100 bytes). At the end of a pipe: `ls -lS | head -3` = the 3 biggest files."
         ],
         expected: "Apr 28 12:00:01 dojo systemd[1]: Started...\nApr 28 12:01:23 dojo kernel: ...",
-        culture: "`head` et `tail` sont des jumeaux : l'un montre le début, l'autre la fin. Ils brillent en **pipe** : `ls -lS | head -3` = les 3 plus gros fichiers, `sort notes.txt | tail -5` = les 5 derniers alphabétiquement. Ce sont des « robinets » qu'on branche en bout de chaîne pour ne garder qu'un échantillon d'un flux potentiellement gigantesque, sans jamais tout charger.",
-        reflection: "Un log de 2 millions de lignes : `cat` le déverse en entier, ce qui est ingérable. Comment voir juste le début ?\n👉 `head fichier` (10 premières lignes) ou `head -n 20 fichier` pour en voir 20. C'est instantané même sur un énorme fichier, car `head` s'arrête dès qu'il a lu ce qu'il faut — il ne charge pas le reste. Pour la fin : `tail`. Pour naviguer librement : `less`.",
+        culture: "`head` and `tail` are twins: one shows the start, the other the end. They shine in a **pipe**: `ls -lS | head -3` = the 3 biggest files, `sort notes.txt | tail -5` = the last 5 alphabetically. They're “taps” you plug in at the end of a chain to keep only a sample of a potentially gigantic stream, without ever loading everything.",
+        reflection: "A 2-million-line log: `cat` dumps it entirely, which is unmanageable. How do you see just the start?\n👉 `head file` (first 10 lines) or `head -n 20 file` to see 20. It's instant even on a huge file, because `head` stops as soon as it has read what it needs — it doesn't load the rest. For the end: `tail`. To browse freely: `less`.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('head') === 0 && c.indexOf('syslog') >= 0; }); }
       },
       {
         level: 'intermediate',
-        title: 'Dernières lignes (logs)',
-        context: "`tail` affiche la **fin** d'un fichier. C'est INDISPENSABLE pour les logs : les événements les plus récents sont écrits à la fin. `tail -n 5` montre les 5 dernières lignes ; `tail -f` (*follow*) suit un fichier EN DIRECT, ligne par ligne, à mesure qu'il grandit.",
-        scene: "Tu veux voir les tout derniers événements du système.",
-        mission: "Affiche les 5 dernières lignes de `/var/log/syslog`.",
+        title: 'Last lines (logs)',
+        context: "`tail` shows the **end** of a file. It's INDISPENSABLE for logs: the most recent events are written at the end. `tail -n 5` shows the last 5 lines; `tail -f` (*follow*) tracks a file LIVE, line by line, as it grows.",
+        scene: "You want to see the very latest system events.",
+        mission: "Show the last 5 lines of `/var/log/syslog`.",
         steps: [
-          "Affiche la fin : `tail -n 5 /var/log/syslog`",
-          "Ce sont les événements les plus récents",
-          "En vrai, `tail -f` suivrait le log en temps réel (on quitte avec Ctrl+C)",
-          "💡 **Les variantes** : `tail -n 20 fichier` (20 dernières lignes) · `tail -f fichier` (suit le log EN DIRECT, ligne par ligne) · `tail -F fichier` (idem, mais survit à une rotation du log — l'option des vrais serveurs)."
+          "Show the end: `tail -n 5 /var/log/syslog`",
+          "These are the most recent events",
+          "In real life, `tail -f` would follow the log in real time (you quit with Ctrl+C)",
+          "💡 **The variants**: `tail -n 20 file` (last 20 lines) · `tail -f file` (follows the log LIVE, line by line) · `tail -F file` (same, but survives a log rotation — the real-servers option)."
         ],
         expected: "Apr 28 12:10:11 dojo systemd[1]: Started Session 12.",
-        culture: "L'option la plus culte de `tail` est `-f` (**follow**) : `tail -f /var/log/nginx/access.log` affiche les nouvelles lignes **en temps réel**, à mesure qu'elles arrivent. C'est LE geste de tout admin qui débogue un serveur en direct : on lance `tail -f` sur un log, on reproduit le bug, et on voit l'erreur s'écrire sous ses yeux. On quitte avec `Ctrl+C`. Un outil de 1979 encore irremplaçable aujourd'hui.",
-        reflection: "Pourquoi regarde-t-on la FIN des logs (`tail`) et non le début (`head`) la plupart du temps ?\n👉 Parce que les logs s'écrivent chronologiquement : les événements RÉCENTS — ceux qui t'intéressent quand quelque chose vient de casser — sont à la FIN. `head` montrerait le démarrage du service il y a des semaines. Réflexe de débogage : `tail -f` pour voir ce qui se passe MAINTENANT.",
+        culture: "`tail`'s most iconic option is `-f` (**follow**): `tail -f /var/log/nginx/access.log` shows the new lines **in real time**, as they arrive. It's THE gesture of any admin debugging a server live: you run `tail -f` on a log, reproduce the bug, and watch the error write itself before your eyes. You quit with `Ctrl+C`. A tool from 1979 still irreplaceable today.",
+        reflection: "Why do we look at the END of logs (`tail`) and not the start (`head`) most of the time?\n👉 Because logs are written chronologically: the RECENT events — the ones you care about when something just broke — are at the END. `head` would show the service starting up weeks ago. Debugging reflex: `tail -f` to see what's happening NOW.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('tail') === 0 && c.indexOf('syslog') >= 0; }); }
       },
       {
         level: 'advanced',
-        title: 'Chercher un mot (grep)',
-        context: "`grep` cherche un **motif** (un mot, un texte) et n'affiche QUE les lignes qui le contiennent. C'est l'outil de recherche universel du terminal : `grep ERROR fichier.log` te sort, d'un fichier de 50 000 lignes, uniquement celles où apparaît « ERROR ».",
-        scene: "Tu veux savoir s'il y a eu des erreurs dans le syslog.",
-        mission: "Cherche les lignes contenant « ERROR » dans `/var/log/syslog`.",
+        title: 'Search for a word (grep)',
+        context: "`grep` searches for a **pattern** (a word, a text) and shows ONLY the lines that contain it. It's the terminal's universal search tool: `grep ERROR file.log` pulls, from a 50,000-line file, only the ones where “ERROR” appears.",
+        scene: "You want to know whether there were any errors in the syslog.",
+        mission: "Search for the lines containing “ERROR” in `/var/log/syslog`.",
         steps: [
-          "Filtre le fichier : `grep ERROR /var/log/syslog`",
-          "Seules les lignes contenant « ERROR » s'affichent",
-          "💡 **Les options qui changent tout** : `-i` (ignore maj/min) · `-n` (numéro de ligne) · `-c` (compte les résultats) · `-v` (inverse : lignes qui NE contiennent PAS le motif) · `-r` (récursif dans tout un dossier)"
+          "Filter the file: `grep ERROR /var/log/syslog`",
+          "Only the lines containing “ERROR” are shown",
+          "💡 **The options that change everything**: `-i` (ignore case) · `-n` (line number) · `-c` (count the results) · `-v` (invert: lines that do NOT contain the pattern) · `-r` (recursive through a whole folder)"
         ],
         expected: "Apr 28 12:06:01 dojo CRON[2105]: ERROR backup failed: disk full",
-        culture: "`grep` est un acronyme merveilleusement obscur : **g/re/p**, pour *Global Regular Expression Print* — une commande de l'éditeur `ed` des années 70 que Ken Thompson a transformée en outil autonome. Le mot est devenu un **verbe** dans le jargon informatique : « je vais grep les logs ». Sa force cachée : il comprend les **expressions régulières**, un mini-langage de motifs. `grep -i` ignore la casse, `grep -r` cherche récursivement dans une arborescence, `grep -v` inverse (montre ce qui NE correspond PAS).",
-        reflection: "Comment ne montrer que le NOMBRE de lignes contenant ERROR, sans les afficher toutes ?\n👉 Deux façons : `grep -c ERROR fichier` compte directement, ou `grep ERROR fichier | wc -l` enchaîne grep et wc via un pipe. La seconde révèle la philosophie Unix : de petits outils qu'on combine. C'est exactement ce que tu feras au Défi de cette catégorie.",
+        culture: "`grep` is a wonderfully obscure acronym: **g/re/p**, for *Global Regular Expression Print* — a command from the 1970s `ed` editor that Ken Thompson turned into a standalone tool. The word has become a **verb** in computing jargon: “I'll grep the logs”. Its hidden strength: it understands **regular expressions**, a mini-language of patterns. `grep -i` ignores case, `grep -r` searches recursively through a tree, `grep -v` inverts (shows what does NOT match).",
+        reflection: "How do you show only the NUMBER of lines containing ERROR, without displaying them all?\n👉 Two ways: `grep -c ERROR file` counts directly, or `grep ERROR file | wc -l` chains grep and wc via a pipe. The second reveals the Unix philosophy: small tools you combine. It's exactly what you'll do in this category's Challenge.",
         check: function(s) { return s.history.some(function(c) { return /^grep\s+\S+\s+/.test(c) && c.indexOf('syslog') >= 0; }); }
       },
       {
         level: 'advanced',
-        title: 'Retrouver un fichier (find)',
-        context: "`grep` cherche **dans** les fichiers ; `find`, lui, cherche **les fichiers eux-mêmes**. Il parcourt un dossier ET tous ses sous-dossiers, aussi profond soit-il, et te sort le chemin de tout ce qui correspond. La forme la plus utile : `find <où> -name \"<motif>\"`. Le motif accepte les jokers (`*`, `?`) — pense à les **mettre entre guillemets** pour que ce soit `find` qui les interprète, pas le shell.",
-        scene: "Des fichiers de log traînent quelque part dans `~/chantier`, noyés sous des sous-dossiers. Les retrouver à la main ? Trop long.",
-        mission: "Retrouve TOUS les fichiers `.log` cachés dans `~/chantier`, où qu'ils soient.",
+        title: 'Find a file (find)',
+        context: "`grep` searches **inside** files; `find`, on the other hand, searches for **the files themselves**. It walks a folder AND all its subfolders, however deep, and pulls the path of everything that matches. The most useful form: `find <where> -name \"<pattern>\"`. The pattern accepts wildcards (`*`, `?`) — remember to **put them in quotes** so it's `find` that interprets them, not the shell.",
+        scene: "Log files are lying around somewhere in `~/chantier`, buried under subfolders. Find them by hand? Too long.",
+        mission: "Find ALL the `.log` files hidden in `~/chantier`, wherever they are.",
         steps: [
-          "Entre dans le dossier : `cd ~/chantier`",
-          "Regarde : `ls` — tu vois des dossiers, mais aucun `.log` en vue (ils sont plus bas)",
-          "Cherche en profondeur : `find . -name \"*.log\"` — le `.` = « à partir d'ici », `-name` = « dont le nom correspond à »",
-          "find affiche le **chemin complet** de chaque `.log`, même au fond des sous-dossiers",
-          "💡 **Les filtres les plus utiles** : `find . -type f` (fichiers seulement) · `find . -type d` (dossiers seulement) · `find . -name \"config*\"` (par préfixe) · `find /etc -name \"*.conf\"` (chercher ailleurs). Sans guillemets, le shell développerait le joker AVANT `find` — d'où les `\"…\"`."
+          "Enter the folder: `cd ~/chantier`",
+          "Look: `ls` — you see folders, but no `.log` in sight (they're deeper down)",
+          "Search in depth: `find . -name \"*.log\"` — the `.` = “from here”, `-name` = “whose name matches”",
+          "find shows the **full path** of each `.log`, even deep in the subfolders",
+          "💡 **The most useful filters**: `find . -type f` (files only) · `find . -type d` (folders only) · `find . -name \"config*\"` (by prefix) · `find /etc -name \"*.conf\"` (search elsewhere). Without quotes, the shell would expand the wildcard BEFORE `find` — hence the `\"…\"`."
         ],
         expected: "$ find . -name \"*.log\"\n/home/user/chantier/app/debug.log\n/home/user/chantier/var/logs/access.log\n/home/user/chantier/var/logs/error.log",
-        culture: "`find` est l'un des outils les plus puissants d'Unix — et l'un des plus verbeux. Au-delà du nom, il filtre par taille (`-size +100M`), par date (`-mtime -7` = modifié il y a moins de 7 jours), par type, par propriétaire… et surtout il peut **agir** sur ce qu'il trouve : `find . -name \"*.tmp\" -delete` supprime tous les fichiers temporaires d'un coup, `find . -name \"*.sh\" -exec chmod +x {} \\;` rend exécutables tous les scripts d'une arborescence. C'est le couteau suisse du ménage et de l'automatisation sur un serveur.",
-        reflection: "Quelle est la différence entre `grep` et `find` ?\n👉 `find` cherche des **fichiers** par leur nom (ou taille, date…) dans une arborescence : « où est le fichier X ? ». `grep` cherche du **texte à l'intérieur** des fichiers : « quelles lignes contiennent le mot Y ? ». On les combine souvent : `find . -name \"*.log\"` pour lister les journaux, puis `grep ERROR` dedans pour y traquer les erreurs. L'un trouve les fichiers, l'autre fouille leur contenu.",
+        culture: "`find` is one of Unix's most powerful tools — and one of the most verbose. Beyond the name, it filters by size (`-size +100M`), by date (`-mtime -7` = modified less than 7 days ago), by type, by owner… and above all it can **act** on what it finds: `find . -name \"*.tmp\" -delete` deletes all temporary files at once, `find . -name \"*.sh\" -exec chmod +x {} \\;` makes all the scripts of a tree executable. It's the Swiss Army knife of cleanup and automation on a server.",
+        reflection: "What's the difference between `grep` and `find`?\n👉 `find` searches for **files** by their name (or size, date…) in a tree: “where is file X?”. `grep` searches for **text inside** files: “which lines contain the word Y?”. We often combine them: `find . -name \"*.log\"` to list the logs, then `grep ERROR` inside them to hunt for errors. One finds the files, the other digs through their content.",
         setup: function() {
           ensureFile('/home/user/chantier/app/main.py', '210');
           ensureFile('/home/user/chantier/app/debug.log', '90');
@@ -3010,69 +3010,69 @@ var QUESTS = [
       },
       {
         level: 'advanced',
-        title: 'Pipe — chaîner les commandes',
-        context: "Le tuyau `|` (*pipe*) est LE super-pouvoir d'Unix : il envoie la **sortie** d'une commande dans l'**entrée** de la suivante. `commande1 | commande2` = « fais 1, puis passe le résultat à 2 ». On enchaîne autant d'outils qu'on veut, chacun affinant le flux.",
-        scene: "Tu veux repérer les tentatives de connexion échouées dans `auth.log`.",
-        mission: "Affiche `/var/log/auth.log` et ne garde que les lignes « Failed ».",
+        title: 'Pipe — chain the commands',
+        context: "The pipe `|` (*pipe*) is Unix's super-power: it sends the **output** of one command into the **input** of the next. `command1 | command2` = “do 1, then pass the result to 2”. You chain as many tools as you want, each one refining the stream.",
+        scene: "You want to spot the failed connection attempts in `auth.log`.",
+        mission: "Display `/var/log/auth.log` and keep only the “Failed” lines.",
         steps: [
-          "Enchaîne : `cat /var/log/auth.log | grep Failed` (affiche le log, puis ne garde que « Failed »)",
-          "Lis-le comme une phrase : « prends le log, garde les échecs »",
-          "Plus direct (grep lit le fichier lui-même) : `grep Failed /var/log/auth.log`"
+          "Chain: `cat /var/log/auth.log | grep Failed` (display the log, then keep only “Failed”)",
+          "Read it like a sentence: “take the log, keep the failures”",
+          "More direct (grep reads the file itself): `grep Failed /var/log/auth.log`"
         ],
         expected: "Failed password for invalid user admin from 203.0.113.5\nFailed password for invalid user root from 203.0.113.5",
-        diagram: "cat fichier ──┐\n              ├─→ grep Failed ──→ écran\n              │\n         (sortie)",
-        culture: "Le pipe `|` a été inventé en 1973 par **Doug McIlroy** aux Bell Labs, et il a changé l'informatique pour toujours. Son idée : chaque programme fait UNE chose bien, et écrit sa sortie dans un « tuyau » que le suivant lit en entrée. C'est la **philosophie Unix** en un symbole. `cat log | grep ERROR | sort | uniq -c | sort -rn` — cinq outils simples deviennent un analyseur de logs sur mesure. Aucun n'a été écrit pour les autres, et pourtant ils s'emboîtent.",
-        reflection: "`cat fichier | grep motif` et `grep motif fichier` donnent le même résultat. Lequel est « mieux » ?\n👉 `grep motif fichier` — on évite le `cat` inutile (les puristes appellent ça un *useless use of cat*). grep sait lire un fichier directement. Le pipe avec `cat` ne se justifie que quand la source n'est PAS un fichier (ex : `ps aux | grep nginx`, où la sortie de ps n'est pas un fichier). Petit détail de style qui trahit l'expérience.",
+        diagram: "cat file ─────┐\n              ├─→ grep Failed ──→ screen\n              │\n         (output)",
+        culture: "The pipe `|` was invented in 1973 by **Doug McIlroy** at Bell Labs, and it changed computing forever. Its idea: each program does ONE thing well, and writes its output into a “pipe” that the next reads as input. It's the **Unix philosophy** in one symbol. `cat log | grep ERROR | sort | uniq -c | sort -rn` — five simple tools become a custom log analyzer. None was written for the others, yet they fit together.",
+        reflection: "`cat file | grep pattern` and `grep pattern file` give the same result. Which is “better”?\n👉 `grep pattern file` — you avoid the useless `cat` (purists call this a *useless use of cat*). grep can read a file directly. The pipe with `cat` is only justified when the source is NOT a file (e.g. `ps aux | grep nginx`, where ps's output isn't a file). A small detail of style that betrays experience.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('|') >= 0 && c.indexOf('grep') >= 0 && c.indexOf('Failed') >= 0; }) || s.history.some(function(c) { return /^grep\s+Failed/.test(c) && c.indexOf('auth') >= 0; }); }
       },
       {
         level: 'advanced',
-        title: 'Compter (wc)',
-        context: "`wc` (*word count*) compte : `-l` les lignes, `-w` les mots, `-c` les caractères. Seul, il est banal. Branché en **bout de pipe**, il transforme n'importe quelle liste en un CHIFFRE : `grep Failed auth.log | wc -l` = le nombre exact de tentatives ratées.",
-        scene: "Tu veux savoir COMBIEN de tentatives ratées il y a eu, pas les lire une par une.",
-        mission: "Compte le nombre de lignes contenant « Failed » dans `auth.log`.",
+        title: 'Count (wc)',
+        context: "`wc` (*word count*) counts: `-l` lines, `-w` words, `-c` characters. Alone, it's mundane. Plugged in at the **end of a pipe**, it turns any list into a NUMBER: `grep Failed auth.log | wc -l` = the exact number of failed attempts.",
+        scene: "You want to know HOW MANY failed attempts there were, not read them one by one.",
+        mission: "Count the number of lines containing “Failed” in `auth.log`.",
         steps: [
-          "Compte les échecs : `grep Failed /var/log/auth.log | wc -l`",
-          "Le pipe passe les lignes « Failed » à `wc -l`, qui les compte",
-          "Le chiffre te dit combien d'attaques ont eu lieu",
-          "💡 **Ce que `wc` sait compter** : `wc -l` (lignes) · `wc -w` (mots) · `wc -c` (octets) · `wc -m` (caractères). `wc` seul (sans option) affiche les trois d'un coup : lignes, mots, octets."
+          "Count the failures: `grep Failed /var/log/auth.log | wc -l`",
+          "The pipe passes the “Failed” lines to `wc -l`, which counts them",
+          "The number tells you how many attacks took place",
+          "💡 **What `wc` can count**: `wc -l` (lines) · `wc -w` (words) · `wc -c` (bytes) · `wc -m` (characters). `wc` alone (no option) shows all three at once: lines, words, bytes."
         ],
         expected: "$ grep Failed /var/log/auth.log | wc -l\n2",
-        culture: "`wc` (word count) compte lignes (`-l`), mots (`-w`) ou octets (`-c`). Seul il est banal ; en **bout de pipe**, il devient un compteur universel : `ls | wc -l` = nombre de fichiers, `grep -c` ou `... | wc -l` = nombre d'occurrences, `who | wc -l` = nombre d'utilisateurs connectés. Transformer une liste en un CHIFFRE est une opération si fréquente que `wc -l` est l'un des maillons de pipe les plus tapés au monde.",
-        reflection: "Comment compter le nombre de fichiers dans le dossier courant ?\n👉 `ls | wc -l` — `ls` liste (un fichier par ligne quand la sortie est un pipe), `wc -l` compte les lignes. Attention subtile : ça ne compte pas les fichiers cachés (il faudrait `ls -a`), et compte `.`/`..` avec `-a`. Pour un décompte précis, les pros utilisent `find . -maxdepth 1 -type f | wc -l`.",
+        culture: "`wc` (word count) counts lines (`-l`), words (`-w`) or bytes (`-c`). Alone it's mundane; at the **end of a pipe**, it becomes a universal counter: `ls | wc -l` = number of files, `grep -c` or `... | wc -l` = number of occurrences, `who | wc -l` = number of logged-in users. Turning a list into a NUMBER is such a frequent operation that `wc -l` is one of the most-typed pipe links in the world.",
+        reflection: "How do you count the number of files in the current folder?\n👉 `ls | wc -l` — `ls` lists (one file per line when the output is a pipe), `wc -l` counts the lines. Subtle caveat: it doesn't count hidden files (you'd need `ls -a`), and counts `.`/`..` with `-a`. For a precise count, pros use `find . -maxdepth 1 -type f | wc -l`.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('wc') >= 0 && c.indexOf('|') >= 0; }); }
       },
       {
         level: 'expert',
-        title: 'Redirection vers fichier',
-        context: "L'opérateur `>` **capture** la sortie d'une commande dans un fichier, au lieu de l'afficher à l'écran. Idéal pour générer un rapport qu'on gardera. Rappel du chapitre précédent : `>` écrase le fichier, `>>` ajoute à la fin.",
-        scene: "Tu veux garder une trace écrite des erreurs du syslog, pas juste les voir défiler.",
-        mission: "Écris la sortie de `grep ERROR /var/log/syslog` dans `~/erreurs.txt`.",
+        title: 'Redirection to a file',
+        context: "The `>` operator **captures** a command's output into a file, instead of displaying it on screen. Ideal for generating a report you'll keep. Reminder from the previous chapter: `>` overwrites the file, `>>` appends at the end.",
+        scene: "You want to keep a written trace of the syslog errors, not just watch them scroll by.",
+        mission: "Write the output of `grep ERROR /var/log/syslog` into `~/erreurs.txt`.",
         steps: [
-          "Capture les erreurs dans un fichier : `grep ERROR /var/log/syslog > ~/erreurs.txt`",
-          "Rien ne s'affiche à l'écran : tout est parti dans le fichier",
-          "Relis ton rapport : `cat ~/erreurs.txt`",
-          "💡 **Tous les opérateurs de redirection** : `> fichier` (écrit, en écrasant) · `>> fichier` (ajoute à la fin) · `2> erreurs.log` (redirige SEULEMENT les messages d'erreur) · `> tout.log 2>&1` ou `&> tout.log` (capture la sortie ET les erreurs) · `2>/dev/null` (jette les erreurs à la poubelle)."
+          "Capture the errors into a file: `grep ERROR /var/log/syslog > ~/erreurs.txt`",
+          "Nothing shows on screen: it all went into the file",
+          "Reread your report: `cat ~/erreurs.txt`",
+          "💡 **All the redirection operators**: `> file` (writes, overwriting) · `>> file` (appends at the end) · `2> errors.log` (redirects ONLY the error messages) · `> all.log 2>&1` or `&> all.log` (captures the output AND the errors) · `2>/dev/null` (throws the errors in the trash)."
         ],
         expected: "$ cat ~/erreurs.txt\nApr 28 12:06:01 dojo CRON[2105]: ERROR backup failed",
-        culture: "`>` et `>>` manipulent les **flux standards** d'Unix. Toute commande a trois canaux : l'entrée (stdin), la sortie (stdout) et les erreurs (stderr). `>` redirige stdout vers un fichier en **écrasant**, `>>` en **ajoutant** à la fin. Piège classique : `>` détruit le contenu existant SANS confirmation. Pour capturer aussi les erreurs : `2>` (stderr) ou `&>` (les deux). Ces symboles sont la plomberie invisible de tous les scripts.",
-        reflection: "Quelle est la différence dangereuse entre `commande > fichier` et `commande >> fichier` ?\n👉 `>` **écrase** : si `fichier` contenait déjà des données, elles sont perdues à jamais. `>>` **ajoute** à la fin sans rien détruire. Erreur de débutant fatale : `cat a > a` (rediriger un fichier sur lui-même) le vide instantanément. Règle : `>` pour créer/remplacer, `>>` pour accumuler (logs, rapports incrémentaux).",
+        culture: "`>` and `>>` manipulate Unix's **standard streams**. Every command has three channels: input (stdin), output (stdout) and errors (stderr). `>` redirects stdout to a file by **overwriting**, `>>` by **appending** at the end. Classic trap: `>` destroys the existing content WITHOUT confirmation. To also capture errors: `2>` (stderr) or `&>` (both). These symbols are the invisible plumbing of all scripts.",
+        reflection: "What's the dangerous difference between `command > file` and `command >> file`?\n👉 `>` **overwrites**: if `file` already contained data, it's lost forever. `>>` **appends** at the end, destroying nothing. Fatal beginner mistake: `cat a > a` (redirecting a file onto itself) empties it instantly. Rule: `>` to create/replace, `>>` to accumulate (logs, incremental reports).",
         check: function(s) { var h = getNode('/home/user'); return !!(h && h.children && h.children['erreurs.txt']); }
       },
       {
         level: 'expert',
-        title: 'Mini-défi : le détective des logs',
-        context: "On assemble tout le chapitre en une vraie enquête. Un fichier de log cache des tentatives d'intrusion. Ton job : les repérer, les compter, et archiver le résultat — le tout en enchaînant de petits outils avec des pipes et une redirection.",
-        scene: "Le serveur a subi des connexions suspectes cette nuit. Le Sensei te demande un rapport chiffré.",
-        mission: "Compte les lignes « Failed » dans `auth.log`, puis archive ces lignes dans `~/attaques.txt`.",
+        title: 'Mini-challenge: the log detective',
+        context: "We assemble the whole chapter into a real investigation. A log file hides intrusion attempts. Your job: spot them, count them, and archive the result — all by chaining small tools with pipes and a redirection.",
+        scene: "The server suffered suspicious connections last night. The Sensei asks you for a numeric report.",
+        mission: "Count the “Failed” lines in `auth.log`, then archive those lines into `~/attaques.txt`.",
         steps: [
-          "Compte les tentatives ratées : `grep Failed /var/log/auth.log | wc -l`",
-          "Archive les lignes fautives : `grep Failed /var/log/auth.log > ~/attaques.txt`",
-          "Vérifie ton rapport : `cat ~/attaques.txt`"
+          "Count the failed attempts: `grep Failed /var/log/auth.log | wc -l`",
+          "Archive the offending lines: `grep Failed /var/log/auth.log > ~/attaques.txt`",
+          "Check your report: `cat ~/attaques.txt`"
         ],
         expected: "$ grep Failed /var/log/auth.log | wc -l\n2\n$ cat ~/attaques.txt\nFailed password for invalid user admin from 203.0.113.5\nFailed password for invalid user root from 203.0.113.5",
-        culture: "Cette combinaison `grep | wc -l` + redirection est le pain quotidien de l'analyse de logs et de la détection d'intrusion. Un pic de « Failed password » venant d'une même IP = une attaque par force brute. Les outils de sécurité comme **fail2ban** automatisent exactement ce raisonnement : compter les échecs, et bannir l'IP au-delà d'un seuil.",
-        reflection: "Pourquoi archiver les lignes suspectes dans un fichier (`>`) plutôt que juste les regarder à l'écran ?\n👉 Parce qu'un rapport écrit se garde, se partage, se compare dans le temps. À l'écran, l'info défile et disparaît ; dans un fichier, elle devient une preuve datée qu'on peut joindre à un ticket, analyser plus tard, ou comparer au log de demain. Capturer, c'est garder une trace.",
+        culture: "This `grep | wc -l` + redirection combo is the daily bread of log analysis and intrusion detection. A spike of “Failed password” from a single IP = a brute-force attack. Security tools like **fail2ban** automate exactly this reasoning: count the failures, and ban the IP beyond a threshold.",
+        reflection: "Why archive the suspicious lines into a file (`>`) rather than just watching them on screen?\n👉 Because a written report can be kept, shared, compared over time. On screen, the info scrolls by and vanishes; in a file, it becomes a dated piece of evidence you can attach to a ticket, analyze later, or compare with tomorrow's log. To capture is to keep a trace.",
         check: function(s) { var h = getNode('/home/user'); var hasFile = !!(h && h.children && h.children['attaques.txt']); var counted = s.history.some(function(c) { return c.indexOf('grep') >= 0 && c.indexOf('Failed') >= 0 && c.indexOf('wc') >= 0; }); return hasFile && counted; }
       }
     ]
