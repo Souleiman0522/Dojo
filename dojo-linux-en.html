@@ -3390,124 +3390,124 @@ var QUESTS = [
     id: 'system',
     chapter: 13,
     icon: '💾',
-    title: 'Système & disque',
+    title: 'System & disk',
     color: '#1e3a5c',
-    desc: 'Espace, mémoire, infos',
-    story: "« Une porte bien gardée ne sert à rien si la maison s'effondre de l'intérieur, Kaï. » Le Sensei tapote le boîtier. « Une machine, ça a des limites. De l'espace disque qui se remplit, de la mémoire qui sature, un processeur qui chauffe. Le jour où un disque est plein à 100%, **tout s'arrête** — les logs ne s'écrivent plus, la base de données refuse d'écrire, le serveur tombe. »\n\nIl te confie les instruments : « Ausculte ta machine comme un médecin, Kaï. `df` pour le disque, `free` pour la mémoire, `top` pour le CPU. Un bon admin sent venir la panne **avant** qu'elle n'arrive. »",
-    mentor: "Ausculter la santé du système :\n\n① `df -h` — l'espace disque, en format lisible (`-h` = human). La colonne 'Use%' est celle à surveiller. Au-dessus de 90%, agis.\n② `free -h` — la mémoire RAM. Attention au piège : Linux 'utilise' la RAM libre pour du cache — c'est normal et sain, pas une fuite. Regarde 'available', pas 'free'.\n③ `du -sh dossier` — la taille d'un dossier précis. Pour trouver ce qui remplit le disque : `du -sh /var/*`.\n④ `uptime` montre depuis quand la machine tourne et sa charge (load average). `uname -a` donne la version du noyau.",
+    desc: 'Space, memory, info',
+    story: "“A well-guarded door is useless if the house collapses from within, Kai.” The Sensei taps the case. “A machine has limits. Disk space that fills up, memory that saturates, a processor that overheats. The day a disk is 100% full, **everything stops** — the logs no longer write, the database refuses to write, the server goes down.”\n\nHe hands you the instruments: “Examine your machine like a doctor, Kai. `df` for the disk, `free` for the memory, `top` for the CPU. A good admin senses the breakdown coming **before** it arrives.”",
+    mentor: "Examining the system's health:\n\n① `df -h` — the disk space, in readable format (`-h` = human). The 'Use%' column is the one to watch. Above 90%, act.\n② `free -h` — the RAM. Watch the trap: Linux 'uses' the free RAM for cache — that's normal and healthy, not a leak. Look at 'available', not 'free'.\n③ `du -sh folder` — the size of a specific folder. To find what's filling the disk: `du -sh /var/*`.\n④ `uptime` shows how long the machine has been running and its load (load average). `uname -a` gives the kernel version.",
     challenge: {
-      title: "Le bilan de santé",
-      desc: "Un check-up complet de la machine. **① Mesure l'espace disque** (`df -h`) et repère la partition la plus pleine, **② vérifie la mémoire** (`free -h`), **③ trouve quel dossier de `/var` mange le plus d'espace** avec `du -sh`, **④ relève depuis quand la machine tourne** (`uptime`). Réflexion : pourquoi 'available' est plus fiable que 'free' pour juger la mémoire ?"
+      title: "The health check",
+      desc: "A full check-up of the machine. **① Measure the disk space** (`df -h`) and spot the fullest partition, **② check the memory** (`free -h`), **③ find which folder of `/var` eats the most space** with `du -sh`, **④ note how long the machine has been running** (`uptime`). Reflection: why is 'available' more reliable than 'free' to judge memory?"
     },
     exos: [
       {
         level: 'advanced',
-        title: 'Espace disque (df)',
-        context: "`df` (*disk free*) montre, pour chaque disque, combien d'espace est **utilisé** et combien reste **libre**. On ajoute toujours `-h` (*human*) pour des unités lisibles (Go, Mo) au lieu de blocs de 1 Ko. La colonne à surveiller est `Use%` : au-dessus de 90%, il faut agir. (Le Dojo décode les colonnes au 1er `df`.)",
-        scene: "Tu veux savoir s'il reste de la place sur le disque avant qu'il ne se remplisse.",
-        mission: "Affiche l'espace disque avec `df -h`.",
+        title: 'Disk space (df)',
+        context: "`df` (*disk free*) shows, for each disk, how much space is **used** and how much stays **free**. You always add `-h` (*human*) for readable units (GB, MB) instead of 1 KB blocks. The column to watch is `Use%`: above 90%, you must act. (The Dojo decodes the columns on the 1st `df`.)",
+        scene: "You want to know whether there's space left on the disk before it fills up.",
+        mission: "Display the disk space with `df -h`.",
         steps: [
-          "Tape `df -h` (`-h` = tailles lisibles)",
-          "Lis les colonnes : `Size` (total), `Used` (occupé), `Avail` (libre), `Use%` (pourcentage plein)",
-          "Repère les partitions proches de 100% : elles vont poser problème",
-          "💡 **Les variantes** : `df -h` (tailles lisibles Go/Mo) · `df -h /` (juste la partition qui contient `/`) · `df -i` (les *inodes* : le NOMBRE de fichiers possibles — utile quand `df -h` montre de la place mais que l'écriture échoue quand même)."
+          "Type `df -h` (`-h` = readable sizes)",
+          "Read the columns: `Size` (total), `Used` (occupied), `Avail` (free), `Use%` (percent full)",
+          "Spot the partitions near 100%: they'll cause trouble",
+          "💡 **The variants**: `df -h` (readable sizes GB/MB) · `df -h /` (just the partition containing `/`) · `df -i` (the *inodes*: the NUMBER of possible files — useful when `df -h` shows space but writing fails anyway)."
         ],
         expected: "Filesystem  Size  Used  Avail  Use%  Mounted\n/dev/sda1   50G   12G   36G    25%   /\ntmpfs       2G    0     2G     0%    /tmp",
-        culture: "Un disque plein à **100%** est l'une des pannes les plus vicieuses : le système ne peut plus écrire de logs (donc plus de traces), les bases de données refusent les écritures, les sessions plantent. Et le pire : parfois `df` montre de la place libre mais l'écriture échoue quand même — parce que ce sont les **inodes** (le nombre de fichiers possibles) qui sont épuisés, pas l'espace. `df -i` révèle ce cas rare. Toujours garder une marge : au-dessus de 90%, on agit.",
-        reflection: "Que représente la ligne `tmpfs` montée sur `/tmp` dans la sortie de `df` ?\n👉 `tmpfs` est un système de fichiers **en mémoire RAM**, pas sur le disque. `/tmp` y est souvent monté pour des raisons de vitesse — mais attention : son contenu **disparaît au redémarrage** (c'est de la RAM). D'où le nom /tmp (temporaire). Ne jamais y stocker quelque chose d'important. C'est un exemple du principe Unix : « tout est fichier », même la mémoire vive.",
+        culture: "A disk 100% full is one of the most vicious breakdowns: the system can no longer write logs (so no more traces), databases refuse writes, sessions crash. And worst of all: sometimes `df` shows free space but writing fails anyway — because it's the **inodes** (the number of possible files) that are exhausted, not the space. `df -i` reveals this rare case. Always keep a margin: above 90%, you act.",
+        reflection: "What does the `tmpfs` line mounted on `/tmp` represent in `df`'s output?\n👉 `tmpfs` is a filesystem **in RAM**, not on disk. `/tmp` is often mounted there for speed — but careful: its content **disappears on reboot** (it's RAM). Hence the name /tmp (temporary). Never store anything important there. It's an example of the Unix principle: “everything is a file”, even the RAM.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('df') === 0; }); }
       },
       {
         level: 'advanced',
-        title: 'Taille d\'un dossier (du)',
-        context: "du (disk usage) calcule la taille d'un dossier. `-sh` (sum + human) = taille totale lisible.",
-        scene: "Tu veux savoir combien pèse ton home.",
-        mission: "Affiche la taille de ton home.",
+        title: 'Size of a folder (du)',
+        context: "du (disk usage) computes the size of a folder. `-sh` (sum + human) = readable total size.",
+        scene: "You want to know how big your home is.",
+        mission: "Show the size of your home.",
         steps: [
           "`du -sh ~`",
-          "Le résultat est la taille totale (récursive)",
-          "💡 **Les variantes** : `du -sh dossier` (juste le total du dossier) · `du -h --max-depth=1 dossier` (le poids de chaque sous-dossier, un niveau) · `du -sh /var/* | sort -rh | head` (le classement des plus gros — LE réflexe quand un disque se remplit)."
+          "The result is the total (recursive) size",
+          "💡 **The variants**: `du -sh folder` (just the folder's total) · `du -h --max-depth=1 folder` (the weight of each subfolder, one level) · `du -sh /var/* | sort -rh | head` (the ranking of the biggest — THE reflex when a disk fills up)."
         ],
         expected: "$ du -sh ~\n128M  /home/user",
-        culture: "`df` et `du` sont complémentaires mais différents : `df` regarde le disque **d'en haut** (combien reste-t-il sur la partition ?), `du` regarde **d'en bas** (combien pèse ce dossier précis ?). Le combo qui sauve : quand un disque est plein (`df` à 95%), on lance `du -sh /var/*` pour trouver QUEL dossier est le coupable, puis on descend : `du -sh /var/log/*`. On traque le gouffre de proche en proche jusqu'à trouver le fichier géant.",
-        reflection: "Ton disque est plein. Quelle stratégie avec `du` pour trouver ce qui le remplit ?\n👉 On descend l'arbre en suivant le plus gros à chaque niveau : `du -sh /*` (racine), repère le plus lourd (souvent `/var`), puis `du -sh /var/*`, puis `du -sh /var/log/*`... jusqu'au fichier coupable. Astuce pro : `du -sh /var/* | sort -rh | head` trie et montre directement les plus gros. La chasse au gaspillage d'espace, geste hebdomadaire de l'admin.",
+        culture: "`df` and `du` are complementary but different: `df` looks at the disk **from above** (how much is left on the partition?), `du` looks **from below** (how big is this specific folder?). The combo that saves you: when a disk is full (`df` at 95%), you run `du -sh /var/*` to find WHICH folder is the culprit, then you go down: `du -sh /var/log/*`. You track the black hole step by step until you find the giant file.",
+        reflection: "Your disk is full. What strategy with `du` to find what's filling it?\n👉 You go down the tree following the biggest at each level: `du -sh /*` (root), spot the heaviest (often `/var`), then `du -sh /var/*`, then `du -sh /var/log/*`... down to the culprit file. Pro tip: `du -sh /var/* | sort -rh | head` sorts and directly shows the biggest. Hunting wasted space, an admin's weekly gesture.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('du') === 0; }); }
       },
       {
         level: 'advanced',
-        title: 'Infos CPU',
-        context: "/proc est un filesystem virtuel : ses fichiers ne sont pas réels, ils exposent l'état du noyau. /proc/cpuinfo donne les détails du processeur.",
-        scene: "Tu veux connaître ton CPU.",
-        mission: "Affiche /proc/cpuinfo.",
-        steps: ["`cat /proc/cpuinfo`", "Lis le model name et cpu cores"],
+        title: 'CPU info',
+        context: "/proc is a virtual filesystem: its files aren't real, they expose the kernel's state. /proc/cpuinfo gives the processor's details.",
+        scene: "You want to know your CPU.",
+        mission: "Display /proc/cpuinfo.",
+        steps: ["`cat /proc/cpuinfo`", "Read the model name and cpu cores"],
         expected: "model name : Intel(R) Core(TM) i7-9700K\ncpu cores : 8",
-        culture: "`/proc` est l'une des idées les plus géniales d'Unix : un **faux système de fichiers** qui n'existe pas sur le disque. Chaque fichier dedans est généré à la volée par le noyau quand tu le lis. `cat /proc/cpuinfo` interroge en direct le processeur, `/proc/meminfo` la RAM, `/proc/1234/` expose les entrailles du processus 1234. C'est l'incarnation parfaite du principe « tout est fichier » : même l'état vivant du noyau se lit avec un simple `cat`.",
-        reflection: "Pourquoi les fichiers de `/proc` affichent-ils une taille de 0 octet avec `ls -l`, alors que `cat` en montre le contenu ?\n👉 Parce qu'ils n'existent pas vraiment sur le disque : ils sont **générés à la lecture**. Leur « taille » n'a pas de sens avant qu'on les lise — le noyau produit le contenu à la demande. C'est pour ça qu'on ne peut pas les copier normalement ni connaître leur taille à l'avance. Des fenêtres en temps réel sur le cœur du système, pas des fichiers ordinaires.",
+        culture: "`/proc` is one of Unix's most brilliant ideas: a **fake filesystem** that doesn't exist on disk. Each file in it is generated on the fly by the kernel when you read it. `cat /proc/cpuinfo` queries the processor live, `/proc/meminfo` the RAM, `/proc/1234/` exposes the innards of process 1234. It's the perfect embodiment of the “everything is a file” principle: even the kernel's living state is read with a simple `cat`.",
+        reflection: "Why do `/proc` files show a size of 0 bytes with `ls -l`, while `cat` shows their content?\n👉 Because they don't really exist on disk: they're **generated on read**. Their “size” makes no sense before you read them — the kernel produces the content on demand. That's why you can't copy them normally or know their size in advance. Real-time windows into the system's core, not ordinary files.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('cpuinfo') >= 0; }); }
       },
       {
         level: 'advanced',
-        title: 'Infos mémoire',
-        context: "La **RAM** (mémoire vive) est l'espace de travail rapide du système — distinct du disque, qui est le stockage durable. Le fichier virtuel `/proc/meminfo` en donne l'état brut. Le chiffre à regarder n'est PAS `MemFree` mais **`MemAvailable`** : il inclut la mémoire occupée par des caches que le système peut libérer à tout moment. C'est la vraie RAM « utilisable ».",
-        scene: "La machine rame : tu veux savoir combien de mémoire vive est réellement disponible.",
-        mission: "Affiche `/proc/meminfo`.",
+        title: 'Memory info',
+        context: "The **RAM** (random-access memory) is the system's fast workspace — distinct from the disk, which is durable storage. The virtual file `/proc/meminfo` gives its raw state. The number to look at is NOT `MemFree` but **`MemAvailable`**: it includes the memory held by caches that the system can free at any time. It's the real “usable” RAM.",
+        scene: "The machine is dragging: you want to know how much RAM is really available.",
+        mission: "Display `/proc/meminfo`.",
         steps: [
-          "Affiche-le : `cat /proc/meminfo`",
-          "Lis `MemTotal` (RAM totale) et surtout `MemAvailable` (réellement disponible)",
-          "Les valeurs sont en kilo-octets (kB)"
+          "Display it: `cat /proc/meminfo`",
+          "Read `MemTotal` (total RAM) and above all `MemAvailable` (really available)",
+          "The values are in kilobytes (kB)"
         ],
         expected: "MemTotal:     16384000 kB\nMemAvailable: 12288000 kB",
-        culture: "Piège classique du débutant : voir `MemFree` très bas et croire que la RAM est saturée. En réalité, Linux **utilise volontairement la RAM libre comme cache disque** pour accélérer les accès (« la RAM libre est de la RAM gâchée »). Ce cache est instantanément rendu si un programme en a besoin. D'où `MemAvailable`, qui compte cette RAM récupérable. Sous Linux, une RAM « pleine » de cache est saine, pas alarmante.",
-        reflection: "`MemFree` est presque à zéro. Faut-il s'inquiéter ?\n👉 Pas forcément. Linux remplit la RAM inutilisée de **cache** pour aller plus vite, et le libère dès qu'un programme réclame de la mémoire. Le vrai indicateur, c'est `MemAvailable` : tant qu'il reste confortable, tout va bien. On ne s'alarme que si `MemAvailable` s'effondre ET que le *swap* (RAM sur disque) se remplit — signe d'une vraie pénurie.",
+        culture: "Classic beginner trap: seeing `MemFree` very low and thinking the RAM is saturated. In reality, Linux **deliberately uses the free RAM as a disk cache** to speed up access (“free RAM is wasted RAM”). This cache is instantly given back if a program needs it. Hence `MemAvailable`, which counts this recoverable RAM. Under Linux, RAM “full” of cache is healthy, not alarming.",
+        reflection: "`MemFree` is almost zero. Should you worry?\n👉 Not necessarily. Linux fills the unused RAM with **cache** to go faster, and frees it as soon as a program requests memory. The real indicator is `MemAvailable`: as long as it stays comfortable, all is well. You only get alarmed if `MemAvailable` collapses AND the *swap* (RAM on disk) fills up — a sign of a real shortage.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('meminfo') >= 0; }); }
       },
       {
         level: 'advanced',
-        title: 'Mémoire lisible (free)',
-        context: "`/proc/meminfo` est brut et verbeux. La commande `free -h` en donne un résumé clair et lisible (`-h` = *human*) : total, utilisé, libre, et surtout `available`. C'est le réflexe rapide pour jauger la mémoire, plutôt que de lire le fichier brut.",
-        scene: "Tu veux un état de la mémoire en un coup d'œil, sans décrypter `/proc/meminfo`.",
-        mission: "Affiche l'état de la mémoire avec `free -h`.",
+        title: 'Readable memory (free)',
+        context: "`/proc/meminfo` is raw and verbose. The `free -h` command gives a clear, readable summary (`-h` = *human*): total, used, free, and above all `available`. It's the quick reflex to gauge memory, rather than reading the raw file.",
+        scene: "You want a memory status at a glance, without decoding `/proc/meminfo`.",
+        mission: "Display the memory status with `free -h`.",
         steps: [
-          "Tape `free -h`",
-          "Ligne `Mem:` → ta RAM (colonne `available` = réellement dispo)",
-          "Ligne `Swap:` → la mémoire de secours sur disque (lente : si elle se remplit, la machine souffre)",
-          "💡 **Les variantes** : `free -h` (unités lisibles Gi/Mi) · `free -m` (tout en Mo) · `free -g` (tout en Go) · `free -h -s 2` (rafraîchit l'affichage toutes les 2 secondes, pour surveiller en direct)."
+          "Type `free -h`",
+          "The `Mem:` line → your RAM (the `available` column = really available)",
+          "The `Swap:` line → the backup memory on disk (slow: if it fills up, the machine suffers)",
+          "💡 **The variants**: `free -h` (readable units Gi/Mi) · `free -m` (all in MB) · `free -g` (all in GB) · `free -h -s 2` (refreshes the display every 2 seconds, to watch live)."
         ],
         expected: "              total   used   free   available\nMem:          16Gi   4.2Gi  3.8Gi      11Gi\nSwap:         2.0Gi     0B  2.0Gi",
-        culture: "Le **swap** est une extension de la RAM… sur le disque. Quand la RAM est pleine, le système déplace les données les moins utilisées vers le swap pour faire de la place. Problème : le disque est des milliers de fois plus lent que la RAM. Un serveur qui « swappe » beaucoup rame terriblement. Voir le swap se remplir dans `free` est un signal d'alarme : il manque de la vraie RAM.",
-        reflection: "Dans `free -h`, pourquoi regarder la colonne `available` plutôt que `free` ?\n👉 Même raison que pour `/proc/meminfo` : `free` ne compte que la RAM totalement inutilisée, alors qu'`available` inclut la RAM occupée par des caches récupérables. `available` reflète donc ce qu'un nouveau programme pourrait réellement obtenir. C'est LE chiffre qui dit si la machine a de la marge ou non.",
+        culture: "The **swap** is an extension of the RAM… on the disk. When the RAM is full, the system moves the least-used data to the swap to make room. Problem: the disk is thousands of times slower than the RAM. A server that “swaps” a lot drags terribly. Seeing the swap fill up in `free` is an alarm signal: real RAM is running out.",
+        reflection: "In `free -h`, why look at the `available` column rather than `free`?\n👉 Same reason as for `/proc/meminfo`: `free` only counts the totally unused RAM, whereas `available` includes the RAM held by recoverable caches. `available` therefore reflects what a new program could actually get. It's THE number that says whether the machine has margin or not.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('free') === 0; }); }
       },
       {
         level: 'advanced',
-        title: 'Version du système',
-        context: "Avant toute intervention, un admin vérifie **sur quel système** il se trouve : la distribution et sa version décident des commandes disponibles, des chemins, du gestionnaire de paquets. Le fichier `/etc/os-release` donne cette carte d'identité, dans un format **universel** (il existe à l'identique sur Ubuntu, Debian, CentOS, Fedora…). (Le Dojo le décode après le `cat`.)",
-        scene: "Tu te connectes à un serveur inconnu et tu veux savoir sur quelle distribution tu es tombé.",
-        mission: "Affiche `/etc/os-release`.",
+        title: 'System version',
+        context: "Before any intervention, an admin checks **which system** they're on: the distribution and its version decide the available commands, the paths, the package manager. The `/etc/os-release` file gives this ID card, in a **universal** format (it exists identically on Ubuntu, Debian, CentOS, Fedora…). (The Dojo decodes it after the `cat`.)",
+        scene: "You connect to an unknown server and you want to know which distribution you landed on.",
+        mission: "Display `/etc/os-release`.",
         steps: [
-          "Affiche-le : `cat /etc/os-release`",
-          "Lis `NAME` (la distribution) et `VERSION`",
-          "`ID=ubuntu` est le champ que lisent les scripts pour s'adapter"
+          "Display it: `cat /etc/os-release`",
+          "Read `NAME` (the distribution) and `VERSION`",
+          "`ID=ubuntu` is the field scripts read to adapt"
         ],
         expected: "NAME=\"Ubuntu\"\nVERSION=\"22.04.3 LTS\"",
-        culture: "Savoir sa distribution n'est pas un détail : c'est elle qui décide du **gestionnaire de paquets** (`apt` sur Debian/Ubuntu, `dnf`/`yum` sur Fedora/CentOS), de l'emplacement de certains fichiers, et des versions de logiciels disponibles. Un script d'installation lit `ID=` dans `os-release` pour choisir automatiquement les bonnes commandes selon la distrib. C'est le premier réflexe sur une machine qu'on découvre.",
-        reflection: "Pourquoi un script d'installation lit-il `/etc/os-release` avant d'agir ?\n👉 Pour s'**adapter** : installer un paquet ne se fait pas pareil selon la distribution (`apt install` vs `dnf install`). En lisant `ID=ubuntu` ou `ID=fedora`, le script choisit les bonnes commandes tout seul. C'est ce qui permet à un même installeur de fonctionner sur des systèmes différents — la base de la portabilité.",
+        culture: "Knowing your distribution isn't a detail: it decides the **package manager** (`apt` on Debian/Ubuntu, `dnf`/`yum` on Fedora/CentOS), the location of certain files, and the software versions available. An installation script reads `ID=` in `os-release` to automatically pick the right commands for the distro. It's the first reflex on a machine you're discovering.",
+        reflection: "Why does an installation script read `/etc/os-release` before acting?\n👉 To **adapt**: installing a package isn't done the same way depending on the distribution (`apt install` vs `dnf install`). By reading `ID=ubuntu` or `ID=fedora`, the script picks the right commands on its own. It's what lets a single installer work on different systems — the basis of portability.",
         check: function(s) { return s.history.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('os-release') >= 0; }); }
       },
       {
         level: 'expert',
-        title: 'Mini-défi : bilan de santé de la machine',
-        context: "On assemble le chapitre en un check-up rapide, celui qu'un admin fait en arrivant sur un serveur : reste-t-il de l'espace disque ? de la mémoire ? sur quel système suis-je ? Trois commandes, trois réponses vitales.",
-        scene: "Tu prends en main un serveur inconnu. Avant tout, tu établis son bilan de santé.",
-        mission: "Fais le check-up : espace disque, mémoire disponible, et version du système.",
+        title: 'Mini-challenge: the machine\'s health check',
+        context: "We assemble the chapter into a quick check-up, the one an admin does when arriving on a server: is there disk space left? memory? which system am I on? Three commands, three vital answers.",
+        scene: "You take over an unknown server. First of all, you establish its health check.",
+        mission: "Do the check-up: disk space, available memory, and system version.",
         steps: [
-          "① Disque : `df -h` (reste-t-il de la place ?)",
-          "② Mémoire : `free -h` (la RAM respire-t-elle ?)",
-          "③ Système : `cat /etc/os-release` (quelle distribution ?)"
+          "① Disk: `df -h` (is there space left?)",
+          "② Memory: `free -h` (does the RAM breathe?)",
+          "③ System: `cat /etc/os-release` (which distribution?)"
         ],
         expected: "$ df -h\n/dev/sda1  50G  12G  36G  25%  /\n$ free -h\nMem:  16Gi  4.2Gi  ...  11Gi\n$ cat /etc/os-release\nNAME=\"Ubuntu\" ...",
-        culture: "Ce trio `df` + `free` + `os-release` (souvent complété par `uptime` et `ps aux`) est le rituel d'accueil sur toute machine qu'on découvre. En trente secondes, on sait si elle est saine, saturée, et à quoi on a affaire. Les pros en font parfois un petit script `healthcheck.sh` qu'ils lancent en arrivant — le sujet du prochain grand chapitre : le scripting.",
-        reflection: "Pourquoi établir un « bilan » (disque + mémoire + système) AVANT d'intervenir sur une machine inconnue ?\n👉 Parce qu'on ne soigne pas sans diagnostiquer. Un disque plein ou une RAM saturée expliquent la moitié des pannes ; connaître la distribution évite d'utiliser les mauvaises commandes. Trente secondes d'observation évitent des heures d'erreurs — c'est le même réflexe que « pwd → ls » du tout premier chapitre, à l'échelle de la machine entière.",
+        culture: "This trio `df` + `free` + `os-release` (often completed by `uptime` and `ps aux`) is the welcome ritual on any machine you're discovering. In thirty seconds, you know whether it's healthy, saturated, and what you're dealing with. Pros sometimes make a little `healthcheck.sh` script they run on arrival — the subject of the next big chapter: scripting.",
+        reflection: "Why establish a “check-up” (disk + memory + system) BEFORE intervening on an unknown machine?\n👉 Because you don't treat without diagnosing. A full disk or saturated RAM explain half the breakdowns; knowing the distribution avoids using the wrong commands. Thirty seconds of observation save hours of errors — it's the same reflex as “pwd → ls” from the very first chapter, at the scale of the whole machine.",
         check: function(s) { var h = s.history; var df = h.some(function(c) { return c.indexOf('df') === 0; }); var free = h.some(function(c) { return c.indexOf('free') === 0; }); var os = h.some(function(c) { return c.indexOf('cat') >= 0 && c.indexOf('os-release') >= 0; }); return df && free && os; }
       }
     ]
