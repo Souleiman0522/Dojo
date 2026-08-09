@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cheatsheet — The Linux Dojo</title>
+<meta name="description" content="Toutes les commandes Linux du Dojo, chapitre par chapitre, avec une explication courte. Imprimable en PDF.">
+<style>
+  :root{
+    --paper:#efe7d3; --card:#f7f1e0; --card-2:#fbf5e6; --ink:#241a10; --ink-soft:#4a3d2c;
+    --taupe:#8a7c63; --line:#c9bda0; --vermilion:#c8341c; --gold:#b3801f; --indigo:#1e3a5c; --matcha:#2a6a45;
+    --mono:ui-monospace,'JetBrains Mono','SF Mono',Menlo,Consolas,monospace;
+    --serif:'Hoefler Text','Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;
+    --body:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; background:var(--paper); color:var(--ink); font-family:var(--body); line-height:1.5; }
+  .wrap{ max-width:1000px; margin:0 auto; padding:26px 22px 60px; }
+
+  .head{ display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap; border-bottom:2px solid var(--line); padding-bottom:16px; margin-bottom:22px; }
+  .head .t .eyebrow{ font-family:var(--mono); font-size:.7rem; letter-spacing:.22em; text-transform:uppercase; color:var(--vermilion); }
+  .head h1{ font-family:var(--serif); font-weight:700; font-size:2rem; margin:6px 0 2px; }
+  .head .sub{ color:var(--ink-soft); font-size:.9rem; }
+  .btns{ display:flex; gap:8px; }
+  .btn{ font-family:var(--mono); font-size:.8rem; font-weight:600; text-decoration:none; border:1px solid var(--line); border-radius:9px; padding:9px 14px; color:var(--ink); background:var(--card); cursor:pointer; }
+  .btn-primary{ background:var(--vermilion); color:#fff; border-color:var(--vermilion); }
+
+  .legend{ font-family:var(--mono); font-size:.72rem; color:var(--taupe); margin-bottom:20px; }
+  .legend code{ background:rgba(200,52,28,.08); color:var(--vermilion); border:1px solid rgba(200,52,28,.16); border-radius:4px; padding:1px 5px; }
+
+  .cols{ column-count:2; column-gap:20px; }
+  @media (max-width:760px){ .cols{ column-count:1; } }
+
+  .ch{ break-inside:avoid; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:13px 15px; margin:0 0 16px; box-shadow:0 1px 2px rgba(40,30,15,.06); }
+  .ch-h{ display:flex; align-items:baseline; gap:9px; margin-bottom:9px; padding-bottom:7px; border-bottom:1px dashed var(--line); }
+  .ch-n{ font-family:var(--mono); font-weight:700; font-size:.66rem; color:#fff; background:var(--indigo); border-radius:5px; padding:2px 7px; letter-spacing:.03em; }
+  .ch-t{ font-family:var(--serif); font-weight:700; font-size:1.05rem; }
+  .ch-belt{ margin-left:auto; font-size:.8rem; }
+  table{ width:100%; border-collapse:collapse; }
+  td{ vertical-align:top; padding:3px 0; font-size:.83rem; }
+  td.c{ width:44%; padding-right:10px; }
+  td.d{ color:var(--ink-soft); }
+  code.cmd{ font-family:var(--mono); font-size:.8rem; color:var(--vermilion); background:rgba(200,52,28,.06); border:1px solid rgba(200,52,28,.14); border-radius:5px; padding:1px 6px; white-space:nowrap; display:inline-block; }
+  .foot{ margin-top:22px; padding-top:14px; border-top:1px solid var(--line); font-family:var(--mono); font-size:.72rem; color:var(--taupe); text-align:center; }
+
+  @media print{
+    @page{ margin:12mm; }
+    body{ background:#fff; }
+    .wrap{ padding:0; max-width:none; }
+    .btns{ display:none; }
+    .ch{ box-shadow:none; }
+    .head{ border-color:#000; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="head">
+    <div class="t">
+      <div class="eyebrow">道場 · Cheatsheet</div>
+      <h1>The Dojo's commands, chapter by chapter</h1>
+      <div class="sub">The cheat sheet to keep on hand. 20 chapters (one bonus included) · the essential commands with a short explanation.</div>
+    </div>
+    <div class="btns">
+      <button class="btn btn-primary" onclick="window.print()">🖨️ Print / PDF</button>
+      <a class="btn" href="dojo-memo.pdf" download>⬇️ PDF</a>
+      <a class="btn" href="dojo-linux-en.html">← The Dojo</a>
+    </div>
+  </div>
+
+  <div class="legend">Notation: <code>&lt;f&gt;</code> = a file · <code>&lt;name&gt;</code> = replace this · <code>[..]</code> = optional · <code>|</code> = “or”. Many system commands require <code>sudo</code> (admin rights).</div>
+
+  <div class="cols">
+
+    <div class="ch">
+      <div class="ch-h"><span class="ch-n">CH 1</span><span class="ch-t">The Foundations</span><span class="ch-belt">⬜</span></div>
+      <table>
+        <tr><td class="c"><code class="cmd">pwd</code></td><td class="d">shows the current folder (“where am I?”)</td></tr>
+        <tr><td class="c"><code class="cmd">whoami</code></td><td class="d">the current user's name</td></tr>
+        <tr><td class="c"><code class="cmd">id</code></td><td class="d">full identity: uid, gid, groups</td></tr>
+        <tr><td class="c"><code class="cmd">ls</code></td><td class="d">lists the contents of a folder</td></tr>
+        <tr><td class="c"><code class="cmd">ls -la</code></td><td class="d">lists everything, hidden files + details</td></tr>
+        <tr><td class="c"><code class="cmd">man &lt;cmd&gt;</code></td><td class="d">a command's manual (q to quit)</td></tr>
+        <tr><td class="c"><code class="cmd">&lt;cmd&gt; --help</code></td><td class="d">a command's quick help</td></tr>
+      </table>
+    </div>
+
+    <div class="ch">
+      <div class="ch-h"><span class="ch-n">CH 2</span><span class="ch-t">Navigation</span><span class="ch-belt">⬜</span></div>
+      <table>
+        <tr><td class="c"><code class="cmd">cd &lt;folder&gt;</code></td><td class="d">enter a folder</td></tr>
+        <tr><td class="c"><code class="cmd">cd ..</code></td><td class="d">go up one level</td></tr>
+        <tr><td class="c"><code class="cmd">cd ~</code></td><td class="d">back to the home folder (ou <code class="cmd">cd</code> seul)</td></tr>
+        <tr><td class="c"><code class="cmd">cd /</code></td><td class="d">go to the root</td></tr>
+        <tr><td class="c"><code class="cmd">tree</code></td><td class="d">shows the tree</td></tr>
+        <tr><td class="c">absolute vs relative</td><td class="d"><code class="cmd">/home/user</code> (everywhere) vs <code class="cmd">Documents</code> (from here)</td></tr>
+      </table>
+    </div>
+
+    <div class="ch">
+      <div class="ch-h"><span class="ch-n">CH 3</span><span class="ch-t">Files &amp; folders</span><span class="ch-belt">🟩</span></div>
+      <table>
+        <tr><td class="c"><code class="cmd">cat &lt;f&gt;</code></td><td class="d">shows the contents of a file</td></tr>
+        <tr><td class="c"><code class="cmd">mkdir &lt;name&gt;</code></td><td class="d">create a folder (<code class="cmd">-p</code> creates the parents)</td></tr>
+        <tr><td class="c"><code class="cmd">touch &lt;f&gt;</code></td><td class="d">create an empty file</td></tr>
+        <tr><td class="c"><code class="cmd">cp source dest</code></td><td class="d">copy a file</td></tr>
+        <tr><td class="c"><code class="cmd">mv old new</code></td><td class="d">move OR rename</td></tr>
+        <tr><td class="c"><code class="cmd">rm &lt;f&gt;</code></td><td class="d">delete (permanent!) · <code class="cmd">rm -r</code> for a folder</td></tr>
+        <tr><td class="c">wildcards <code class="cmd">*</code> <code class="cmd">?</code></td><td class="d"><code class="cmd">rm *.log</code> acts on several files</td></tr>
+        <tr><td class="c"><code class="cmd">find &lt;where&gt; -name</code></td><td class="d">find files by name, recursively</td></tr>
+      </table>
+    </div>
+
+    <div class="ch">
+      <div class="ch-h"><span class="ch-n">CH 4</span><span class="ch-t">Users &amp; permissions</span><span class="ch-belt">🟥</span></div>
+      <table>
+        <tr><td class="c"><code class="cmd">ls -l</code></td><td class="d">reads the permissions (e.g. <code class="cmd">-rwxr-xr--</code>)</td></tr>
+        <tr><td class="c"><code class="cmd">chmod +x &lt;f&gt;</code></td><td class="d">make a file executable</td></tr>
+        <tr><td class="c"><code class="cmd">chmod 755 &lt;f&gt;</code></td><td class="d">permissions in numbers (r=4, w=2, x=1)</td></tr>
+        <tr><td class="c"><code class="cmd">chown user:grp &lt;f&gt;</code></td><td class="d">change the owner (sudo)</td></tr>
+        <tr><td class="c"><code class="cmd">sudo &lt;cmd&gt;</code></td><td class="d">run as administrator</td></tr>
+      </table>
+    </div>
+
+    <div class="ch">
+      <div class="ch-h"><span class="ch-n">CH 5</span><span class="ch-t">Editors (nano / vim)</span><span class="ch-belt">🟩</span></div>
+      <table>
+        <tr><td class="c"><code class="cmd">nano &lt;f&gt;</code></td><td class="d">simple editor (Ctrl+O save, Ctrl+X quit)</td></tr>
+        <tr><td class="c"><code class="cmd">vim &lt;f&gt;</code></td><td class="d">modal editor (<code class="cmd">i</code> insert, Esc, <code class="cmd">:wq</code> save+quit)</td></tr>
+        <tr><td class="c"><code class="cmd">echo "txt" &gt; f</code></td><td class="d">write into a file (overwrites)</td></tr>
+        <tr><td class="c"><code class="cmd">echo "txt" &gt;&gt; f</code></td><td class="d">append to the end (without overwriting)</td></tr>
+      </table>
+    </div>
+
+    <div class="ch">
+      <div class="ch-h"><span class="ch-n">CH 6</span><span class="ch-t">Search &amp; filtering</span><span class="ch-belt">🟥</span></div>
+      <table>
+        <tr><td class="c"><code class="cmd">head / tail -n &lt;f&gt;</code></td><td class="d">the start / end of a file</td></tr>
+        <tr><td class="c"><code class="cmd">tail -f &lt;f&gt;</code></td><td class="d">follow a log live</td></tr>
+        <tr><td class="c"><code class="cmd">grep &lt;pattern&gt; &lt;f&gt;</code></td><td class="d">search for text (<code class="cmd">-i -n -c -v -r</code>)</td></tr>
+        <tr><td class="c"><code class="cmd">cmd1 | cmd2</code></td><td class="d">the “pipe”: chains commands</td></tr>
+        <tr><td class="c"><code class="cmd">wc -l</code></td><td class="d">count the lines</td></tr>
+        <tr><td class="c"><code class="cmd">cmd &gt; f</code> · <code class="cmd">&gt;&gt; f</code></td><td class="d">redirect the output to a file</td></tr>
+      </table>
+    </div>
+
+    <div class="ch">
+      <div class="ch-h"><span class="ch-n">CH 7</span><span class="ch-t">System processes</span><span class="ch-belt">🟥</span></div>
+      <table>
+        <tr><td class="c"><code class="cmd">ps</code> · <code class="cmd">ps aux</code></td><td class="d">list the processes</td></tr>
+        <tr><td class="c"><code class="cmd">top</code></td><td class="d">real-time activity (q to quit)</td></tr>
+        <tr><td class="c"><code class="cmd">kill &lt;PID&gt;</code></td><td class="d">stop a process (<code class="cmd">kill -9</code> forces)</td></tr>
+      </table>
+    </div>
+
+    <div class="ch">
+      <div class="ch-h"><span class="ch-n">CH 8</span><span class="ch-t">User management</span><span class="ch-belt">🟥</span></div>
+      <table>
+        <tr><td class="c"><code class="cmd">cat /etc/passwd</code></td><td class="d">the list of accounts</td></tr>
+        <tr><td class="c"><code class="cmd">sudo useradd -m &lt;name&gt;</code></td><td class="d">create a user</td></tr>
+        <tr><td class="c"><code class="cmd">sudo passwd &lt;name&gt;</code></td><td class="d">set its password</td></tr>
+        <tr><td class="c"><code class="cmd">groups</code></td><td class="d">a user's groups</td></tr>
+        <tr><td class="c"><code class="cmd">sudo groupadd &lt;name&gt;</code></td><td class="d">create a group</td></tr>
+        <tr><td class="c"><code class="cmd">sudo usermod -aG grp user</code></td><td class="d">add a user to a group</td></tr>
+        <tr><td class="c"><code class="cmd">sudo userdel -r &lt;name&gt;</code></td><td class="d">delete a user</td></tr>
+      </table>
+    </div>
+
+    <div class="ch">
+      <div class="ch-h"><span class="ch-n">CH 9</span><span class="ch-t">Services &amp; systemd</span><span class="ch-belt">🟧</span></div>
+      <table>
+        <tr><td class="c"><code class="cmd">systemctl status &lt;svc&gt;</code></td><td class="d">the state of a service</td></tr>
+        <tr><td class="c"><code class="cmd">sudo systemctl start/stop</code></td><td class="d">start / stop a service</td></tr>
+        <tr><td class="c"><code class="cmd">sudo systemctl enable</code></td><td class="d">launch it at boot</td></tr>
+        <tr><td class="c">files <code class="cmd">.service</code></td><td class="d">in <code class="cmd">/etc/systemd/system/</code> (ExecStart, After)</td></tr>
+      </table>
+    </div>
+
+    <div class="ch">
+      <div class="ch-h"><span class="ch-n">CH 10</span><span class="ch-t">Deploy a site (nginx)</span><span class="ch-belt">🟧</span></div>
+      <table>
+        <tr><td class="c"><code class="cmd">systemctl status nginx</code></td><td class="d">check that nginx is running</td></tr>
+        <tr><td class="c"><code class="cmd">/etc/nginx/</code></td><td class="d">the web server config</td></tr>
+        <tr><td class="c"><code class="cmd">/var/www/html/</code></td><td class="d">the site files</td></tr>
+        <tr><td class="c"><code class="cmd">tail -f …/access.log</code></td><td class="d">follow the visits live</td></tr>
+        <tr><td class="c"><code class="cmd">curl http://localhost</code></td><td class="d">test the site from the command line</td></tr>
+      </table>
+    </div>
+
+    <div class="ch">
+      <div class="ch-h"><span class="ch-n">CH 11</span><span class="ch-t">Network &amp; SSH</span><span class="ch-belt">🟧</span></div>
+      <table>
+        <tr><td class="c"><code class="cmd">ip a</code></td><td class="d">IP address / network config</td></tr>
+        <tr><td class="c"><code class="cmd">ping &lt;host&gt;</code></td><td class="d">test whether a machine responds</td></tr>
+        <tr><td class="c"><code class="cmd">cat /etc/resolv.conf</code></td><td class="d">the DNS servers</td></tr>
+        <tr><td class="c"><code class="cmd">ssh-keygen</code></td><td class="d">generate an SSH key (<code class="cmd">~/.ssh/</code>)</td></tr>
+        <tr><td class="c"><code class="cmd">ssh user@ip</code></td><td class="d">connect to a remote machine</td></tr>
+      </table>
+    </div>
+
+    <div class="ch">
+      <div class="ch-h"><span class="ch-n">CH 12</span><span class="ch-t">Security &amp; hardening</span><span class="ch-belt">🟧</span></div>
+      <table>
+        <tr><td class="c"><code class="cmd">sudo ufw status</code></td><td class="d">the firewall state</td></tr>
+        <tr><td class="c"><code class="cmd">sudo ufw enable</code></td><td class="d">enable the firewall · <code class="cmd">ufw allow &lt;port&gt;</code></td></tr>
+        <tr><td class="c"><code class="cmd">grep Failed …/auth.log</code></td><td class="d">spot failed SSH attempts</td></tr>
+        <tr><td class="c"><code class="cmd">/etc/ssh/sshd_config</code></td><td class="d">harden the SSH connection</td></tr>
+        <tr><td class="c"><code class="cmd">sudo visudo</code></td><td class="d">who is allowed to use sudo</td></tr>
+      </table>
+    </div>
+
+    <div class="ch">
+      <div class="ch-h"><span class="ch-n">CH 13</span><span class="ch-t">System &amp; disk</span><span class="ch-belt">🟧</span></div>
+      <table>
+        <tr><td class="c"><code class="cmd">df -h</code></td><td class="d">the available disk space</td></tr>
+        <tr><td class="c"><code class="cmd">du -sh &lt;folder&gt;</code></td><td class="d">the size of a folder</td></tr>
+        <tr><td class="c"><code class="cmd">lscpu</code></td><td class="d">the processor info</td></tr>
+        <tr><td class="c"><code class="cmd">free -h</code></td><td class="d">the memory (look at <code class="cmd">available</code>)</td></tr>
+        <tr><td class="c"><code class="cmd">uname -a</code></td><td class="d">the system version</td></tr>
+      </table>
+    </div>
+
+    <div class="ch">
+      <div class="ch-h"><span class="ch-n">CH 14</span><span class="ch-t">System monitoring</span><span class="ch-belt">🟧</span></div>
+      <table>
+        <tr><td class="c"><code class="cmd">uptime</code></td><td class="d">uptime + system load</td></tr>
+        <tr><td class="c"><code class="cmd">w</code> · <code class="cmd">who</code></td><td class="d">who is logged in</td></tr>
+        <tr><td class="c"><code class="cmd">last</code></td><td class="d">the login history</td></tr>
+        <tr><td class="c"><code class="cmd">htop</code></td><td class="d">un <code class="cmd">top</code> en couleur, plus lisible</td></tr>
+        <tr><td class="c"><code class="cmd">vmstat</code></td><td class="d">CPU / memory / disk at a glance</td></tr>
+      </table>
+    </div>
+
+    <div class="ch">
+      <div class="ch-h"><span class="ch-n">CH 15</span><span class="ch-t">Scheduling (cron)</span><span class="ch-belt">🟧</span></div>
+      <table>
+        <tr><td class="c"><code class="cmd">crontab -l</code></td><td class="d">list your scheduled tasks</td></tr>
+        <tr><td class="c"><code class="cmd">crontab -e</code></td><td class="d">edit: <code class="cmd">min h day month dow cmd</code></td></tr>
+        <tr><td class="c"><code class="cmd">date</code></td><td class="d">the system date and time</td></tr>
+      </table>
+    </div>
+
+    <div class="ch">
+      <div class="ch-h"><span class="ch-n">CH 16</span><span class="ch-t">Bash scripting</span><span class="ch-belt">🟥</span></div>
+      <table>
+        <tr><td class="c"><code class="cmd">#!/bin/bash</code></td><td class="d">the “shebang”: 1st line of a script</td></tr>
+        <tr><td class="c"><code class="cmd">VAR=x</code> · <code class="cmd">$VAR</code></td><td class="d">variables (e.g. <code class="cmd">echo $PATH</code>)</td></tr>
+        <tr><td class="c"><code class="cmd">./script.sh</code></td><td class="d">run the script (after <code class="cmd">chmod +x</code>)</td></tr>
+        <tr><td class="c"><code class="cmd">echo $?</code></td><td class="d">the return code (0 = all good)</td></tr>
+        <tr><td class="c"><code class="cmd">$(commande)</code></td><td class="d">substitution: inserts a command's result</td></tr>
+      </table>
+    </div>
+
+    <div class="ch">
+      <div class="ch-h"><span class="ch-n">CH 17</span><span class="ch-t">Git — version control</span><span class="ch-belt">⬛</span></div>
+      <table>
+        <tr><td class="c"><code class="cmd">git init</code></td><td class="d">create a repository in the folder</td></tr>
+        <tr><td class="c"><code class="cmd">git status</code></td><td class="d">the state of the files (your compass)</td></tr>
+        <tr><td class="c"><code class="cmd">git add &lt;f&gt;</code></td><td class="d">add to the index (<code class="cmd">git add .</code> = everything)</td></tr>
+        <tr><td class="c"><code class="cmd">git commit -m "msg"</code></td><td class="d">record a snapshot</td></tr>
+        <tr><td class="c"><code class="cmd">git log</code></td><td class="d">re-read the commit history</td></tr>
+      </table>
+    </div>
+
+    <div class="ch">
+      <div class="ch-h"><span class="ch-n">CH 18</span><span class="ch-t">Virtualization (KVM)</span><span class="ch-belt">⬛</span></div>
+      <table>
+        <tr><td class="c"><code class="cmd">egrep -c 'vmx|svm' /proc/cpuinfo</code></td><td class="d">CPU virtualization-capable? (&gt; 0 = yes)</td></tr>
+        <tr><td class="c"><code class="cmd">sudo apt install qemu-kvm</code></td><td class="d">install the hypervisor</td></tr>
+        <tr><td class="c"><code class="cmd">sudo systemctl enable --now libvirtd</code></td><td class="d">start the virtualization daemon</td></tr>
+        <tr><td class="c"><code class="cmd">virsh list --all</code></td><td class="d">list the virtual machines</td></tr>
+        <tr><td class="c"><code class="cmd">virsh start &lt;vm&gt;</code></td><td class="d">start a VM</td></tr>
+      </table>
+    </div>
+
+    <div class="ch">
+      <div class="ch-h"><span class="ch-n">CH 19</span><span class="ch-t">Archives &amp; compression</span><span class="ch-belt">⬛</span></div>
+      <table>
+        <tr><td class="c"><code class="cmd">tar czf a.tar.gz &lt;folder&gt;</code></td><td class="d">create a compressed archive</td></tr>
+        <tr><td class="c"><code class="cmd">tar xzf a.tar.gz</code></td><td class="d">extract an archive</td></tr>
+        <tr><td class="c">the letters</td><td class="d"><code class="cmd">c</code>=create, <code class="cmd">x</code>=extract, <code class="cmd">z</code>=gzip, <code class="cmd">f</code>=file</td></tr>
+      </table>
+    </div>
+
+    <div class="ch">
+      <div class="ch-h"><span class="ch-n">BONUS</span><span class="ch-t">🧰 Toolbox</span><span class="ch-belt">🎁</span></div>
+      <table>
+        <tr><td class="c"><code class="cmd">cal</code></td><td class="d">the month calendar</td></tr>
+        <tr><td class="c"><code class="cmd">seq 1 10</code></td><td class="d">a sequence of numbers</td></tr>
+        <tr><td class="c"><code class="cmd">echo "2+2" | bc</code></td><td class="d">the terminal as a calculator</td></tr>
+        <tr><td class="c"><code class="cmd">which &lt;cmd&gt;</code></td><td class="d">where a command lives</td></tr>
+        <tr><td class="c"><code class="cmd">stat &lt;f&gt;</code></td><td class="d">detailed info about a file</td></tr>
+        <tr><td class="c"><code class="cmd">file &lt;f&gt;</code></td><td class="d">the type of a file</td></tr>
+        <tr><td class="c"><code class="cmd">sort</code> · <code class="cmd">uniq</code></td><td class="d">sort / deduplicate lines</td></tr>
+        <tr><td class="c"><code class="cmd">cut -d: -f1</code></td><td class="d">extract a column</td></tr>
+        <tr><td class="c"><code class="cmd">tr a b</code></td><td class="d">replace characters</td></tr>
+        <tr><td class="c"><code class="cmd">rev</code></td><td class="d">reverse each line</td></tr>
+        <tr><td class="c"><code class="cmd">factor 60</code></td><td class="d">break into prime factors</td></tr>
+        <tr><td class="c"><code class="cmd">alias</code></td><td class="d">your shortcuts (e.g. <code class="cmd">ll</code>=<code class="cmd">ls -la</code>)</td></tr>
+        <tr><td class="c"><code class="cmd">cowsay txt</code></td><td class="d">the talking cow 🐄</td></tr>
+      </table>
+    </div>
+
+  </div>
+
+  <div class="foot">道 · The Linux Dojo — コマンドは力なり · The command is power</div>
+
+</div>
+</body>
+</html>

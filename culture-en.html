@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Linux Culture — The Linux Dojo</title>
+<meta name="description" content="Linux culture on one page: Linus Torvalds, kernel vs distribution, the major distros (Ubuntu, Debian, Kali, Fedora, Arch…), the package managers (apt, dnf, pacman) and the certifications (LPIC, RHCSA, Linux+, OSCP).">
+<style>
+  :root {
+    --paper:#efe7d3; --paper-2:#e7ddc6; --card:#f5eeda; --card-2:#fbf4e4;
+    --ink:#241a10; --ink-soft:#4a3d2c; --taupe:#8a7c63; --line:#c9bda0;
+    --vermilion:#c8341c; --gold:#b3801f; --indigo:#1e3a5c; --matcha:#2a6a45; --plum:#7a3b6a;
+    --shadow:0 1px 2px rgba(40,30,15,.08), 0 10px 34px rgba(40,30,15,.07);
+    --font-display:'Hoefler Text','Iowan Old Style','Palatino Linotype','Book Antiqua',Palatino,Georgia,serif;
+    --font-body:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+    --font-mono:ui-monospace,'SF Mono','JetBrains Mono',Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --paper:#1a1712; --paper-2:#161310; --card:#221d16; --card-2:#282118;
+      --ink:#e8dfc9; --ink-soft:#c3b79c; --taupe:#9a8b70; --line:#3a3227;
+      --vermilion:#e8836f; --gold:#ddb35f; --indigo:#8fb4d4; --matcha:#86bd84; --plum:#d59ac0;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 12px 38px rgba(0,0,0,.4); }
+  }
+  :root[data-theme="light"]{ --paper:#efe7d3;--paper-2:#e7ddc6;--card:#f5eeda;--card-2:#fbf4e4;--ink:#241a10;--ink-soft:#4a3d2c;--taupe:#8a7c63;--line:#c9bda0;--vermilion:#c8341c;--gold:#b3801f;--indigo:#1e3a5c;--matcha:#2a6a45;--plum:#7a3b6a;--shadow:0 1px 2px rgba(40,30,15,.08),0 10px 34px rgba(40,30,15,.07);}
+  :root[data-theme="dark"]{ --paper:#1a1712;--paper-2:#161310;--card:#221d16;--card-2:#282118;--ink:#e8dfc9;--ink-soft:#c3b79c;--taupe:#9a8b70;--line:#3a3227;--vermilion:#e8836f;--gold:#ddb35f;--indigo:#8fb4d4;--matcha:#86bd84;--plum:#d59ac0;--shadow:0 1px 2px rgba(0,0,0,.3),0 12px 38px rgba(0,0,0,.4);}
+
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body {
+    margin:0; background-color:var(--paper); color:var(--ink);
+    font-family:var(--font-body); line-height:1.6; -webkit-font-smoothing:antialiased;
+    background-image:
+      radial-gradient(circle at 18% 20%, rgba(0,0,0,.018) 1px, transparent 1px),
+      radial-gradient(circle at 80% 60%, rgba(0,0,0,.02) 1px, transparent 1px),
+      radial-gradient(circle at 50% 30%, rgba(179,128,31,.05) 0%, transparent 60%);
+    background-size:5px 5px,7px 7px,100% 100%;
+  }
+  a { color:inherit; }
+  .wrap { max-width:1000px; margin:0 auto; padding:0 24px; }
+
+  nav { position:sticky; top:0; z-index:50; background:color-mix(in srgb, var(--paper) 86%, transparent); backdrop-filter:blur(10px); border-bottom:1px solid var(--line); }
+  .nav-in { max-width:1000px; margin:0 auto; padding:12px 24px; display:flex; align-items:center; gap:14px; }
+  .brand { display:flex; align-items:center; gap:10px; font-weight:700; text-decoration:none; font-family:var(--font-display); font-size:1.14rem; }
+  .brand .seal { width:30px; height:30px; border-radius:50%; background:var(--vermilion); color:#fff; display:grid; place-items:center; font-size:.9rem; }
+  .nav-links { margin-left:auto; display:flex; align-items:center; gap:6px; }
+  .nav-links a { font-family:var(--font-mono); font-size:.74rem; text-decoration:none; color:var(--ink-soft); padding:8px 12px; border-radius:8px; }
+  .nav-links a:hover { color:var(--vermilion); }
+  .nav-cta { background:var(--vermilion); color:#fff !important; }
+  @media (max-width:640px){ .nav-links a:not(.nav-cta){ display:none; } }
+
+  section { padding:48px 0; }
+  .eyebrow { font-family:var(--font-mono); font-size:.72rem; letter-spacing:.24em; text-transform:uppercase; color:var(--vermilion); }
+  .sec-eyebrow { font-family:var(--font-mono); font-size:.7rem; letter-spacing:.22em; text-transform:uppercase; color:var(--gold); }
+  h1 { font-family:var(--font-display); font-weight:700; font-size:clamp(2.1rem,5vw,3.3rem); line-height:1.07; margin:14px 0 0; letter-spacing:-.015em; text-wrap:balance; }
+  h1 em { font-style:normal; color:var(--vermilion); }
+  h2 { font-family:var(--font-display); font-weight:700; font-size:clamp(1.6rem,3.6vw,2.3rem); margin:10px 0 6px; letter-spacing:-.01em; text-wrap:balance; }
+  .lead { font-size:1.1rem; color:var(--ink-soft); max-width:60ch; margin:18px 0 0; }
+  .sec-head { max-width:60ch; margin:0 0 26px; }
+  .sec-head p { color:var(--ink-soft); margin:6px 0 0; }
+  code { font-family:var(--font-mono); font-size:.85em; background:rgba(200,52,28,.08); color:var(--vermilion); border:1px solid rgba(200,52,28,.16); border-radius:5px; padding:1px 6px; }
+  .divider { height:1px; background:var(--line); opacity:.6; }
+
+  /* Linus + Tux */
+  .figure-row { display:grid; grid-template-columns:auto 1fr auto; gap:30px; align-items:center; background:var(--card); border:1px solid var(--line); border-radius:20px; padding:30px 34px; box-shadow:var(--shadow); }
+  .figure-row .txt h2 { margin-top:0; }
+  .figure-row .txt p { color:var(--ink-soft); margin:0 0 10px; }
+  .figure-row .txt p:last-child { margin-bottom:0; }
+  .portrait { width:170px; }
+  .portrait figcaption { text-align:center; font-family:var(--font-mono); font-size:.68rem; color:var(--taupe); margin-top:8px; }
+  .tux { width:120px; }
+  @media (max-width:820px){ .figure-row { grid-template-columns:1fr; text-align:center; justify-items:center; } .figure-row .txt { text-align:left; } .tux{ display:none; } }
+
+  /* Pionniers + frise */
+  .pioneers { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; margin-bottom:34px; }
+  .pio { display:flex; gap:14px; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px; box-shadow:var(--shadow); }
+  .medal { flex:none; width:52px; height:52px; border-radius:50%; display:grid; place-items:center; font-family:var(--font-display); font-weight:700; font-size:1rem; color:#fff; letter-spacing:.02em; }
+  .pio h4 { font-family:var(--font-display); font-size:1.06rem; margin:0 0 1px; }
+  .pio .yr { font-family:var(--font-mono); font-size:.66rem; color:var(--taupe); }
+  .pio p { margin:7px 0 0; font-size:.86rem; color:var(--ink-soft); }
+  .timeline { border-left:2px solid var(--line); margin-left:8px; }
+  .tl-item { position:relative; padding:9px 0 9px 24px; }
+  .tl-item::before { content:""; position:absolute; left:-7px; top:15px; width:12px; height:12px; border-radius:50%; background:var(--vermilion); border:2px solid var(--paper); }
+  .tl-item .yr { font-family:var(--font-mono); font-weight:700; color:var(--vermilion); font-size:.8rem; margin-right:9px; }
+  .tl-item .ev { color:var(--ink-soft); font-size:.9rem; }
+  @media (max-width:720px){ .pioneers { grid-template-columns:1fr; } }
+
+  /* Explainer noyau/distro */
+  .stack { display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:center; }
+  .layers { display:flex; flex-direction:column; gap:8px; }
+  .layer { border:1px solid var(--line); border-radius:12px; padding:13px 16px; font-family:var(--font-mono); font-size:.82rem; box-shadow:var(--shadow); }
+  .layer b { font-family:var(--font-body); }
+  .layer.k { background:linear-gradient(135deg,var(--vermilion),var(--gold)); color:#fff; }
+  .layer.d { background:var(--card-2); }
+  .layer.a { background:var(--card); }
+  @media (max-width:720px){ .stack { grid-template-columns:1fr; } }
+
+  /* Familles de distros */
+  .families { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  .fam { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:22px; box-shadow:var(--shadow); border-top:4px solid var(--accent, var(--gold)); }
+  .fam h3 { font-family:var(--font-display); font-size:1.25rem; margin:0 0 4px; }
+  .fam .pm { display:inline-block; font-family:var(--font-mono); font-size:.66rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:#fff; background:var(--accent,var(--gold)); border-radius:999px; padding:3px 10px; margin-bottom:12px; }
+  .fam .desc { color:var(--ink-soft); font-size:.9rem; margin:0 0 14px; }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; }
+  .chip { background:var(--card-2); border:1px solid var(--line); border-radius:10px; padding:8px 11px; font-size:.82rem; display:flex; flex-direction:column; gap:1px; min-width:0; }
+  .chip b { font-weight:700; }
+  .chip span { font-family:var(--font-mono); font-size:.64rem; color:var(--taupe); }
+  @media (max-width:720px){ .families { grid-template-columns:1fr; } }
+
+  /* Tableaux */
+  .tbl-wrap { overflow-x:auto; border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow); }
+  table { border-collapse:collapse; width:100%; min-width:640px; background:var(--card); }
+  th, td { text-align:left; padding:12px 15px; border-bottom:1px solid var(--line); font-size:.88rem; vertical-align:top; }
+  thead th { background:var(--card-2); font-family:var(--font-mono); font-size:.7rem; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-soft); position:sticky; top:0; }
+  tbody tr:last-child td { border-bottom:none; }
+  td code { white-space:nowrap; }
+  .tag { font-family:var(--font-mono); font-size:.66rem; font-weight:700; padding:2px 8px; border-radius:999px; }
+  .tag.deb { background:rgba(200,52,28,.12); color:var(--vermilion); }
+  .tag.rh { background:rgba(30,58,92,.14); color:var(--indigo); }
+  .tag.arch { background:rgba(42,106,69,.14); color:var(--matcha); }
+  .tag.sec { background:rgba(122,59,106,.14); color:var(--plum); }
+  .lvl { font-family:var(--font-mono); font-size:.72rem; color:var(--taupe); }
+
+  /* Usages */
+  .usages { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  .use { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:20px; box-shadow:var(--shadow); }
+  .use .ic { font-size:1.6rem; }
+  .use .k { font-family:var(--font-display); font-weight:700; font-size:1.4rem; color:var(--vermilion); margin:8px 0 2px; line-height:1.1; }
+  .use .t { font-weight:700; font-size:.94rem; margin-bottom:4px; }
+  .use .d { color:var(--ink-soft); font-size:.85rem; }
+  @media (max-width:820px){ .usages { grid-template-columns:1fr 1fr; } }
+  @media (max-width:520px){ .usages { grid-template-columns:1fr; } }
+
+  /* Lexique */
+  .lex { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; }
+  .lex-card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px 20px; box-shadow:var(--shadow); }
+  .lex-card h4 { font-family:var(--font-display); font-size:1.08rem; margin:0 0 6px; display:flex; align-items:center; gap:8px; }
+  .lex-card p { margin:0; color:var(--ink-soft); font-size:.9rem; }
+  @media (max-width:720px){ .lex { grid-template-columns:1fr; } }
+
+  .callout { background:linear-gradient(160deg,var(--card),var(--card-2)); border:1px solid var(--line); border-radius:18px; padding:34px; box-shadow:var(--shadow); text-align:center; }
+  .callout h2 { margin-top:0; }
+  .callout p { color:var(--ink-soft); max-width:52ch; margin:0 auto 20px; }
+  .btn { display:inline-flex; align-items:center; gap:8px; text-decoration:none; font-family:var(--font-mono); font-size:.86rem; font-weight:600; padding:13px 22px; border-radius:11px; background:var(--vermilion); color:#fff; box-shadow:var(--shadow); }
+
+  footer { border-top:1px solid var(--line); padding:26px 0 40px; margin-top:20px; }
+  .foot-in { display:flex; flex-wrap:wrap; align-items:center; gap:14px; color:var(--taupe); font-family:var(--font-mono); font-size:.72rem; }
+  .foot-in .sp { margin-left:auto; }
+  .foot-in a { text-decoration:none; color:var(--ink-soft); }
+  .foot-in a:hover { color:var(--vermilion); }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-in">
+    <a class="brand" href="accueil-en.html"><span class="seal">道</span> le.dojo</a>
+    <div class="nav-links">
+      <a href="accueil-en.html">Home</a>
+      <a href="comparatif-en.html">Compare</a>
+      <a href="culture-en.html" style="color:var(--vermilion)">Culture</a>
+      <a href="memo-en.html">Cheatsheet</a>
+      <a class="nav-cta" href="dojo-linux-en.html">Enter the Dojo &rarr;</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <!-- HERO -->
+  <section style="padding-bottom:26px">
+    <div class="eyebrow">道 · Linux Culture</div>
+    <h1>Understand the <em>Linux universe</em>, not just the commands.</h1>
+    <p class="lead">Where Linux comes from, who created it, why a thousand “distributions” exist, how you install software and which certifications to take. The general background of the trade, on one page.</p>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- LINUS -->
+  <section>
+    <div class="figure-row">
+      <figure class="portrait" style="margin:0">
+        <svg viewBox="0 0 200 210" width="170" role="img" aria-label="Illustrated portrait of Linus Torvalds">
+          <circle cx="100" cy="100" r="94" fill="var(--card-2)" stroke="var(--line)" stroke-width="2"/>
+          <path d="M42 205 Q42 150 100 150 Q158 150 158 205 Z" fill="var(--indigo)"/>
+          <path d="M86 152 L100 170 L114 152" fill="none" stroke="var(--card-2)" stroke-width="4"/>
+          <rect x="88" y="128" width="24" height="26" fill="#e6b184"/>
+          <ellipse cx="100" cy="104" rx="42" ry="47" fill="#f2c9a0"/>
+          <circle cx="58" cy="108" r="8" fill="#f2c9a0"/>
+          <circle cx="142" cy="108" r="8" fill="#f2c9a0"/>
+          <path d="M58 94 Q58 54 100 54 Q142 54 142 94 Q138 76 118 72 Q108 84 90 76 Q72 80 58 92 Z" fill="#7c5a3a"/>
+          <rect x="65" y="97" width="29" height="23" rx="7" fill="rgba(255,255,255,.35)" stroke="#39312a" stroke-width="3"/>
+          <rect x="106" y="97" width="29" height="23" rx="7" fill="rgba(255,255,255,.35)" stroke="#39312a" stroke-width="3"/>
+          <line x1="94" y1="105" x2="106" y2="105" stroke="#39312a" stroke-width="3"/>
+          <circle cx="80" cy="109" r="3.4" fill="#39312a"/>
+          <circle cx="120" cy="109" r="3.4" fill="#39312a"/>
+          <path d="M96 116 L92 130 L104 130 Z" fill="#e0ac81"/>
+          <path d="M84 138 Q100 151 116 138" fill="none" stroke="#a8674a" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+        <figcaption>Linus Torvalds — illustration</figcaption>
+      </figure>
+
+      <div class="txt">
+        <div class="sec-eyebrow">The creator</div>
+        <h2>Linus Torvalds</h2>
+        <p>In <b>1991</b>, a 21-year-old Finnish student posted a now-famous message: “<i>I'm doing a (free) operating system — just a hobby, won't be big and professional</i>”. That hobby is the <b>Linux kernel</b>, today at the heart of the majority of the world's servers, of Android and of supercomputers.</p>
+        <p>He didn't just build a kernel: in 2005, to manage Linux's code, he created <b>Git</b> — the version-control tool you learn in chapter 17. Two foundational tools, one man.</p>
+        <p>His mascot? <b>Tux</b>, the penguin 🐧, chosen because Linus likes penguins. The kernel is free: anyone can read it, modify it, redistribute it (the <b>GPL</b> license).</p>
+      </div>
+
+      <svg class="tux" viewBox="0 0 140 175" width="120" role="img" aria-label="Tux, the Linux mascot">
+        <ellipse cx="50" cy="162" rx="21" ry="10" fill="#f6a01e"/>
+        <ellipse cx="90" cy="162" rx="21" ry="10" fill="#f6a01e"/>
+        <path d="M70 12 C40 12 30 46 30 82 C30 132 45 158 70 158 C95 158 110 132 110 82 C110 46 100 12 70 12 Z" fill="#20201c"/>
+        <ellipse cx="70" cy="100" rx="30" ry="49" fill="#f7f1e0"/>
+        <ellipse cx="58" cy="53" rx="14" ry="17" fill="#f7f1e0"/>
+        <ellipse cx="82" cy="53" rx="14" ry="17" fill="#f7f1e0"/>
+        <circle cx="61" cy="55" r="5" fill="#20201c"/>
+        <circle cx="79" cy="55" r="5" fill="#20201c"/>
+        <path d="M60 62 L80 62 L70 72 Z" fill="#f6a01e"/>
+        <path d="M30 82 Q16 104 34 122 Q30 100 40 88 Z" fill="#20201c"/>
+        <path d="M110 82 Q124 104 106 122 Q110 100 100 88 Z" fill="#20201c"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- PIONNIERS -->
+  <section>
+    <div class="sec-head">
+      <div class="sec-eyebrow">Before (and around) Linus</div>
+      <h2>The pioneers</h2>
+      <p>Linux wasn't born from nothing: it stands on twenty years of ideas. Three or four names to know, and the dates that changed everything.</p>
+    </div>
+    <div class="pioneers">
+      <div class="pio">
+        <div class="medal" style="background:var(--indigo)">T·R</div>
+        <div><h4>Thompson &amp; Ritchie</h4><div class="yr">Bell Labs · 1969–1972</div><p>They invented <b>Unix</b>, then the <b>C</b> language to write it. All of Linux's philosophy — small tools, “everything is a file”, the shell — comes from them.</p></div>
+      </div>
+      <div class="pio">
+        <div class="medal" style="background:var(--matcha)">RS</div>
+        <div><h4>Richard Stallman</h4><div class="yr">GNU project · 1983</div><p>Father of <b>free software</b>: he launched GNU, wrote the <b>GPL</b> license and major tools (Emacs, GCC). The “free” in Linux is his fight.</p></div>
+      </div>
+      <div class="pio">
+        <div class="medal" style="background:var(--vermilion)">LT</div>
+        <div><h4>Linus Torvalds</h4><div class="yr">Linux kernel · 1991</div><p>He assembled the missing piece — the <b>kernel</b> — and released it freely. GNU + Linux = at last a complete system. Later, he created <b>Git</b>.</p></div>
+      </div>
+      <div class="pio">
+        <div class="medal" style="background:var(--plum)">BF</div>
+        <div><h4>Brian Fox</h4><div class="yr">Bash · 1989</div><p>He wrote <b>Bash</b>, the shell you use in the Dojo — the default command interpreter of most distributions.</p></div>
+      </div>
+    </div>
+
+    <div class="sec-eyebrow" style="margin-bottom:12px">The key dates</div>
+    <div class="timeline">
+      <div class="tl-item"><span class="yr">1969</span><span class="ev"><b>Unix</b> is born at Bell Labs (Thompson &amp; Ritchie).</span></div>
+      <div class="tl-item"><span class="yr">1972</span><span class="ev">The <b>C</b> language: Unix is rewritten in it, becoming portable.</span></div>
+      <div class="tl-item"><span class="yr">1983</span><span class="ev">Stallman launches the <b>GNU</b> project and free software.</span></div>
+      <div class="tl-item"><span class="yr">1991</span><span class="ev">Linus publishes the <b>Linux kernel</b> — “just a hobby”.</span></div>
+      <div class="tl-item"><span class="yr">1993</span><span class="ev"><b>Debian</b> and <b>Red Hat</b> come into being.</span></div>
+      <div class="tl-item"><span class="yr">1996</span><span class="ev"><b>Tux</b> becomes the official mascot 🐧.</span></div>
+      <div class="tl-item"><span class="yr">2004</span><span class="ev"><b>Ubuntu</b> brings Linux to the desktop for everyone.</span></div>
+      <div class="tl-item"><span class="yr">2005</span><span class="ev">Linus creates <b>Git</b> to manage the kernel's code.</span></div>
+      <div class="tl-item"><span class="yr">2008</span><span class="ev"><b>Android</b> (on the Linux kernel): Linux in your pocket.</span></div>
+    </div>
+  </section>
+
+  <!-- NOYAU vs DISTRO -->
+  <section>
+    <div class="sec-head">
+      <div class="sec-eyebrow">The basics to grasp</div>
+      <h2>“Linux” is a kernel — not a complete system</h2>
+      <p>The kernel alone isn't enough to use. A <b>distribution</b> (“distro”) wraps the kernel with tools, an installer, a desktop and a software manager. That's why there are hundreds of them.</p>
+    </div>
+    <div class="stack">
+      <div class="layers">
+        <div class="layer a"><b>Your apps</b> — browser, web server, games…</div>
+        <div class="layer d"><b>The distribution</b> — Ubuntu, Debian, Fedora, Arch… <span style="opacity:.75">(tools + package manager + desktop)</span></div>
+        <div class="layer k"><b>The Linux kernel</b> — the core: talks to the hardware (CPU, disk, network)</div>
+        <div class="layer a" style="text-align:center;opacity:.85">💻 The hardware</div>
+      </div>
+      <div>
+        <p style="margin-top:0;color:var(--ink-soft)">People often say <b>“GNU/Linux”</b>: Linus's kernel + the tools of Richard Stallman's <b>GNU</b> project (launched in 1983), which also gave us the free <b>GPL</b> license. Together, they form a complete operating system.</p>
+        <p style="color:var(--ink-soft);margin-bottom:0">👉 Good news for you: <b>the Dojo's commands</b> (<code>ls</code>, <code>cd</code>, <code>chmod</code>, <code>grep</code>…) work <b>identically on every distro</b>. Only the way you install software changes.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- USAGES -->
+  <section>
+    <div class="sec-head">
+      <div class="sec-eyebrow">Invisible everywhere</div>
+      <h2>Where does Linux run? Just about everywhere</h2>
+      <p>People think Linux is “for geeks”. In reality, you use it every day without knowing it.</p>
+    </div>
+    <div class="usages">
+      <div class="use"><div class="ic">🖥️</div><div class="k">9 servers out of 10</div><div class="t">The cloud &amp; the web</div><div class="d">The vast majority of cloud servers and websites run on Linux.</div></div>
+      <div class="use"><div class="ic">📱</div><div class="k">~3 billion</div><div class="t">Android</div><div class="d">Every Android phone is built on the Linux kernel. It's already in your pocket.</div></div>
+      <div class="use"><div class="ic">🏆</div><div class="k">100%</div><div class="t">Supercomputers</div><div class="d">The 500 most powerful machines in the world all run on Linux.</div></div>
+      <div class="use"><div class="ic">🌐</div><div class="k">Your router</div><div class="t">Home network</div><div class="d">Most internet boxes and routers ship with a small Linux inside.</div></div>
+      <div class="use"><div class="ic">🚗</div><div class="k">Cars &amp; TVs</div><div class="t">Embedded</div><div class="d">Car dashboards, smart TVs, connected devices: hidden Linux everywhere.</div></div>
+      <div class="use"><div class="ic">🚀</div><div class="k">All the way to Mars</div><div class="t">Space</div><div class="d">SpaceX, the Space Station, NASA's Ingenuity helicopter: Linux takes off.</div></div>
+    </div>
+  </section>
+
+  <!-- FAMILLES -->
+  <section>
+    <div class="sec-head">
+      <div class="sec-eyebrow">The landscape</div>
+      <h2>The major families of distributions</h2>
+      <p>Almost every distro descends from 3-4 “ancestors”. Knowing the family means knowing its package manager and its philosophy.</p>
+    </div>
+    <div class="families">
+      <div class="fam" style="--accent:var(--vermilion)">
+        <h3>Debian family</h3>
+        <span class="pm">.deb packages · apt</span>
+        <p class="desc">The most widespread. Stable, an enormous software library. The gateway for the general public and for servers.</p>
+        <div class="chips">
+          <div class="chip"><b>Debian</b><span>the root, ultra-stable</span></div>
+          <div class="chip"><b>Ubuntu</b><span>general public, servers</span></div>
+          <div class="chip"><b>Linux Mint</b><span>Windows beginners</span></div>
+          <div class="chip"><b>Kali Linux</b><span>pentest / security</span></div>
+          <div class="chip"><b>Raspberry Pi OS</b><span>the Raspberry Pi</span></div>
+        </div>
+      </div>
+
+      <div class="fam" style="--accent:var(--indigo)">
+        <h3>Red Hat family</h3>
+        <span class="pm">.rpm packages · dnf / yum</span>
+        <p class="desc">The enterprise world. Commercial support, stability, very much in demand on the job market.</p>
+        <div class="chips">
+          <div class="chip"><b>RHEL</b><span>enterprise (paid)</span></div>
+          <div class="chip"><b>Fedora</b><span>cutting-edge, community</span></div>
+          <div class="chip"><b>Rocky / Alma</b><span>free RHEL</span></div>
+          <div class="chip"><b>CentOS Stream</b><span>upstream of RHEL</span></div>
+        </div>
+      </div>
+
+      <div class="fam" style="--accent:var(--matcha)">
+        <h3>Arch family</h3>
+        <span class="pm">Arch packages · pacman</span>
+        <p class="desc">The “do-it-yourself”. Always up to date (<i>rolling release</i>), minimalist, for those who want to control everything.</p>
+        <div class="chips">
+          <div class="chip"><b>Arch Linux</b><span>DIY, bleeding edge</span></div>
+          <div class="chip"><b>Manjaro</b><span>Arch, made simpler</span></div>
+          <div class="chip"><b>EndeavourOS</b><span>accessible Arch</span></div>
+        </div>
+      </div>
+
+      <div class="fam" style="--accent:var(--plum)">
+        <h3>Others worth knowing</h3>
+        <span class="pm">each its own niche</span>
+        <p class="desc">Specialized distros you run into quickly once you touch servers and containers.</p>
+        <div class="chips">
+          <div class="chip"><b>openSUSE</b><span>zypper · enterprise (DE)</span></div>
+          <div class="chip"><b>Alpine</b><span>apk · tiny, Docker</span></div>
+          <div class="chip"><b>Gentoo</b><span>compile everything yourself</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOCUS -->
+  <section>
+    <div class="sec-head">
+      <div class="sec-eyebrow">Zoom in</div>
+      <h2>Three distros everyone talks about</h2>
+    </div>
+    <div class="lex">
+      <div class="lex-card"><h4>🟣 Kali Linux</h4><p>The distro of <b>ethical hackers</b> and pentesters, published by OffSec. Based on Debian, it comes with <b>600+ security tools</b> pre-installed (Nmap, Metasploit, Wireshark, Burp…). To be used in a legal and authorized context only.</p></div>
+      <div class="lex-card"><h4>🟠 Ubuntu</h4><p>The best known to the general public. Published by <b>Canonical</b>, it brought Linux to the desktop for everyone and dominates on servers and the cloud. The <b>LTS</b> (Long Term Support) version = 5 years of updates, ideal for a server you keep.</p></div>
+      <div class="lex-card"><h4>🔵 Red Hat / RHEL</h4><p>The reference in <b>enterprise</b>. You mainly pay for the <b>support</b> and the certifications. Many “Linux admin” job postings mention RHEL. Its free clones <b>Rocky</b> and <b>AlmaLinux</b> are identical, without the support.</p></div>
+      <div class="lex-card"><h4>🐧 Debian</h4><p>The stable, 100% community-driven “grandfather” (since 1993). Nothing flashy, but legendary reliability — which is why so many other distros (Ubuntu included) are built on it.</p></div>
+    </div>
+  </section>
+
+  <!-- GESTIONNAIRES DE PAQUETS -->
+  <section>
+    <div class="sec-head">
+      <div class="sec-eyebrow">Installing software</div>
+      <h2>The package managers</h2>
+      <p>On Linux, you don't install by downloading a <code>.exe</code>: you ask a <b>package manager</b> that fetches the software from an official repository, with its dependencies. Same gesture everywhere, a different command depending on the family.</p>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>Action</th><th>apt <span class="lvl">(Debian/Ubuntu)</span></th><th>dnf <span class="lvl">(Fedora/RHEL)</span></th><th>pacman <span class="lvl">(Arch)</span></th><th>zypper <span class="lvl">(openSUSE)</span></th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Install <i>package</i></td><td><code>apt install package</code></td><td><code>dnf install package</code></td><td><code>pacman -S package</code></td><td><code>zypper install package</code></td></tr>
+          <tr><td>Search</td><td><code>apt search word</code></td><td><code>dnf search word</code></td><td><code>pacman -Ss word</code></td><td><code>zypper search word</code></td></tr>
+          <tr><td>Update everything</td><td><code>apt update &amp;&amp; apt upgrade</code></td><td><code>dnf upgrade</code></td><td><code>pacman -Syu</code></td><td><code>zypper update</code></td></tr>
+          <tr><td>Remove</td><td><code>apt remove package</code></td><td><code>dnf remove package</code></td><td><code>pacman -R package</code></td><td><code>zypper remove package</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="color:var(--ink-soft);font-size:.9rem;margin-top:16px">➕ There are also <b>universal</b> formats that work on (almost) every distro: <b>Snap</b> (Canonical), <b>Flatpak</b> and <b>AppImage</b>. Handy for desktop apps, a bit heavier. On the container side, Alpine uses <code>apk</code>, ultra-lightweight.</p>
+  </section>
+
+  <!-- ÉCONOMIE -->
+  <section>
+    <div class="sec-head">
+      <div class="sec-eyebrow">The recurring question</div>
+      <h2>Why is it free — and who pays?</h2>
+      <p><b>“Free” doesn't mean “worthless”.</b> Free = you can read it, modify it, share it (it's a freedom). And most distros are also free of charge. So how does this whole world make a living? Simple: you don't sell the software — you sell the <b>service around it</b>.</p>
+    </div>
+    <div class="lex">
+      <div class="lex-card"><h4>🏢 Support &amp; services</h4><p>Red Hat (IBM), Canonical, SUSE sell enterprises assistance, warranty and long-term updates. The software is free; peace of mind isn't.</p></div>
+      <div class="lex-card"><h4>☁️ The cloud</h4><p>AWS, Google, Microsoft run millions of Linux servers and sell you the computing power. Linux is the foundation of the entire cloud industry.</p></div>
+      <div class="lex-card"><h4>🤝 The giants who contribute</h4><p>Google, Intel, Meta, Microsoft… <b>pay developers</b> to improve the kernel: they depend on it. The majority of the kernel's code comes from company employees.</p></div>
+      <div class="lex-card"><h4>🎓 Certs, training &amp; donations</h4><p>Certifications (Red Hat, LPI), training and donations to foundations (Linux Foundation, Debian) also fund the ecosystem.</p></div>
+    </div>
+    <p style="color:var(--ink-soft);font-size:.9rem;margin-top:16px">🔁 <b>The virtuous circle:</b> everyone improves the same common good instead of reinventing the wheel in their own corner. The result: Linux often advances faster — and more solidly — than closed software.</p>
+  </section>
+
+  <!-- CERTIFICATIONS -->
+  <section>
+    <div class="sec-head">
+      <div class="sec-eyebrow">Proving your level</div>
+      <h2>The certifications that matter</h2>
+      <p>Useful for landing a Linux admin or security role. Some are <b>vendor-neutral</b> (all distros), others tied to a vendor. The most respected are <b>100% hands-on</b>: they sit you in front of a real server to fix.</p>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>Certification</th><th>By</th><th>Level</th><th>For whom</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><b>CompTIA Linux+</b></td><td>CompTIA</td><td><span class="lvl">Beginner</span></td><td>First cert, vendor-neutral (all distros). A good starting point.</td></tr>
+          <tr><td><b>LPIC-1 → LPIC-3</b></td><td>Linux Professional Institute</td><td><span class="lvl">Beginner → Expert</span></td><td>A neutral, progressive track, recognized in Europe.</td></tr>
+          <tr><td><b>RHCSA</b> then <b>RHCE</b></td><td><span class="tag rh">Red Hat</span></td><td><span class="lvl">Inter. → Advanced</span></td><td>The enterprise reference, <b>100% hands-on</b>. In high demand on the market.</td></tr>
+          <tr><td><b>LFCS</b> / <b>LFCE</b></td><td>Linux Foundation</td><td><span class="lvl">Inter. → Advanced</span></td><td>Hands-on, neutral, run by the foundation that hosts the kernel.</td></tr>
+          <tr><td><b>OSCP</b></td><td><span class="tag sec">OffSec (Kali)</span></td><td><span class="lvl">Advanced</span></td><td>The star of <b>pentesting</b>: 24 h to hack machines. Demanding and renowned.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="color:var(--ink-soft);font-size:.9rem;margin-top:16px">💡 A logical order: <b>Linux+</b> or <b>LPIC-1</b> for the basics → <b>RHCSA</b> for an admin job → <b>OSCP</b> if you're aiming for offensive security. But the best resume is still <b>your projects</b> (the Dojo's Projects chapter 😉).</p>
+  </section>
+
+  <!-- LEXIQUE -->
+  <section>
+    <div class="sec-head">
+      <div class="sec-eyebrow">Did you know</div>
+      <h2>A little glossary of geek culture</h2>
+    </div>
+    <div class="lex">
+      <div class="lex-card"><h4>🐧 Tux</h4><p>The mascot penguin, drawn by Larry Ewing in 1996. You see it at boot on many Linux machines.</p></div>
+      <div class="lex-card"><h4>⚖️ The GPL &amp; free software</h4><p>The license that guarantees a piece of software stays free: read, modify, share. The fuel of the whole ecosystem.</p></div>
+      <div class="lex-card"><h4>🔑 sudo</h4><p>“<i>Super User DO</i>”: run a command with administrator rights. The famous <code>sudo apt install…</code>.</p></div>
+      <div class="lex-card"><h4>📖 RTFM &amp; man</h4><p>“<i>Read The Fine Manual</i>”: before asking, read the manual. Hence <code>man</code>, the built-in docs you already know.</p></div>
+      <div class="lex-card"><h4>🏠 The shell &amp; ~</h4><p>The “<b>~</b>” denotes your home folder. A famous geek T-shirt: “<i>there's no place like ~</i>”.</p></div>
+      <div class="lex-card"><h4>🤓 “I use Arch, btw”</h4><p>The cult joke: Arch users love to let you know. A badge of pride (and self-mockery).</p></div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section>
+    <div class="callout">
+      <div class="sec-eyebrow">Enough theory</div>
+      <h2>Go from words to practice</h2>
+      <p>You know the scenery — now take the controls of a real terminal. The Dojo's commands work on all these distros.</p>
+      <a class="btn" href="dojo-linux-en.html">Enter the Dojo &rarr;</a>
+    </div>
+  </section>
+
+</div>
+
+<footer><div class="wrap"><div class="foot-in">
+  <span>道 · The Linux Dojo</span>
+  <span>コマンドは力なり · The command is power</span>
+  <span class="sp"></span>
+  <a href="accueil-en.html">Home</a>
+  <a href="comparatif-en.html">Compare</a>
+  <a href="dojo-linux-en.html">Enter &rarr;</a>
+</div></div></footer>
+
+</body>
+</html>
