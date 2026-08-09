@@ -2078,7 +2078,7 @@ var fs = JSON.parse(JSON.stringify({
     home: { type: 'dir', perms: 'drwxr-xr-x', owner: 'root', children: {
       user: { type: 'dir', perms: 'drwxr-xr-x', owner: 'user', children: {
         Documents: { type: 'dir', perms: 'drwxr-xr-x', owner: 'user', children: {
-          'rapport.txt': { type: 'file', perms: '-rw-r--r--', owner: 'user', size: '2.1K' }
+          'report.txt': { type: 'file', perms: '-rw-r--r--', owner: 'user', size: '2.1K' }
         }},
         Downloads: { type: 'dir', perms: 'drwxr-xr-x', owner: 'user', children: {} },
         Pictures: { type: 'dir', perms: 'drwxr-xr-x', owner: 'user', children: {} },
@@ -2203,7 +2203,7 @@ var FILE_CONTENTS = {
   '.bashrc': '# ~/.bashrc\nexport PATH=$PATH:$HOME/scripts\nalias ll="ls -la"\nalias gs="git status"',
   'install.sh': '#!/bin/bash\necho "Installing..."\necho "Everything is ready!"',
   'backup.sh': '#!/bin/bash\n# Daily backup\nDATE=$(date +%Y%m%d)\ntar -czf /tmp/backup-$DATE.tar.gz /home/user',
-  'rapport.txt': 'Monthly report\n==============\n\nObjectives met: 95%\nRecommendations: keep on this path',
+  'report.txt': 'Monthly report\n==============\n\nObjectives met: 95%\nRecommendations: keep on this path',
   'index.html': '<!DOCTYPE html>\n<html>\n<head><title>My site</title></head>\n<body><h1>Welcome!</h1></body>\n</html>',
   'style.css': 'body { font-family: sans-serif; background: #efe9d4; color: #fff; }',
   'index.nginx-debian.html': '<!DOCTYPE html>\n<html><body>\n<h1>Welcome to nginx!</h1>\n<p>If you see this page, the nginx web server is successfully installed.</p>\n</body></html>',
@@ -2511,7 +2511,7 @@ var QUESTS = [
     mentor: "The everyday gestures, and their traps:\n\n① `mkdir` creates a folder, `touch` creates an empty file. `cp` copies, `mv` moves AND renames (it's the same command).\n② **Always copy before modifying an important file**: `cp config config.bak`. It has already saved your life, you just don't know it yet.\n③ `rm` is **irreversible**. `rm -r` deletes a whole folder. `rm -rf /` destroys everything — NEVER type it just to \"see\". Think twice, type once.",
     challenge: {
       title: "The clean project",
-      desc: "Build a complete project structure: **① create a `monprojet` folder** with **② two subfolders `src` and `docs`**, **③ a `README.md`** inside. Then **④ back up an important file** as `.bak` before touching it. Finally, **⑤ cleanly delete** the test folder with `rm -r`. A full life cycle: create, organize, back up, clean up."
+      desc: "Build a complete project structure: **① create a `myproject` folder** with **② two subfolders `src` and `docs`**, **③ a `README.md`** inside. Then **④ back up an important file** as `.bak` before touching it. Finally, **⑤ cleanly delete** the test folder with `rm -r`. A full life cycle: create, organize, back up, clean up."
     },
     exos: [
       {
@@ -2531,16 +2531,16 @@ var QUESTS = [
         title: 'Create a folder',
         context: "`mkdir` (from *make directory*) builds a new **empty** folder, right where you are. You type `mkdir` followed by the name you want to give it. It's the first gesture for tidying your work.",
         scene: "You're starting a new project and you want a folder to keep it in.",
-        mission: "Create a folder named `projets` in your home.",
+        mission: "Create a folder named `projects` in your home.",
         steps: [
           "Go home: `cd ~`",
-          "Create the folder: `mkdir projets` (`mkdir` = “create a folder”)",
+          "Create the folder: `mkdir projects` (`mkdir` = “create a folder”)",
           "Check it appeared: `ls`"
         ],
-        expected: "$ mkdir projets\n$ ls\nDocuments  Downloads  projets  scripts",
+        expected: "$ mkdir projects\n$ ls\nDocuments  Downloads  projects  scripts",
         culture: "`mkdir`'s most precious option is `-p` (parents): `mkdir -p a/b/c/d` creates the whole chain of folders at once, even if `a`, `b`, `c` didn't exist. Without `-p`, `mkdir a/b/c` fails if `a` doesn't exist yet. Bonus: `-p` doesn't complain if the folder already exists — indispensable in scripts, where you don't want an error if the folder is already there.",
         reflection: "How do you create the tree `projet/src/main` in one shot when none of these folders exist?\n👉 `mkdir -p projet/src/main`. The `-p` recursively creates all the missing parents. Without it, you'd need three separate commands (`mkdir projet`, `mkdir projet/src`, `mkdir projet/src/main`). It's THE reflex to build a project structure in one line.",
-        check: function(s) { var h = getNode('/home/user'); return !!(h && h.children && h.children.projets && h.children.projets.type === 'dir'); }
+        check: function(s) { var h = getNode('/home/user'); return !!(h && h.children && h.children.projects && h.children.projects.type === 'dir'); }
       },
       {
         level: 'intermediate',
@@ -2562,18 +2562,18 @@ var QUESTS = [
         level: 'intermediate',
         title: 'Copy — back up before editing',
         context: "`cp` (from *copy*) **duplicates** a file: you write `cp source destination`. The original stays intact, an identical copy is created under the new name. It's THE safety gesture of the trade: before modifying an important file, you make a backup copy.",
-        scene: "You're about to modify `rapport.txt`, but first you want to keep the original just in case.",
-        mission: "Make a backup copy of `rapport.txt` in the Documents folder.",
+        scene: "You're about to modify `report.txt`, but first you want to keep the original just in case.",
+        mission: "Make a backup copy of `report.txt` in the Documents folder.",
         steps: [
           "Go to the file's folder: `cd ~/Documents`",
-          "Duplicate it: `cp rapport.txt rapport_backup.txt` (source first, then destination)",
+          "Duplicate it: `cp report.txt report_backup.txt` (source first, then destination)",
           "Check that BOTH exist: `ls`",
-          "💡 **The pro trick** (same result): `cp rapport.txt{,.bak}` — the shell expands it into `cp rapport.txt rapport.txt.bak` (see Culture 👇)"
+          "💡 **The pro trick** (same result): `cp report.txt{,.bak}` — the shell expands it into `cp report.txt report.txt.bak` (see Culture 👇)"
         ],
-        expected: "$ cp rapport.txt rapport_backup.txt\n$ ls\nrapport.txt  rapport_backup.txt",
-        culture: "**Several ways to back up a file**:\n\n① Explicit name: `cp rapport.txt rapport_backup.txt`\n② `.bak` convention: `cp rapport.txt rapport.txt.bak`\n③ The brace trick: `cp rapport.txt{,.bak}` → the shell expands into ② by itself\n\nThe `.bak` (*backup*) convention isn't official, it's a universal habit. To copy a **whole folder**, you must add `-r` (recursive): `cp -r mysite mysite_backup`. Copying before modifying is THE reflex that marks the pro.",
+        expected: "$ cp report.txt report_backup.txt\n$ ls\nreport.txt  report_backup.txt",
+        culture: "**Several ways to back up a file**:\n\n① Explicit name: `cp report.txt report_backup.txt`\n② `.bak` convention: `cp report.txt report.txt.bak`\n③ The brace trick: `cp report.txt{,.bak}` → the shell expands into ② by itself\n\nThe `.bak` (*backup*) convention isn't official, it's a universal habit. To copy a **whole folder**, you must add `-r` (recursive): `cp -r mysite mysite_backup`. Copying before modifying is THE reflex that marks the pro.",
         reflection: "You're about to modify `/etc/ssh/sshd_config`, a critical file. What's your very first move?\n👉 `sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak`. BEFORE any change. If your config breaks SSH and disconnects you from the remote server, this copy is your only lifeline. “Copy before modifying” isn't excessive caution — it's the bare survival minimum of the trade.",
-        check: function(s) { var d = getNode('/home/user/Documents'); return !!(d && d.children && (d.children['rapport_backup.txt'] || d.children['rapport.txt.bak'])); }
+        check: function(s) { var d = getNode('/home/user/Documents'); return !!(d && d.children && (d.children['report_backup.txt'] || d.children['report.txt.bak'])); }
       },
       {
         level: 'intermediate',
@@ -2589,17 +2589,17 @@ var QUESTS = [
         ],
         expected: "$ mv notes.txt todo.txt\n$ ls\ntodo.txt  Documents  ...",
         culture: "Why a single `mv` command to move AND rename? Because in Unix, they're the **same operation**: a filename is just a label pointing to data. Renaming `notes.txt` to `todo.txt` is just changing the label (in the same place). Moving it into `Documents/` is changing the label (to another place). Hence the absence of a separate `rename` command — `mv` already does everything.",
-        reflection: "`mv rapport.txt archives/` and `mv rapport.txt vieux.txt`: why does the same verb do two different things?\n👉 `mv` looks at its destination. If it's an **existing folder** (`archives/`), it moves the file into it keeping its name. If it's a **name that doesn't exist** (`vieux.txt`), it renames. Watch the trap: if the destination is an existing file, `mv` OVERWRITES it without warning. Like `cp`, `mv` is silently destructive.",
+        reflection: "`mv report.txt archives/` and `mv report.txt old.txt`: why does the same verb do two different things?\n👉 `mv` looks at its destination. If it's an **existing folder** (`archives/`), it moves the file into it keeping its name. If it's a **name that doesn't exist** (`old.txt`), it renames. Watch the trap: if the destination is an existing file, `mv` OVERWRITES it without warning. Like `cp`, `mv` is silently destructive.",
         check: function(s) { var h = getNode('/home/user'); return !!(h && h.children && h.children['todo.txt'] && !h.children['notes.txt']); }
       },
       {
         level: 'intermediate',
         title: 'Act on many files (wildcards)',
         context: "Renaming one file, you can do. But **acting on a hundred at once**? That's the job of **wildcards**: symbols that **the shell replaces** with the list of matching files, BEFORE the command even runs. The most common: `*` = “any sequence of characters”. So `*.log` means *all* files ending in `.log`. You write a pattern, the shell hands you the list.",
-        scene: "Your `~/atelier` folder is littered with `.log` logs that are no longer useful, mixed in with your real files. Delete them one by one? Out of the question.",
-        mission: "In `~/atelier`, delete ALL the `.log` files in a single gesture — without touching the rest.",
+        scene: "Your `~/workshop` folder is littered with `.log` logs that are no longer useful, mixed in with your real files. Delete them one by one? Out of the question.",
+        mission: "In `~/workshop`, delete ALL the `.log` files in a single gesture — without touching the rest.",
         steps: [
-          "Enter the folder: `cd ~/atelier`",
+          "Enter the folder: `cd ~/workshop`",
           "Look at the mess: `ls`",
           "Target ONLY the logs: `ls *.log` — the `*` = “anything”; you see only the `.log` files",
           "Delete them all at once: `rm *.log` (the shell replaces `*.log` with the list of matching files)",
@@ -2611,16 +2611,16 @@ var QUESTS = [
         culture: "Crucial point: it's **not** `rm` (nor `ls`, nor `cp`) that understands the star — it's **the shell** that expands `*.log` into a list of names BEFORE launching the command. The command itself only sees normal filenames. Consequence: if no file matches, the pattern is passed **as-is** (`rm *.zip` with no `.zip` → “*.zip : not found”). Another famous trap: one extra space. `rm * .log` (with the space) = `rm *` (the WHOLE folder) then `rm .log` — you wipe everything by accident. The wildcard is powerful: always reread before Enter.",
         reflection: "What's the difference between `rm file*.txt` and `rm file?.txt`?\n👉 `*` replaces **any sequence** of characters (including none): `file*.txt` catches `file.txt`, `file1.txt`, `file_final.txt`… `?` replaces **exactly one** character: `file?.txt` catches `file1.txt` but NOT `file.txt` (zero characters) nor `file12.txt` (two). `*` = “as many as you want”, `?` = “one, no more no less”.",
         setup: function() {
-          ensureDir('/home/user/atelier');
-          ensureFile('/home/user/atelier/app.log', '120');
-          ensureFile('/home/user/atelier/error.log', '88');
-          ensureFile('/home/user/atelier/access.log', '240');
-          ensureFile('/home/user/atelier/notes.txt', '32');
-          ensureFile('/home/user/atelier/todo.txt', '18');
-          ensureFile('/home/user/atelier/data.csv', '64');
+          ensureDir('/home/user/workshop');
+          ensureFile('/home/user/workshop/app.log', '120');
+          ensureFile('/home/user/workshop/error.log', '88');
+          ensureFile('/home/user/workshop/access.log', '240');
+          ensureFile('/home/user/workshop/notes.txt', '32');
+          ensureFile('/home/user/workshop/todo.txt', '18');
+          ensureFile('/home/user/workshop/data.csv', '64');
         },
         check: function(s) {
-          var d = getNode('/home/user/atelier');
+          var d = getNode('/home/user/workshop');
           if (!d || !d.children) return false;
           var names = Object.keys(d.children);
           var noLogs = names.every(function(n) { return !/\.log$/.test(n); });
@@ -2633,27 +2633,27 @@ var QUESTS = [
         title: 'Project structure',
         context: "In reality, a project is never a single folder: you structure it into **subfolders** by role — `src/` for source code, `docs/` for documentation, `tests/` for tests… Good news: there are **several ways** to create this structure, from the simplest to the fastest. We'll show you all of them.",
         scene: "You're starting a project from scratch and you want to lay down a clean structure from the very start.",
-        mission: "Create `~/monprojet` with two subfolders: `src` and `docs`.",
+        mission: "Create `~/myproject` with two subfolders: `src` and `docs`.",
         steps: [
           "Go home: `cd ~`",
-          "Create the project folder: `mkdir monprojet`, then enter it: `cd monprojet`",
+          "Create the project folder: `mkdir myproject`, then enter it: `cd myproject`",
           "Create both subfolders at once: `mkdir src docs`",
           "Admire the result: `tree`",
-          "💡 **The same thing in ONE line** (advanced, worth trying): `mkdir -p monprojet/{src,docs}` — see the Culture box just below 👇"
+          "💡 **The same thing in ONE line** (advanced, worth trying): `mkdir -p myproject/{src,docs}` — see the Culture box just below 👇"
         ],
-        expected: "monprojet/\n├── docs/\n└── src/",
-        culture: "**Three ways to get EXACTLY the same result** — pick yours:\n\n① **Step by step** (what we just did):\n`mkdir monprojet` then `cd monprojet` then `mkdir src docs`\n\n② **In one command, full paths**:\n`mkdir -p monprojet/src monprojet/docs`\n\n③ **The most concise, with brace expansion**:\n`mkdir -p monprojet/{src,docs}`\n\nThe `-p` creates the missing parents along the way (here `monprojet`) with no error. The **braces** `{src,docs}` are expanded by the shell into `monprojet/src monprojet/docs`. Even stronger: `mkdir -p projet/{src,tests,docs}` creates three folders, and `mkdir -p projet/{src,docs}/{v1,v2}` creates four at once. A shortcut every seasoned admin loves.",
+        expected: "myproject/\n├── docs/\n└── src/",
+        culture: "**Three ways to get EXACTLY the same result** — pick yours:\n\n① **Step by step** (what we just did):\n`mkdir myproject` then `cd myproject` then `mkdir src docs`\n\n② **In one command, full paths**:\n`mkdir -p myproject/src myproject/docs`\n\n③ **The most concise, with brace expansion**:\n`mkdir -p myproject/{src,docs}`\n\nThe `-p` creates the missing parents along the way (here `myproject`) with no error. The **braces** `{src,docs}` are expanded by the shell into `myproject/src myproject/docs`. Even stronger: `mkdir -p projet/{src,tests,docs}` creates three folders, and `mkdir -p projet/{src,docs}/{v1,v2}` creates four at once. A shortcut every seasoned admin loves.",
         reflection: "Why put your code in `src/` rather than loose at the project's root?\n👉 To separate what matters (the code) from everything else (docs, config, tests, generated files). A clear `src/` folder lets tools, colleagues and build scripts know where to look. Organization is communication: a well-ordered project explains itself without a word.",
-        check: function(s) { var p = getNode('/home/user/monprojet'); return !!(p && p.children && p.children.src && p.children.docs); }
+        check: function(s) { var p = getNode('/home/user/myproject'); return !!(p && p.children && p.children.src && p.children.docs); }
       },
       {
         level: 'advanced',
         title: 'A README for your project',
         context: "A **README** (“read me”) is your project's **ID card**: a short description of what it does, for whom, and how to use it. It's the very first file a visitor — or a recruiter! — opens. The `.md` extension = **Markdown**, a simple text format where a `#` makes a heading. Here, we'll create it AND give it content, not just an empty file.",
         scene: "Your project needs an ID card that others will read first.",
-        mission: "Create a `README.md` in `~/monprojet`, with a title and a short description.",
+        mission: "Create a `README.md` in `~/myproject`, with a title and a short description.",
         steps: [
-          "Enter your project: `cd ~/monprojet`",
+          "Enter your project: `cd ~/myproject`",
           "Create it with a title: `echo \"# My project\" > README.md` (the `#` = a heading in Markdown, the `>` writes into the file)",
           "Add the short description: `echo \"A small tool that automates my backups.\" >> README.md` (the `>>` appends without overwriting)",
           "Reread its ID card: `cat README.md`"
@@ -2661,44 +2661,44 @@ var QUESTS = [
         expected: "$ cat README.md\n# My project\nA small tool that automates my backups.",
         culture: "A good README is a few lines and answers **three questions**: **what is it?** (a one-sentence description), **how do I install it?**, **how do I use it?**. On GitHub, this file is displayed automatically on the project page — it's your showcase. Many brilliant projects are ignored for lack of a clear README: the docs are part of the work, not a bonus. For a portfolio of projects (Projects chapter!), a polished README makes all the difference.",
         reflection: "Why is the very first file of a serious project almost always a README?\n👉 Because a project no one understands is a dead project. The README is the front door: in a short description, it turns a pile of obscure files into something a human (recruiter, colleague, or you in six months) can understand and use. Writing this ID card from the start is the mark of pros.",
-        setup: function() { ensureDir('/home/user/monprojet/src'); ensureDir('/home/user/monprojet/docs'); },
-        check: function(s) { var p = getNode('/home/user/monprojet'); return !!(p && p.children && p.children['README.md']); }
+        setup: function() { ensureDir('/home/user/myproject/src'); ensureDir('/home/user/myproject/docs'); },
+        check: function(s) { var p = getNode('/home/user/myproject'); return !!(p && p.children && p.children['README.md']); }
       },
       {
         level: 'advanced',
         title: 'Recursive deletion',
         context: "`rm` (from *remove*) **deletes** a file. Crucial point: **there is NO trash can** in the terminal — what's deleted is lost, permanently. To delete a folder AND everything it contains, you add the `-r` option (*recursive*, “and everything inside”). To be handled with absolute respect.",
         scene: "The test project is no longer useful. You want to delete it cleanly.",
-        mission: "Fully delete the `~/monprojet` folder.",
+        mission: "Fully delete the `~/myproject` folder.",
         steps: [
           "Go home: `cd ~`",
-          "Delete the folder and its content: `rm -r monprojet` (the `-r` = “and everything inside”)",
+          "Delete the folder and its content: `rm -r myproject` (the `-r` = “and everything inside”)",
           "Check it's gone: `ls`",
           "💡 **The variants of `rm`, from safest to most dangerous**: `rm file.txt` (a single file) · `rm -i file.txt` (asks for confirmation — the cautious reflex) · `rm -r folder` (a whole folder) · `rm -rf folder` (force, with NO confirmation at all: the most powerful AND the riskiest, to reread three times before Enter)."
         ],
-        expected: "$ rm -r monprojet\n$ ls\nDocuments  Downloads  ...",
+        expected: "$ rm -r myproject\n$ ls\nDocuments  Downloads  ...",
         diagram: "⚠️ rm -rf /  is the classic career-ending mistake\n   (wipes the whole system). Be careful.",
         culture: "The `-f` in `rm -rf` means **force**: it deletes without ever asking for confirmation. Combined with `-r` (recursive) and a wrong path, it has erased entire companies. In 2017, a **GitLab** engineer ran an `rm -rf` on the wrong production server and wiped 300 GB of live database. Unix lore says you NEVER type `rm -rf` without rereading the path three times. Some admins even create an alias `rm -i` (interactive) to force themselves to confirm.",
         reflection: "Why doesn't Unix have a trash can by default, unlike Windows or macOS?\n👉 A philosophy of trust and performance: Unix assumes **you know what you're doing**. A trash can would consume disk space and complicate automated scripts. The trade-off: deletion is permanent, so caution is your only trash can. Hence the importance of `cp` to back up BEFORE.",
-        setup: function() { ensureDir('/home/user/monprojet/src'); ensureDir('/home/user/monprojet/docs'); ensureFile('/home/user/monprojet/README.md', '48'); },
-        check: function(s) { var h = getNode('/home/user'); return !!(h && h.children && !h.children.monprojet); }
+        setup: function() { ensureDir('/home/user/myproject/src'); ensureDir('/home/user/myproject/docs'); ensureFile('/home/user/myproject/README.md', '48'); },
+        check: function(s) { var h = getNode('/home/user'); return !!(h && h.children && !h.children.myproject); }
       },
       {
         level: 'advanced',
         title: 'Mini-challenge: a file\'s life cycle',
         context: "A file is born, gets copied, gets renamed, and sometimes dies. This chapter gave you the four gestures; we chain them. The golden rule stays: **back up before you touch, think before you delete**.",
         scene: "The Sensei hands you a test file to live from start to finish, cleanly, without a net.",
-        mission: "Take a file `essai.txt` from creation to deletion, while keeping a backup.",
+        mission: "Take a file `test.txt` from creation to deletion, while keeping a backup.",
         steps: [
-          "① Create it: `cd ~` then `touch essai.txt`",
-          "② Back it up BEFORE anything: `cp essai.txt essai.txt.bak`",
-          "③ Rename the original: `mv essai.txt final.txt`",
+          "① Create it: `cd ~` then `touch test.txt`",
+          "② Back it up BEFORE anything: `cp test.txt test.txt.bak`",
+          "③ Rename the original: `mv test.txt final.txt`",
           "④ Delete the final version: `rm final.txt` (the `.bak` backup must stay)"
         ],
-        expected: "$ touch essai.txt\n$ cp essai.txt essai.txt.bak\n$ mv essai.txt final.txt\n$ rm final.txt\n$ ls\nessai.txt.bak  ...",
+        expected: "$ touch test.txt\n$ cp test.txt test.txt.bak\n$ mv test.txt final.txt\n$ rm final.txt\n$ ls\ntest.txt.bak  ...",
         culture: "This little cycle — create, copy, rename, delete — is the daily life of administration. The gesture that saves careers is ②, the backup: as long as your `.bak` exists, no mistake is fatal. Pros make it a reflex so automatic they type it without even thinking, before every risky change.",
         reflection: "At the end, why is the `.bak` file still there even though we “deleted everything”?\n👉 Because a copy is an **independent** file: `cp` duplicated the data under a new name. Renaming then deleting the original never touched the copy. That's the whole power of a backup: it survives whatever happens to the original.",
-        check: function(s) { var h = getNode('/home/user'); if (!h || !h.children) return false; var c = h.children; return !!c['essai.txt.bak'] && !c['essai.txt'] && !c['final.txt']; }
+        check: function(s) { var h = getNode('/home/user'); if (!h || !h.children) return false; var c = h.children; return !!c['test.txt.bak'] && !c['test.txt'] && !c['final.txt']; }
       }
     ]
   },
@@ -4600,9 +4600,9 @@ var QUESTS = [
         title: 'Sort and deduplicate',
         context: "Sixth tool, really two working as a duo: `sort` (sorts the lines) and `uniq` (removes **consecutive** duplicates). The classic trap: `uniq` only sees the duplicates that follow one another. So to clean up a truly messy list, you must **first sort, then deduplicate** — the `sort … | uniq` combo. It's one of the most useful chains in the trade.",
         scene: "You've been left a file `disciples.txt`: a list of names typed in a hurry, out of order and with duplicates. You want the clean version: sorted, each name only once.",
-        mission: "From `~/atelier-outils`, display the contents of `disciples.txt` sorted and without duplicates.",
+        mission: "From `~/toolbox`, display the contents of `disciples.txt` sorted and without duplicates.",
         steps: [
-          "Go to the workshop: `cd ~/atelier-outils`",
+          "Go to the workshop: `cd ~/toolbox`",
           "Look at the mess: `cat disciples.txt`",
           "Sort first, deduplicate after: `sort disciples.txt | uniq`",
           "💡 Notice why order matters: `uniq disciples.txt` alone (without sorting) lets far-apart duplicates slip through. You have to make them neighbors first."
@@ -4611,8 +4611,8 @@ var QUESTS = [
         culture: "The `sort | uniq` duo is a monument of Unix culture: counting a log's unique visitors, deduplicating an email list, spotting duplicates… `sort | uniq -c | sort -rn` (sort, count, re-sort by frequency) is THE reflex for answering “what comes up most often?”. Two little tools, assembled, are worth a spreadsheet.",
         reflection: "Why does `uniq` only remove the duplicates **that follow one another**, instead of all duplicates?\n👉 By design choice: to spot a duplicate “wherever it is”, `uniq` would have to keep the WHOLE list in memory. By comparing only to the previous line, it handles files of billions of lines effortlessly. The price of that lightness: you must sort first. The Unix philosophy again — each tool stays simple, you combine them.",
         setup: function() {
-          ensureDir('/home/user/atelier-outils');
-          ensureFile('/home/user/atelier-outils/disciples.txt', '48');
+          ensureDir('/home/user/toolbox');
+          ensureFile('/home/user/toolbox/disciples.txt', '48');
           FILE_CONTENTS['disciples.txt'] = 'Kenji\nAiko\nRen\nKenji\nMei\nBao\nAiko\nRen';
         },
         check: function(s) {
@@ -6423,7 +6423,7 @@ function cmdMkdir(args) {
   var parents = args.some(function(a) { return /^-\w*p/.test(a); });
   var targets = args.filter(function(a) { return a.charAt(0) !== '-'; });
   if (!targets.length) { term.writeln(C.red + 'mkdir: missing operand' + C.reset); return; }
-  // Expansion d'accolades : monprojet/{src,docs} -> monprojet/src monprojet/docs
+  // Expansion d'accolades : myproject/{src,docs} -> myproject/src myproject/docs
   var expanded = [];
   targets.forEach(function(t) {
     var m = t.match(/^(.*)\{([^}]*)\}(.*)$/);
@@ -8090,14 +8090,14 @@ if (document.readyState === 'loading') {
   body.pmode #content-narrative,
   body.pmode .fs-panel{display:none}
 
-  /* Ceintures spécifiques au parcours projets */
+  /* Ceintures spécifiques au parcours projects */
   .belt.pv-belt-1{background:var(--bg-elevated);color:var(--text-2);border-color:var(--border)}
   .belt.pv-belt-2{background:rgba(30,90,61,.10);color:var(--green);border-color:rgba(30,90,61,.32)}
   .belt.pv-belt-3{background:rgba(200,144,40,.13);color:var(--amber);border-color:rgba(200,144,40,.34)}
   .belt.pv-belt-4{background:rgba(200,60,20,.10);color:var(--magenta);border-color:rgba(200,60,20,.34)}
   .belt.pv-belt-5{background:rgba(30,58,92,.12);color:var(--violet);border-color:rgba(30,58,92,.34)}
 
-  /* Nav projets (gauche) */
+  /* Nav projects (gauche) */
   #pv-nav{padding:2px 2px 10px}
   .pv-lvl{margin:12px 4px 4px}
   .pv-lvl-head{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
@@ -8217,8 +8217,8 @@ if (document.readyState === 'loading') {
           code:[{c:'pwd',k:'which folder am I in?'},{c:'whoami',k:'under what identity?'},{c:'ls -la',k:'even the hidden files?'}],
           check:'`pwd` returns your home folder, and `ls -la` lists everything, including `.` and `..`.'},
         {title:'Tidy the workshop — create the tree',intro:'Create the structure of a small project in one go, then enter it:',
-          code:[{c:'mkdir -p atelier/scripts atelier/logs'},{c:'cd atelier'},{c:'ls -R',k:'the tree, recursively'}],
-          check:'You see `atelier` containing `scripts/` and `logs/`. The `-p` created the parents in one shot.'},
+          code:[{c:'mkdir -p workshop/scripts workshop/logs'},{c:'cd workshop'},{c:'ls -R',k:'the tree, recursively'}],
+          check:'You see `workshop` containing `scripts/` and `logs/`. The `-p` created the parents in one shot.'},
         {title:'Write and re-read a file',intro:'Drop a little script into scripts/, then read it back:',
           code:[{c:"echo '#!/bin/bash' > scripts/hello.sh"},{c:"echo 'echo Hello' >> scripts/hello.sh"},{c:'cat scripts/hello.sh'}],
           check:'`cat` shows **both** lines. Remember: `>` overwrites, `>>` appends.'},
@@ -8258,8 +8258,8 @@ if (document.readyState === 'loading') {
           code:[{c:'sudo apt update'},{c:'sudo apt install -y openssh-server'},{c:'sudo systemctl enable --now ssh'},{c:'systemctl status ssh'}],
           check:'`systemctl status ssh` shows `active (running)`.',
           verify:{label:'Paste the output of **systemctl status ssh**',need:'active (running)'}},
-        {title:'Take a snapshot',intro:'VirtualBox → **Snapshots** tab → Take. Name it `base-propre`. It\'s your rollback point.',
-          check:'A `base-propre` snapshot appears. You can always come back to it.'},
+        {title:'Take a snapshot',intro:'VirtualBox → **Snapshots** tab → Take. Name it `clean-base`. It\'s your rollback point.',
+          check:'A `clean-base` snapshot appears. You can always come back to it.'},
         {title:'Connect from your PC',intro:'From your PC\'s terminal (not the VM):',
           code:[{c:'ssh user@<vm-ip>'}],
           check:'You\'re in the VM from your own terminal. 🎉 Your first machine answers you.'}
@@ -8301,7 +8301,7 @@ if (document.readyState === 'loading') {
 
     { id:'p4', level:1, title:'My file server', env:'vm', prompt:'kai@dojo-vm:~$',
       guide:'🧭 step by step', metier:'I can share my files across all my devices.',
-      diagram:'PC · phone · TV  ──(SMB)──▶  [ Samba VM ]  ──▶  /srv/partage\n\nOne folder, present on all your screens.',
+      diagram:'PC · phone · TV  ──(SMB)──▶  [ Samba VM ]  ──▶  /srv/share\n\nOne folder, present on all your screens.',
       prereq:'The VM running, on your network. **In your VM.** Warm-up: chapters 3 (files), 4 (permissions), 11 (network).',
       goal:'Install **Samba**, create a password-protected **shared folder**, and access it from your **PC** (Windows, Mac or Linux) — like a local Google Drive.',
       sensei:'Passing around a USB stick is the Middle Ages, Kaï. Today your files live in **one single place** and follow you on every screen: your phone, your PC, the living-room TV. One folder, everywhere, yours.',
@@ -8310,11 +8310,11 @@ if (document.readyState === 'loading') {
           code:[{c:'sudo apt update'},{c:'sudo apt install -y samba'}],
           check:'The `samba` package installs. The `smbd` service is present.'},
         {title:'Create the folder to share',intro:'Create the folder that will hold the shared files:',
-          code:[{c:'sudo mkdir -p /srv/partage'},{c:'sudo chown $USER:$USER /srv/partage'}],
-          check:'The `/srv/partage` folder exists and belongs to you.'},
+          code:[{c:'sudo mkdir -p /srv/share'},{c:'sudo chown $USER:$USER /srv/share'}],
+          check:'The `/srv/share` folder exists and belongs to you.'},
         {title:'Declare the share',intro:'Open the Samba config and add a section for your folder:',
-          code:[{c:'sudo nano /etc/samba/smb.conf',k:'add the 4 lines below at the end'},{c:'# [Partage]',k:''},{c:'#   path = /srv/partage',k:''},{c:'#   valid users = kai',k:''},{c:'#   read only = no',k:''},{c:'testparm',k:'check the syntax'}],
-          check:'`testparm` shows “Loaded services file OK” and lists your `[Partage]` share.'},
+          code:[{c:'sudo nano /etc/samba/smb.conf',k:'add the 4 lines below at the end'},{c:'# [Share]',k:''},{c:'#   path = /srv/share',k:''},{c:'#   valid users = kai',k:''},{c:'#   read only = no',k:''},{c:'testparm',k:'check the syntax'}],
+          check:'`testparm` shows “Loaded services file OK” and lists your `[Share]` share.'},
         {title:'Create your Samba user',intro:'Samba has its own passwords, separate from Linux:',
           code:[{c:'sudo smbpasswd -a kai',k:'choose a share password'}],
           check:'The `kai` user is added to Samba (“Added user kai”).'},
@@ -8322,7 +8322,7 @@ if (document.readyState === 'loading') {
           code:[{c:'sudo systemctl restart smbd'},{c:"sudo ufw allow Samba"},{c:'systemctl status smbd'}],
           check:'`smbd` is `active (running)` and the firewall lets Samba through.',
           verify:{label:'Paste the output of **systemctl status smbd**',need:'active (running)'}},
-        {title:'Access it from your PC',intro:'From your real machine, open the share: Windows → `\\\\<vm-ip>\\Partage` · Mac/Linux → `smb://<vm-ip>`. Sign in with `kai` and your Samba password.',
+        {title:'Access it from your PC',intro:'From your real machine, open the share: Windows → `\\\\<vm-ip>\\Share` · Mac/Linux → `smb://<vm-ip>`. Sign in with `kai` and your Samba password.',
           check:'You see the folder, you drop a file in it, it appears on the server side. 🎉 Your personal drive is alive.',
           hint:{sum:'“Access denied” / I don\'t see the share',ps:['Hint 1. Check that `valid users = kai` matches the Samba user created with `smbpasswd`.','Hint 2. On Windows, enter the login as `<vm-ip>\\kai` to force the right account.']}}
       ],
@@ -8398,13 +8398,13 @@ if (document.readyState === 'loading') {
           code:[{c:'systemctl status jellyfin'}],
           check:'`jellyfin` is `active (running)`.',
           verify:{label:'Paste the output of **systemctl status jellyfin**',need:'active (running)'}},
-        {title:'Prepare your media library',intro:'Create a folder for your films and drop one into it (via your Samba share from Project 4, for example):',
-          code:[{c:'sudo mkdir -p /srv/media/films'},{c:'sudo chown -R jellyfin:jellyfin /srv/media'}],
-          check:'The `/srv/media/films` folder exists and Jellyfin has the right to read it.'},
+        {title:'Prepare your media library',intro:'Create a folder for your movies and drop one into it (via your Samba share from Project 4, for example):',
+          code:[{c:'sudo mkdir -p /srv/media/movies'},{c:'sudo chown -R jellyfin:jellyfin /srv/media'}],
+          check:'The `/srv/media/movies` folder exists and Jellyfin has the right to read it.'},
         {title:'Open the firewall',intro:'Jellyfin serves its interface on port 8096:',
           code:[{c:'sudo ufw allow 8096'}],
           check:'`ufw status` lets 8096 through.'},
-        {title:'Configure via the browser',intro:'Open `http://<vm-ip>:8096`, create your admin account, then **add a library** of type “Movies” pointing to `/srv/media/films`.',
+        {title:'Configure via the browser',intro:'Open `http://<vm-ip>:8096`, create your admin account, then **add a library** of type “Movies” pointing to `/srv/media/movies`.',
           check:'The wizard finishes, your library appears on the home screen.'},
         {title:'Start playback',intro:'Run a library scan, then click on your film.',
           check:'The film starts in the browser (and on the TV/phone app). 🎉 Your personal streaming is running.',
@@ -8436,7 +8436,7 @@ if (document.readyState === 'loading') {
         {title:'Configure via the browser',intro:'Open `http://<vm-ip>:3000`, keep the **SQLite** database (the simplest), then create your **admin account**.',
           check:'You land on your Gitea dashboard, logged in with your account.'},
         {title:'Push your first repository',intro:'Create an empty repo in the interface, then, from your PC, send a project to it:',
-          code:[{c:'git remote add perso http://<vm-ip>:3000/kai/monrepo.git'},{c:'git push -u perso main'}],
+          code:[{c:'git remote add perso http://<vm-ip>:3000/kai/myrepo.git'},{c:'git push -u perso main'}],
           check:'Your code appears in Gitea, served by **your** machine. 🎉 You have your very own GitHub.'}
       ],
       done:{skills:['Create a dedicated system user.','Install software via a binary + PATH.','Write a systemd service and drive it.','Diagnose a service with `journalctl`.','Configure Gitea and push code to it.'],
