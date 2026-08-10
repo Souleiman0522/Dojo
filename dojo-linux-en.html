@@ -6601,7 +6601,7 @@ function cmdId() {
 }
 
 function cmdChmod(args) {
-  if (args.length < 2) { term.writeln(C.red + 'chmod: usage: chmod MODE FICHIER' + C.reset); return; }
+  if (args.length < 2) { term.writeln(C.red + 'chmod: usage: chmod MODE FILE' + C.reset); return; }
   var mode = args[0];
   var target = args[1];
   var node = getNode(resolvePath(target));
